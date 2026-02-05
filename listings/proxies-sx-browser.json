@@ -22,7 +22,7 @@
       {
         "network": "base",
         "chainId": "eip155:8453",
-        "recipient": "0x1fB1F2271e61652C3df7EfD9E8FE82De52fb5eb0",
+        "recipient": "0x742d35Cc6634C0532925a3b844Bc9e7595f1BaEf",
         "asset": "USDC",
         "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
       }

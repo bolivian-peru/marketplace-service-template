@@ -10,14 +10,23 @@ You provide the idea. We provide 147 mobile devices across 6 countries, x402 pay
 
 You're arbitraging infrastructure. Buy proxy bandwidth wholesale, sell API calls retail.
 
-| Scale | Your Cost | You Earn | **Your Profit** |
-|-------|-----------|----------|-----------------|
-| 100 requests | $0.04 | $0.50 | **$0.46** |
-| 1,000 req/day | $0.40/day | $5/day | **$4.60/day** (~$140/mo) |
-| 10,000 req/day | $4/day | $50/day | **$46/day** (~$1,400/mo) |
-| 100,000 req/day | $40/day | $500/day | **$460/day** (~$14,000/mo) |
+**Proxy cost:** $4/GB shared, $8/GB private ([live pricing](https://api.proxies.sx/v1/x402/pricing))
 
-**Your margin: 90%+** — proxy costs $4/GB, you charge whatever the market bears.
+Your margin depends on what you're scraping:
+
+| Use Case | Avg Size | Reqs/GB | Cost/Req | You Charge | Margin |
+|----------|----------|---------|----------|------------|--------|
+| JSON APIs | ~10 KB | 100k | $0.00004 | $0.001 | **97%** |
+| Text extraction | ~50 KB | 20k | $0.0002 | $0.005 | **96%** |
+| HTML (no images) | ~200 KB | 5k | $0.0008 | $0.005 | **84%** |
+| Full pages | ~2 MB | 500 | $0.008 | $0.02 | **60%** |
+
+**Example: Text scraper at 10k req/day**
+- Traffic: ~0.5 GB/day → $2/day proxy cost
+- Revenue: $0.005 × 10k = $50/day
+- **Profit: $48/day (~$1,400/mo)**
+
+**Key:** Optimize response size. Return text, not full HTML. Skip images. The template's `proxyFetch()` returns text by default (50KB cap).
 
 ### Why This Works
 
