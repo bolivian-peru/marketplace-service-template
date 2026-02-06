@@ -193,21 +193,21 @@ Your service needs customers. The [Proxies.sx Marketplace](https://agents.proxie
 
 ## Bounty Board
 
-**400,000 $SX in bounties** for 4 services. Build one, earn tokens.
+**$200 bounties** for builders. Each bounty pays **$200 in $SX token** upon approval.
 
-| # | Service | Reward | Required | Status |
-|---|---------|--------|----------|--------|
-| 1 | **YouTube Transcript Scraper** | 100,000 $SX (~$200 USDC) | proxy + x402 | OPEN |
-| 2 | **Google SERP + AI Search Scraper** | 100,000 $SX (~$200 USDC) | proxy + browser + x402 | OPEN |
-| 3 | **Gmail Account Creator** | 100,000 $SX (~$200 USDC) | proxy + browser + x402 | OPEN |
-| 4 | **Instagram Account Creator** | 100,000 $SX (~$200 USDC) | proxy + browser + x402 | OPEN |
+| # | Service | Reward | Required | Claim | Status |
+|---|---------|--------|----------|-------|--------|
+| 1 | ~~YouTube Transcript Scraper~~ | $200 in $SX token | proxy + x402 | — | **DONE** |
+| 2 | **Google SERP + AI Search Scraper** | $200 in $SX token | proxy + browser + x402 | [#1](https://github.com/bolivian-peru/marketplace-service-template/issues/1) | OPEN |
+| 3 | **Gmail Account Creator** | $200 in $SX token | proxy + browser + x402 | [#2](https://github.com/bolivian-peru/marketplace-service-template/issues/2) | OPEN |
+| 4 | **Instagram Account Creator** | $200 in $SX token | proxy + browser + x402 | [#3](https://github.com/bolivian-peru/marketplace-service-template/issues/3) | OPEN |
 
 **Rules:**
 1. Must use Proxies.sx mobile proxies
 2. Must gate with x402 USDC payments
 3. Must be a working, deployable service
-4. Claim by [opening an issue](https://github.com/bolivian-peru/marketplace-service-template/issues/new?template=bounty-claim.md) on this repo
-5. $SX paid after Maya reviews and approves
+4. Claim by commenting on the issue linked above
+5. $200 in $SX token paid after Maya reviews and approves
 
 **See the full bounty board:** [agents.proxies.sx/marketplace/#bounties](https://agents.proxies.sx/marketplace/#bounties)
 
