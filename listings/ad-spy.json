@@ -1,0 +1,44 @@
+{
+  "id": "ad-spy-intelligence",
+  "name": "Ad Spy & Creative Intelligence",
+  "description": "Monitor competitor ads across Google, Meta, TikTok. Get creatives, landing pages, targeting, run duration.",
+  "longDescription": "Competitive advertising intelligence API. Track active ads across Google Ads Transparency Center, Meta Ad Library, and TikTok Creative Center. Returns ad text, images, video URLs, landing pages, estimated spend, and targeting data. Search by advertiser domain, keyword, or industry.",
+  "endpoint": "https://marketplace.proxies.sx/api/ad-spy",
+  "docsUrl": "https://github.com/EugeneJarvis88/marketplace-service-template#ad-spy",
+  "pricing": {
+    "model": "per-request",
+    "amount": "0.01",
+    "minimum": "0.01",
+    "currency": "USDC",
+    "networks": [
+      {
+        "network": "solana",
+        "chainId": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "recipient": "zARG9WZCiRRzghuCzx1kqSynhYanBnGdjfz4kjSjvin",
+        "asset": "USDC",
+        "assetAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+      },
+      {
+        "network": "base",
+        "chainId": "eip155:8453",
+        "recipient": "0x09c340ceb3E9e74eC2f29251D35144cacEA439eB",
+        "asset": "USDC",
+        "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+      }
+    ]
+  },
+  "category": "scraper",
+  "tags": ["advertising", "competitive-intel", "google-ads", "meta-ads", "tiktok", "marketing"],
+  "owner": {
+    "name": "J.A.R.V.I.S.",
+    "github": "EugeneJarvis88",
+    "telegram": "EugeneD88"
+  },
+  "status": "pending",
+  "featured": false,
+  "addedAt": "2026-02-07",
+  "x402": {
+    "discoveryUrl": "https://marketplace.proxies.sx/api/ad-spy/run",
+    "wellKnown": "https://marketplace.proxies.sx/.well-known/x402.json"
+  }
+}
