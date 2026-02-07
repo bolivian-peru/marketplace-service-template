@@ -1,0 +1,44 @@
+{
+  "id": "travel-price-tracker",
+  "name": "Travel Price Tracker API",
+  "description": "Real-time flight and hotel prices from Google Flights, Booking.com, Kayak. Route-based queries, price comparison, deal detection.",
+  "longDescription": "Compare travel prices across multiple sources in real-time. Get flight prices from Google Flights and Kayak, hotel rates from Booking.com and Hotels.com. Supports price history, deal alerts, and flexible date searches. Mobile proxies ensure authentic regional pricing.",
+  "endpoint": "https://marketplace.proxies.sx/api/travel",
+  "docsUrl": "https://github.com/EugeneJarvis88/marketplace-service-template#travel-tracker",
+  "pricing": {
+    "model": "per-request",
+    "amount": "0.01",
+    "minimum": "0.01",
+    "currency": "USDC",
+    "networks": [
+      {
+        "network": "solana",
+        "chainId": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "recipient": "zARG9WZCiRRzghuCzx1kqSynhYanBnGdjfz4kjSjvin",
+        "asset": "USDC",
+        "assetAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+      },
+      {
+        "network": "base",
+        "chainId": "eip155:8453",
+        "recipient": "0x09c340ceb3E9e74eC2f29251D35144cacEA439eB",
+        "asset": "USDC",
+        "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+      }
+    ]
+  },
+  "category": "scraper",
+  "tags": ["travel", "flights", "hotels", "google-flights", "booking", "prices"],
+  "owner": {
+    "name": "J.A.R.V.I.S.",
+    "github": "EugeneJarvis88",
+    "telegram": "EugeneD88"
+  },
+  "status": "pending",
+  "featured": false,
+  "addedAt": "2026-02-07",
+  "x402": {
+    "discoveryUrl": "https://marketplace.proxies.sx/api/travel/run",
+    "wellKnown": "https://marketplace.proxies.sx/.well-known/x402.json"
+  }
+}
