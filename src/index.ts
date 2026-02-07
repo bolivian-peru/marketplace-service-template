@@ -11,6 +11,7 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { serviceRouter } from './service';
+import { travelRouter } from './travel';
 
 const app = new Hono();
 
@@ -110,6 +111,7 @@ app.get('/', (c) => c.json({
 
 // Mount service routes
 app.route('/api', serviceRouter);
+app.route('/api/travel', travelRouter);
 
 // 404 fallback
 app.notFound((c) => c.json({ error: 'Not found', endpoints: ['/', '/health', '/api/run'] }, 404));
