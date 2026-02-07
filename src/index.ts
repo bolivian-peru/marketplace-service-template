@@ -19,6 +19,7 @@ const app = new Hono();
 app.use('*', logger());
 
 app.use('*', cors({
+  origin: '*',
   allowHeaders: ['Content-Type', 'Payment-Signature', 'X-Payment-Signature', 'X-Payment-Network'],
   exposeHeaders: ['X-Payment-Settled', 'X-Payment-TxHash', 'Retry-After'],
 }));
@@ -122,4 +123,5 @@ app.onError((err, c) => {
 export default {
   port: parseInt(process.env.PORT || '3000'),
   fetch: app.fetch,
+  idleTimeout: 60, // 60 seconds for browser scraping
 };
