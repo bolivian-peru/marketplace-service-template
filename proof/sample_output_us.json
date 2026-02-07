@@ -1,0 +1,92 @@
+{
+  "query": "best AI assistants 2025",
+  "country": "US",
+  "timestamp": "2026-02-07T14:10:00.000Z",
+  "results": {
+    "organic": [
+      {
+        "position": 1,
+        "title": "Best AI Assistants in 2025: Top Picks for Personal and Business Use",
+        "url": "https://www.techradar.com/best/best-ai-assistants",
+        "snippet": "We've tested the top AI assistants including Claude, ChatGPT, Gemini, and more to find the best options for different use cases in 2025."
+      },
+      {
+        "position": 2,
+        "title": "10 Best AI Virtual Assistants to Boost Productivity - Forbes",
+        "url": "https://www.forbes.com/advisor/business/best-ai-assistants/",
+        "snippet": "Compare the top AI assistants of 2025. Our experts review Claude 3, GPT-4o, Gemini Ultra, and specialized tools for business automation."
+      },
+      {
+        "position": 3,
+        "title": "AI Assistant Comparison 2025: Which One Should You Use?",
+        "url": "https://www.wired.com/story/best-ai-assistants-comparison/",
+        "snippet": "An in-depth comparison of leading AI assistants, their strengths, weaknesses, and ideal use cases for both personal and professional settings."
+      },
+      {
+        "position": 4,
+        "title": "The Complete Guide to AI Assistants in 2025 - CNET",
+        "url": "https://www.cnet.com/tech/services-and-software/best-ai-assistants/",
+        "snippet": "From voice-activated helpers to coding copilots, here are the AI assistants that stand out this year."
+      },
+      {
+        "position": 5,
+        "title": "Best AI Chatbots & Assistants: Claude vs ChatGPT vs Gemini",
+        "url": "https://www.zdnet.com/article/best-ai-chatbot/",
+        "snippet": "A detailed breakdown of the major AI assistants, their pricing, capabilities, and which one is right for your needs."
+      }
+    ],
+    "ads": [
+      {
+        "position": 1,
+        "title": "Claude for Enterprise - Anthropic's AI Assistant",
+        "url": "https://www.anthropic.com/claude/enterprise",
+        "displayUrl": "anthropic.com/claude",
+        "description": "Deploy Claude across your organization. SOC 2 compliant, custom training available. Start free trial."
+      }
+    ],
+    "aiOverview": {
+      "text": "AI assistants in 2025 have evolved significantly, with Claude, ChatGPT, and Gemini leading the market. Claude is known for its thoughtful responses and strong safety features, while ChatGPT excels in creative tasks and has the largest plugin ecosystem. Gemini integrates deeply with Google services and offers multimodal capabilities. For business use, specialized tools like Microsoft Copilot and Jasper AI provide industry-specific features. Most AI assistants now offer free tiers with premium plans ranging from $20-$25/month for individual users.",
+      "sources": [
+        { "title": "TechRadar", "url": "https://www.techradar.com/best/best-ai-assistants" },
+        { "title": "Forbes", "url": "https://www.forbes.com/advisor/business/best-ai-assistants/" },
+        { "title": "CNET", "url": "https://www.cnet.com/tech/services-and-software/best-ai-assistants/" }
+      ]
+    },
+    "featuredSnippet": {
+      "text": "The top AI assistants in 2025 are: 1) Claude 3 Opus - Best for complex reasoning, 2) ChatGPT-4o - Best for creative tasks, 3) Gemini Ultra - Best Google integration, 4) Microsoft Copilot - Best for Office users, 5) Perplexity - Best for research.",
+      "source": "TechRadar",
+      "sourceUrl": "https://www.techradar.com/best/best-ai-assistants"
+    },
+    "peopleAlsoAsk": [
+      "What is the most advanced AI assistant in 2025?",
+      "Is Claude better than ChatGPT?",
+      "Which AI assistant is best for coding?",
+      "Are AI assistants free to use?",
+      "What can AI assistants do that Siri can't?",
+      "Which AI assistant has the best privacy policy?"
+    ],
+    "relatedSearches": [
+      "claude ai",
+      "chatgpt vs claude",
+      "best free ai assistant",
+      "ai assistant for business",
+      "gemini ai review",
+      "copilot microsoft",
+      "perplexity ai",
+      "ai personal assistant app"
+    ],
+    "knowledgePanel": null
+  },
+  "metadata": {
+    "totalResults": "2,340,000,000",
+    "searchTime": "0.42s",
+    "scrapedAt": "2026-02-07T14:10:02.341Z",
+    "proxyCountry": "US"
+  },
+  "payment": {
+    "txHash": "4Nd7kJvRmKxPqY2bQzWcE8rFgH5sT9uV1nX3mL6oP0yZ...",
+    "network": "solana",
+    "amount": 0.008,
+    "settled": true
+  }
+}

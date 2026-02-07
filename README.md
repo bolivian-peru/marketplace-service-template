@@ -1,243 +1,241 @@
-# Marketplace Service Template
+# 🔍 Google SERP + AI Search Scraper
 
-**Turn AI agent traffic into passive USDC income.**
+Production-quality Google SERP scraping service with AI Overview extraction. Built for the Proxies.sx marketplace.
 
-Fork this repo → edit one file → deploy → start earning.
+## ✨ Features
 
-You provide the idea. We provide 145+ mobile devices across 6 countries, x402 payment rails, and the marketplace to find customers.
+- **Browser Rendering** — Uses Playwright with stealth settings, not regex HTML parsing
+- **AI Overview Extraction** — Captures JavaScript-rendered SGE/AI Overview content
+- **Mobile Proxy Support** — Routes through real 4G/5G mobile IPs via Proxies.sx
+- **x402 USDC Payments** — Pay-per-query via Solana (~400ms) or Base (~2s)
+- **Multi-Geo Support** — US, UK, DE, FR, ES, IT, CA, AU
+- **Structured JSON Output** — Organic results, ads, featured snippets, PAA, related searches
 
-## 💰 The Economics
+## 📊 Output Schema
 
-You're arbitraging infrastructure. Buy proxy bandwidth wholesale, sell API calls retail.
+```json
+{
+  "query": "best laptops 2025",
+  "country": "US",
+  "timestamp": "2025-02-07T14:00:00.000Z",
+  "results": {
+    "organic": [
+      { "position": 1, "title": "...", "url": "...", "snippet": "..." }
+    ],
+    "ads": [
+      { "position": 1, "title": "...", "url": "...", "displayUrl": "...", "description": "..." }
+    ],
+    "aiOverview": {
+      "text": "AI-generated summary...",
+      "sources": [{ "title": "...", "url": "..." }]
+    },
+    "featuredSnippet": {
+      "text": "...",
+      "source": "...",
+      "sourceUrl": "..."
+    },
+    "peopleAlsoAsk": ["question1", "question2"],
+    "relatedSearches": ["term1", "term2"],
+    "knowledgePanel": { "title": "...", "description": "..." }
+  },
+  "metadata": {
+    "totalResults": "1,234,567",
+    "searchTime": "0.45s",
+    "scrapedAt": "2025-02-07T14:00:00.000Z",
+    "proxyCountry": "US"
+  }
+}
+```
 
-**Proxy cost:** $4/GB shared, $8/GB private ([live pricing](https://api.proxies.sx/v1/x402/pricing))
+## 💰 Pricing
 
-Your margin depends on what you're scraping:
+- **$0.008 USDC per query** (less than 1 cent)
+- Accepts Solana USDC (~400ms settlement)
+- Accepts Base USDC (~2s settlement)
 
-| Use Case | Avg Size | Reqs/GB | Cost/Req | You Charge | Margin |
-|----------|----------|---------|----------|------------|--------|
-| JSON APIs | ~10 KB | 100k | $0.00004 | $0.001 | **97%** |
-| Text extraction | ~50 KB | 20k | $0.0002 | $0.005 | **96%** |
-| HTML (no images) | ~200 KB | 5k | $0.0008 | $0.005 | **84%** |
-| Full pages | ~2 MB | 500 | $0.008 | $0.02 | **60%** |
+## 🚀 Quick Start
 
-**Example: Text scraper at 10k req/day**
-- Traffic: ~0.5 GB/day → $2/day proxy cost
-- Revenue: $0.005 × 10k = $50/day
-- **Profit: $48/day (~$1,400/mo)**
-
-**Key:** Optimize response size. Return text, not full HTML. Skip images. The template's `proxyFetch()` returns text by default (50KB cap).
-
-### Why This Works
-
-1. **AI agents pay automatically** — x402 protocol, no invoicing, no chasing payments
-2. **Real mobile IPs** — bypass blocks that kill datacenter scrapers
-3. **Zero customer support** — API works or returns error, agents handle retries
-4. **Passive income** — deploy once, earn while you sleep
-
-## 🛠️ What to Build
-
-Services that need real browser + real IP. AI agents will pay for these:
-
-| Service Idea | Complexity | Price Range | Why Mobile IP Matters |
-|--------------|------------|-------------|----------------------|
-| **SERP Scraper** | Easy | $0.005-0.02/query | Google blocks datacenter IPs |
-| **Social Media Scraper** | Easy | $0.01-0.05/profile | Twitter/LinkedIn/Instagram detection |
-| **Price Monitor** | Easy | $0.005-0.01/check | E-commerce anti-bot systems |
-| **Ad Verification** | Medium | $0.02-0.10/check | Must appear as real mobile user |
-| **Review Scraper** | Easy | $0.01-0.03/page | Yelp/TripAdvisor/Amazon blocks |
-| **Lead Generator** | Medium | $0.05-0.20/lead | Directory scraping + enrichment |
-| **Screenshot Service** | Medium | $0.01-0.05/shot | Needs real browser fingerprint |
-| **Form Submitter** | Medium | $0.10-0.50/submit | Account creation, signups |
-| **Captcha Page Solver** | Hard | $0.05-0.20/solve | Cloudflare/Akamai challenges |
-
-**Pro tip:** Start simple. A focused SERP scraper making $5/day beats a complex service making $0/day.
-
-## Quick Start
+### 1. Clone & Install
 
 ```bash
-# Fork this repo, then:
-git clone https://github.com/bolivian-peru/marketplace-service-template
-# Or your fork: git clone https://github.com/YOUR_USERNAME/marketplace-service-template
-cd marketplace-service-template
+git clone https://github.com/EugeneJarvis88/google-serp-ai-scraper
+cd google-serp-ai-scraper
+npm install
+npx playwright install chromium
+```
 
+### 2. Configure
+
+```bash
 cp .env.example .env
-# Edit .env: set WALLET_ADDRESS + PROXY_* credentials
-
-bun install
-bun run dev
+# Edit .env with your wallet and proxy credentials
 ```
 
-Test it:
+### 3. Run
+
 ```bash
+npm run dev
+```
+
+### 4. Test
+
+```bash
+# Health check
 curl http://localhost:3000/health
-# → {"status":"healthy","service":"my-service",...}
 
-curl http://localhost:3000/
-# → Service discovery JSON (AI agents read this)
+# Demo endpoint (no payment required)
+curl "http://localhost:3000/api/demo?q=best+laptops+2025&country=US"
 
-curl http://localhost:3000/api/run?url=https://example.com
-# → 402 with payment instructions (this is correct!)
+# Production endpoint (requires x402 payment)
+curl "http://localhost:3000/api/run?q=best+laptops+2025&country=US"
+# Returns 402 with payment instructions
 ```
 
-## Edit One File
-
-**`src/service.ts`** — change three values and the handler:
-
-```typescript
-const SERVICE_NAME = 'my-scraper';       // Your service name
-const PRICE_USDC = 0.005;               // Price per request ($)
-const DESCRIPTION = 'What it does';      // For AI agents
-
-serviceRouter.get('/run', async (c) => {
-  // ... payment check + verification (already wired) ...
-
-  // YOUR LOGIC HERE:
-  const result = await proxyFetch('https://target.com');
-  return c.json({ data: await result.text() });
-});
-```
-
-Everything else (server, CORS, rate limiting, payment verification, proxy helper) works out of the box.
-
-## How x402 Payment Works
+## 🔐 x402 Payment Flow
 
 ```
-AI Agent                         Your Service                    Blockchain
-   │                                  │                              │
-   │─── GET /api/run ────────────────►│                              │
-   │◄── 402 {price, wallet, nets} ────│                              │
-   │                                  │                              │
-   │─── Send USDC ──────────────────────────────────────────────────►│
-   │◄── tx confirmed ◄──────────────────────────────────────────────│
-   │                                  │                              │
-   │─── GET /api/run ────────────────►│                              │
-   │    Payment-Signature: <tx_hash>  │─── verify tx on-chain ──────►│
-   │                                  │◄── confirmed ◄──────────────│
-   │◄── 200 {result} ────────────────│                              │
+AI Agent                     SERP Service                  Blockchain
+    │                             │                             │
+    │─── GET /api/run ───────────►│                             │
+    │◄── 402 {price, wallet} ─────│                             │
+    │                             │                             │
+    │─── Send USDC ──────────────────────────────────────────────►│
+    │◄── tx confirmed ◄──────────────────────────────────────────│
+    │                             │                             │
+    │─── GET /api/run ───────────►│                             │
+    │    Payment-Signature: <tx>  │─── verify on-chain ─────────►│
+    │                             │◄── confirmed ◄──────────────│
+    │◄── 200 {results} ───────────│                             │
 ```
 
-Supports **Solana** (~400ms, ~$0.0001 gas) and **Base** (~2s, ~$0.01 gas).
+## 🌐 Architecture
 
-## What's Included
+```
+Client Request
+      │
+      ▼
+┌─────────────────┐
+│   x402 Gate     │ ← Verify USDC payment on-chain
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│  Playwright     │ ← Stealth browser with anti-detect
+│  + Stealth      │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│  Mobile Proxy   │ ← Real 4G/5G IP from Proxies.sx
+│  (Proxies.sx)   │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│     Google      │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│  DOM Parser     │ ← Extract structured data
+└────────┬────────┘
+         │
+         ▼
+   JSON Response
+```
 
-| File | Purpose | Edit? |
-|------|---------|-------|
-| `src/service.ts` | Your service logic, pricing, description | **✏️ YES** |
-| `src/index.ts` | Server, CORS, rate limiting, discovery | No |
-| `src/payment.ts` | On-chain USDC verification (Solana + Base) | No |
-| `src/proxy.ts` | Proxy credentials + fetch with retry | No |
-| `CLAUDE.md` | Instructions for AI agents editing this repo | No |
-| `SECURITY.md` | Security features and production checklist | Read it |
-| `Dockerfile` | Multi-stage build, non-root, health check | No |
+## 🛡️ Edge Cases Handled
 
-## Security
+- ✅ **CAPTCHA Detection** — Detects and reports, retries with fresh IP
+- ✅ **Cookie Consent** — Auto-accepts across all supported geos
+- ✅ **Rate Limiting** — 60 requests/min per IP (configurable)
+- ✅ **Pagination** — Supports pages 1-10 via `?page=N`
+- ✅ **Replay Protection** — Each tx hash accepted only once
+- ✅ **SSRF Protection** — Private/internal URLs blocked
 
-Built in by default:
+## 📁 Project Structure
 
-- ✅ **On-chain payment verification** — Solana + Base RPCs, not trust-the-header
-- ✅ **Replay prevention** — Each tx hash accepted only once
-- ✅ **SSRF protection** — Private/internal URLs blocked
-- ✅ **Rate limiting** — Per-IP, configurable (default 60/min)
-- ✅ **Security headers** — nosniff, DENY framing, no-referrer
+```
+src/
+├── index.ts      # Server, CORS, rate limiting, discovery
+├── service.ts    # SERP scraping logic + x402 gate
+├── browser.ts    # Playwright stealth configuration
+├── parser.ts     # Google SERP DOM parser
+├── payment.ts    # On-chain USDC verification
+└── proxy.ts      # Mobile proxy configuration
+```
 
-See [SECURITY.md](SECURITY.md) for production hardening.
+## 🔧 Environment Variables
 
-## Get Proxy Credentials
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `WALLET_ADDRESS` | Solana wallet for receiving USDC | Yes |
+| `WALLET_ADDRESS_BASE` | Base wallet (if different) | No |
+| `PROXY_HOST` | Proxies.sx host | Yes |
+| `PROXY_HTTP_PORT` | Proxy port | Yes |
+| `PROXY_USER` | Proxy username | Yes |
+| `PROXY_PASS` | Proxy password | Yes |
+| `PROXY_COUNTRY` | Default country (US, UK, DE, etc) | No |
+| `PORT` | Server port (default: 3000) | No |
+| `RATE_LIMIT` | Requests per minute (default: 60) | No |
 
-**Option A:** Dashboard → [client.proxies.sx](https://client.proxies.sx)
+## 📝 API Reference
 
-**Option B:** x402 API (no account):
+### GET /api/run
+
+Scrape Google SERP for a query.
+
+**Parameters:**
+- `q` (required) — Search query
+- `country` (optional) — Country code: US, UK, DE, FR, ES, IT, CA, AU
+- `page` (optional) — Page number 1-10
+
+**Headers:**
+- `Payment-Signature` — Transaction hash (Solana or Base)
+- `X-Payment-Network` — Optional: "solana" or "base"
+
+**Response:** Full SERP JSON (see schema above)
+
+### GET /api/demo
+
+Demo endpoint without payment (uses datacenter IP, may trigger CAPTCHA).
+
+### GET /health
+
+Health check and service info.
+
+## 🚢 Deployment
+
+### Docker
+
 ```bash
-curl https://api.proxies.sx/v1/x402/proxy?country=US&traffic=1
-# Returns 402 → pay USDC → get credentials
+docker build -t serp-scraper .
+docker run -p 3000:3000 --env-file .env serp-scraper
 ```
 
-**Option C:** MCP Server (59 tools):
-```bash
-npx -y @proxies-sx/mcp-server
-```
+### Railway / Fly.io / Render
 
-## Deploy
+Connect repo → auto-detects Dockerfile → deploy
 
-```bash
-# Docker
-docker build -t my-service .
-docker run -p 3000:3000 --env-file .env my-service
+## 💡 Why Mobile Proxy is Required
 
-# Any VPS with Bun
-bun install --production && bun run start
+Google aggressively blocks datacenter IPs. Without a real mobile IP:
+- CAPTCHA appears within 1-2 requests
+- No AI Overview (JavaScript not fully rendered)
+- Inconsistent results
 
-# Railway / Fly.io / Render
-# Just connect the repo — Dockerfile detected automatically
-```
+With Proxies.sx mobile proxy:
+- Real 4G/5G residential IP
+- Appears as normal mobile user
+- Full JavaScript rendering
+- AI Overview extraction works
 
-## 🚀 List on Marketplace = Get Discovered
-
-Your service needs customers. The [Proxies.sx Marketplace](https://agents.proxies.sx/marketplace/) is where AI agents discover services to pay for.
-
-**How to get listed:**
-
-1. Deploy your service (any public URL)
-2. DM [@proxyforai](https://t.me/proxyforai) or [@sxproxies](https://x.com/sxproxies) with:
-   - Service URL
-   - What it does
-   - Price per request
-   - Your wallet address
-3. We verify it works → list it → AI agents start paying you
-
-**What you get:**
-- Featured in marketplace skill file (AI agents read this)
-- Included in MCP server tool discovery
-- Promoted to our agent network
-
-## Bounty Board
-
-**$200 bounties** for builders. Each bounty pays **$200 in $SX token** upon approval.
-
-| # | Service | Reward | Required | Claim | Status |
-|---|---------|--------|----------|-------|--------|
-| 1 | ~~YouTube Transcript Scraper~~ | $200 in $SX token | proxy + x402 | — | **DONE** |
-| 2 | **Google SERP + AI Search Scraper** | $200 in $SX token | proxy + browser + x402 | [#1](https://github.com/bolivian-peru/marketplace-service-template/issues/1) | OPEN |
-| 3 | **Gmail Account Creator** | $200 in $SX token | proxy + browser + x402 | [#2](https://github.com/bolivian-peru/marketplace-service-template/issues/2) | OPEN |
-| 4 | **Instagram Account Creator** | $200 in $SX token | proxy + browser + x402 | [#3](https://github.com/bolivian-peru/marketplace-service-template/issues/3) | OPEN |
-
-**Rules:**
-1. Must use Proxies.sx mobile proxies
-2. Must gate with x402 USDC payments
-3. Must be a working, deployable service
-4. Claim by commenting on the issue linked above
-5. $200 in $SX token paid after Maya reviews and approves
-
-**See the full bounty board:** [agents.proxies.sx/marketplace/#bounties](https://agents.proxies.sx/marketplace/#bounties)
-
-## Links
-
-| Resource | URL |
-|----------|-----|
-| Marketplace | [agents.proxies.sx/marketplace](https://agents.proxies.sx/marketplace/) |
-| Skill File | [agents.proxies.sx/skill.md](https://agents.proxies.sx/skill.md) |
-| x402 SDK | [@proxies-sx/x402-core](https://www.npmjs.com/package/@proxies-sx/x402-core) |
-| MCP Server | [@proxies-sx/mcp-server](https://www.npmjs.com/package/@proxies-sx/mcp-server) |
-| Proxy Pricing | [api.proxies.sx/v1/x402/pricing](https://api.proxies.sx/v1/x402/pricing) |
-| API Docs | [api.proxies.sx/docs/api](https://api.proxies.sx/docs/api) |
-| Telegram | [@proxyforai](https://t.me/proxyforai) |
-| Twitter | [@sxproxies](https://x.com/sxproxies) |
-
-## License
+## 📜 License
 
 MIT — fork it, ship it, profit.
 
----
+## 🔗 Links
 
-**Ready to start earning?**
-
-```bash
-git clone https://github.com/bolivian-peru/marketplace-service-template
-cd marketplace-service-template
-cp .env.example .env
-# Add your wallet + proxy credentials
-bun install && bun run dev
-```
-
-Questions? [@proxyforai](https://t.me/proxyforai) · [@sxproxies](https://x.com/sxproxies)
+- [Proxies.sx Marketplace](https://agents.proxies.sx/marketplace/)
+- [x402 SDK](https://www.npmjs.com/package/@proxies-sx/x402-core)
+- [Bounty Issue](https://github.com/bolivian-peru/marketplace-service-template/issues/1)
