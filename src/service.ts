@@ -1,11 +1,4 @@
-/**
- * ┌─────────────────────────────────────────────────┐
- * │    Google SERP + AI Search Scraper (Bounty #1)  │
- * │  Browser-first approach for reliable scraping   │
- * │  Handles AI Overview, Featured Snippets, PAA    │
- * └─────────────────────────────────────────────────┘
- */
-
+import { chromium, firefox, type Browser, type Page } from 'playwright';
 import { Hono } from 'hono';
 import { getProxy } from './proxy';
 import { extractPayment, verifyPayment, build402Response } from './payment';
@@ -15,10 +8,7 @@ export const serviceRouter = new Hono();
 // ─── SERVICE CONFIGURATION ─────────────────────────────
 const SERVICE_NAME = 'google-serp-ai-scraper';
 const PRICE_USDC = 0.01;  // $0.01 per query
-const DESCRIPTION = 'Scrape Google SERPs with AI Overview, Featured Snippets, and People Also Ask using real browser rendering and mobile IPs.';
-
-// Browser API configuration
-const BROWSER_ENDPOINT = process.env.BROWSER_ENDPOINT || 'https://browser.proxies.sx';
+const DESCRIPTION = 'Scrape Google SERPs with AI Overview, Featured Snippets, and People Also Ask using real local browser rendering and mobile IPs.';
 
 const OUTPUT_SCHEMA = {
   input: {
@@ -69,86 +59,7 @@ interface SerpResults {
   relatedSearches: string[];
 }
 
-interface BrowserSession {
-  sessionId: string;
-  sessionToken: string;
-}
-
-// ─── BROWSER SESSION MANAGEMENT ─────────────────────────
-
-async function createBrowserSession(
-  country: string,
-  proxy: { host: string; port: number; user: string; pass: string },
-): Promise<BrowserSession | null> {
-  const endpoint = BROWSER_ENDPOINT.replace(/\/$/, '');
-  const internalKey = process.env.BROWSER_INTERNAL_KEY;
-
-  if (!internalKey) {
-    console.error('BROWSER_INTERNAL_KEY not set');
-    return null;
-  }
-
-  const createRes = await fetch(`${endpoint}/v1/internal/sessions`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Internal-Key': internalKey,
-    },
-    body: JSON.stringify({
-      durationMinutes: 10,
-      country,
-      proxy: {
-        server: `${proxy.host}:${proxy.port}`,
-        username: proxy.user,
-        password: proxy.pass,
-        type: 'http',
-      },
-    }),
-  });
-
-  if (!createRes.ok) {
-    console.error('Failed to create browser session:', await createRes.text());
-    return null;
-  }
-
-  const data = await createRes.json() as { session_id?: string; session_token?: string };
-  if (!data.session_id || !data.session_token) return null;
-
-  return {
-    sessionId: data.session_id,
-    sessionToken: data.session_token,
-  };
-}
-
-async function browserCommand(
-  sessionId: string,
-  token: string,
-  payload: Record<string, any>,
-): Promise<any> {
-  const endpoint = BROWSER_ENDPOINT.replace(/\/$/, '');
-
-  const res = await fetch(`${endpoint}/v1/sessions/${sessionId}/command`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
-    body: JSON.stringify(payload),
-  });
-
-  if (!res.ok) {
-    const text = await res.text();
-    console.error('Browser command failed:', text);
-    return null;
-  }
-
-  return await res.json();
-}
-
-async function closeBrowserSession(sessionId: string): Promise<void> {
-  const endpoint = BROWSER_ENDPOINT.replace(/\/$/, '');
-  await fetch(`${endpoint}/v1/sessions/${sessionId}`, { method: 'DELETE' }).catch(() => { });
-}
+// ─── BROWSER UTILITIES ─────────────────────────────────
 
 async function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -156,25 +67,21 @@ async function sleep(ms: number): Promise<void> {
 
 // ─── CONSENT / CAPTCHA HANDLING ─────────────────────────
 
-async function handleConsentAndCaptcha(
-  sessionId: string,
-  token: string,
-): Promise<{ success: boolean; captchaDetected: boolean }> {
-  // Check for consent screen (EU cookie consent)
-  const acceptConsent = await browserCommand(sessionId, token, {
-    action: 'click',
-    selector: 'button#L2AGLb, button[aria-label*="Accept"], form[action*="consent"] button',
-    timeout: 2000,
-  });
+async function handleConsentAndCaptcha(page: Page): Promise<{ success: boolean; captchaDetected: boolean }> {
+  try {
+    // Check for consent screen (EU cookie consent)
+    const consentButton = await page.waitForSelector('button#L2AGLb, button[aria-label*="Accept"], form[action*="consent"] button', { timeout: 3000 }).catch(() => null);
 
-  if (acceptConsent) {
-    await sleep(1500);
+    if (consentButton) {
+      await consentButton.click();
+      await sleep(1500);
+    }
+  } catch (e) {
+    // Ignore if not found
   }
 
-  // Check for CAPTCHA
-  const contentRes = await browserCommand(sessionId, token, { action: 'content' });
-  const html = typeof contentRes?.content === 'string' ? contentRes.content : '';
-
+  // Check for CAPTCHA indicators in HTML
+  const html = await page.content();
   const captchaIndicators = [
     'unusual traffic',
     'captcha',
@@ -193,27 +100,7 @@ async function handleConsentAndCaptcha(
 
 // ─── GOOGLE SEARCH & DOM EXTRACTION ─────────────────────
 
-function buildGoogleUrl(
-  query: string,
-  num: number,
-  gl: string,
-  hl: string,
-): string {
-  const params = new URLSearchParams({
-    q: query,
-    num: String(num),
-    gl,
-    hl,
-    pws: '0',
-    safe: 'active',
-  });
-  return `https://www.google.com/search?${params.toString()}`;
-}
-
-async function extractSerpFromBrowser(
-  sessionId: string,
-  token: string,
-): Promise<SerpResults> {
+async function extractSerpFromPage(page: Page): Promise<SerpResults> {
   const results: SerpResults = {
     organic: [],
     aiOverview: null,
@@ -222,171 +109,118 @@ async function extractSerpFromBrowser(
     relatedSearches: [],
   };
 
-  // Extract organic results using JavaScript evaluation in browser
-  const organicRes = await browserCommand(sessionId, token, {
-    action: 'evaluate',
-    script: `
-      (() => {
-        const results = [];
-        // Multiple selectors for organic results (Google changes these)
-        const containers = document.querySelectorAll('div.g, div[data-hveid] > div.g, div.MjjYud > div.g');
-        let position = 1;
-        
-        containers.forEach(container => {
-          const linkEl = container.querySelector('a[href^="http"]:not([href*="google.com"])');
-          const titleEl = container.querySelector('h3');
-          const snippetEl = container.querySelector('[data-sncf], [data-snf], .VwiC3b, .lEBKkf, span.aCOpRe');
-          
-          if (linkEl && titleEl) {
-            const url = linkEl.href;
-            const title = titleEl.textContent?.trim() || '';
-            const snippet = snippetEl?.textContent?.trim() || '';
-            
-            // Skip if URL is google or already seen
-            if (url && title && !url.includes('google.com/search')) {
-              results.push({ position: position++, title, url, snippet });
-            }
-          }
-        });
-        
-        return results.slice(0, 20);
-      })()
-    `,
+  // Organic Results
+  results.organic = await page.evaluate(() => {
+    const items: OrganicResult[] = [];
+    const containers = document.querySelectorAll('div.g, div[data-hveid] > div.g, div.MjjYud > div.g');
+    let position = 1;
+
+    containers.forEach(container => {
+      const linkEl = container.querySelector('a[href^="http"]:not([href*="google.com"])') as HTMLAnchorElement;
+      const titleEl = container.querySelector('h3');
+      const snippetEl = container.querySelector('[data-sncf], [data-snf], .VwiC3b, .lEBKkf, span.aCOpRe');
+
+      if (linkEl && titleEl) {
+        const url = linkEl.href;
+        const title = titleEl.textContent?.trim() || '';
+        const snippet = snippetEl?.textContent?.trim() || '';
+
+        if (url && title && !url.includes('google.com/search')) {
+          items.push({ position: position++, title, url, snippet });
+        }
+      }
+    });
+    return items.slice(0, 20);
   });
 
-  if (organicRes?.result && Array.isArray(organicRes.result)) {
-    results.organic = organicRes.result;
-  }
+  // AI Overview
+  results.aiOverview = await page.evaluate(() => {
+    const aiContainer = document.querySelector('[data-attrid="ai_overview"]') ||
+      document.querySelector('div[data-sgrd]') ||
+      document.querySelector('.wDYxhc[data-md]');
 
-  // Extract AI Overview
-  const aiRes = await browserCommand(sessionId, token, {
-    action: 'evaluate',
-    script: `
-      (() => {
-        // Look for AI Overview container
-        const aiContainer = document.querySelector('[data-attrid="ai_overview"]') ||
-                           document.querySelector('div[data-sgrd]') ||
-                           document.querySelector('.wDYxhc[data-md]');
-        
-        if (!aiContainer) return null;
-        
-        const text = aiContainer.textContent?.trim() || '';
-        if (text.length < 50) return null;
-        
-        // Extract sources from AI Overview
-        const sources = [];
-        const sourceLinks = aiContainer.querySelectorAll('a[href^="http"]');
-        sourceLinks.forEach(link => {
-          const title = link.textContent?.trim() || '';
-          const url = link.href;
-          if (title && url && !url.includes('google.com')) {
-            sources.push({ title: title.slice(0, 100), url });
-          }
-        });
-        
-        return {
-          text: text.slice(0, 4000),
-          sources: sources.slice(0, 5),
-        };
-      })()
-    `,
+    if (!aiContainer) return null;
+
+    const text = aiContainer.textContent?.trim() || '';
+    if (text.length < 50) return null;
+
+    const sources: Array<{ title: string; url: string }> = [];
+    const sourceLinks = aiContainer.querySelectorAll('a[href^="http"]');
+    sourceLinks.forEach(link => {
+      const l = link as HTMLAnchorElement;
+      const title = l.textContent?.trim() || '';
+      const url = l.href;
+      if (title && url && !url.includes('google.com')) {
+        sources.push({ title: title.slice(0, 100), url });
+      }
+    });
+
+    return {
+      text: text.slice(0, 4000),
+      sources: sources.slice(0, 5),
+    };
   });
 
-  if (aiRes?.result) {
-    results.aiOverview = aiRes.result;
-  }
+  // Featured Snippet
+  results.featuredSnippet = await page.evaluate(() => {
+    const snippetContainer = document.querySelector('.xpdopen .kno-rdesc, .xpdopen .ILfuVd, div.xpdopen span[data-ved], .co8aDb');
+    const linkEl = snippetContainer?.closest('.xpdopen')?.querySelector('a[href^="http"]') as HTMLAnchorElement ||
+      snippetContainer?.parentElement?.querySelector('a[href^="http"]') as HTMLAnchorElement;
 
-  // Extract Featured Snippet
-  const snippetRes = await browserCommand(sessionId, token, {
-    action: 'evaluate',
-    script: `
-      (() => {
-        // Featured snippet is usually in a block-component or xpdopen
-        const snippetContainer = document.querySelector('.xpdopen .kno-rdesc, .xpdopen .ILfuVd, div.xpdopen span[data-ved], .co8aDb');
-        const linkEl = snippetContainer?.closest('.xpdopen')?.querySelector('a[href^="http"]') ||
-                       snippetContainer?.parentElement?.querySelector('a[href^="http"]');
-        
-        if (!snippetContainer) return null;
-        
-        const text = snippetContainer.textContent?.trim() || '';
-        if (text.length < 20) return null;
-        
-        const url = linkEl?.href || '';
-        const source = linkEl?.textContent?.trim() || new URL(url).hostname || '';
-        
-        return { text: text.slice(0, 1000), source, url };
-      })()
-    `,
+    if (!snippetContainer) return null;
+
+    const text = snippetContainer.textContent?.trim() || '';
+    if (text.length < 20) return null;
+
+    const url = linkEl?.href || '';
+    const source = linkEl?.textContent?.trim() || (url ? new URL(url).hostname : '');
+
+    return { text: text.slice(0, 1000), source, url };
   });
 
-  if (snippetRes?.result) {
-    results.featuredSnippet = snippetRes.result;
-  }
+  // People Also Ask
+  results.peopleAlsoAsk = await page.evaluate(() => {
+    const questions: string[] = [];
+    const paaItems = document.querySelectorAll('[data-sgrd="true"] [jsname], div.related-question-pair, div[data-q]');
 
-  // Extract People Also Ask
-  const paaRes = await browserCommand(sessionId, token, {
-    action: 'evaluate',
-    script: `
-      (() => {
-        const questions = [];
-        // PAA questions are in expandable divs
-        const paaItems = document.querySelectorAll('[data-sgrd="true"] [jsname], div.related-question-pair, div[data-q]');
-        
-        paaItems.forEach(item => {
-          const text = item.getAttribute('data-q') || item.textContent?.trim() || '';
-          if (text && text.length > 10 && text.length < 200) {
-            questions.push(text);
-          }
-        });
-        
-        // Also check for accordion-style questions
-        document.querySelectorAll('[role="button"][aria-expanded]').forEach(btn => {
-          const text = btn.textContent?.trim() || '';
-          if (text && text.endsWith('?') && text.length > 10 && text.length < 200) {
-            if (!questions.includes(text)) {
-              questions.push(text);
-            }
-          }
-        });
-        
-        return [...new Set(questions)].slice(0, 10);
-      })()
-    `,
+    paaItems.forEach(item => {
+      const text = item.getAttribute('data-q') || item.textContent?.trim() || '';
+      if (text && text.length > 10 && text.length < 200) {
+        questions.push(text);
+      }
+    });
+
+    document.querySelectorAll('[role="button"][aria-expanded]').forEach(btn => {
+      const text = btn.textContent?.trim() || '';
+      if (text && text.endsWith('?') && text.length > 10 && text.length < 200) {
+        if (!questions.includes(text)) {
+          questions.push(text);
+        }
+      }
+    });
+
+    return [...new Set(questions)].slice(0, 10);
   });
 
-  if (paaRes?.result && Array.isArray(paaRes.result)) {
-    results.peopleAlsoAsk = paaRes.result;
-  }
+  // Related Searches
+  results.relatedSearches = await page.evaluate(() => {
+    const searches: string[] = [];
+    const relatedItems = document.querySelectorAll('div.k8XOCe a, a.ZWRArf, div.s75CSd a, div.brs_col a');
 
-  // Extract Related Searches
-  const relatedRes = await browserCommand(sessionId, token, {
-    action: 'evaluate',
-    script: `
-      (() => {
-        const searches = [];
-        // Related searches at bottom of page
-        const relatedItems = document.querySelectorAll('div.k8XOCe a, a.ZWRArf, div.s75CSd a, div.brs_col a');
-        
-        relatedItems.forEach(item => {
-          const text = item.textContent?.trim() || '';
-          if (text && text.length > 2 && text.length < 100) {
-            searches.push(text);
-          }
-        });
-        
-        return [...new Set(searches)].slice(0, 8);
-      })()
-    `,
+    relatedItems.forEach(item => {
+      const text = item.textContent?.trim() || '';
+      if (text && text.length > 2 && text.length < 100) {
+        searches.push(text);
+      }
+    });
+
+    return [...new Set(searches)].slice(0, 8);
   });
-
-  if (relatedRes?.result && Array.isArray(relatedRes.result)) {
-    results.relatedSearches = relatedRes.result;
-  }
 
   return results;
 }
 
-// ─── MAIN SCRAPING FUNCTION WITH RETRY ─────────────────
+// ─── MAIN SCRAPPING FUNCTION ────────────────────────────
 
 async function scrapeGoogleSerp(
   query: string,
@@ -394,93 +228,167 @@ async function scrapeGoogleSerp(
   hl: string,
   num: number,
   maxRetries: number = 2,
-): Promise<{ success: boolean; results?: SerpResults; error?: string }> {
+): Promise<{ success: boolean; results?: SerpResults; error?: string; isBlock?: boolean }> {
   let lastError = '';
+  let browser: Browser | null = null;
+  const proxy = getProxy();
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    let session: BrowserSession | null = null;
-
     try {
-      const proxy = getProxy();
-      session = await createBrowserSession(gl, proxy);
+      // Rotate Engine: Chromium (0, 2) vs Firefox (1)
+      const engineName = attempt === 1 ? 'firefox' : 'chromium';
+      const engine = engineName === 'firefox' ? firefox : chromium;
+      const method = attempt % 2 === 0 ? 'organic' : 'direct';
 
-      if (!session) {
-        lastError = 'Failed to create browser session';
-        continue;
-      }
+      console.log(`[${attempt + 1}] Scraping via ${method} using ${engineName}`);
 
-      const { sessionId, sessionToken } = session;
-      const searchUrl = buildGoogleUrl(query, num, gl, hl);
-
-      // Navigate to Google
-      await browserCommand(sessionId, sessionToken, {
-        action: 'navigate',
-        url: searchUrl,
+      browser = await engine.launch({
+        headless: true,
+        proxy: {
+          server: `http://${proxy.host}:${proxy.port}`,
+          username: proxy.user,
+          password: proxy.pass,
+        },
+        args: engineName === 'chromium' ? [
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-blink-features=AutomationControlled',
+        ] : [],
       });
 
-      // Wait for search results to load
-      await browserCommand(sessionId, sessionToken, {
-        action: 'wait',
-        selector: '#search, #rso, div.g',
-        timeout: 15000,
-      });
+      const viewports = [
+        { width: 390, height: 844 },
+        { width: 430, height: 932 },
+        { width: 412, height: 915 },
+      ];
+      const selectedViewport = viewports[Math.floor(Math.random() * viewports.length)];
 
-      await sleep(1500);
+      const languages = ['en-US,en;q=0.9', 'en-GB,en;q=0.8', 'en-US,en;q=0.5'];
+      const selectedLang = languages[Math.floor(Math.random() * languages.length)];
 
-      // Handle consent screens and check for CAPTCHA
-      const { success, captchaDetected } = await handleConsentAndCaptcha(sessionId, sessionToken);
-
-      if (captchaDetected) {
-        lastError = 'CAPTCHA detected, retrying with new IP';
-        await closeBrowserSession(sessionId);
-        session = null;
-        continue;
-      }
-
-      // If consent was handled, wait and reload if needed
-      if (!success) {
-        await browserCommand(sessionId, sessionToken, {
-          action: 'navigate',
-          url: searchUrl,
-        });
-        await sleep(2000);
-      }
-
-      // Extract all results from rendered DOM
-      const results = await extractSerpFromBrowser(sessionId, sessionToken);
-
-      // Validate we got meaningful results
-      if (results.organic.length === 0) {
-        // Try scrolling to load more content
-        await browserCommand(sessionId, sessionToken, {
-          action: 'evaluate',
-          script: 'window.scrollTo(0, document.body.scrollHeight / 2);',
-        });
-        await sleep(1000);
-
-        // Re-extract
-        const retryResults = await extractSerpFromBrowser(sessionId, sessionToken);
-        if (retryResults.organic.length === 0) {
-          lastError = 'No organic results found - page may not have loaded correctly';
-          continue;
+      const context = await browser.newContext({
+        userAgent: attempt === 1
+          ? 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) FxiOS/120.0 Mobile/15E148 Safari/605.1.15'
+          : 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Mobile/15E148 Safari/604.1',
+        viewport: selectedViewport,
+        hasTouch: true,
+        extraHTTPHeaders: {
+          'Accept-Language': selectedLang,
         }
-        return { success: true, results: retryResults };
+      });
+
+      const page = await context.newPage();
+
+      if (engineName === 'chromium') {
+        await page.addInitScript(() => {
+          Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
+          Object.defineProperty(navigator, 'deviceMemory', { get: () => 8 });
+          Object.defineProperty(navigator, 'hardwareConcurrency', { get: () => 8 });
+          (window as any).chrome = { runtime: {} };
+        });
       }
 
-      return { success: true, results };
-    } catch (err: any) {
-      lastError = err.message || 'Unknown error';
-    } finally {
-      if (session) {
-        await closeBrowserSession(session.sessionId);
+      // OPTIMIZATION: Block heavy resources
+      await page.route('**/*', (route) => {
+        const type = route.request().resourceType();
+        if (['image', 'font', 'media'].includes(type) || route.request().url().includes('google-analytics')) {
+          return route.abort();
+        }
+        return route.continue();
+      });
+
+      // NEW: Log the actual public IP to verify rotation
+      try {
+        const ipResp = await page.goto('https://api.ipify.org?format=json', { timeout: 15000 });
+        if (ipResp?.ok()) {
+          const ipData = JSON.parse(await page.textContent('body') || '{}');
+          console.log(`[${attempt + 1}] Session IP: ${ipData.ip} (${engineName})`);
+        }
+      } catch (e: any) {
+        console.log(`[${attempt + 1}] Skip IP check: ${e.message}`);
       }
+
+      if (method === 'organic') {
+        const homeUrl = `https://www.google.com/?gl=${gl}&hl=en`;
+        console.log(`[${attempt + 1}] ${engineName}: Navigating to Home...`);
+        await page.goto(homeUrl, { waitUntil: 'domcontentloaded', timeout: 50000, referer: 'https://www.google.com/' });
+        console.log(`[${attempt + 1}] ${engineName}: Home Page Loaded.`);
+
+        await sleep(1000 + Math.random() * 2000); // Wait for mobile JS
+        console.log(`[${attempt + 1}] ${engineName}: Handling consent...`);
+        await handleConsentAndCaptcha(page);
+
+        const searchBox = await page.waitForSelector('textarea[name="q"], input[name="q"]', { timeout: 15000 }).catch(() => null);
+        if (!searchBox) {
+          const title = await page.title();
+          console.log(`[${attempt + 1}] ${engineName}: No search box. Title: ${title}`);
+          if (title.includes('Sorry')) {
+            await browser.close();
+            return {
+              success: false,
+              error: `Blocked on Home Page (${engineName})`,
+              isBlock: true
+            };
+          }
+        }
+        console.log(`[${attempt + 1}] ${engineName}: Search Box Found.`);
+
+        console.log(`[${attempt + 1}] ${engineName}: Typing query...`);
+        for (const char of query) {
+          await searchBox?.type(char, { delay: Math.random() * 100 + 50 });
+        }
+        await sleep(800);
+        await Promise.all([
+          page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 50000 }).catch(() => { }),
+          searchBox?.press('Enter')
+        ]);
+      } else {
+        const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}&gl=${gl}&hl=en&num=${num}`;
+        console.log(`[${attempt + 1}] ${engineName}: Navigating Direct...`);
+        await page.goto(searchUrl, { waitUntil: 'domcontentloaded', timeout: 50000, referer: 'https://www.google.com/' });
+        console.log(`[${attempt + 1}] ${engineName}: Search Page Loaded.`);
+        console.log(`[${attempt + 1}] ${engineName}: Handling consent...`);
+        await handleConsentAndCaptcha(page);
+      }
+
+      await sleep(3000 + Math.random() * 2000);
+
+      const currentUrl = page.url();
+      console.log(`[${attempt + 1}] ${engineName}: Current URL: ${currentUrl}`);
+      if (currentUrl.includes('google.com/sorry')) {
+        const content = await page.content();
+        await Bun.write(`debug_blocked_${engineName}_att${attempt}.html`, content);
+        await browser.close();
+        return {
+          success: false,
+          error: `Blocked via ${engineName} (429/Sorry)`,
+          isBlock: true
+        };
+      }
+
+      console.log(`[${attempt + 1}] ${engineName}: Extraction Start.`);
+      const results = await extractSerpFromPage(page);
+
+      if (results.organic.length === 0) {
+        lastError = 'No results extracted from page';
+        await browser.close();
+        continue;
+      }
+
+      console.log(`[${attempt + 1}] SUCCESS! Organic results found.`);
+      await browser.close();
+      return { success: true, results };
+
+    } catch (err: any) {
+      lastError = err.message;
+      if (browser) await browser.close();
     }
   }
 
   return { success: false, error: lastError };
 }
 
-// ─── MAIN ENDPOINT ──────────────────────────────────
+// ─── ENDPOINTS ─────────────────────────────────────────
 
 serviceRouter.get('/run', async (c) => {
   const walletAddress = process.env.WALLET_ADDRESS;
@@ -488,13 +396,7 @@ serviceRouter.get('/run', async (c) => {
     return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
   }
 
-  if (!process.env.BROWSER_INTERNAL_KEY) {
-    return c.json({ error: 'Service misconfigured: BROWSER_INTERNAL_KEY not set' }, 500);
-  }
-
-  // ── Step 1: Check for payment ──
   const payment = extractPayment(c);
-
   if (!payment) {
     return c.json(
       build402Response('/api/run', DESCRIPTION, PRICE_USDC, walletAddress, OUTPUT_SCHEMA),
@@ -502,83 +404,58 @@ serviceRouter.get('/run', async (c) => {
     );
   }
 
-  // ── Step 2: Verify payment on-chain ──
   const verification = await verifyPayment(payment, walletAddress, PRICE_USDC);
-
   if (!verification.valid) {
-    return c.json({
-      error: 'Payment verification failed',
-      reason: verification.error,
-      hint: 'Ensure the transaction is confirmed and sends the correct USDC amount to the recipient wallet.',
-    }, 402);
+    return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
   }
 
-  // ── Step 3: Validate input ──
   const query = c.req.query('q');
-  if (!query) {
-    return c.json({ error: 'Missing required parameter: ?q=<search_query>' }, 400);
-  }
+  if (!query) return c.json({ error: 'Missing parameter: q' }, 400);
 
   const gl = (c.req.query('gl') || 'US').toUpperCase();
   const hl = (c.req.query('hl') || 'en').toLowerCase();
-  const numParam = parseInt(c.req.query('num') || '10', 10);
-  const num = Number.isFinite(numParam) ? Math.min(Math.max(numParam, 1), 20) : 10;
+  const num = Math.min(parseInt(c.req.query('num') || '10', 10), 20);
 
-  if (!/^[A-Z]{2}$/.test(gl)) {
-    return c.json({ error: 'Invalid gl parameter. Use a 2-letter country code like US, GB, DE.' }, 400);
+  const scrapeResult = await scrapeGoogleSerp(query, gl, hl, num);
+
+  if (!scrapeResult.success || !scrapeResult.results) {
+    const status = scrapeResult.isBlock ? 429 : 502;
+    return c.json({ error: 'Scrape failed', message: scrapeResult.error }, status);
   }
-  if (!/^[a-z]{2}(-[a-z]{2})?$/.test(hl)) {
-    return c.json({ error: 'Invalid hl parameter. Use a language code like en or en-us.' }, 400);
-  }
 
-  // ── Step 4: Scrape Google with browser ──
-  try {
-    const proxy = getProxy();
-    const scrapeResult = await scrapeGoogleSerp(query, gl, hl, num);
-
-    if (!scrapeResult.success || !scrapeResult.results) {
-      return c.json({
-        error: 'Failed to scrape Google SERP',
-        message: scrapeResult.error,
-        hint: 'Google may be blocking requests. Try again with a different geo or query.',
-      }, 502);
-    }
-
-    // Set payment confirmation headers
-    c.header('X-Payment-Settled', 'true');
-    c.header('X-Payment-TxHash', payment.txHash);
-
-    return c.json({
-      query,
-      country: gl,
-      results: scrapeResult.results,
-      proxy: { country: proxy.country, type: 'mobile' },
-      payment: {
-        txHash: payment.txHash,
-        network: payment.network,
-        amount: verification.amount,
-        settled: true,
-      },
-    });
-  } catch (err: any) {
-    return c.json({
-      error: 'Service execution failed',
-      message: err.message,
-      hint: 'Browser automation or proxy may be temporarily unavailable.',
-    }, 502);
-  }
+  return c.json({
+    query,
+    country: gl,
+    results: scrapeResult.results,
+    proxy: { type: 'mobile' },
+    payment: { txHash: payment.txHash, settled: true },
+  });
 });
 
-// Also support GET for discovery (returns payment instructions)
 serviceRouter.get('/discover', async (c) => {
   const walletAddress = process.env.WALLET_ADDRESS;
-  if (!walletAddress) {
-    return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+  if (!walletAddress) return c.json({ error: 'WALLET_ADDRESS not set' }, 500);
+  return c.json({
+    ...build402Response('/api/run', DESCRIPTION, PRICE_USDC, walletAddress, OUTPUT_SCHEMA),
+    service: SERVICE_NAME,
+  });
+});
+
+serviceRouter.get('/test', async (c) => {
+  const query = c.req.query('q');
+  if (!query) return c.json({ error: 'Missing parameter: q' }, 400);
+  const gl = (c.req.query('gl') || 'US').toUpperCase();
+
+  const scrapeResult = await scrapeGoogleSerp(query, gl, 'en', 10);
+  if (!scrapeResult.success) {
+    const status = scrapeResult.isBlock ? 429 : 502;
+    return c.json({ error: scrapeResult.error }, status);
   }
 
-  const paymentInfo = build402Response('/api/run', DESCRIPTION, PRICE_USDC, walletAddress, OUTPUT_SCHEMA);
   return c.json({
-    ...paymentInfo,
-    service: SERVICE_NAME,
+    query,
+    results: scrapeResult.results,
+    _test: true,
+    _timestamp: new Date().toISOString()
   });
 });

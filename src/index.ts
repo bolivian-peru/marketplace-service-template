@@ -123,4 +123,5 @@ app.onError((err, c) => {
 export default {
   port: parseInt(process.env.PORT || '3000'),
   fetch: app.fetch,
+  idleTimeout: 60, // 60 seconds for browser scraping
 };

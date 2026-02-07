@@ -1,0 +1,1 @@
+{"error":"Proxy Verification Failed: goto: net::ERR_PROXY_CONNECTION_FAILED at https://api.ipify.org/?format=json\nCall log:\n\u001b[2m  - navigating to \"https://api.ipify.org/?format=json\", waiting until \"load\"\u001b[22m\n"}
