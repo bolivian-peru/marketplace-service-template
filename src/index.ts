@@ -11,6 +11,7 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { serviceRouter } from './service';
+import { travelRouter } from './travel';
 
 const app = new Hono();
 
@@ -19,6 +20,7 @@ const app = new Hono();
 app.use('*', logger());
 
 app.use('*', cors({
+  origin: '*',
   allowHeaders: ['Content-Type', 'Payment-Signature', 'X-Payment-Signature', 'X-Payment-Network'],
   exposeHeaders: ['X-Payment-Settled', 'X-Payment-TxHash', 'Retry-After'],
 }));
@@ -109,6 +111,7 @@ app.get('/', (c) => c.json({
 
 // Mount service routes
 app.route('/api', serviceRouter);
+app.route('/api/travel', travelRouter);
 
 // 404 fallback
 app.notFound((c) => c.json({ error: 'Not found', endpoints: ['/', '/health', '/api/run'] }, 404));

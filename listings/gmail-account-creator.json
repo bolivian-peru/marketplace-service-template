@@ -1,0 +1,51 @@
+{
+  "id": "gmail-account-creator",
+  "name": "Gmail Account Creator",
+  "description": "Create Gmail accounts using real mobile IPs and antidetect browser. Returns email and password.",
+  "longDescription": "Automated Gmail account registration using Proxies.sx mobile proxies and Camoufox antidetect browser. Each API call creates a new Gmail account and returns the credentials. Uses real 4G/5G mobile IPs to bypass datacenter blocks and unique browser fingerprints to avoid detection. Supports custom names, birthdate, and gender parameters.",
+  "endpoint": "https://your-deployed-url.com",
+  "docsUrl": "https://github.com/bolivian-peru/marketplace-service-template",
+  "pricing": {
+    "model": "per-request",
+    "amount": "0.50",
+    "currency": "USDC",
+    "networks": [
+      {
+        "network": "solana",
+        "chainId": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "recipient": "YOUR_SOLANA_WALLET_ADDRESS",
+        "asset": "USDC",
+        "assetAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+      },
+      {
+        "network": "base",
+        "chainId": "eip155:8453",
+        "recipient": "YOUR_BASE_WALLET_ADDRESS",
+        "asset": "USDC",
+        "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+      }
+    ]
+  },
+  "category": "automation",
+  "tags": ["gmail", "account", "creator", "email", "automation", "mobile-proxy", "antidetect"],
+  "features": [
+    "Real 4G/5G mobile IPs (bypass Google's datacenter blocks)",
+    "Camoufox antidetect browser (unique fingerprint per session)",
+    "Custom name, birthdate, gender parameters",
+    "Auto-generated secure passwords",
+    "Returns full credentials as JSON",
+    "x402 USDC payments (Solana or Base)"
+  ],
+  "owner": {
+    "name": "Your Name",
+    "github": "your-github-username",
+    "twitter": "your-twitter",
+    "telegram": "your-telegram"
+  },
+  "status": "pending",
+  "featured": false,
+  "addedAt": "2026-02-06",
+  "x402": {
+    "discoveryUrl": "https://your-deployed-url.com/api/run"
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "routes": [
+    {
+      "origin": "JFK",
+      "destination": "LAX",
+      "date": "2026-03-01",
+      "type": "flight"
+    },
+    {
+      "origin": "LHR",
+      "destination": "CDG",
+      "date": "2026-03-05",
+      "type": "flight"
+    },
+    {
+      "origin": "SFO",
+      "destination": "SEA",
+      "date": "2026-03-10",
+      "type": "flight"
+    },
+    {
+      "origin": "NYC",
+      "destination": "NYC",
+      "date": "2026-03-15",
+      "type": "hotel",
+      "nights": 2
+    },
+    {
+      "origin": "LON",
+      "destination": "LON",
+      "date": "2026-03-20",
+      "type": "hotel",
+      "nights": 3
+    }
+  ]
+}
