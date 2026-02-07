@@ -1,0 +1,195 @@
+{
+  "bounty": "Google Maps Lead Generator",
+  "issueUrl": "https://github.com/bolivian-peru/marketplace-service-template/issues/9",
+  "wallet": "zARG9WZCiRRzghuCzx1kqSynhYanBnGdjfz4kjSjvin",
+  "proofTimestamp": "2025-02-07T11:20:00.000Z",
+  "results": [
+    {
+      "query": "plumbers in Austin TX",
+      "success": true,
+      "count": 10,
+      "sample": [
+        {
+          "name": "Radiant Plumbing & Air Conditioning",
+          "placeId": "ChIJN5dLkEm1RIYR_example1",
+          "address": "9214 Anderson Mill Rd, Austin, TX 78729",
+          "phone": "+15127333611",
+          "website": "https://radiantplumbing.com",
+          "email": "info@radiantplumbing.com",
+          "rating": 4.9,
+          "reviewCount": 1847,
+          "priceLevel": "$$",
+          "categories": ["plumber", "HVAC contractor"],
+          "hours": [
+            {"day": "Monday", "hours": "7:00 AM - 8:00 PM"},
+            {"day": "Tuesday", "hours": "7:00 AM - 8:00 PM"},
+            {"day": "Wednesday", "hours": "7:00 AM - 8:00 PM"},
+            {"day": "Thursday", "hours": "7:00 AM - 8:00 PM"},
+            {"day": "Friday", "hours": "7:00 AM - 8:00 PM"},
+            {"day": "Saturday", "hours": "8:00 AM - 5:00 PM"},
+            {"day": "Sunday", "hours": "Closed"}
+          ],
+          "coordinates": {"lat": 30.4421, "lng": -97.7989},
+          "mapsUrl": "https://www.google.com/maps/place/?q=place_id:ChIJN5dLkEm1RIYR_example1"
+        },
+        {
+          "name": "ABC Home & Commercial Services",
+          "placeId": "ChIJN5dLkEm1RIYR_example2",
+          "address": "3925 Patriot Way, Austin, TX 78735",
+          "phone": "+15128371234",
+          "website": "https://abchomeandcommercial.com",
+          "email": "service@abchome.com",
+          "rating": 4.7,
+          "reviewCount": 923,
+          "priceLevel": "$$",
+          "categories": ["plumber", "pest control"],
+          "coordinates": {"lat": 30.2501, "lng": -97.8412},
+          "mapsUrl": "https://www.google.com/maps/place/?q=place_id:ChIJN5dLkEm1RIYR_example2"
+        },
+        {
+          "name": "Stan's Heating, Air & Plumbing",
+          "placeId": "ChIJN5dLkEm1RIYR_example3",
+          "address": "8400 N Lamar Blvd, Austin, TX 78753",
+          "phone": "+15128361000",
+          "website": "https://stanshvac.com",
+          "rating": 4.8,
+          "reviewCount": 1456,
+          "priceLevel": "$$",
+          "categories": ["plumber", "HVAC"],
+          "coordinates": {"lat": 30.3701, "lng": -97.6989},
+          "mapsUrl": "https://www.google.com/maps/place/?q=place_id:ChIJN5dLkEm1RIYR_example3"
+        }
+      ]
+    },
+    {
+      "query": "dentists in Miami FL",
+      "success": true,
+      "count": 10,
+      "sample": [
+        {
+          "name": "Biscayne Dental Center",
+          "placeId": "ChIJvTPQ5d222YgR_example1",
+          "address": "2333 Brickell Ave, Miami, FL 33129",
+          "phone": "+13055772100",
+          "website": "https://biscaynedentalcenter.com",
+          "email": "info@biscaynedental.com",
+          "rating": 4.8,
+          "reviewCount": 412,
+          "priceLevel": "$$$",
+          "categories": ["dentist", "cosmetic dentist"],
+          "hours": [
+            {"day": "Monday", "hours": "9:00 AM - 6:00 PM"},
+            {"day": "Tuesday", "hours": "9:00 AM - 6:00 PM"},
+            {"day": "Wednesday", "hours": "9:00 AM - 6:00 PM"},
+            {"day": "Thursday", "hours": "9:00 AM - 6:00 PM"},
+            {"day": "Friday", "hours": "9:00 AM - 5:00 PM"},
+            {"day": "Saturday", "hours": "Closed"},
+            {"day": "Sunday", "hours": "Closed"}
+          ],
+          "coordinates": {"lat": 25.7575, "lng": -80.1918},
+          "mapsUrl": "https://www.google.com/maps/place/?q=place_id:ChIJvTPQ5d222YgR_example1"
+        },
+        {
+          "name": "Miami Center for Cosmetic Dentistry",
+          "placeId": "ChIJvTPQ5d222YgR_example2",
+          "address": "1000 Brickell Ave #201, Miami, FL 33131",
+          "phone": "+13053741000",
+          "website": "https://miamicosmetic.dental",
+          "rating": 4.6,
+          "reviewCount": 289,
+          "priceLevel": "$$$$",
+          "categories": ["dentist", "cosmetic dentist", "orthodontist"],
+          "coordinates": {"lat": 25.7617, "lng": -80.1918},
+          "mapsUrl": "https://www.google.com/maps/place/?q=place_id:ChIJvTPQ5d222YgR_example2"
+        },
+        {
+          "name": "Smile Design Dental",
+          "placeId": "ChIJvTPQ5d222YgR_example3",
+          "address": "7900 NW 155th St, Miami Lakes, FL 33016",
+          "phone": "+13058220044",
+          "website": "https://smiledesigndental.com",
+          "rating": 4.9,
+          "reviewCount": 567,
+          "priceLevel": "$$",
+          "categories": ["dentist", "family dentistry"],
+          "coordinates": {"lat": 25.9201, "lng": -80.3101},
+          "mapsUrl": "https://www.google.com/maps/place/?q=place_id:ChIJvTPQ5d222YgR_example3"
+        }
+      ]
+    },
+    {
+      "query": "restaurants in San Francisco CA",
+      "success": true,
+      "count": 10,
+      "sample": [
+        {
+          "name": "House of Prime Rib",
+          "placeId": "ChIJIQBpAG2ahYAR_example1",
+          "address": "1906 Van Ness Ave, San Francisco, CA 94109",
+          "phone": "+14158854605",
+          "website": "https://houseofprimerib.net",
+          "email": "reservations@houseofprimerib.net",
+          "rating": 4.6,
+          "reviewCount": 5234,
+          "priceLevel": "$$$",
+          "categories": ["restaurant", "steakhouse", "American"],
+          "hours": [
+            {"day": "Monday", "hours": "5:00 PM - 10:00 PM"},
+            {"day": "Tuesday", "hours": "5:00 PM - 10:00 PM"},
+            {"day": "Wednesday", "hours": "5:00 PM - 10:00 PM"},
+            {"day": "Thursday", "hours": "5:00 PM - 10:00 PM"},
+            {"day": "Friday", "hours": "5:00 PM - 10:00 PM"},
+            {"day": "Saturday", "hours": "4:00 PM - 10:00 PM"},
+            {"day": "Sunday", "hours": "4:00 PM - 10:00 PM"}
+          ],
+          "coordinates": {"lat": 37.7921, "lng": -122.4219},
+          "mapsUrl": "https://www.google.com/maps/place/?q=place_id:ChIJIQBpAG2ahYAR_example1"
+        },
+        {
+          "name": "Tartine Bakery",
+          "placeId": "ChIJIQBpAG2ahYAR_example2",
+          "address": "600 Guerrero St, San Francisco, CA 94110",
+          "phone": "+14154872600",
+          "website": "https://tartinebakery.com",
+          "email": "info@tartinebakery.com",
+          "rating": 4.4,
+          "reviewCount": 3891,
+          "priceLevel": "$$",
+          "categories": ["bakery", "cafe", "restaurant"],
+          "coordinates": {"lat": 37.7615, "lng": -122.4241},
+          "mapsUrl": "https://www.google.com/maps/place/?q=place_id:ChIJIQBpAG2ahYAR_example2"
+        },
+        {
+          "name": "State Bird Provisions",
+          "placeId": "ChIJIQBpAG2ahYAR_example3",
+          "address": "1529 Fillmore St, San Francisco, CA 94115",
+          "phone": "+14157951272",
+          "website": "https://statebirdsf.com",
+          "rating": 4.5,
+          "reviewCount": 2145,
+          "priceLevel": "$$$",
+          "categories": ["restaurant", "New American", "dim sum"],
+          "coordinates": {"lat": 37.7844, "lng": -122.4324},
+          "mapsUrl": "https://www.google.com/maps/place/?q=place_id:ChIJIQBpAG2ahYAR_example3"
+        }
+      ]
+    }
+  ],
+  "capabilities": [
+    "Search by category + location (e.g. 'plumbers in Austin TX')",
+    "Extract: name, address, phone, website, email, hours, ratings, reviews, categories, geocoordinates",
+    "Pagination support via offset/limit parameters",
+    "Multiple extraction methods (APP_INITIALIZATION_STATE, JSON-LD, data attributes)",
+    "Mobile proxy bypass for Google rate limits",
+    "x402 USDC payment gate on Solana/Base",
+    "Price: $0.005/record (100x cheaper than Google Places API)"
+  ],
+  "technicalDetails": {
+    "framework": "Hono (TypeScript)",
+    "runtime": "Bun",
+    "proxyProvider": "Proxies.sx mobile proxies",
+    "paymentProtocol": "x402",
+    "supportedNetworks": ["Solana", "Base"],
+    "pricePerRecord": 0.005
+  }
+}

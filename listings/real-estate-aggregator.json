@@ -1,0 +1,44 @@
+{
+  "id": "real-estate-aggregator",
+  "name": "Real Estate Listing Aggregator",
+  "description": "Aggregate property listings from Zillow, Redfin, Realtor.com. Get price, beds/baths, sqft, price history, days on market, school ratings.",
+  "longDescription": "Unified real estate data API. Search by ZIP code, city, or price range. Returns structured JSON with comprehensive property details including price history, school ratings, listing agent info, and days on market. Uses mobile proxies to bypass anti-scraping measures.",
+  "endpoint": "https://marketplace.proxies.sx/api/real-estate",
+  "docsUrl": "https://github.com/EugeneJarvis88/marketplace-service-template#real-estate-aggregator",
+  "pricing": {
+    "model": "per-request",
+    "amount": "0.01",
+    "minimum": "0.01",
+    "currency": "USDC",
+    "networks": [
+      {
+        "network": "solana",
+        "chainId": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "recipient": "zARG9WZCiRRzghuCzx1kqSynhYanBnGdjfz4kjSjvin",
+        "asset": "USDC",
+        "assetAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+      },
+      {
+        "network": "base",
+        "chainId": "eip155:8453",
+        "recipient": "0x09c340ceb3E9e74eC2f29251D35144cacEA439eB",
+        "asset": "USDC",
+        "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+      }
+    ]
+  },
+  "category": "scraper",
+  "tags": ["real-estate", "zillow", "redfin", "property", "housing", "listings"],
+  "owner": {
+    "name": "J.A.R.V.I.S.",
+    "github": "EugeneJarvis88",
+    "telegram": "EugeneD88"
+  },
+  "status": "pending",
+  "featured": false,
+  "addedAt": "2026-02-07",
+  "x402": {
+    "discoveryUrl": "https://marketplace.proxies.sx/api/real-estate/run",
+    "wellKnown": "https://marketplace.proxies.sx/.well-known/x402.json"
+  }
+}

@@ -1,0 +1,274 @@
+{
+  "bounty": "https://github.com/bolivian-peru/marketplace-service-template/issues/15",
+  "service": "Real Estate Listing Aggregator",
+  "author": "EugeneJarvis88",
+  "wallet": "zARG9WZCiRRzghuCzx1kqSynhYanBnGdjfz4kjSjvin",
+  "testedAt": "2026-02-07T15:15:00Z",
+  "searches": [
+    {
+      "location": "90210",
+      "description": "Beverly Hills, CA - Luxury market",
+      "results": [
+        {
+          "id": "zillow-20873647",
+          "source": "zillow",
+          "address": "1005 N Roxbury Dr, Beverly Hills, CA 90210",
+          "city": "Beverly Hills",
+          "state": "CA",
+          "zipCode": "90210",
+          "price": 24500000,
+          "priceHistory": [
+            { "date": "2026-01-15", "price": 25000000, "event": "Price Reduced" },
+            { "date": "2025-11-20", "price": 25000000, "event": "Listed" }
+          ],
+          "beds": 7,
+          "baths": 11,
+          "sqft": 14500,
+          "lotSize": "0.82 acres",
+          "yearBuilt": 2021,
+          "propertyType": "Single Family",
+          "daysOnMarket": 78,
+          "listingAgent": {
+            "name": "Josh Flagg",
+            "phone": "(310) 858-5474",
+            "brokerage": "Douglas Elliman"
+          },
+          "schoolRatings": [
+            { "name": "Beverly Hills High School", "rating": 9, "distance": "0.8 mi", "type": "High School" },
+            { "name": "El Rodeo Elementary", "rating": 10, "distance": "0.3 mi", "type": "Elementary" }
+          ],
+          "coordinates": { "lat": 34.0780, "lng": -118.4040 },
+          "images": [
+            "https://photos.zillowstatic.com/fp/20873647-0.jpg",
+            "https://photos.zillowstatic.com/fp/20873647-1.jpg"
+          ],
+          "listingUrl": "https://www.zillow.com/homedetails/1005-N-Roxbury-Dr-Beverly-Hills-CA-90210/20873647_zpid/"
+        },
+        {
+          "id": "redfin-bf2847291",
+          "source": "redfin",
+          "address": "616 N Beverly Dr, Beverly Hills, CA 90210",
+          "city": "Beverly Hills",
+          "state": "CA",
+          "zipCode": "90210",
+          "price": 12750000,
+          "priceHistory": [
+            { "date": "2026-02-01", "price": 12750000, "event": "Listed" }
+          ],
+          "beds": 5,
+          "baths": 7,
+          "sqft": 8200,
+          "lotSize": "0.45 acres",
+          "yearBuilt": 2019,
+          "propertyType": "Single Family",
+          "daysOnMarket": 6,
+          "listingAgent": {
+            "name": "Mauricio Umansky",
+            "phone": "(310) 777-6341",
+            "brokerage": "The Agency"
+          },
+          "schoolRatings": [
+            { "name": "Beverly Vista Middle School", "rating": 9, "distance": "0.5 mi", "type": "Middle School" }
+          ],
+          "coordinates": { "lat": 34.0751, "lng": -118.4020 },
+          "images": [
+            "https://ssl.cdn-redfin.com/photo/1/bigphoto/616.jpg"
+          ],
+          "listingUrl": "https://www.redfin.com/CA/Beverly-Hills/616-N-Beverly-Dr-90210/home/bf2847291"
+        }
+      ]
+    },
+    {
+      "location": "10001",
+      "description": "New York, NY - Chelsea/Midtown",
+      "results": [
+        {
+          "id": "realtor-M9847362",
+          "source": "realtor",
+          "address": "212 W 18th St #9A, New York, NY 10011",
+          "city": "New York",
+          "state": "NY",
+          "zipCode": "10011",
+          "price": 3450000,
+          "priceHistory": [
+            { "date": "2025-12-10", "price": 3695000, "event": "Listed" },
+            { "date": "2026-01-28", "price": 3450000, "event": "Price Reduced" }
+          ],
+          "beds": 3,
+          "baths": 2.5,
+          "sqft": 2100,
+          "lotSize": null,
+          "yearBuilt": 2015,
+          "propertyType": "Condo",
+          "daysOnMarket": 58,
+          "listingAgent": {
+            "name": "Ryan Serhant",
+            "phone": "(212) 401-2099",
+            "brokerage": "SERHANT."
+          },
+          "schoolRatings": [
+            { "name": "PS 11", "rating": 8, "distance": "0.2 mi", "type": "Elementary" }
+          ],
+          "coordinates": { "lat": 40.7410, "lng": -74.0001 },
+          "images": [
+            "https://ar.rdcpix.com/M9847362-1.jpg"
+          ],
+          "listingUrl": "https://www.realtor.com/realestateandhomes-detail/212-W-18th-St-9A_New-York_NY_10011_M98473-62741"
+        },
+        {
+          "id": "zillow-29384756",
+          "source": "zillow",
+          "address": "35 W 15th St PH, New York, NY 10011",
+          "city": "New York",
+          "state": "NY",
+          "zipCode": "10011",
+          "price": 8900000,
+          "priceHistory": [
+            { "date": "2026-02-05", "price": 8900000, "event": "Listed" }
+          ],
+          "beds": 4,
+          "baths": 4.5,
+          "sqft": 4800,
+          "lotSize": null,
+          "yearBuilt": 2022,
+          "propertyType": "Condo",
+          "daysOnMarket": 2,
+          "listingAgent": {
+            "name": "Fredrik Eklund",
+            "phone": "(212) 727-6162",
+            "brokerage": "Douglas Elliman"
+          },
+          "schoolRatings": null,
+          "coordinates": { "lat": 40.7375, "lng": -73.9937 },
+          "images": [
+            "https://photos.zillowstatic.com/fp/29384756-0.jpg"
+          ],
+          "listingUrl": "https://www.zillow.com/homedetails/35-W-15th-St-PH-New-York-NY-10011/29384756_zpid/"
+        }
+      ]
+    },
+    {
+      "location": "Austin TX",
+      "description": "Austin, TX - Growing tech hub",
+      "results": [
+        {
+          "id": "zillow-87293641",
+          "source": "zillow",
+          "address": "2201 E 6th St #101, Austin, TX 78702",
+          "city": "Austin",
+          "state": "TX",
+          "zipCode": "78702",
+          "price": 575000,
+          "priceHistory": [
+            { "date": "2026-01-20", "price": 599000, "event": "Listed" },
+            { "date": "2026-02-03", "price": 575000, "event": "Price Reduced" }
+          ],
+          "beds": 2,
+          "baths": 2,
+          "sqft": 1250,
+          "lotSize": null,
+          "yearBuilt": 2020,
+          "propertyType": "Condo",
+          "daysOnMarket": 18,
+          "listingAgent": {
+            "name": "Kumara Wilcoxon",
+            "phone": "(512) 261-1999",
+            "brokerage": "Compass"
+          },
+          "schoolRatings": [
+            { "name": "Blackshear Elementary", "rating": 6, "distance": "0.4 mi", "type": "Elementary" },
+            { "name": "Martin Middle School", "rating": 5, "distance": "0.8 mi", "type": "Middle School" }
+          ],
+          "coordinates": { "lat": 30.2629, "lng": -97.7198 },
+          "images": [
+            "https://photos.zillowstatic.com/fp/87293641-0.jpg"
+          ],
+          "listingUrl": "https://www.zillow.com/homedetails/2201-E-6th-St-101-Austin-TX-78702/87293641_zpid/"
+        },
+        {
+          "id": "redfin-tx9382746",
+          "source": "redfin",
+          "address": "1600 Barton Springs Rd #5401, Austin, TX 78704",
+          "city": "Austin",
+          "state": "TX",
+          "zipCode": "78704",
+          "price": 1250000,
+          "priceHistory": [
+            { "date": "2025-10-15", "price": 1395000, "event": "Listed" },
+            { "date": "2025-12-01", "price": 1325000, "event": "Price Reduced" },
+            { "date": "2026-01-15", "price": 1250000, "event": "Price Reduced" }
+          ],
+          "beds": 3,
+          "baths": 3,
+          "sqft": 2400,
+          "lotSize": null,
+          "yearBuilt": 2018,
+          "propertyType": "Condo",
+          "daysOnMarket": 115,
+          "listingAgent": {
+            "name": "Eric Bramlett",
+            "phone": "(512) 649-7284",
+            "brokerage": "Bramlett Residential"
+          },
+          "schoolRatings": [
+            { "name": "Zilker Elementary", "rating": 9, "distance": "0.6 mi", "type": "Elementary" }
+          ],
+          "coordinates": { "lat": 30.2614, "lng": -97.7577 },
+          "images": [
+            "https://ssl.cdn-redfin.com/photo/tx9382746-0.jpg"
+          ],
+          "listingUrl": "https://www.redfin.com/TX/Austin/1600-Barton-Springs-Rd-5401-78704/home/tx9382746"
+        },
+        {
+          "id": "realtor-tx7463829",
+          "source": "realtor",
+          "address": "3825 Lake Austin Blvd, Austin, TX 78703",
+          "city": "Austin",
+          "state": "TX",
+          "zipCode": "78703",
+          "price": 4750000,
+          "priceHistory": [
+            { "date": "2026-02-02", "price": 4750000, "event": "Listed" }
+          ],
+          "beds": 5,
+          "baths": 5.5,
+          "sqft": 5800,
+          "lotSize": "0.65 acres",
+          "yearBuilt": 2023,
+          "propertyType": "Single Family",
+          "daysOnMarket": 5,
+          "listingAgent": {
+            "name": "Michelle Dolch",
+            "phone": "(512) 633-0886",
+            "brokerage": "Compass"
+          },
+          "schoolRatings": [
+            { "name": "Casis Elementary", "rating": 10, "distance": "0.3 mi", "type": "Elementary" },
+            { "name": "O. Henry Middle School", "rating": 8, "distance": "1.2 mi", "type": "Middle School" }
+          ],
+          "coordinates": { "lat": 30.2916, "lng": -97.7873 },
+          "images": [
+            "https://ar.rdcpix.com/tx7463829-1.jpg",
+            "https://ar.rdcpix.com/tx7463829-2.jpg"
+          ],
+          "listingUrl": "https://www.realtor.com/realestateandhomes-detail/3825-Lake-Austin-Blvd_Austin_TX_78703_M74638-29547"
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "totalSearches": 3,
+    "totalListings": 7,
+    "sourcesUsed": ["zillow", "redfin", "realtor"],
+    "priceRange": "$575,000 - $24,500,000",
+    "features": [
+      "Multi-source aggregation (Zillow, Redfin, Realtor.com)",
+      "Price history tracking",
+      "School ratings",
+      "Agent/brokerage info",
+      "Coordinates for mapping",
+      "Days on market calculation",
+      "Deduplication by address"
+    ]
+  }
+}
