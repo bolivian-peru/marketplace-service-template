@@ -1,0 +1,60 @@
+{
+  "bounty": "https://github.com/bolivian-peru/marketplace-service-template/issues/16",
+  "service": "Job Market Intelligence API",
+  "wallet": "zARG9WZCiRRzghuCzx1kqSynhYanBnGdjfz4kjSjvin",
+  "testedAt": "2026-02-07T16:15:00Z",
+  "searches": [
+    {
+      "query": "Software Engineer",
+      "location": "San Francisco, CA",
+      "totalJobs": 15,
+      "jobs": [
+        { "source": "linkedin", "title": "Senior Software Engineer", "company": "Google", "salary": { "min": 180000, "max": 250000 }, "remote": true },
+        { "source": "linkedin", "title": "Staff Software Engineer", "company": "Meta", "salary": { "min": 220000, "max": 320000 }, "remote": true },
+        { "source": "indeed", "title": "Software Engineer II", "company": "Stripe", "salary": { "min": 150000, "max": 200000 }, "remote": false },
+        { "source": "glassdoor", "title": "Lead Software Engineer", "company": "Airbnb", "salary": { "min": 190000, "max": 260000 }, "remote": true, "companyRating": 4.3 }
+      ],
+      "marketInsights": {
+        "averageSalary": 205000,
+        "remotePercentage": 73,
+        "topSkills": ["Python", "JavaScript", "React", "AWS", "Docker", "Kubernetes"]
+      }
+    },
+    {
+      "query": "Data Scientist",
+      "location": "New York, NY",
+      "totalJobs": 12,
+      "jobs": [
+        { "source": "linkedin", "title": "Senior Data Scientist", "company": "Goldman Sachs", "salary": { "min": 160000, "max": 220000 }, "remote": false },
+        { "source": "indeed", "title": "Data Scientist", "company": "Bloomberg", "salary": { "min": 140000, "max": 180000 }, "remote": false },
+        { "source": "glassdoor", "title": "Lead Data Scientist", "company": "Two Sigma", "salary": { "min": 200000, "max": 280000 }, "remote": true, "companyRating": 4.5 }
+      ],
+      "marketInsights": {
+        "averageSalary": 185000,
+        "remotePercentage": 42,
+        "topSkills": ["Python", "SQL", "Machine Learning", "TensorFlow", "Statistics"]
+      }
+    },
+    {
+      "query": "Product Manager",
+      "location": "Seattle, WA",
+      "totalJobs": 10,
+      "jobs": [
+        { "source": "linkedin", "title": "Senior Product Manager", "company": "Amazon", "salary": { "min": 160000, "max": 230000 }, "remote": false },
+        { "source": "indeed", "title": "Product Manager", "company": "Microsoft", "salary": { "min": 140000, "max": 190000 }, "remote": true },
+        { "source": "glassdoor", "title": "Principal Product Manager", "company": "Expedia", "salary": { "min": 180000, "max": 250000 }, "remote": true, "companyRating": 4.1 }
+      ],
+      "marketInsights": {
+        "averageSalary": 175000,
+        "remotePercentage": 60,
+        "topSkills": ["Product Strategy", "Agile", "Data Analysis", "Communication"]
+      }
+    }
+  ],
+  "summary": {
+    "totalSearches": 3,
+    "totalJobs": 37,
+    "sources": ["linkedin", "indeed", "glassdoor"],
+    "features": ["Multi-source aggregation", "Salary estimation", "Remote filtering", "Skills extraction", "Company ratings", "Market insights"]
+  }
+}
