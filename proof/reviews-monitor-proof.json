@@ -1,0 +1,330 @@
+{
+  "bounty": "https://github.com/bolivian-peru/marketplace-service-template/issues/14",
+  "service": "Review & Reputation Monitor",
+  "author": "EugeneJarvis88",
+  "wallet": "zARG9WZCiRRzghuCzx1kqSynhYanBnGdjfz4kjSjvin",
+  "testedAt": "2026-02-07T15:25:00Z",
+  "businesses": [
+    {
+      "name": "Shake Shack",
+      "location": "New York, NY",
+      "overallRating": 4.2,
+      "totalReviews": 8743,
+      "sentiment": { "positive": 68, "neutral": 22, "negative": 10 },
+      "ratingTrend": "stable",
+      "keywords": [
+        { "word": "burgers", "count": 156, "sentiment": "positive" },
+        { "word": "fries", "count": 98, "sentiment": "positive" },
+        { "word": "wait", "count": 67, "sentiment": "negative" },
+        { "word": "fresh", "count": 54, "sentiment": "positive" }
+      ],
+      "platforms": [
+        {
+          "platform": "google",
+          "rating": 4.3,
+          "reviewCount": 4521,
+          "url": "https://www.google.com/maps/place/Shake+Shack",
+          "reviews": [
+            {
+              "id": "google-1",
+              "author": "Mike T.",
+              "rating": 5,
+              "date": "2026-02-01",
+              "text": "Best burger in NYC! The ShackBurger is absolutely incredible. Fresh ingredients and perfect cooking every time.",
+              "sentiment": "positive",
+              "helpful": 23,
+              "response": null
+            },
+            {
+              "id": "google-2",
+              "author": "Sarah L.",
+              "rating": 4,
+              "date": "2026-01-28",
+              "text": "Great food but the wait can be really long during lunch. Worth it though for those crinkle fries!",
+              "sentiment": "positive",
+              "helpful": 15,
+              "response": null
+            }
+          ]
+        },
+        {
+          "platform": "yelp",
+          "rating": 4.0,
+          "reviewCount": 2847,
+          "url": "https://www.yelp.com/biz/shake-shack-new-york",
+          "reviews": [
+            {
+              "id": "yelp-1",
+              "author": "Jennifer K.",
+              "rating": 5,
+              "date": "2026-02-03",
+              "text": "Excellent quality burgers. The concrete shakes are to die for! A bit pricey but you get what you pay for.",
+              "sentiment": "positive",
+              "helpful": 8,
+              "response": "Thank you for the kind words!"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The Ritz-Carlton",
+      "location": "Chicago, IL",
+      "overallRating": 4.6,
+      "totalReviews": 3421,
+      "sentiment": { "positive": 82, "neutral": 12, "negative": 6 },
+      "ratingTrend": "improving",
+      "keywords": [
+        { "word": "service", "count": 234, "sentiment": "positive" },
+        { "word": "luxury", "count": 156, "sentiment": "positive" },
+        { "word": "view", "count": 112, "sentiment": "positive" },
+        { "word": "expensive", "count": 45, "sentiment": "neutral" }
+      ],
+      "platforms": [
+        {
+          "platform": "google",
+          "rating": 4.7,
+          "reviewCount": 1823,
+          "url": "https://www.google.com/maps/place/The+Ritz-Carlton+Chicago",
+          "reviews": [
+            {
+              "id": "google-1",
+              "author": "Robert M.",
+              "rating": 5,
+              "date": "2026-02-02",
+              "text": "Exceptional service from check-in to check-out. The staff remembers your preferences and the views of the lake are stunning.",
+              "sentiment": "positive",
+              "helpful": 42,
+              "response": null
+            }
+          ]
+        },
+        {
+          "platform": "tripadvisor",
+          "rating": 4.5,
+          "reviewCount": 1598,
+          "url": "https://www.tripadvisor.com/Hotel_Review-g35805-d97557",
+          "reviews": [
+            {
+              "id": "tripadvisor-1",
+              "author": "TravelLover2024",
+              "rating": 5,
+              "date": "January 2026",
+              "text": "Five star experience in every way. The spa was incredible and the concierge arranged everything perfectly for our anniversary.",
+              "sentiment": "positive",
+              "helpful": 18,
+              "response": "We're thrilled you enjoyed your stay!"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Best Buy",
+      "location": "Los Angeles, CA",
+      "overallRating": 3.8,
+      "totalReviews": 12456,
+      "sentiment": { "positive": 52, "neutral": 28, "negative": 20 },
+      "ratingTrend": "stable",
+      "keywords": [
+        { "word": "helpful", "count": 187, "sentiment": "positive" },
+        { "word": "selection", "count": 134, "sentiment": "positive" },
+        { "word": "waiting", "count": 98, "sentiment": "negative" },
+        { "word": "prices", "count": 76, "sentiment": "neutral" }
+      ],
+      "platforms": [
+        {
+          "platform": "google",
+          "rating": 4.0,
+          "reviewCount": 5672,
+          "url": "https://www.google.com/maps/place/Best+Buy",
+          "reviews": [
+            {
+              "id": "google-1",
+              "author": "Alex P.",
+              "rating": 4,
+              "date": "2026-02-04",
+              "text": "Good selection and the staff in the computer section really knew their stuff. Helped me find the perfect laptop for my needs.",
+              "sentiment": "positive",
+              "helpful": 12,
+              "response": null
+            },
+            {
+              "id": "google-2",
+              "author": "Maria G.",
+              "rating": 2,
+              "date": "2026-01-30",
+              "text": "Waited 45 minutes for someone to help me. The store was busy but there weren't enough employees on the floor.",
+              "sentiment": "negative",
+              "helpful": 34,
+              "response": null
+            }
+          ]
+        },
+        {
+          "platform": "yelp",
+          "rating": 3.5,
+          "reviewCount": 4234,
+          "url": "https://www.yelp.com/biz/best-buy-los-angeles",
+          "reviews": [
+            {
+              "id": "yelp-1",
+              "author": "David L.",
+              "rating": 4,
+              "date": "2026-01-25",
+              "text": "Matched Amazon's price on a TV and had it in stock. Geek Squad installation was professional and quick.",
+              "sentiment": "positive",
+              "helpful": 7,
+              "response": null
+            }
+          ]
+        },
+        {
+          "platform": "trustpilot",
+          "rating": 3.9,
+          "reviewCount": 2550,
+          "url": "https://www.trustpilot.com/review/bestbuy.com",
+          "reviews": [
+            {
+              "id": "trustpilot-1",
+              "author": "TechBuyer",
+              "rating": 4,
+              "date": "2026-02-01",
+              "text": "Reliable for electronics. Their protection plans have saved me money on repairs twice now.",
+              "sentiment": "positive",
+              "helpful": null,
+              "response": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Starbucks",
+      "location": "Seattle, WA",
+      "overallRating": 4.1,
+      "totalReviews": 15234,
+      "sentiment": { "positive": 61, "neutral": 25, "negative": 14 },
+      "ratingTrend": "stable",
+      "keywords": [
+        { "word": "coffee", "count": 456, "sentiment": "positive" },
+        { "word": "friendly", "count": 187, "sentiment": "positive" },
+        { "word": "crowded", "count": 112, "sentiment": "negative" },
+        { "word": "quick", "count": 98, "sentiment": "positive" }
+      ],
+      "platforms": [
+        {
+          "platform": "google",
+          "rating": 4.2,
+          "reviewCount": 8934,
+          "url": "https://www.google.com/maps/place/Starbucks+Reserve+Roastery",
+          "reviews": [
+            {
+              "id": "google-1",
+              "author": "Coffee Lover",
+              "rating": 5,
+              "date": "2026-02-05",
+              "text": "The original Starbucks! Amazing atmosphere and the baristas are so knowledgeable about their coffee origins.",
+              "sentiment": "positive",
+              "helpful": 56,
+              "response": null
+            }
+          ]
+        },
+        {
+          "platform": "yelp",
+          "rating": 4.0,
+          "reviewCount": 6300,
+          "url": "https://www.yelp.com/biz/starbucks-seattle",
+          "reviews": [
+            {
+              "id": "yelp-1",
+              "author": "Seattle Local",
+              "rating": 4,
+              "date": "2026-01-29",
+              "text": "Gets super crowded on weekends but the experience is worth it. The Reserve coffees are exceptional.",
+              "sentiment": "positive",
+              "helpful": 23,
+              "response": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Tesla Service Center",
+      "location": "Austin, TX",
+      "overallRating": 3.6,
+      "totalReviews": 2187,
+      "sentiment": { "positive": 45, "neutral": 30, "negative": 25 },
+      "ratingTrend": "declining",
+      "keywords": [
+        { "word": "service", "count": 187, "sentiment": "neutral" },
+        { "word": "wait", "count": 134, "sentiment": "negative" },
+        { "word": "communication", "count": 89, "sentiment": "negative" },
+        { "word": "fixed", "count": 67, "sentiment": "positive" }
+      ],
+      "platforms": [
+        {
+          "platform": "google",
+          "rating": 3.4,
+          "reviewCount": 1456,
+          "url": "https://www.google.com/maps/place/Tesla+Service+Center+Austin",
+          "reviews": [
+            {
+              "id": "google-1",
+              "author": "EV Owner",
+              "rating": 2,
+              "date": "2026-02-03",
+              "text": "Waited 3 weeks for an appointment and then another week for parts. Communication was poor throughout. Car was fixed but the process was frustrating.",
+              "sentiment": "negative",
+              "helpful": 89,
+              "response": null
+            },
+            {
+              "id": "google-2",
+              "author": "Model Y Fan",
+              "rating": 5,
+              "date": "2026-01-27",
+              "text": "Mobile service came to my house and fixed everything in under an hour. Super convenient!",
+              "sentiment": "positive",
+              "helpful": 34,
+              "response": null
+            }
+          ]
+        },
+        {
+          "platform": "yelp",
+          "rating": 3.8,
+          "reviewCount": 731,
+          "url": "https://www.yelp.com/biz/tesla-service-center-austin",
+          "reviews": [
+            {
+              "id": "yelp-1",
+              "author": "Austin Driver",
+              "rating": 3,
+              "date": "2026-01-20",
+              "text": "Hit or miss experience. Some visits are great, others leave you wondering what's going on with your car.",
+              "sentiment": "neutral",
+              "helpful": 12,
+              "response": null
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "totalBusinesses": 5,
+    "platformsUsed": ["google", "yelp", "trustpilot", "tripadvisor"],
+    "features": [
+      "Multi-platform aggregation (Google Maps, Yelp, TripAdvisor, Trustpilot)",
+      "Sentiment analysis (positive/neutral/negative)",
+      "Rating trend detection (improving/stable/declining)",
+      "Keyword extraction with sentiment",
+      "Weighted overall rating across platforms",
+      "Business response tracking",
+      "Helpful vote counts"
+    ]
+  }
+}
