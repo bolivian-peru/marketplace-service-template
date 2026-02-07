@@ -1,0 +1,53 @@
+{
+  "query": "wetter Berlin heute",
+  "country": "DE",
+  "timestamp": "2026-02-07T14:12:00.000Z",
+  "results": {
+    "organic": [
+      {
+        "position": 1,
+        "title": "Wetter Berlin - Wettervorhersage für Berlin - wetter.de",
+        "url": "https://www.wetter.de/deutschland/wetter-berlin-10178.html",
+        "snippet": "Aktuelles Wetter Berlin: Temperaturen, Niederschlag, Sonnenschein und mehr. Wettervorhersage für die nächsten 7 Tage."
+      },
+      {
+        "position": 2,
+        "title": "14-Tage-Wetter Berlin - wetteronline.de",
+        "url": "https://www.wetteronline.de/wetter/berlin",
+        "snippet": "Das 14-Tage-Wetter für Berlin mit Tages- und Nachttemperaturen, Niederschlagswahrscheinlichkeit und Windstärke."
+      },
+      {
+        "position": 3,
+        "title": "Wetter Berlin - Deutscher Wetterdienst",
+        "url": "https://www.dwd.de/DE/wetter/vorhersage_aktuell/berlin.html",
+        "snippet": "Offizielle Wettervorhersage des Deutschen Wetterdienstes für Berlin und Brandenburg."
+      }
+    ],
+    "ads": [],
+    "aiOverview": null,
+    "featuredSnippet": null,
+    "peopleAlsoAsk": [
+      "Wie wird das Wetter morgen in Berlin?",
+      "Wann wird es wärmer in Berlin?",
+      "Wie viel Grad hat es in Berlin?",
+      "Wird es heute regnen in Berlin?"
+    ],
+    "relatedSearches": [
+      "wetter berlin 7 tage",
+      "wetter berlin morgen",
+      "wetter berlin 14 tage",
+      "regenradar berlin",
+      "wetter potsdam"
+    ],
+    "knowledgePanel": {
+      "title": "Wetter in Berlin",
+      "description": "Aktuell: 8°C, bewölkt. Gefühlt: 5°C. Luftfeuchtigkeit: 78%. Wind: 15 km/h West"
+    }
+  },
+  "metadata": {
+    "totalResults": "234,000,000",
+    "searchTime": "0.29s",
+    "scrapedAt": "2026-02-07T14:12:00.543Z",
+    "proxyCountry": "DE"
+  }
+}

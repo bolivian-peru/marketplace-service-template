@@ -1,47 +1,74 @@
 /**
- * ┌─────────────────────────────────────────────────┐
- * │         ✏️  EDIT THIS FILE                       │
- * │  This is the ONLY file you need to change.      │
- * │  Everything else works out of the box.           │
- * └─────────────────────────────────────────────────┘
- *
- * Steps:
- *  1. Change SERVICE_NAME, PRICE_USDC, and DESCRIPTION
- *  2. Update the outputSchema to match your API contract
- *  3. Replace the logic inside the /run handler
- *  4. That's it. Deploy.
+ * ┌─────────────────────────────────────────────────────────────────┐
+ * │   Google SERP + AI Search Scraper                               │
+ * │   Production-quality scraper with browser rendering             │
+ * │   Supports: Organic, Ads, AI Overview, Featured Snippets, PAA   │
+ * └─────────────────────────────────────────────────────────────────┘
  */
 
 import { Hono } from 'hono';
-import { proxyFetch, getProxy } from './proxy';
+import { getProxy } from './proxy';
 import { extractPayment, verifyPayment, build402Response } from './payment';
+import { createStealthPage, closeBrowser } from './browser';
+import { parseGoogleSerp, SerpResults } from './parser';
 
 export const serviceRouter = new Hono();
 
-// ─── YOUR CONFIGURATION ─────────────────────────────
-// Change these three values to match your service.
+// ─── SERVICE CONFIGURATION ──────────────────────────
+const SERVICE_NAME = 'google-serp-ai-scraper';
+const PRICE_USDC = 0.008;  // $0.008 per query
+const DESCRIPTION = 'Google SERP scraper with AI Overview extraction. Uses real browser rendering through mobile proxies. Returns structured JSON with organic results, ads, AI overviews, featured snippets, and People Also Ask.';
 
-const SERVICE_NAME = 'web-scraper';
-const PRICE_USDC = 0.005;  // $0.005 per request (half a cent)
-const DESCRIPTION = 'Fetch any webpage through a real 4G/5G mobile IP. Returns clean text content.';
-
-// Describes what your API accepts and returns.
-// AI agents use this to understand your service contract.
 const OUTPUT_SCHEMA = {
   input: {
-    url: 'string — URL to fetch (required)',
+    q: 'string — Search query (required)',
+    country: 'string — Country code: US, UK, DE, FR (optional, default: US)',
+    page: 'number — Page number 1-10 (optional, default: 1)',
   },
   output: {
-    url: 'string — the URL that was fetched',
-    status: 'number — HTTP status code from the target',
-    text: 'string — page text content (max 50KB)',
-    contentLength: 'number — original content length in bytes',
-    proxy: '{ country: string, type: "mobile" }',
+    query: 'string — The search query',
+    country: 'string — Country used for search',
+    timestamp: 'string — ISO timestamp',
+    results: {
+      organic: '[{ position, title, url, snippet }] — Top 10 organic results',
+      ads: '[{ position, title, url, displayUrl, description }] — Sponsored ads',
+      aiOverview: '{ text, sources: [{ title, url }] } | null — AI Overview/SGE if present',
+      featuredSnippet: '{ text, source, sourceUrl } | null — Featured snippet if present',
+      peopleAlsoAsk: '[string] — People Also Ask questions',
+      relatedSearches: '[string] — Related search suggestions',
+      knowledgePanel: '{ title, description } | null — Knowledge panel if present',
+    },
+    metadata: {
+      totalResults: 'string — Approximate total results',
+      searchTime: 'string — Google search time',
+      scrapedAt: 'string — When scraping occurred',
+      proxyCountry: 'string — Proxy country used',
+    },
+    payment: {
+      txHash: 'string — Transaction hash',
+      network: 'string — Payment network (solana/base)',
+      amount: 'number — USDC amount paid',
+      settled: 'boolean — Payment confirmed',
+    },
   },
 };
 
-// ─── YOUR ENDPOINT ──────────────────────────────────
-// This is where your service logic lives.
+// Supported countries
+const SUPPORTED_COUNTRIES = ['US', 'UK', 'DE', 'FR', 'ES', 'IT', 'CA', 'AU'];
+
+// Google domains by country
+const GOOGLE_DOMAINS: Record<string, string> = {
+  US: 'google.com',
+  UK: 'google.co.uk',
+  DE: 'google.de',
+  FR: 'google.fr',
+  ES: 'google.es',
+  IT: 'google.it',
+  CA: 'google.ca',
+  AU: 'google.com.au',
+};
+
+// ─── SERP ENDPOINT ──────────────────────────────────
 
 serviceRouter.get('/run', async (c) => {
   const walletAddress = process.env.WALLET_ADDRESS;
@@ -53,8 +80,6 @@ serviceRouter.get('/run', async (c) => {
   const payment = extractPayment(c);
 
   if (!payment) {
-    // No payment header → return 402 with full payment instructions.
-    // AI agents parse this JSON to know what to pay and where.
     return c.json(
       build402Response('/api/run', DESCRIPTION, PRICE_USDC, walletAddress, OUTPUT_SCHEMA),
       402,
@@ -68,68 +93,182 @@ serviceRouter.get('/run', async (c) => {
     return c.json({
       error: 'Payment verification failed',
       reason: verification.error,
-      hint: 'Ensure the transaction is confirmed and sends the correct USDC amount to the recipient wallet.',
+      hint: 'Ensure the transaction is confirmed and sends the correct USDC amount.',
     }, 402);
   }
 
   // ── Step 3: Validate input ──
-  const url = c.req.query('url');
-  if (!url) {
-    return c.json({ error: 'Missing required parameter: ?url=<target_url>' }, 400);
+  const query = c.req.query('q');
+  if (!query) {
+    return c.json({ error: 'Missing required parameter: ?q=<search_query>' }, 400);
   }
 
-  // Basic URL validation — block private/internal networks
-  try {
-    const parsed = new URL(url);
-    if (!['http:', 'https:'].includes(parsed.protocol)) {
-      return c.json({ error: 'Only http:// and https:// URLs are allowed' }, 400);
-    }
-    const host = parsed.hostname.toLowerCase();
-    if (
-      host === 'localhost' ||
-      host.startsWith('127.') ||
-      host.startsWith('10.') ||
-      host.startsWith('192.168.') ||
-      host.startsWith('172.') ||
-      host === '169.254.169.254' ||
-      host.endsWith('.local') ||
-      host.endsWith('.internal')
-    ) {
-      return c.json({ error: 'Private/internal URLs are not allowed' }, 400);
-    }
-  } catch {
-    return c.json({ error: 'Invalid URL format' }, 400);
+  if (query.length > 200) {
+    return c.json({ error: 'Query too long. Maximum 200 characters.' }, 400);
   }
 
-  // ── Step 4: Your logic — fetch URL through mobile proxy ──
+  let country = (c.req.query('country') || 'US').toUpperCase();
+  if (!SUPPORTED_COUNTRIES.includes(country)) {
+    country = 'US';
+  }
+
+  let pageNum = parseInt(c.req.query('page') || '1');
+  if (isNaN(pageNum) || pageNum < 1 || pageNum > 10) {
+    pageNum = 1;
+  }
+
+  // ── Step 4: Scrape Google SERP ──
+  let result: SerpResults;
+  let context: any = null;
+  let page: any = null;
+
   try {
     const proxy = getProxy();
-    const response = await proxyFetch(url);
-    const text = await response.text();
-    const maxLen = 50_000; // 50KB cap
-
-    // Set payment confirmation headers
-    c.header('X-Payment-Settled', 'true');
-    c.header('X-Payment-TxHash', payment.txHash);
-
-    return c.json({
-      url,
-      status: response.status,
-      text: text.length > maxLen ? text.substring(0, maxLen) : text,
-      contentLength: text.length,
-      proxy: { country: proxy.country, type: 'mobile' },
-      payment: {
-        txHash: payment.txHash,
-        network: payment.network,
-        amount: verification.amount,
-        settled: true,
-      },
+    
+    // Create stealth browser page
+    const browser = await createStealthPage({ 
+      country, 
+      useProxy: true,
+      headless: true,
     });
+    context = browser.context;
+    page = browser.page;
+
+    // Build Google search URL
+    const domain = GOOGLE_DOMAINS[country] || 'google.com';
+    const start = (pageNum - 1) * 10;
+    const searchUrl = `https://www.${domain}/search?q=${encodeURIComponent(query)}&hl=en&gl=${country.toLowerCase()}${start > 0 ? `&start=${start}` : ''}`;
+
+    // Navigate and wait for content
+    await page.goto(searchUrl, { 
+      waitUntil: 'domcontentloaded',
+      timeout: 30000,
+    });
+
+    // Handle cookie consent if present
+    try {
+      const consentButton = await page.$('button[id*="agree"], button[aria-label*="Accept"], #L2AGLb');
+      if (consentButton) {
+        await consentButton.click();
+        await page.waitForTimeout(1000);
+      }
+    } catch {
+      // Consent not required or already accepted
+    }
+
+    // Check for CAPTCHA
+    const captchaPresent = await page.$('form[action*="sorry"], #captcha-form');
+    if (captchaPresent) {
+      throw new Error('CAPTCHA detected. Please retry with a different proxy.');
+    }
+
+    // Parse the SERP
+    result = await parseGoogleSerp(page, query, country);
+
   } catch (err: any) {
+    // Clean up on error
+    if (context) await context.close().catch(() => {});
+    
     return c.json({
-      error: 'Service execution failed',
+      error: 'Scraping failed',
       message: err.message,
-      hint: 'The target URL may be unreachable or the proxy may be temporarily unavailable.',
+      hint: 'The proxy may be blocked or Google returned an unusual response. Try again.',
+    }, 502);
+  } finally {
+    // Always clean up
+    if (context) await context.close().catch(() => {});
+  }
+
+  // Set payment confirmation headers
+  c.header('X-Payment-Settled', 'true');
+  c.header('X-Payment-TxHash', payment.txHash);
+
+  return c.json({
+    ...result,
+    payment: {
+      txHash: payment.txHash,
+      network: payment.network,
+      amount: verification.amount,
+      settled: true,
+    },
+  });
+});
+
+// ─── DEMO ENDPOINT (No payment required for testing) ──
+
+serviceRouter.get('/demo', async (c) => {
+  const query = c.req.query('q') || 'best laptops 2025';
+  const country = (c.req.query('country') || 'US').toUpperCase();
+
+  let context: any = null;
+
+  try {
+    const browser = await createStealthPage({ 
+      country, 
+      useProxy: false, // Demo without proxy
+      headless: true,
+    });
+    context = browser.context;
+    const page = browser.page;
+
+    const domain = GOOGLE_DOMAINS[country] || 'google.com';
+    const searchUrl = `https://www.${domain}/search?q=${encodeURIComponent(query)}&hl=en&gl=${country.toLowerCase()}`;
+
+    await page.goto(searchUrl, { 
+      waitUntil: 'domcontentloaded',
+      timeout: 30000,
+    });
+
+    // Handle consent
+    try {
+      const consentButton = await page.$('#L2AGLb, button[id*="agree"]');
+      if (consentButton) {
+        await consentButton.click();
+        await page.waitForTimeout(1000);
+      }
+    } catch {}
+
+    const result = await parseGoogleSerp(page, query, country);
+    
+    await context.close();
+
+    return c.json({
+      ...result,
+      _demo: true,
+      _note: 'This is a demo endpoint without mobile proxy. Production endpoint requires x402 payment.',
+    });
+
+  } catch (err: any) {
+    if (context) await context.close().catch(() => {});
+    
+    return c.json({
+      error: 'Demo scraping failed',
+      message: err.message,
     }, 502);
   }
+});
+
+// ─── HEALTH CHECK ───────────────────────────────────
+
+serviceRouter.get('/health', async (c) => {
+  return c.json({
+    status: 'healthy',
+    service: SERVICE_NAME,
+    version: '1.0.0',
+    features: [
+      'organic_results',
+      'ads',
+      'ai_overview',
+      'featured_snippets',
+      'people_also_ask',
+      'related_searches',
+      'knowledge_panel',
+    ],
+    supported_countries: SUPPORTED_COUNTRIES,
+    pricing: {
+      amount: PRICE_USDC,
+      currency: 'USDC',
+      networks: ['solana', 'base'],
+    },
+  });
 });

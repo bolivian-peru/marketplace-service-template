@@ -1,23 +1,36 @@
 {
-  "name": "marketplace-service-template",
+  "name": "google-serp-ai-scraper",
   "version": "1.0.0",
-  "description": "Fork → edit one file → deploy → earn USDC. Build x402-gated services on Proxies.sx mobile proxy infrastructure.",
+  "description": "Google SERP + AI Search Scraper with browser rendering, mobile proxy support, and x402 USDC payments",
   "scripts": {
-    "dev": "bun run --hot src/index.ts",
-    "start": "bun run src/index.ts",
+    "dev": "npx tsx --watch src/index.ts",
+    "start": "npx tsx src/index.ts",
+    "test": "npx tsx src/test.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "hono": "^4.6.0"
+    "hono": "^4.6.0",
+    "playwright": "^1.41.0"
   },
   "devDependencies": {
-    "@types/bun": "latest",
+    "@types/node": "^20.19.32",
+    "tsx": "^4.21.0",
     "typescript": "^5.0.0"
   },
-  "keywords": ["x402", "proxy", "marketplace", "usdc", "hono", "bun", "mobile-proxy", "ai-agents"],
+  "keywords": [
+    "x402",
+    "proxy",
+    "marketplace",
+    "usdc",
+    "hono",
+    "google-serp",
+    "ai-search",
+    "scraper",
+    "playwright"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/bolivian-peru/marketplace-service-template"
+    "url": "https://github.com/EugeneJarvis88/google-serp-ai-scraper"
   }
 }
