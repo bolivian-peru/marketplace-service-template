@@ -1,0 +1,12 @@
+{
+  "id": "mobile-serp-tracker",
+  "name": "Mobile SERP Tracker",
+  "description": "Track mobile search rankings on Google, Bing. Compare mobile vs desktop results, local pack, featured snippets.",
+  "endpoint": "https://marketplace.proxies.sx/api/mobile-serp",
+  "pricing": { "model": "per-request", "amount": "0.01", "currency": "USDC", "networks": [{ "network": "solana", "recipient": "zARG9WZCiRRzghuCzx1kqSynhYanBnGdjfz4kjSjvin" }] },
+  "category": "scraper",
+  "tags": ["seo", "serp", "mobile", "google", "rankings"],
+  "owner": { "github": "EugeneJarvis88" },
+  "status": "pending",
+  "addedAt": "2026-02-07"
+}
