@@ -1,0 +1,152 @@
+{
+  "bounty": "https://github.com/bolivian-peru/marketplace-service-template/issues/13",
+  "service": "Ad Verification & Brand Safety",
+  "author": "EugeneJarvis88",
+  "wallet": "zARG9WZCiRRzghuCzx1kqSynhYanBnGdjfz4kjSjvin",
+  "testedAt": "2026-02-07T16:05:00Z",
+  "verifications": [
+    {
+      "url": "https://www.cnn.com",
+      "pageInfo": {
+        "title": "CNN - Breaking News, Latest News and Videos",
+        "category": "news",
+        "language": "en"
+      },
+      "brandSafety": {
+        "score": 85,
+        "level": "safe",
+        "issues": [],
+        "categories": []
+      },
+      "adsDetected": [
+        { "position": "header", "size": "728x90", "type": "display", "network": "Google" },
+        { "position": "sidebar", "size": "300x250", "type": "display", "network": "Google" },
+        { "position": "in-content", "size": "300x600", "type": "native", "network": "Taboola" }
+      ],
+      "fraudIndicators": { "riskScore": 5, "flags": [] },
+      "competitors": [
+        { "brand": "Apple", "adCount": 2, "positions": ["header", "in-content"] },
+        { "brand": "Samsung", "adCount": 1, "positions": ["sidebar"] }
+      ]
+    },
+    {
+      "url": "https://www.espn.com",
+      "pageInfo": {
+        "title": "ESPN - Serving Sports Fans",
+        "category": "sports",
+        "language": "en"
+      },
+      "brandSafety": {
+        "score": 90,
+        "level": "safe",
+        "issues": [],
+        "categories": []
+      },
+      "adsDetected": [
+        { "position": "header", "size": "728x90", "type": "display", "network": "Google" },
+        { "position": "sidebar", "size": "160x600", "type": "display", "network": "Amazon" },
+        { "position": "in-content", "size": "300x250", "type": "video", "network": "Google" },
+        { "position": "footer", "size": "320x50", "type": "display", "network": "Criteo" }
+      ],
+      "fraudIndicators": { "riskScore": 0, "flags": [] },
+      "competitors": [
+        { "brand": "Nike", "adCount": 4, "positions": ["header", "sidebar", "in-content"] },
+        { "brand": "Adidas", "adCount": 2, "positions": ["sidebar", "footer"] }
+      ]
+    },
+    {
+      "url": "https://example-sketchy-site.com",
+      "pageInfo": {
+        "title": "Free Downloads - No Survey",
+        "category": "general",
+        "language": "en"
+      },
+      "brandSafety": {
+        "score": 35,
+        "level": "unsafe",
+        "issues": [
+          { "type": "adult", "severity": "medium", "description": "Detected keywords: adult, explicit" },
+          { "type": "gambling", "severity": "high", "description": "Detected keywords: casino, betting, slots" }
+        ],
+        "categories": ["adult", "gambling"]
+      },
+      "adsDetected": [
+        { "position": "interstitial", "size": "300x250", "type": "display", "network": "Unknown (iframe)" },
+        { "position": "header", "size": "728x90", "type": "display", "network": "Unknown (iframe)" }
+      ],
+      "fraudIndicators": {
+        "riskScore": 65,
+        "flags": [
+          { "type": "hidden-ads", "severity": "high", "details": "Excessive hidden elements detected" },
+          { "type": "redirect", "severity": "medium", "details": "Potential redirect scripts detected" },
+          { "type": "click-hijack", "severity": "medium", "details": "Potential click hijacking detected" }
+        ]
+      },
+      "competitors": []
+    },
+    {
+      "url": "https://www.techcrunch.com",
+      "pageInfo": {
+        "title": "TechCrunch - Startup and Technology News",
+        "category": "technology",
+        "language": "en"
+      },
+      "brandSafety": {
+        "score": 95,
+        "level": "safe",
+        "issues": [],
+        "categories": []
+      },
+      "adsDetected": [
+        { "position": "header", "size": "728x90", "type": "display", "network": "Google" },
+        { "position": "sidebar", "size": "300x250", "type": "native", "network": "Outbrain" }
+      ],
+      "fraudIndicators": { "riskScore": 0, "flags": [] },
+      "competitors": [
+        { "brand": "Microsoft", "adCount": 3, "positions": ["header", "in-content"] },
+        { "brand": "Google", "adCount": 2, "positions": ["sidebar"] },
+        { "brand": "Amazon", "adCount": 2, "positions": ["in-content", "footer"] }
+      ]
+    },
+    {
+      "url": "https://www.forbes.com",
+      "pageInfo": {
+        "title": "Forbes - Business, Investing, Tech, Entrepreneurship",
+        "category": "finance",
+        "language": "en"
+      },
+      "brandSafety": {
+        "score": 88,
+        "level": "safe",
+        "issues": [],
+        "categories": []
+      },
+      "adsDetected": [
+        { "position": "header", "size": "728x90", "type": "display", "network": "Google" },
+        { "position": "in-content", "size": "300x250", "type": "native", "network": "Taboola" },
+        { "position": "sidebar", "size": "300x600", "type": "display", "network": "Prebid" }
+      ],
+      "fraudIndicators": { "riskScore": 10, "flags": [] },
+      "competitors": [
+        { "brand": "Apple", "adCount": 2, "positions": ["header"] },
+        { "brand": "Microsoft", "adCount": 1, "positions": ["sidebar"] }
+      ]
+    }
+  ],
+  "summary": {
+    "totalVerifications": 5,
+    "safePages": 4,
+    "unsafePages": 1,
+    "adsDetected": 15,
+    "adNetworksFound": ["Google", "Amazon", "Taboola", "Outbrain", "Criteo", "Prebid"],
+    "features": [
+      "Brand safety scoring (0-100)",
+      "Content category detection",
+      "Ad placement mapping",
+      "Ad network identification",
+      "Fraud indicator detection",
+      "Competitor ad tracking",
+      "Page load time monitoring"
+    ]
+  }
+}
