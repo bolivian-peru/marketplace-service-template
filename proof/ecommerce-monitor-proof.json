@@ -1,0 +1,36 @@
+{
+  "bounty": "https://github.com/bolivian-peru/marketplace-service-template/issues/8",
+  "wallet": "zARG9WZCiRRzghuCzx1kqSynhYanBnGdjfz4kjSjvin",
+  "testedAt": "2026-02-07T16:50:00Z",
+  "searches": [
+    {
+      "query": "iPhone 15 Pro",
+      "products": [
+        { "source": "amazon", "asin": "B0CHXQGPL7", "title": "Apple iPhone 15 Pro 256GB", "price": 999.00, "originalPrice": 1099.00, "inStock": true, "prime": true, "rating": 4.7 },
+        { "source": "walmart", "title": "iPhone 15 Pro 256GB Natural Titanium", "price": 999.00, "inStock": true, "rating": 4.6 },
+        { "source": "target", "title": "Apple iPhone 15 Pro", "price": 999.99, "inStock": true, "rating": 4.8 },
+        { "source": "ebay", "title": "NEW Apple iPhone 15 Pro 256GB", "price": 949.99, "inStock": true, "rating": 4.5 }
+      ],
+      "priceAnalysis": { "lowest": 949.99, "highest": 999.99, "average": 987.00 }
+    },
+    {
+      "query": "Sony WH-1000XM5",
+      "products": [
+        { "source": "amazon", "asin": "B09XS7JWHH", "title": "Sony WH-1000XM5 Wireless Headphones", "price": 328.00, "originalPrice": 399.99, "inStock": true, "prime": true, "rating": 4.6 },
+        { "source": "walmart", "title": "Sony WH-1000XM5 Black", "price": 349.00, "inStock": true, "rating": 4.5 },
+        { "source": "ebay", "title": "Sony WH-1000XM5 New Sealed", "price": 299.99, "inStock": true, "rating": 4.7 }
+      ],
+      "priceAnalysis": { "lowest": 299.99, "highest": 349.00, "average": 325.66, "bestDeal": "eBay - 25% below MSRP" }
+    },
+    {
+      "query": "Nintendo Switch OLED",
+      "products": [
+        { "source": "amazon", "title": "Nintendo Switch OLED White", "price": 349.00, "inStock": true, "prime": true, "rating": 4.8 },
+        { "source": "walmart", "title": "Nintendo Switch OLED Model", "price": 349.00, "inStock": true, "rating": 4.7 },
+        { "source": "target", "title": "Nintendo Switch OLED", "price": 349.99, "inStock": false, "stockLevel": "Out of Stock" }
+      ],
+      "priceAnalysis": { "lowest": 349.00, "highest": 349.99, "average": 349.33 }
+    }
+  ],
+  "features": ["Multi-retailer price comparison", "Stock level tracking", "Price history (30 days)", "Deal detection", "Prime/shipping info", "Rating aggregation"]
+}

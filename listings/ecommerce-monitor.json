@@ -1,0 +1,12 @@
+{
+  "id": "ecommerce-price-monitor",
+  "name": "E-Commerce Price & Stock Monitor",
+  "description": "Track prices and stock levels on Amazon, Walmart, Target, eBay. Price history, alerts, competitor tracking.",
+  "endpoint": "https://marketplace.proxies.sx/api/ecommerce",
+  "pricing": { "model": "per-request", "amount": "0.005", "currency": "USDC", "networks": [{ "network": "solana", "recipient": "zARG9WZCiRRzghuCzx1kqSynhYanBnGdjfz4kjSjvin" }] },
+  "category": "scraper",
+  "tags": ["ecommerce", "amazon", "walmart", "prices", "stock"],
+  "owner": { "github": "EugeneJarvis88" },
+  "status": "pending",
+  "addedAt": "2026-02-07"
+}
