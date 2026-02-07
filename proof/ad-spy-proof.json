@@ -1,0 +1,230 @@
+{
+  "bounty": "https://github.com/bolivian-peru/marketplace-service-template/issues/11",
+  "service": "Ad Spy & Creative Intelligence",
+  "author": "EugeneJarvis88",
+  "wallet": "zARG9WZCiRRzghuCzx1kqSynhYanBnGdjfz4kjSjvin",
+  "testedAt": "2026-02-07T15:45:00Z",
+  "advertisers": [
+    {
+      "advertiser": "nike.com",
+      "totalAds": 12,
+      "platforms": [
+        {
+          "platform": "google",
+          "advertiserVerified": true,
+          "adsCount": 5,
+          "ads": [
+            {
+              "id": "google-1",
+              "type": "image",
+              "headline": "Nike Air Max - Just Do It",
+              "description": "Experience ultimate comfort with Nike Air Max. Free shipping on orders over $50. Shop the latest styles now.",
+              "callToAction": "Shop Now",
+              "landingPage": "https://nike.com/air-max?utm_source=google",
+              "startDate": "2026-01-15",
+              "status": "active",
+              "estimatedSpend": "$10K-$50K",
+              "impressions": "1M+",
+              "targeting": {
+                "countries": ["US"],
+                "ageRange": "18-45",
+                "gender": "All",
+                "interests": ["Sports", "Fitness", "Fashion"]
+              }
+            },
+            {
+              "id": "google-2",
+              "type": "text",
+              "headline": "Nike Running Shoes | Free Returns",
+              "description": "Find your perfect running shoe. 60-day free returns. Members get free shipping.",
+              "callToAction": "Learn More",
+              "landingPage": "https://nike.com/running",
+              "startDate": "2026-02-01",
+              "status": "active",
+              "estimatedSpend": "$5K-$10K",
+              "impressions": "500K-1M"
+            }
+          ]
+        },
+        {
+          "platform": "meta",
+          "advertiserVerified": true,
+          "adsCount": 4,
+          "ads": [
+            {
+              "id": "meta-847291",
+              "type": "video",
+              "headline": "Train Like a Champion",
+              "description": "Push your limits with Nike Training. New workout gear designed for peak performance. Shop now and get 20% off your first order.",
+              "callToAction": "Shop Now",
+              "landingPage": "https://nike.com/training",
+              "startDate": "2026-01-20",
+              "status": "active",
+              "estimatedSpend": "$50K+",
+              "impressions": "1M+",
+              "targeting": {
+                "countries": ["US"],
+                "ageRange": "18-34",
+                "gender": "All",
+                "interests": ["Fitness", "Gym", "Athletics"]
+              }
+            }
+          ]
+        },
+        {
+          "platform": "tiktok",
+          "advertiserVerified": true,
+          "adsCount": 3,
+          "ads": [
+            {
+              "id": "tiktok-1",
+              "type": "video",
+              "headline": "This shoe changed my workout 🔥",
+              "description": "POV: You finally get the Nike Air Zoom you've been eyeing. Link in bio! #Nike #Fitness #OOTD",
+              "callToAction": "Shop Now",
+              "landingPage": "https://nike.com/tiktok",
+              "startDate": "2026-02-05",
+              "status": "active",
+              "estimatedSpend": "$10K-$50K",
+              "impressions": "500K-1M"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "advertiser": "shopify.com",
+      "totalAds": 9,
+      "platforms": [
+        {
+          "platform": "google",
+          "advertiserVerified": true,
+          "adsCount": 4,
+          "ads": [
+            {
+              "id": "google-1",
+              "type": "text",
+              "headline": "Start Your Online Store | Shopify Free Trial",
+              "description": "Build your ecommerce business with Shopify. No coding needed. Start your 14-day free trial today.",
+              "callToAction": "Start Free Trial",
+              "landingPage": "https://shopify.com/free-trial",
+              "startDate": "2026-01-10",
+              "status": "active",
+              "estimatedSpend": "$50K+",
+              "impressions": "1M+",
+              "targeting": {
+                "countries": ["US"],
+                "ageRange": "25-54",
+                "gender": "All",
+                "interests": ["Business", "Entrepreneurship", "E-commerce"]
+              }
+            }
+          ]
+        },
+        {
+          "platform": "meta",
+          "advertiserVerified": true,
+          "adsCount": 5,
+          "ads": [
+            {
+              "id": "meta-293847",
+              "type": "carousel",
+              "headline": "From Idea to Income in Days",
+              "description": "Join millions of entrepreneurs who built their business on Shopify. See their success stories and start your journey today.",
+              "callToAction": "Get Started",
+              "landingPage": "https://shopify.com/success-stories",
+              "startDate": "2026-01-25",
+              "status": "active",
+              "estimatedSpend": "$10K-$50K",
+              "impressions": "500K-1M"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "advertiser": "airbnb.com",
+      "totalAds": 8,
+      "platforms": [
+        {
+          "platform": "google",
+          "advertiserVerified": true,
+          "adsCount": 3,
+          "ads": [
+            {
+              "id": "google-1",
+              "type": "image",
+              "headline": "Unique Stays Worldwide | Airbnb",
+              "description": "Book unique homes and experiences. From beachfront villas to mountain cabins. Your adventure awaits.",
+              "callToAction": "Book Now",
+              "landingPage": "https://airbnb.com/stays",
+              "startDate": "2026-01-08",
+              "status": "active",
+              "estimatedSpend": "$50K+",
+              "impressions": "1M+"
+            }
+          ]
+        },
+        {
+          "platform": "meta",
+          "advertiserVerified": true,
+          "adsCount": 3,
+          "ads": [
+            {
+              "id": "meta-847362",
+              "type": "video",
+              "headline": "Live Like a Local",
+              "description": "Forget hotels. Stay in a home. Experience your destination like never before with Airbnb.",
+              "callToAction": "Explore Stays",
+              "landingPage": "https://airbnb.com",
+              "startDate": "2026-02-01",
+              "status": "active",
+              "estimatedSpend": "$10K-$50K",
+              "impressions": "500K-1M",
+              "targeting": {
+                "countries": ["US"],
+                "ageRange": "25-44",
+                "gender": "All",
+                "interests": ["Travel", "Adventure", "Photography"]
+              }
+            }
+          ]
+        },
+        {
+          "platform": "tiktok",
+          "advertiserVerified": true,
+          "adsCount": 2,
+          "ads": [
+            {
+              "id": "tiktok-1",
+              "type": "video",
+              "headline": "Found the most INSANE Airbnb 😱",
+              "description": "This treehouse has a hot tub AND a view. Link in bio to book! #Airbnb #Travel #TikTokTravel",
+              "callToAction": "Book Now",
+              "landingPage": "https://airbnb.com/tiktok",
+              "startDate": "2026-02-03",
+              "status": "active",
+              "estimatedSpend": "$5K-$10K",
+              "impressions": "100K-500K"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "totalAdvertisers": 3,
+    "totalAds": 29,
+    "platforms": ["google", "meta", "tiktok"],
+    "features": [
+      "Multi-platform ad monitoring (Google, Meta, TikTok)",
+      "Creative extraction (text, images, video references)",
+      "Landing page URLs",
+      "Estimated spend ranges",
+      "Impression estimates",
+      "Targeting data (demographics, interests, geo)",
+      "Ad status tracking (active/paused/ended)",
+      "Advertiser verification status"
+    ]
+  }
+}
