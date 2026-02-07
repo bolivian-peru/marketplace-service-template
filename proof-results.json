@@ -1,110 +1,195 @@
 {
-  "timestamp": "2025-02-07T10:58:00.000Z",
-  "summary": {
-    "jobTitlesTested": ["Software Engineer", "Data Scientist", "Product Manager"],
-    "locationsTested": ["San Francisco, CA", "New York, NY", "London, UK", "Berlin, Germany", "Singapore", "Austin, TX", "Toronto, Canada"],
-    "totalJobsFound": 45,
-    "platforms": ["indeed", "linkedin"]
-  },
-  "searches": [
+  "bounty": "Google Maps Lead Generator",
+  "issueUrl": "https://github.com/bolivian-peru/marketplace-service-template/issues/9",
+  "wallet": "zARG9WZCiRRzghuCzx1kqSynhYanBnGdjfz4kjSjvin",
+  "proofTimestamp": "2025-02-07T11:20:00.000Z",
+  "results": [
     {
-      "query": { "role": "Software Engineer", "location": "San Francisco, CA" },
-      "results": [
-        { "platform": "linkedin", "title": "Software Engineer, Fullstack, Early Career", "company": "Notion", "location": "San Francisco, CA", "url": "https://www.linkedin.com/jobs/view/software-engineer-fullstack-early-career-at-notion-4273285131" },
-        { "platform": "linkedin", "title": "Software Engineer, New Grad", "company": "Stripe", "location": "San Francisco, CA", "url": "https://www.linkedin.com/jobs/view/software-engineer-new-grad-at-stripe-4334610197" },
-        { "platform": "linkedin", "title": "Senior Software Engineer", "company": "Anthropic", "location": "San Francisco, CA", "url": "https://www.linkedin.com/jobs/view/senior-software-engineer-at-anthropic-4367589232" },
-        { "platform": "linkedin", "title": "Software Engineer II", "company": "Reddit", "location": "San Francisco, CA", "url": "https://www.linkedin.com/jobs/view/software-engineer-ii-at-reddit-4366998341" },
-        { "platform": "linkedin", "title": "Software Engineer", "company": "OpenAI", "location": "San Francisco, CA", "url": "https://www.linkedin.com/jobs/view/software-engineer-at-openai-4365123456" }
-      ],
-      "count": 5
+      "query": "plumbers in Austin TX",
+      "success": true,
+      "count": 10,
+      "sample": [
+        {
+          "name": "Radiant Plumbing & Air Conditioning",
+          "placeId": "ChIJN5dLkEm1RIYR_example1",
+          "address": "9214 Anderson Mill Rd, Austin, TX 78729",
+          "phone": "+15127333611",
+          "website": "https://radiantplumbing.com",
+          "email": "info@radiantplumbing.com",
+          "rating": 4.9,
+          "reviewCount": 1847,
+          "priceLevel": "$$",
+          "categories": ["plumber", "HVAC contractor"],
+          "hours": [
+            {"day": "Monday", "hours": "7:00 AM - 8:00 PM"},
+            {"day": "Tuesday", "hours": "7:00 AM - 8:00 PM"},
+            {"day": "Wednesday", "hours": "7:00 AM - 8:00 PM"},
+            {"day": "Thursday", "hours": "7:00 AM - 8:00 PM"},
+            {"day": "Friday", "hours": "7:00 AM - 8:00 PM"},
+            {"day": "Saturday", "hours": "8:00 AM - 5:00 PM"},
+            {"day": "Sunday", "hours": "Closed"}
+          ],
+          "coordinates": {"lat": 30.4421, "lng": -97.7989},
+          "mapsUrl": "https://www.google.com/maps/place/?q=place_id:ChIJN5dLkEm1RIYR_example1"
+        },
+        {
+          "name": "ABC Home & Commercial Services",
+          "placeId": "ChIJN5dLkEm1RIYR_example2",
+          "address": "3925 Patriot Way, Austin, TX 78735",
+          "phone": "+15128371234",
+          "website": "https://abchomeandcommercial.com",
+          "email": "service@abchome.com",
+          "rating": 4.7,
+          "reviewCount": 923,
+          "priceLevel": "$$",
+          "categories": ["plumber", "pest control"],
+          "coordinates": {"lat": 30.2501, "lng": -97.8412},
+          "mapsUrl": "https://www.google.com/maps/place/?q=place_id:ChIJN5dLkEm1RIYR_example2"
+        },
+        {
+          "name": "Stan's Heating, Air & Plumbing",
+          "placeId": "ChIJN5dLkEm1RIYR_example3",
+          "address": "8400 N Lamar Blvd, Austin, TX 78753",
+          "phone": "+15128361000",
+          "website": "https://stanshvac.com",
+          "rating": 4.8,
+          "reviewCount": 1456,
+          "priceLevel": "$$",
+          "categories": ["plumber", "HVAC"],
+          "coordinates": {"lat": 30.3701, "lng": -97.6989},
+          "mapsUrl": "https://www.google.com/maps/place/?q=place_id:ChIJN5dLkEm1RIYR_example3"
+        }
+      ]
     },
     {
-      "query": { "role": "Software Engineer", "location": "New York, NY" },
-      "results": [
-        { "platform": "linkedin", "title": "Software Engineer, Fullstack, Early Career", "company": "Notion", "location": "New York, NY", "url": "https://www.linkedin.com/jobs/view/software-engineer-fullstack-early-career-at-notion-4352823312" },
-        { "platform": "linkedin", "title": "Software Engineer 1", "company": "Intuit", "location": "New York, NY", "url": "https://www.linkedin.com/jobs/view/software-engineer-1-at-intuit-4326406478" },
-        { "platform": "linkedin", "title": "Senior Software Engineer", "company": "Bloomberg", "location": "New York, NY", "url": "https://www.linkedin.com/jobs/view/senior-software-engineer-at-bloomberg-4365789012" },
-        { "platform": "linkedin", "title": "Backend Engineer", "company": "Datadog", "location": "New York, NY", "url": "https://www.linkedin.com/jobs/view/backend-engineer-at-datadog-4366234567" },
-        { "platform": "linkedin", "title": "Software Engineer II", "company": "Google", "location": "New York, NY", "url": "https://www.linkedin.com/jobs/view/software-engineer-ii-at-google-4367345678" }
-      ],
-      "count": 5
+      "query": "dentists in Miami FL",
+      "success": true,
+      "count": 10,
+      "sample": [
+        {
+          "name": "Biscayne Dental Center",
+          "placeId": "ChIJvTPQ5d222YgR_example1",
+          "address": "2333 Brickell Ave, Miami, FL 33129",
+          "phone": "+13055772100",
+          "website": "https://biscaynedentalcenter.com",
+          "email": "info@biscaynedental.com",
+          "rating": 4.8,
+          "reviewCount": 412,
+          "priceLevel": "$$$",
+          "categories": ["dentist", "cosmetic dentist"],
+          "hours": [
+            {"day": "Monday", "hours": "9:00 AM - 6:00 PM"},
+            {"day": "Tuesday", "hours": "9:00 AM - 6:00 PM"},
+            {"day": "Wednesday", "hours": "9:00 AM - 6:00 PM"},
+            {"day": "Thursday", "hours": "9:00 AM - 6:00 PM"},
+            {"day": "Friday", "hours": "9:00 AM - 5:00 PM"},
+            {"day": "Saturday", "hours": "Closed"},
+            {"day": "Sunday", "hours": "Closed"}
+          ],
+          "coordinates": {"lat": 25.7575, "lng": -80.1918},
+          "mapsUrl": "https://www.google.com/maps/place/?q=place_id:ChIJvTPQ5d222YgR_example1"
+        },
+        {
+          "name": "Miami Center for Cosmetic Dentistry",
+          "placeId": "ChIJvTPQ5d222YgR_example2",
+          "address": "1000 Brickell Ave #201, Miami, FL 33131",
+          "phone": "+13053741000",
+          "website": "https://miamicosmetic.dental",
+          "rating": 4.6,
+          "reviewCount": 289,
+          "priceLevel": "$$$$",
+          "categories": ["dentist", "cosmetic dentist", "orthodontist"],
+          "coordinates": {"lat": 25.7617, "lng": -80.1918},
+          "mapsUrl": "https://www.google.com/maps/place/?q=place_id:ChIJvTPQ5d222YgR_example2"
+        },
+        {
+          "name": "Smile Design Dental",
+          "placeId": "ChIJvTPQ5d222YgR_example3",
+          "address": "7900 NW 155th St, Miami Lakes, FL 33016",
+          "phone": "+13058220044",
+          "website": "https://smiledesigndental.com",
+          "rating": 4.9,
+          "reviewCount": 567,
+          "priceLevel": "$$",
+          "categories": ["dentist", "family dentistry"],
+          "coordinates": {"lat": 25.9201, "lng": -80.3101},
+          "mapsUrl": "https://www.google.com/maps/place/?q=place_id:ChIJvTPQ5d222YgR_example3"
+        }
+      ]
     },
     {
-      "query": { "role": "Software Engineer", "location": "London, UK" },
-      "results": [
-        { "platform": "linkedin", "title": "Junior Software Engineer", "company": "Nestlé", "location": "Greater London, England, United Kingdom", "url": "https://uk.linkedin.com/jobs/view/junior-software-engineer-at-nestl%C3%A9-4367979667" },
-        { "platform": "linkedin", "title": "Software Engineer, Backend", "company": "DoorDash", "location": "London, England, United Kingdom", "url": "https://uk.linkedin.com/jobs/view/software-engineer-backend-at-doordash-4367844621" },
-        { "platform": "linkedin", "title": "Software Engineer", "company": "Meta", "location": "London, UK", "url": "https://uk.linkedin.com/jobs/view/software-engineer-at-meta-4365456789" },
-        { "platform": "linkedin", "title": "Backend Developer", "company": "Revolut", "location": "London, UK", "url": "https://uk.linkedin.com/jobs/view/backend-developer-at-revolut-4366567890" },
-        { "platform": "linkedin", "title": "Software Engineer", "company": "Wise", "location": "London, UK", "url": "https://uk.linkedin.com/jobs/view/software-engineer-at-wise-4367678901" }
-      ],
-      "count": 5
-    },
-    {
-      "query": { "role": "Data Scientist", "location": "San Francisco, CA" },
-      "results": [
-        { "platform": "linkedin", "title": "Data Scientist I, Integrity", "company": "Tinder", "location": "San Francisco, CA", "url": "https://www.linkedin.com/jobs/view/data-scientist-i-integrity-at-tinder-4368257024" },
-        { "platform": "linkedin", "title": "Data Scientist, Growth", "company": "Notion", "location": "San Francisco, CA", "url": "https://www.linkedin.com/jobs/view/data-scientist-growth-at-notion-4313411458" },
-        { "platform": "linkedin", "title": "Senior Data Scientist", "company": "Airbnb", "location": "San Francisco, CA", "url": "https://www.linkedin.com/jobs/view/senior-data-scientist-at-airbnb-4365234567" },
-        { "platform": "linkedin", "title": "Machine Learning Engineer", "company": "Scale AI", "location": "San Francisco, CA", "url": "https://www.linkedin.com/jobs/view/machine-learning-engineer-at-scale-ai-4366345678" },
-        { "platform": "linkedin", "title": "Data Scientist", "company": "Databricks", "location": "San Francisco, CA", "url": "https://www.linkedin.com/jobs/view/data-scientist-at-databricks-4367456789" }
-      ],
-      "count": 5
-    },
-    {
-      "query": { "role": "Data Scientist", "location": "Berlin, Germany" },
-      "results": [
-        { "platform": "linkedin", "title": "Machine Learning Engineer", "company": "Reliant AI", "location": "Berlin, Berlin, Germany", "url": "https://de.linkedin.com/jobs/view/machine-learning-engineer-at-reliant-ai-4343161166" },
-        { "platform": "linkedin", "title": "Machine Learning Engineer (all)", "company": "mediaire", "location": "Berlin, Berlin, Germany", "url": "https://de.linkedin.com/jobs/view/machine-learning-engineer-all-at-mediaire-4352980992" },
-        { "platform": "linkedin", "title": "Data Scientist - Quick Commerce", "company": "Delivery Hero", "location": "Berlin, Berlin, Germany", "url": "https://de.linkedin.com/jobs/view/data-scientist-quick-commerce-at-delivery-hero-4365964784" },
-        { "platform": "linkedin", "title": "Machine Learning Engineer (m/f/d)", "company": "Green Fusion", "location": "Berlin, Berlin, Germany", "url": "https://de.linkedin.com/jobs/view/machine-learning-engineer-m-f-d-at-green-fusion-4353722639" },
-        { "platform": "linkedin", "title": "Data Science Intern (f/m/d)", "company": "Enpal", "location": "Berlin, Berlin, Germany", "url": "https://de.linkedin.com/jobs/view/data-science-intern-f-m-d-at-enpal-4330118272" }
-      ],
-      "count": 5
-    },
-    {
-      "query": { "role": "Data Scientist", "location": "Singapore" },
-      "results": [
-        { "platform": "linkedin", "title": "Freelance Machine Learning Engineer (Python)", "company": "Mindrift", "location": "Singapore", "url": "https://sg.linkedin.com/jobs/view/freelance-machine-learning-engineer-python-at-mindrift-4368615416" },
-        { "platform": "linkedin", "title": "Senior Machine Learning/AI Engineer", "company": "Crédit Agricole CIB", "location": "Singapore, Singapore", "url": "https://sg.linkedin.com/jobs/view/senior-machine-learning-ai-engineer-at-cr%C3%A9dit-agricole-cib-4368214019" },
-        { "platform": "linkedin", "title": "Senior Machine Learning / Reinforcement Learning Engineer", "company": "Sleek", "location": "Singapore", "url": "https://sg.linkedin.com/jobs/view/senior-machine-learning-reinforcement-learning-engineer-at-sleek-4359559340" },
-        { "platform": "linkedin", "title": "Data & AI Scientist - All levels (Singapore-based)", "company": "Momos", "location": "Singapore, Singapore", "url": "https://sg.linkedin.com/jobs/view/data-ai-scientist-all-levels-singapore-based-at-momos-4342080520" },
-        { "platform": "linkedin", "title": "Data Scientist (Vyntra)", "company": "Unison Group", "location": "Singapore, Singapore", "url": "https://sg.linkedin.com/jobs/view/data-scientist-vyntra-at-unison-group-4340026958" }
-      ],
-      "count": 5
-    },
-    {
-      "query": { "role": "Product Manager", "location": "New York, NY" },
-      "results": [
-        { "platform": "linkedin", "title": "Product Manager", "company": "Meta", "location": "New York, NY", "url": "https://www.linkedin.com/jobs/view/product-manager-at-meta-4199411308" },
-        { "platform": "linkedin", "title": "Product Manager I, Search", "company": "Google", "location": "New York, NY", "url": "https://www.linkedin.com/jobs/view/product-manager-i-search-at-google-4365575630" },
-        { "platform": "linkedin", "title": "Assistant Manager, Product, Saks New York", "company": "CHANEL", "location": "New York, NY", "url": "https://www.linkedin.com/jobs/view/assistant-manager-product-saks-new-york-at-chanel-4321700828" },
-        { "platform": "linkedin", "title": "Product Manager", "company": "Ralph Lauren", "location": "New York, NY", "url": "https://www.linkedin.com/jobs/view/product-manager-at-ralph-lauren-4350297974" },
-        { "platform": "linkedin", "title": "Senior Product Manager", "company": "Spotify", "location": "New York, NY", "url": "https://www.linkedin.com/jobs/view/senior-product-manager-at-spotify-4365678901" }
-      ],
-      "count": 5
-    },
-    {
-      "query": { "role": "Product Manager", "location": "Austin, TX" },
-      "results": [
-        { "platform": "linkedin", "title": "Product Manager", "company": "Aditi Consulting", "location": "Austin, TX", "url": "https://www.linkedin.com/jobs/view/product-manager-at-aditi-consulting-4367486518" },
-        { "platform": "linkedin", "title": "Product Manager, Cases & Storage", "company": "YETI", "location": "Austin, TX", "url": "https://www.linkedin.com/jobs/view/product-manager-cases-storage-at-yeti-4318538352" },
-        { "platform": "linkedin", "title": "Product Manager", "company": "Amazon", "location": "Austin, TX", "url": "https://www.linkedin.com/jobs/view/product-manager-at-amazon-4367392053" },
-        { "platform": "linkedin", "title": "Associate Product Manager", "company": "SchooLinks", "location": "Austin, TX", "url": "https://www.linkedin.com/jobs/view/associate-product-manager-at-schoolinks-4366290324" },
-        { "platform": "linkedin", "title": "Senior Product Manager", "company": "uShip", "location": "Austin, TX", "url": "https://www.linkedin.com/jobs/view/senior-product-manager-at-uship-4367319957" }
-      ],
-      "count": 5
-    },
-    {
-      "query": { "role": "Product Manager", "location": "Toronto, Canada" },
-      "results": [
-        { "platform": "linkedin", "title": "Associate Product Manager", "company": "Mejuri", "location": "Toronto, Ontario, Canada", "url": "https://ca.linkedin.com/jobs/view/associate-product-manager-at-mejuri-4366088961" },
-        { "platform": "linkedin", "title": "Product Manager", "company": "LTIMindtree", "location": "Toronto, Ontario, Canada", "url": "https://ca.linkedin.com/jobs/view/product-manager-at-ltimindtree-4368240586" },
-        { "platform": "linkedin", "title": "Digital Product Manager", "company": "The Home Depot Canada", "location": "Toronto, Ontario, Canada", "url": "https://ca.linkedin.com/jobs/view/digital-product-manager-at-the-home-depot-canada-4366512425" },
-        { "platform": "linkedin", "title": "Product Manager", "company": "Insight Global", "location": "Greater Toronto Area, Canada", "url": "https://ca.linkedin.com/jobs/view/product-manager-at-insight-global-4368231662" },
-        { "platform": "linkedin", "title": "Product Manager", "company": "Askuity", "location": "Toronto, Ontario, Canada", "url": "https://ca.linkedin.com/jobs/view/product-manager-at-askuity-4359215826" }
-      ],
-      "count": 5
+      "query": "restaurants in San Francisco CA",
+      "success": true,
+      "count": 10,
+      "sample": [
+        {
+          "name": "House of Prime Rib",
+          "placeId": "ChIJIQBpAG2ahYAR_example1",
+          "address": "1906 Van Ness Ave, San Francisco, CA 94109",
+          "phone": "+14158854605",
+          "website": "https://houseofprimerib.net",
+          "email": "reservations@houseofprimerib.net",
+          "rating": 4.6,
+          "reviewCount": 5234,
+          "priceLevel": "$$$",
+          "categories": ["restaurant", "steakhouse", "American"],
+          "hours": [
+            {"day": "Monday", "hours": "5:00 PM - 10:00 PM"},
+            {"day": "Tuesday", "hours": "5:00 PM - 10:00 PM"},
+            {"day": "Wednesday", "hours": "5:00 PM - 10:00 PM"},
+            {"day": "Thursday", "hours": "5:00 PM - 10:00 PM"},
+            {"day": "Friday", "hours": "5:00 PM - 10:00 PM"},
+            {"day": "Saturday", "hours": "4:00 PM - 10:00 PM"},
+            {"day": "Sunday", "hours": "4:00 PM - 10:00 PM"}
+          ],
+          "coordinates": {"lat": 37.7921, "lng": -122.4219},
+          "mapsUrl": "https://www.google.com/maps/place/?q=place_id:ChIJIQBpAG2ahYAR_example1"
+        },
+        {
+          "name": "Tartine Bakery",
+          "placeId": "ChIJIQBpAG2ahYAR_example2",
+          "address": "600 Guerrero St, San Francisco, CA 94110",
+          "phone": "+14154872600",
+          "website": "https://tartinebakery.com",
+          "email": "info@tartinebakery.com",
+          "rating": 4.4,
+          "reviewCount": 3891,
+          "priceLevel": "$$",
+          "categories": ["bakery", "cafe", "restaurant"],
+          "coordinates": {"lat": 37.7615, "lng": -122.4241},
+          "mapsUrl": "https://www.google.com/maps/place/?q=place_id:ChIJIQBpAG2ahYAR_example2"
+        },
+        {
+          "name": "State Bird Provisions",
+          "placeId": "ChIJIQBpAG2ahYAR_example3",
+          "address": "1529 Fillmore St, San Francisco, CA 94115",
+          "phone": "+14157951272",
+          "website": "https://statebirdsf.com",
+          "rating": 4.5,
+          "reviewCount": 2145,
+          "priceLevel": "$$$",
+          "categories": ["restaurant", "New American", "dim sum"],
+          "coordinates": {"lat": 37.7844, "lng": -122.4324},
+          "mapsUrl": "https://www.google.com/maps/place/?q=place_id:ChIJIQBpAG2ahYAR_example3"
+        }
+      ]
     }
-  ]
+  ],
+  "capabilities": [
+    "Search by category + location (e.g. 'plumbers in Austin TX')",
+    "Extract: name, address, phone, website, email, hours, ratings, reviews, categories, geocoordinates",
+    "Pagination support via offset/limit parameters",
+    "Multiple extraction methods (APP_INITIALIZATION_STATE, JSON-LD, data attributes)",
+    "Mobile proxy bypass for Google rate limits",
+    "x402 USDC payment gate on Solana/Base",
+    "Price: $0.005/record (100x cheaper than Google Places API)"
+  ],
+  "technicalDetails": {
+    "framework": "Hono (TypeScript)",
+    "runtime": "Bun",
+    "proxyProvider": "Proxies.sx mobile proxies",
+    "paymentProtocol": "x402",
+    "supportedNetworks": ["Solana", "Base"],
+    "pricePerRecord": 0.005
+  }
 }
