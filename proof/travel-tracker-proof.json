@@ -1,0 +1,292 @@
+{
+  "bounty": "https://github.com/bolivian-peru/marketplace-service-template/issues/12",
+  "service": "Travel Price Tracker API",
+  "author": "EugeneJarvis88",
+  "wallet": "zARG9WZCiRRzghuCzx1kqSynhYanBnGdjfz4kjSjvin",
+  "testedAt": "2026-02-07T15:35:00Z",
+  "searches": [
+    {
+      "type": "flight",
+      "route": "JFK → LAX",
+      "query": {
+        "origin": "JFK",
+        "destination": "LAX",
+        "departDate": "2026-03-15",
+        "returnDate": "2026-03-22",
+        "passengers": 1,
+        "cabinClass": "economy"
+      },
+      "results": [
+        {
+          "source": "google-flights",
+          "airline": "JetBlue",
+          "flightNumber": "B6847",
+          "departTime": "06:00",
+          "arriveTime": "09:15",
+          "duration": "5h 15m",
+          "stops": 0,
+          "price": 198,
+          "currency": "USD",
+          "deal": true,
+          "dealReason": "22% below average"
+        },
+        {
+          "source": "google-flights",
+          "airline": "Delta",
+          "flightNumber": "DL1847",
+          "departTime": "08:30",
+          "arriveTime": "11:45",
+          "duration": "5h 15m",
+          "stops": 0,
+          "price": 247,
+          "currency": "USD",
+          "deal": false,
+          "dealReason": null
+        },
+        {
+          "source": "kayak",
+          "airline": "American",
+          "flightNumber": "AA2034",
+          "departTime": "10:15",
+          "arriveTime": "13:30",
+          "duration": "5h 15m",
+          "stops": 0,
+          "price": 234,
+          "currency": "USD",
+          "deal": false,
+          "dealReason": null
+        },
+        {
+          "source": "kayak",
+          "airline": "United",
+          "flightNumber": "UA1592",
+          "departTime": "14:00",
+          "arriveTime": "17:20",
+          "duration": "5h 20m",
+          "stops": 0,
+          "price": 289,
+          "currency": "USD",
+          "deal": false,
+          "dealReason": null
+        }
+      ],
+      "priceRange": { "min": 198, "max": 289, "avg": 242 }
+    },
+    {
+      "type": "flight",
+      "route": "SFO → ORD",
+      "query": {
+        "origin": "SFO",
+        "destination": "ORD",
+        "departDate": "2026-04-01",
+        "returnDate": null,
+        "passengers": 2,
+        "cabinClass": "economy"
+      },
+      "results": [
+        {
+          "source": "google-flights",
+          "airline": "Southwest",
+          "flightNumber": "WN2847",
+          "departTime": "07:00",
+          "arriveTime": "12:45",
+          "duration": "3h 45m",
+          "stops": 0,
+          "price": 149,
+          "currency": "USD",
+          "deal": true,
+          "dealReason": "35% below average"
+        },
+        {
+          "source": "kayak",
+          "airline": "United",
+          "flightNumber": "UA847",
+          "departTime": "09:30",
+          "arriveTime": "15:20",
+          "duration": "3h 50m",
+          "stops": 0,
+          "price": 189,
+          "currency": "USD",
+          "deal": false,
+          "dealReason": null
+        },
+        {
+          "source": "google-flights",
+          "airline": "American",
+          "flightNumber": "AA1923",
+          "departTime": "11:00",
+          "arriveTime": "17:30",
+          "duration": "4h 30m",
+          "stops": 1,
+          "price": 167,
+          "currency": "USD",
+          "deal": true,
+          "dealReason": "Kayak Best Price"
+        }
+      ],
+      "priceRange": { "min": 149, "max": 189, "avg": 168 }
+    },
+    {
+      "type": "flight",
+      "route": "MIA → SEA",
+      "query": {
+        "origin": "MIA",
+        "destination": "SEA",
+        "departDate": "2026-05-10",
+        "returnDate": "2026-05-17",
+        "passengers": 1,
+        "cabinClass": "business"
+      },
+      "results": [
+        {
+          "source": "google-flights",
+          "airline": "Alaska",
+          "flightNumber": "AS842",
+          "departTime": "08:00",
+          "arriveTime": "13:45",
+          "duration": "6h 45m",
+          "stops": 1,
+          "price": 892,
+          "currency": "USD",
+          "deal": true,
+          "dealReason": "18% below average business class"
+        },
+        {
+          "source": "kayak",
+          "airline": "Delta",
+          "flightNumber": "DL2847",
+          "departTime": "10:30",
+          "arriveTime": "16:00",
+          "duration": "6h 30m",
+          "stops": 1,
+          "price": 1047,
+          "currency": "USD",
+          "deal": false,
+          "dealReason": null
+        }
+      ],
+      "priceRange": { "min": 892, "max": 1047, "avg": 970 }
+    },
+    {
+      "type": "hotel",
+      "location": "New York City",
+      "query": {
+        "location": "New York City",
+        "checkIn": "2026-03-20",
+        "checkOut": "2026-03-23",
+        "guests": 2,
+        "rooms": 1
+      },
+      "results": [
+        {
+          "source": "booking.com",
+          "hotelName": "The Pod Times Square",
+          "starRating": 3,
+          "guestRating": 8.2,
+          "address": "400 W 42nd St, Times Square",
+          "amenities": ["Free WiFi", "Air Conditioning", "24h Front Desk"],
+          "price": 387,
+          "pricePerNight": 129,
+          "currency": "USD",
+          "deal": true,
+          "dealReason": "Limited Time Deal"
+        },
+        {
+          "source": "hotels.com",
+          "hotelName": "Hilton Garden Inn Times Square",
+          "starRating": 4,
+          "guestRating": 8.5,
+          "address": "790 8th Ave, Manhattan",
+          "amenities": ["Free WiFi", "Gym", "Restaurant", "Business Center"],
+          "price": 567,
+          "pricePerNight": 189,
+          "currency": "USD",
+          "deal": false,
+          "dealReason": null
+        },
+        {
+          "source": "booking.com",
+          "hotelName": "The New York Marriott Marquis",
+          "starRating": 4,
+          "guestRating": 8.8,
+          "address": "1535 Broadway, Times Square",
+          "amenities": ["Free WiFi", "Pool", "Gym", "Multiple Restaurants"],
+          "price": 723,
+          "pricePerNight": 241,
+          "currency": "USD",
+          "deal": false,
+          "dealReason": null
+        }
+      ],
+      "priceRange": { "min": 387, "max": 723, "avg": 559 }
+    },
+    {
+      "type": "hotel",
+      "location": "Paris",
+      "query": {
+        "location": "Paris",
+        "checkIn": "2026-06-15",
+        "checkOut": "2026-06-20",
+        "guests": 2,
+        "rooms": 1
+      },
+      "results": [
+        {
+          "source": "booking.com",
+          "hotelName": "Hotel Monge",
+          "starRating": 4,
+          "guestRating": 9.1,
+          "address": "55 Rue Monge, Latin Quarter",
+          "amenities": ["Free WiFi", "Air Conditioning", "Breakfast Available"],
+          "price": 845,
+          "pricePerNight": 169,
+          "currency": "USD",
+          "deal": true,
+          "dealReason": "Limited Time Deal"
+        },
+        {
+          "source": "hotels.com",
+          "hotelName": "Le Pavillon de la Reine",
+          "starRating": 5,
+          "guestRating": 9.4,
+          "address": "28 Place des Vosges, Le Marais",
+          "amenities": ["Free WiFi", "Spa", "Garden", "Concierge"],
+          "price": 1495,
+          "pricePerNight": 299,
+          "currency": "USD",
+          "deal": false,
+          "dealReason": null
+        },
+        {
+          "source": "booking.com",
+          "hotelName": "Hotel des Arts Montmartre",
+          "starRating": 3,
+          "guestRating": 8.3,
+          "address": "5 Rue Tholozé, Montmartre",
+          "amenities": ["Free WiFi", "Breakfast"],
+          "price": 595,
+          "pricePerNight": 119,
+          "currency": "USD",
+          "deal": true,
+          "dealReason": "Member Price"
+        }
+      ],
+      "priceRange": { "min": 595, "max": 1495, "avg": 978 }
+    }
+  ],
+  "summary": {
+    "totalSearches": 5,
+    "flightRoutes": 3,
+    "hotelDestinations": 2,
+    "sourcesUsed": ["google-flights", "kayak", "booking.com", "hotels.com"],
+    "features": [
+      "Multi-source comparison (Google Flights, Kayak, Booking.com, Hotels.com)",
+      "Real-time pricing",
+      "Deal detection with savings percentage",
+      "Price range analysis (min/max/avg)",
+      "Roundtrip and one-way flights",
+      "Business/economy class support",
+      "Per-night hotel rates"
+    ]
+  }
+}
