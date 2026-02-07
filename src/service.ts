@@ -1,60 +1,414 @@
 /**
  * ┌─────────────────────────────────────────────────┐
- * │         ✏️  EDIT THIS FILE                       │
- * │  This is the ONLY file you need to change.      │
- * │  Everything else works out of the box.           │
+ * │         Gmail Account Creator Service           │
+ * │  Creates Gmail accounts using mobile proxy +    │
+ * │  antidetect browser for maximum success rate    │
  * └─────────────────────────────────────────────────┘
- *
- * Steps:
- *  1. Change SERVICE_NAME, PRICE_USDC, and DESCRIPTION
- *  2. Update the outputSchema to match your API contract
- *  3. Replace the logic inside the /run handler
- *  4. That's it. Deploy.
  */
 
 import { Hono } from 'hono';
-import { proxyFetch, getProxy } from './proxy';
+import { getProxy } from './proxy';
 import { extractPayment, verifyPayment, build402Response } from './payment';
 
 export const serviceRouter = new Hono();
 
-// ─── YOUR CONFIGURATION ─────────────────────────────
-// Change these three values to match your service.
+// ─── SERVICE CONFIGURATION ─────────────────────────────
+const SERVICE_NAME = 'gmail-account-creator';
+const PRICE_USDC = 0.50;  // $0.50 per account (accounts are valuable)
+const DESCRIPTION = 'Create Gmail accounts using real mobile IPs and antidetect browser. Returns email and password.';
 
-const SERVICE_NAME = 'web-scraper';
-const PRICE_USDC = 0.005;  // $0.005 per request (half a cent)
-const DESCRIPTION = 'Fetch any webpage through a real 4G/5G mobile IP. Returns clean text content.';
-
-// Describes what your API accepts and returns.
-// AI agents use this to understand your service contract.
 const OUTPUT_SCHEMA = {
   input: {
-    url: 'string — URL to fetch (required)',
+    firstName: 'string — first name for the account (optional, auto-generated if omitted)',
+    lastName: 'string — last name for the account (optional, auto-generated if omitted)',
+    birthYear: 'number — birth year (optional, default random 1985-2000)',
+    birthMonth: 'number — birth month 1-12 (optional, default random)',
+    birthDay: 'number — birth day 1-28 (optional, default random)',
+    gender: 'string — "male", "female", or "other" (optional, default random)',
+    country: 'string — proxy country code: US, GB, DE, FR, ES, PL (optional, default US)',
   },
   output: {
-    url: 'string — the URL that was fetched',
-    status: 'number — HTTP status code from the target',
-    text: 'string — page text content (max 50KB)',
-    contentLength: 'number — original content length in bytes',
+    success: 'boolean — whether account was created',
+    email: 'string — the created Gmail address',
+    password: 'string — the account password',
+    firstName: 'string — first name used',
+    lastName: 'string — last name used',
+    recoveryEmail: 'string|null — recovery email if set',
     proxy: '{ country: string, type: "mobile" }',
   },
 };
 
-// ─── YOUR ENDPOINT ──────────────────────────────────
-// This is where your service logic lives.
+// Browser API configuration
+const BROWSER_ENDPOINT = process.env.BROWSER_ENDPOINT || 'https://browser.proxies.sx';
+const BROWSER_INTERNAL_KEY = process.env.BROWSER_INTERNAL_KEY;
 
-serviceRouter.get('/run', async (c) => {
+// ─── HELPER FUNCTIONS ─────────────────────────────
+
+function generatePassword(): string {
+  const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%';
+  let password = '';
+  for (let i = 0; i < 16; i++) {
+    password += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return password;
+}
+
+function generateUsername(firstName: string, lastName: string): string {
+  const rand = Math.floor(Math.random() * 9999);
+  const base = `${firstName.toLowerCase()}${lastName.toLowerCase()}${rand}`;
+  return base.replace(/[^a-z0-9]/g, '');
+}
+
+function randomInt(min: number, max: number): number {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+const FIRST_NAMES_MALE = ['James', 'John', 'Robert', 'Michael', 'David', 'William', 'Richard', 'Joseph', 'Thomas', 'Christopher', 'Daniel', 'Matthew', 'Anthony', 'Mark', 'Steven'];
+const FIRST_NAMES_FEMALE = ['Mary', 'Patricia', 'Jennifer', 'Linda', 'Elizabeth', 'Barbara', 'Susan', 'Jessica', 'Sarah', 'Karen', 'Lisa', 'Nancy', 'Betty', 'Margaret', 'Sandra'];
+const LAST_NAMES = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez', 'Hernandez', 'Lopez', 'Gonzalez', 'Wilson', 'Anderson'];
+
+function randomName(gender: string): { firstName: string; lastName: string } {
+  const names = gender === 'female' ? FIRST_NAMES_FEMALE : FIRST_NAMES_MALE;
+  return {
+    firstName: names[randomInt(0, names.length - 1)],
+    lastName: LAST_NAMES[randomInt(0, LAST_NAMES.length - 1)],
+  };
+}
+
+// ─── BROWSER AUTOMATION ─────────────────────────────
+
+interface BrowserSession {
+  sessionId: string;
+  sessionToken: string;
+}
+
+async function createBrowserSession(
+  country: string,
+  proxy: { host: string; port: number; user: string; pass: string },
+): Promise<BrowserSession | null> {
+  const endpoint = BROWSER_ENDPOINT.replace(/\/$/, '');
+
+  const createRes = await fetch(`${endpoint}/v1/internal/sessions`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Internal-Key': BROWSER_INTERNAL_KEY!,
+    },
+    body: JSON.stringify({
+      durationMinutes: 30, // Gmail signup can take time
+      country,
+      proxy: {
+        server: `${proxy.host}:${proxy.port}`,
+        username: proxy.user,
+        password: proxy.pass,
+        type: 'http',
+      },
+    }),
+  });
+
+  if (!createRes.ok) {
+    console.error('Failed to create browser session:', await createRes.text());
+    return null;
+  }
+
+  const data = await createRes.json() as { session_id?: string; session_token?: string };
+  if (!data.session_id || !data.session_token) return null;
+
+  return {
+    sessionId: data.session_id,
+    sessionToken: data.session_token,
+  };
+}
+
+async function browserCommand(
+  sessionId: string,
+  token: string,
+  payload: Record<string, any>,
+): Promise<any> {
+  const endpoint = BROWSER_ENDPOINT.replace(/\/$/, '');
+
+  const res = await fetch(`${endpoint}/v1/sessions/${sessionId}/command`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    console.error('Browser command failed:', text);
+    return null;
+  }
+
+  return await res.json();
+}
+
+async function closeBrowserSession(sessionId: string): Promise<void> {
+  const endpoint = BROWSER_ENDPOINT.replace(/\/$/, '');
+  await fetch(`${endpoint}/v1/sessions/${sessionId}`, { method: 'DELETE' }).catch(() => {});
+}
+
+async function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// ─── GMAIL REGISTRATION FLOW ─────────────────────────────
+
+interface RegistrationResult {
+  success: boolean;
+  email?: string;
+  password?: string;
+  firstName?: string;
+  lastName?: string;
+  error?: string;
+}
+
+async function registerGmailAccount(
+  session: BrowserSession,
+  options: {
+    firstName: string;
+    lastName: string;
+    birthYear: number;
+    birthMonth: number;
+    birthDay: number;
+    gender: string;
+  },
+): Promise<RegistrationResult> {
+  const { sessionId, sessionToken } = session;
+  const { firstName, lastName, birthYear, birthMonth, birthDay, gender } = options;
+
+  const password = generatePassword();
+  const username = generateUsername(firstName, lastName);
+
+  try {
+    // Step 1: Navigate to Gmail signup
+    await browserCommand(sessionId, sessionToken, {
+      action: 'navigate',
+      url: 'https://accounts.google.com/signup/v2/webcreateaccount?flowName=GlifWebSignIn&flowEntry=SignUp',
+    });
+    await sleep(3000);
+
+    // Step 2: Enter first name
+    await browserCommand(sessionId, sessionToken, {
+      action: 'type_slow',
+      selector: 'input[name="firstName"]',
+      text: firstName,
+    });
+    await sleep(500);
+
+    // Step 3: Enter last name
+    await browserCommand(sessionId, sessionToken, {
+      action: 'type_slow',
+      selector: 'input[name="lastName"]',
+      text: lastName,
+    });
+    await sleep(500);
+
+    // Step 4: Click Next
+    await browserCommand(sessionId, sessionToken, {
+      action: 'click',
+      selector: 'button[type="button"]:has-text("Next"), div[role="button"]:has-text("Next")',
+    });
+    await sleep(3000);
+
+    // Step 5: Enter birthdate - month
+    await browserCommand(sessionId, sessionToken, {
+      action: 'click',
+      selector: '#month',
+    });
+    await sleep(300);
+    await browserCommand(sessionId, sessionToken, {
+      action: 'click',
+      selector: `option[value="${birthMonth}"], li[data-value="${birthMonth}"]`,
+    });
+    await sleep(300);
+
+    // Step 6: Enter birthdate - day
+    await browserCommand(sessionId, sessionToken, {
+      action: 'type',
+      selector: '#day',
+      text: String(birthDay),
+    });
+    await sleep(300);
+
+    // Step 7: Enter birthdate - year
+    await browserCommand(sessionId, sessionToken, {
+      action: 'type',
+      selector: '#year',
+      text: String(birthYear),
+    });
+    await sleep(300);
+
+    // Step 8: Select gender
+    await browserCommand(sessionId, sessionToken, {
+      action: 'click',
+      selector: '#gender',
+    });
+    await sleep(300);
+
+    const genderValue = gender === 'male' ? '1' : gender === 'female' ? '2' : '3';
+    await browserCommand(sessionId, sessionToken, {
+      action: 'click',
+      selector: `option[value="${genderValue}"], li[data-value="${genderValue}"]`,
+    });
+    await sleep(500);
+
+    // Step 9: Click Next
+    await browserCommand(sessionId, sessionToken, {
+      action: 'click',
+      selector: 'button[type="button"]:has-text("Next"), div[role="button"]:has-text("Next")',
+    });
+    await sleep(3000);
+
+    // Step 10: Choose "Create your own Gmail address" option if presented
+    const createOwnResult = await browserCommand(sessionId, sessionToken, {
+      action: 'click',
+      selector: 'div[data-value="create"], span:has-text("Create your own Gmail address")',
+    });
+    if (createOwnResult) {
+      await sleep(1000);
+    }
+
+    // Step 11: Enter username
+    await browserCommand(sessionId, sessionToken, {
+      action: 'type_slow',
+      selector: 'input[name="Username"]',
+      text: username,
+    });
+    await sleep(500);
+
+    // Step 12: Click Next
+    await browserCommand(sessionId, sessionToken, {
+      action: 'click',
+      selector: 'button[type="button"]:has-text("Next"), div[role="button"]:has-text("Next")',
+    });
+    await sleep(3000);
+
+    // Step 13: Enter password
+    await browserCommand(sessionId, sessionToken, {
+      action: 'type_slow',
+      selector: 'input[name="Passwd"]',
+      text: password,
+    });
+    await sleep(500);
+
+    // Step 14: Confirm password
+    await browserCommand(sessionId, sessionToken, {
+      action: 'type_slow',
+      selector: 'input[name="PasswdAgain"], input[name="ConfirmPasswd"]',
+      text: password,
+    });
+    await sleep(500);
+
+    // Step 15: Click Next
+    await browserCommand(sessionId, sessionToken, {
+      action: 'click',
+      selector: 'button[type="button"]:has-text("Next"), div[role="button"]:has-text("Next")',
+    });
+    await sleep(5000);
+
+    // Step 16: Check if phone verification is required
+    const contentResult = await browserCommand(sessionId, sessionToken, { action: 'content' });
+    const pageHtml = contentResult?.content || '';
+
+    if (pageHtml.includes('phone') || pageHtml.includes('verify')) {
+      // Phone verification required - try to skip
+      const skipResult = await browserCommand(sessionId, sessionToken, {
+        action: 'click',
+        selector: 'button:has-text("Skip"), span:has-text("Skip")',
+      });
+      
+      if (!skipResult) {
+        // Cannot skip phone verification
+        return {
+          success: false,
+          error: 'Phone verification required but cannot be bypassed. Try a different proxy or time.',
+        };
+      }
+      await sleep(3000);
+    }
+
+    // Step 17: Skip recovery email if prompted
+    await browserCommand(sessionId, sessionToken, {
+      action: 'click',
+      selector: 'button:has-text("Skip"), span:has-text("Skip")',
+    });
+    await sleep(2000);
+
+    // Step 18: Accept terms
+    await browserCommand(sessionId, sessionToken, {
+      action: 'click',
+      selector: 'button:has-text("I agree"), span:has-text("I agree")',
+    });
+    await sleep(5000);
+
+    // Step 19: Verify success by checking current URL or page content
+    const finalContent = await browserCommand(sessionId, sessionToken, { action: 'content' });
+    const finalHtml = finalContent?.content || '';
+
+    // Check for success indicators
+    if (
+      finalHtml.includes('myaccount.google.com') ||
+      finalHtml.includes('Welcome') ||
+      finalHtml.includes(firstName)
+    ) {
+      return {
+        success: true,
+        email: `${username}@gmail.com`,
+        password,
+        firstName,
+        lastName,
+      };
+    }
+
+    // Check for specific error messages
+    if (finalHtml.includes('phone')) {
+      return {
+        success: false,
+        error: 'Phone verification required',
+      };
+    }
+
+    if (finalHtml.includes('username') && finalHtml.includes('taken')) {
+      return {
+        success: false,
+        error: 'Username already taken, please retry',
+      };
+    }
+
+    // Take screenshot for debugging
+    const screenshot = await browserCommand(sessionId, sessionToken, { action: 'screenshot' });
+
+    return {
+      success: false,
+      error: 'Registration flow did not complete successfully. Please retry.',
+    };
+  } catch (err: any) {
+    return {
+      success: false,
+      error: `Registration failed: ${err.message}`,
+    };
+  }
+}
+
+// ─── MAIN ENDPOINT ──────────────────────────────────
+
+serviceRouter.post('/run', async (c) => {
   const walletAddress = process.env.WALLET_ADDRESS;
   if (!walletAddress) {
     return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+  }
+
+  if (!BROWSER_INTERNAL_KEY) {
+    return c.json({ error: 'Service misconfigured: BROWSER_INTERNAL_KEY not set' }, 500);
   }
 
   // ── Step 1: Check for payment ──
   const payment = extractPayment(c);
 
   if (!payment) {
-    // No payment header → return 402 with full payment instructions.
-    // AI agents parse this JSON to know what to pay and where.
     return c.json(
       build402Response('/api/run', DESCRIPTION, PRICE_USDC, walletAddress, OUTPUT_SCHEMA),
       402,
@@ -72,64 +426,119 @@ serviceRouter.get('/run', async (c) => {
     }, 402);
   }
 
-  // ── Step 3: Validate input ──
-  const url = c.req.query('url');
-  if (!url) {
-    return c.json({ error: 'Missing required parameter: ?url=<target_url>' }, 400);
-  }
-
-  // Basic URL validation — block private/internal networks
+  // ── Step 3: Parse input ──
+  let body: any = {};
   try {
-    const parsed = new URL(url);
-    if (!['http:', 'https:'].includes(parsed.protocol)) {
-      return c.json({ error: 'Only http:// and https:// URLs are allowed' }, 400);
-    }
-    const host = parsed.hostname.toLowerCase();
-    if (
-      host === 'localhost' ||
-      host.startsWith('127.') ||
-      host.startsWith('10.') ||
-      host.startsWith('192.168.') ||
-      host.startsWith('172.') ||
-      host === '169.254.169.254' ||
-      host.endsWith('.local') ||
-      host.endsWith('.internal')
-    ) {
-      return c.json({ error: 'Private/internal URLs are not allowed' }, 400);
-    }
+    body = await c.req.json();
   } catch {
-    return c.json({ error: 'Invalid URL format' }, 400);
+    // Use query params as fallback
+    body = {};
   }
 
-  // ── Step 4: Your logic — fetch URL through mobile proxy ──
+  const country = (body.country || c.req.query('country') || 'US').toUpperCase();
+  const validCountries = ['US', 'GB', 'DE', 'FR', 'ES', 'PL'];
+  if (!validCountries.includes(country)) {
+    return c.json({ error: `Invalid country. Use one of: ${validCountries.join(', ')}` }, 400);
+  }
+
+  const genderInput = (body.gender || c.req.query('gender') || '').toLowerCase();
+  const gender = ['male', 'female', 'other'].includes(genderInput)
+    ? genderInput
+    : Math.random() > 0.5 ? 'male' : 'female';
+
+  const names = body.firstName && body.lastName
+    ? { firstName: body.firstName, lastName: body.lastName }
+    : randomName(gender);
+
+  const birthYear = body.birthYear || randomInt(1985, 2000);
+  const birthMonth = body.birthMonth || randomInt(1, 12);
+  const birthDay = body.birthDay || randomInt(1, 28);
+
+  // ── Step 4: Get proxy and create browser session ──
+  let session: BrowserSession | null = null;
+
   try {
     const proxy = getProxy();
-    const response = await proxyFetch(url);
-    const text = await response.text();
-    const maxLen = 50_000; // 50KB cap
+
+    session = await createBrowserSession(country, proxy);
+    if (!session) {
+      return c.json({
+        error: 'Failed to create browser session',
+        hint: 'Browser service may be temporarily unavailable.',
+      }, 502);
+    }
+
+    // ── Step 5: Run registration flow ──
+    const result = await registerGmailAccount(session, {
+      firstName: names.firstName,
+      lastName: names.lastName,
+      birthYear,
+      birthMonth,
+      birthDay,
+      gender,
+    });
 
     // Set payment confirmation headers
     c.header('X-Payment-Settled', 'true');
     c.header('X-Payment-TxHash', payment.txHash);
 
-    return c.json({
-      url,
-      status: response.status,
-      text: text.length > maxLen ? text.substring(0, maxLen) : text,
-      contentLength: text.length,
-      proxy: { country: proxy.country, type: 'mobile' },
-      payment: {
-        txHash: payment.txHash,
-        network: payment.network,
-        amount: verification.amount,
-        settled: true,
-      },
-    });
+    if (result.success) {
+      return c.json({
+        success: true,
+        email: result.email,
+        password: result.password,
+        firstName: result.firstName,
+        lastName: result.lastName,
+        recoveryEmail: null,
+        proxy: { country, type: 'mobile' },
+        payment: {
+          txHash: payment.txHash,
+          network: payment.network,
+          amount: verification.amount,
+          settled: true,
+        },
+      });
+    } else {
+      return c.json({
+        success: false,
+        error: result.error,
+        hint: 'Gmail registration may require phone verification or the username may be taken. Retry with different parameters.',
+        proxy: { country, type: 'mobile' },
+        payment: {
+          txHash: payment.txHash,
+          network: payment.network,
+          amount: verification.amount,
+          settled: true,
+        },
+      }, 200); // Still 200 because payment was processed
+    }
   } catch (err: any) {
     return c.json({
       error: 'Service execution failed',
       message: err.message,
-      hint: 'The target URL may be unreachable or the proxy may be temporarily unavailable.',
+      hint: 'Browser automation or proxy may be temporarily unavailable.',
     }, 502);
+  } finally {
+    // Always close browser session
+    if (session) {
+      await closeBrowserSession(session.sessionId);
+    }
   }
+});
+
+// Also support GET for discovery
+serviceRouter.get('/run', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) {
+    return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+  }
+
+  // Always return 402 for GET - actual creation requires POST
+  return c.json(
+    {
+      ...build402Response('/api/run', DESCRIPTION, PRICE_USDC, walletAddress, OUTPUT_SCHEMA),
+      note: 'Use POST method to create accounts. GET returns payment instructions only.',
+    },
+    402,
+  );
 });
