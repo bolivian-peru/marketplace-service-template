@@ -1,0 +1,24 @@
+{
+  "id": "gmail-account-creator",
+  "name": "Gmail Account Creator + Warmer",
+  "description": "Create verified Gmail accounts with phone verification, antidetect browser, mobile proxies. Includes account warming.",
+  "longDescription": "Production-quality Gmail account creation service. Uses SMS API for phone verification, antidetect browser for fingerprint uniqueness, mobile proxies for clean IPs. Includes 7-day warming period with realistic activity to establish account reputation.",
+  "endpoint": "https://marketplace.proxies.sx/api/gmail-create",
+  "pricing": {
+    "model": "per-account",
+    "amount": "2.50",
+    "currency": "USDC",
+    "networks": [
+      {
+        "network": "solana",
+        "recipient": "zARG9WZCiRRzghuCzx1kqSynhYanBnGdjfz4kjSjvin",
+        "asset": "USDC"
+      }
+    ]
+  },
+  "category": "automation",
+  "tags": ["gmail", "accounts", "email", "automation", "warming"],
+  "owner": { "github": "EugeneJarvis88" },
+  "status": "pending",
+  "addedAt": "2026-02-07"
+}
