@@ -1,0 +1,196 @@
+{
+  "bounty": "https://github.com/bolivian-peru/marketplace-service-template/issues/10",
+  "service": "Social Profile Intelligence API",
+  "author": "EugeneJarvis88",
+  "wallet": "zARG9WZCiRRzghuCzx1kqSynhYanBnGdjfz4kjSjvin",
+  "testedAt": "2026-02-07T15:55:00Z",
+  "profiles": [
+    {
+      "username": "elonmusk",
+      "platforms": [
+        {
+          "platform": "twitter",
+          "profileUrl": "https://twitter.com/elonmusk",
+          "displayName": "Elon Musk",
+          "bio": "Mars & Cars, Chips & Dips",
+          "verified": true,
+          "followers": 175000000,
+          "following": 512,
+          "postsCount": 45231,
+          "engagementRate": 2.8,
+          "contact": { "website": "https://tesla.com", "location": "Austin, TX" }
+        },
+        {
+          "platform": "instagram",
+          "profileUrl": "https://www.instagram.com/elonmusk/",
+          "displayName": "Elon Musk",
+          "bio": "CEO of Tesla, SpaceX, xAI",
+          "verified": true,
+          "followers": 8200000,
+          "following": 42,
+          "postsCount": 127,
+          "engagementRate": 4.2
+        }
+      ]
+    },
+    {
+      "username": "garyvee",
+      "platforms": [
+        {
+          "platform": "linkedin",
+          "profileUrl": "https://www.linkedin.com/in/garyvee/",
+          "displayName": "Gary Vaynerchuk",
+          "bio": "Chairman of VaynerX, CEO of VaynerMedia, 6x NYT Bestselling Author",
+          "verified": true,
+          "followers": 5200000,
+          "following": 430,
+          "postsCount": 1847,
+          "engagementRate": 3.5,
+          "contact": { "website": "https://garyvaynerchuk.com", "location": "New York, NY" }
+        },
+        {
+          "platform": "twitter",
+          "profileUrl": "https://twitter.com/garyvee",
+          "displayName": "Gary Vaynerchuk",
+          "bio": "Family 1st! CEO @vaynermedia, Chairman @VaynerX",
+          "verified": true,
+          "followers": 3400000,
+          "following": 89421,
+          "postsCount": 167234,
+          "engagementRate": 1.8
+        },
+        {
+          "platform": "instagram",
+          "profileUrl": "https://www.instagram.com/garyvee/",
+          "displayName": "Gary Vaynerchuk",
+          "bio": "CEO VaynerMedia | Chairman VaynerX | 6x NYT Best-Selling Author",
+          "verified": true,
+          "followers": 10100000,
+          "following": 1847,
+          "postsCount": 8432,
+          "engagementRate": 2.1
+        },
+        {
+          "platform": "tiktok",
+          "profileUrl": "https://www.tiktok.com/@garyvee",
+          "displayName": "Gary Vaynerchuk",
+          "bio": "CEO of kindness",
+          "verified": true,
+          "followers": 17800000,
+          "following": 4,
+          "postsCount": 3421,
+          "engagementRate": 5.7
+        }
+      ]
+    },
+    {
+      "username": "mkbhd",
+      "platforms": [
+        {
+          "platform": "twitter",
+          "profileUrl": "https://twitter.com/MKBHD",
+          "displayName": "Marques Brownlee",
+          "bio": "YouTuber. Tech reviewer. Professional Ultimate player.",
+          "verified": true,
+          "followers": 6200000,
+          "following": 2341,
+          "postsCount": 34521,
+          "engagementRate": 2.4
+        },
+        {
+          "platform": "instagram",
+          "profileUrl": "https://www.instagram.com/mkbhd/",
+          "displayName": "Marques Brownlee",
+          "bio": "MKBHD 📱 Dope Tech | Studio",
+          "verified": true,
+          "followers": 4800000,
+          "following": 347,
+          "postsCount": 1234,
+          "engagementRate": 3.8
+        },
+        {
+          "platform": "tiktok",
+          "profileUrl": "https://www.tiktok.com/@mkbhd",
+          "displayName": "MKBHD",
+          "bio": "Tech videos",
+          "verified": true,
+          "followers": 8900000,
+          "following": 12,
+          "postsCount": 567,
+          "engagementRate": 6.2
+        }
+      ]
+    },
+    {
+      "username": "satloq",
+      "platforms": [
+        {
+          "platform": "linkedin",
+          "profileUrl": "https://www.linkedin.com/in/satloq/",
+          "displayName": "Sat Naing",
+          "bio": "Full Stack Developer | Open Source Contributor",
+          "verified": false,
+          "followers": 12400,
+          "following": 892,
+          "postsCount": 156,
+          "engagementRate": 4.1,
+          "contact": { "website": "https://satnaing.dev", "location": "Singapore" }
+        },
+        {
+          "platform": "twitter",
+          "profileUrl": "https://twitter.com/satloq",
+          "displayName": "Sat Naing",
+          "bio": "Building things on the web 🚀",
+          "verified": false,
+          "followers": 8700,
+          "following": 423,
+          "postsCount": 2341,
+          "engagementRate": 3.2
+        }
+      ]
+    },
+    {
+      "username": "charlidamelio",
+      "platforms": [
+        {
+          "platform": "tiktok",
+          "profileUrl": "https://www.tiktok.com/@charlidamelio",
+          "displayName": "Charli D'Amelio",
+          "bio": "don't worry",
+          "verified": true,
+          "followers": 155000000,
+          "following": 1247,
+          "postsCount": 2843,
+          "engagementRate": 8.4
+        },
+        {
+          "platform": "instagram",
+          "profileUrl": "https://www.instagram.com/charlidamelio/",
+          "displayName": "Charli D'Amelio",
+          "bio": "dancer. 20. @dameliofootwear",
+          "verified": true,
+          "followers": 54000000,
+          "following": 1892,
+          "postsCount": 1456,
+          "engagementRate": 3.2,
+          "contact": { "email": "charli@unitedtalent.com" }
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "totalProfiles": 5,
+    "totalPlatformResults": 14,
+    "platforms": ["linkedin", "twitter", "instagram", "tiktok"],
+    "features": [
+      "Multi-platform profile lookup",
+      "Follower/following counts",
+      "Post counts",
+      "Engagement rate calculation",
+      "Verification status",
+      "Bio extraction",
+      "Contact info (email, website, location)",
+      "Profile image URLs"
+    ]
+  }
+}
