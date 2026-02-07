@@ -1,0 +1,36 @@
+services:
+  - type: web
+    name: instagram-account-creator
+    env: docker
+    plan: starter
+    autoDeploy: true
+    healthCheckPath: /health
+    envVars:
+      - key: PORT
+        value: 3000
+      - key: SERVICE_NAME
+        value: instagram-account-creator
+      - key: SERVICE_DESCRIPTION
+        value: Create Instagram accounts via mobile proxy + antidetect browser
+      - key: PRICE_USDC
+        value: 0.5
+      - key: RATE_LIMIT
+        value: 60
+      - key: PROXY_HOST
+        value: ""
+      - key: PROXY_HTTP_PORT
+        value: ""
+      - key: PROXY_USER
+        value: ""
+      - key: PROXY_PASS
+        value: ""
+      - key: PROXY_COUNTRY
+        value: US
+      - key: BROWSER_BASE_URL
+        value: https://browser.proxies.sx
+      - key: BROWSER_INTERNAL_KEY
+        value: ""
+      - key: WALLET_ADDRESS
+        value: ""
+      - key: WALLET_ADDRESS_BASE
+        value: ""

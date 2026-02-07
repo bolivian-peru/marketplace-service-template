@@ -1,0 +1,46 @@
+{
+  "id": "instagram-account-creator",
+  "name": "Instagram Account Creator",
+  "description": "Automated Instagram account creation with mobile proxy + antidetect browser. x402 payments.",
+  "longDescription": "Creates new Instagram accounts using Proxies.sx mobile proxies and Camoufox antidetect browser sessions. Each request returns credentials or a verification-required response.",
+  "endpoint": "https://YOUR_DEPLOY_URL",
+  "docsUrl": "https://YOUR_DEPLOY_URL",
+  "pricing": {
+    "model": "per-request",
+    "amount": "0.50",
+    "minimum": "0.50",
+    "currency": "USDC",
+    "networks": [
+      {
+        "network": "solana",
+        "chainId": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "recipient": "YOUR_SOLANA_WALLET_ADDRESS",
+        "asset": "USDC",
+        "assetAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+      },
+      {
+        "network": "base",
+        "chainId": "eip155:8453",
+        "recipient": "YOUR_BASE_WALLET_ADDRESS",
+        "asset": "USDC",
+        "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+      }
+    ]
+  },
+  "category": "automation",
+  "tags": ["instagram", "account", "signup", "automation", "antidetect", "mobile-proxy"],
+  "owner": {
+    "name": "YOUR_NAME",
+    "github": "YOUR_GITHUB",
+    "twitter": "YOUR_TWITTER",
+    "telegram": "YOUR_TELEGRAM"
+  },
+  "status": "pending",
+  "featured": false,
+  "addedAt": "2026-02-06",
+  "updatedAt": "2026-02-06",
+  "x402": {
+    "discoveryUrl": "https://YOUR_DEPLOY_URL/api/run",
+    "wellKnown": "https://YOUR_DEPLOY_URL/.well-known/x402.json"
+  }
+}

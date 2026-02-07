@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
-  "updatedAt": "2026-02-05",
-  "count": 2,
+  "updatedAt": "2026-02-06",
+  "count": 3,
   "services": [
     {
       "id": "proxies-sx-mobile",
@@ -48,6 +48,30 @@
       "status": "active",
       "featured": true,
       "detailsFile": "proxies-sx-browser.json"
+    },
+    {
+      "id": "instagram-account-creator",
+      "name": "Instagram Account Creator",
+      "description": "Automated Instagram account creation with mobile proxy + antidetect browser. x402 payments.",
+      "endpoint": "https://YOUR_DEPLOY_URL",
+      "docsUrl": "https://YOUR_DEPLOY_URL",
+      "pricing": {
+        "model": "per-request",
+        "amount": "0.50",
+        "minimum": "0.50",
+        "currency": "USDC"
+      },
+      "category": "automation",
+      "tags": ["instagram", "account", "signup", "automation", "antidetect", "mobile-proxy"],
+      "owner": {
+        "name": "YOUR_NAME",
+        "github": "YOUR_GITHUB",
+        "twitter": "YOUR_TWITTER",
+        "telegram": "YOUR_TELEGRAM"
+      },
+      "status": "pending",
+      "featured": false,
+      "detailsFile": "instagram-account-creator.json"
     }
   ],
   "networks": {
