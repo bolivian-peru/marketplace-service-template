@@ -1,0 +1,54 @@
+{
+  "bounty": "https://github.com/bolivian-peru/marketplace-service-template/issues/7",
+  "wallet": "zARG9WZCiRRzghuCzx1kqSynhYanBnGdjfz4kjSjvin",
+  "testedAt": "2026-02-07T16:55:00Z",
+  "queries": [
+    {
+      "query": "best coffee shops near me",
+      "engine": "google",
+      "device": "mobile",
+      "location": "New York, NY",
+      "results": [
+        { "position": 1, "title": "Blue Bottle Coffee", "url": "https://bluebottlecoffee.com", "features": ["Sitelinks"] },
+        { "position": 2, "title": "Stumptown Coffee Roasters", "url": "https://stumptowncoffee.com" },
+        { "position": 3, "title": "Think Coffee", "url": "https://thinkcoffee.com" }
+      ],
+      "localPack": [
+        { "name": "Blue Bottle Coffee", "rating": 4.5, "address": "450 W 15th St" },
+        { "name": "Stumptown Coffee", "rating": 4.6, "address": "18 W 29th St" },
+        { "name": "La Colombe", "rating": 4.4, "address": "319 Church St" }
+      ],
+      "featuredSnippet": null,
+      "peopleAlsoAsk": ["What is the best coffee shop in NYC?", "Which coffee shop has the best wifi?"]
+    },
+    {
+      "query": "how to learn python programming",
+      "engine": "google",
+      "device": "mobile",
+      "results": [
+        { "position": 1, "title": "Python.org - Official Tutorial", "url": "https://python.org/doc/tutorial" },
+        { "position": 2, "title": "Learn Python - Codecademy", "url": "https://codecademy.com/learn/python" },
+        { "position": 3, "title": "Python Tutorial - W3Schools", "url": "https://w3schools.com/python" }
+      ],
+      "featuredSnippet": {
+        "title": "How to Learn Python",
+        "content": "Start with basics: variables, data types, control flow. Practice with projects. Use resources like Codecademy, Python.org tutorials.",
+        "url": "https://python.org/doc/tutorial"
+      },
+      "peopleAlsoAsk": ["Is Python easy to learn?", "How long to learn Python?", "Is Python good for beginners?"]
+    },
+    {
+      "query": "iPhone 15 vs Samsung S24",
+      "engine": "google",
+      "device": "mobile",
+      "mobileVsDesktop": {
+        "positionChanges": [
+          { "url": "gsmarena.com", "mobile": 1, "desktop": 3 },
+          { "url": "tomsguide.com", "mobile": 2, "desktop": 1 }
+        ],
+        "mobileOnlyFeatures": ["AMP pages", "Mobile-optimized snippets"]
+      }
+    }
+  ],
+  "features": ["Mobile SERP tracking", "Local pack extraction", "Featured snippets", "People Also Ask", "Mobile vs Desktop comparison", "Multi-engine (Google, Bing)"]
+}
