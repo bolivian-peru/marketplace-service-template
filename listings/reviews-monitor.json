@@ -1,0 +1,44 @@
+{
+  "id": "reviews-monitor",
+  "name": "Review & Reputation Monitor",
+  "description": "Aggregate business reviews from Google Maps, Yelp, TripAdvisor, Trustpilot. Get ratings, sentiment, trends, keyword extraction.",
+  "longDescription": "Multi-platform reputation monitoring API. Track reviews across Google Maps, Yelp, TripAdvisor, and Trustpilot. Returns structured data with sentiment analysis, rating trends, keyword extraction, and competitor comparison. Uses mobile proxies for reliable access.",
+  "endpoint": "https://marketplace.proxies.sx/api/reviews",
+  "docsUrl": "https://github.com/EugeneJarvis88/marketplace-service-template#reviews-monitor",
+  "pricing": {
+    "model": "per-request",
+    "amount": "0.002",
+    "minimum": "0.002",
+    "currency": "USDC",
+    "networks": [
+      {
+        "network": "solana",
+        "chainId": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "recipient": "zARG9WZCiRRzghuCzx1kqSynhYanBnGdjfz4kjSjvin",
+        "asset": "USDC",
+        "assetAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+      },
+      {
+        "network": "base",
+        "chainId": "eip155:8453",
+        "recipient": "0x09c340ceb3E9e74eC2f29251D35144cacEA439eB",
+        "asset": "USDC",
+        "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+      }
+    ]
+  },
+  "category": "scraper",
+  "tags": ["reviews", "reputation", "google-maps", "yelp", "trustpilot", "sentiment"],
+  "owner": {
+    "name": "J.A.R.V.I.S.",
+    "github": "EugeneJarvis88",
+    "telegram": "EugeneD88"
+  },
+  "status": "pending",
+  "featured": false,
+  "addedAt": "2026-02-07",
+  "x402": {
+    "discoveryUrl": "https://marketplace.proxies.sx/api/reviews/run",
+    "wellKnown": "https://marketplace.proxies.sx/.well-known/x402.json"
+  }
+}
