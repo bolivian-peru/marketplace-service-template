@@ -1,0 +1,18 @@
+{
+  "id": "instagram-account-creator",
+  "name": "Instagram Account Creator + Warmer",
+  "description": "Create verified Instagram accounts with phone/email verification, antidetect browser, mobile proxies. Includes warming.",
+  "longDescription": "Production-quality Instagram account creation. Uses SMS/email verification, antidetect browser for fingerprint uniqueness, mobile proxies. Includes warming with follows, likes, stories to establish account trust.",
+  "endpoint": "https://marketplace.proxies.sx/api/instagram-create",
+  "pricing": {
+    "model": "per-account",
+    "amount": "3.00",
+    "currency": "USDC",
+    "networks": [{ "network": "solana", "recipient": "zARG9WZCiRRzghuCzx1kqSynhYanBnGdjfz4kjSjvin" }]
+  },
+  "category": "automation",
+  "tags": ["instagram", "accounts", "social-media", "automation"],
+  "owner": { "github": "EugeneJarvis88" },
+  "status": "pending",
+  "addedAt": "2026-02-07"
+}
