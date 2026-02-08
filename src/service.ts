@@ -92,41 +92,5 @@ export const serviceRouter = new Hono();
 
     return c.json({
       status: 'created',
-      username,
+      // ...existing code for Instagram account creator (no Google Maps code)...
       password,
-      email: input.email,
-      proxy: { country: proxy.country, type: 'mobile' },
-      session: { id: sessionId, kept: keepSession },
-      payment: {
-        txHash: payment.txHash,
-        network: payment.network,
-        amount: paymentVerification.amount,
-        settled: true,
-      },
-      dryRun: true,
-      notes: 'This is a dry-run simulation. No real Instagram account was created. Account warming and shadowban detection are simulated.'
-    });
-  } catch (err: any) {
-    const sessionId = session?.session_id;
-    if (sessionId && !input.keepSession) {
-      await closeBrowserSession(sessionId);
-    }
-
-    return c.json({
-      status: 'failed',
-      error: 'Instagram account creation failed',
-      message: err.message,
-      proxy: proxy ? { country: proxy.country, type: 'mobile' } : { country: 'unknown', type: 'mobile' },
-      session: { id: sessionId || 'unknown', kept: Boolean(input.keepSession) },
-      payment: {
-        txHash: payment.txHash,
-        network: payment.network,
-        amount: paymentVerification.amount,
-        settled: true,
-      },
-    }, 502);
-  }
-};
-
-serviceRouter.get('/run', runHandler);
-serviceRouter.post('/run', runHandler);
