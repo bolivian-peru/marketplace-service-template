@@ -1,0 +1,54 @@
+{
+  "id": "mobile-serp-tracker",
+  "name": "Mobile SERP Tracker",
+  "description": "Real Google mobile SERP results from 4G/5G carrier IPs. Returns structured JSON with organic results, People Also Ask, featured snippets, AI Overviews, map packs, ads, and position tracking.",
+  "longDescription": "Track Google mobile search rankings with authentic 4G/5G carrier IPs. Get the exact SERP layout mobile users see — including mobile-specific features like AI Overviews, People Also Ask, featured snippets, map packs, knowledge panels, and ad placements. Supports country/language targeting and local search. At $0.003/query, undercuts SerpApi ($0.01-0.025) and DataForSEO ($0.002) while providing authentic mobile data that neither offers.",
+  "endpoint": "https://api.proxies.sx/v1/x402/serp",
+  "docsUrl": "https://agents.proxies.sx/marketplace/skill.md",
+  "pricing": {
+    "model": "per-request",
+    "amount": "0.003",
+    "minimum": "0.003",
+    "currency": "USDC",
+    "networks": [
+      {
+        "network": "solana",
+        "chainId": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "recipient": "6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv",
+        "asset": "USDC",
+        "assetAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+      },
+      {
+        "network": "base",
+        "chainId": "eip155:8453",
+        "recipient": "0xF8cD900794245fc36CBE65be9afc23CDF5103042",
+        "asset": "USDC",
+        "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+      }
+    ]
+  },
+  "category": "scraper",
+  "tags": [
+    "serp",
+    "seo",
+    "google-search",
+    "mobile-serp",
+    "rank-tracking",
+    "people-also-ask",
+    "featured-snippets",
+    "ai-overview",
+    "map-pack",
+    "search-results"
+  ],
+  "owner": {
+    "name": "aliraza556",
+    "github": "aliraza556"
+  },
+  "status": "active",
+  "featured": true,
+  "addedAt": "2026-02-07",
+  "x402": {
+    "discoveryUrl": "https://api.proxies.sx/v1/x402/serp/run",
+    "wellKnown": "https://api.proxies.sx/v1/x402/serp"
+  }
+}
