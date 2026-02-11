@@ -34,3 +34,24 @@ export interface SearchResult {
   searchQuery: string;
   location: string;
 }
+
+export interface SerpResult {
+  rank: number;
+  title: string;
+  link: string;
+  snippet: string;
+  source?: string;
+}
+
+export interface AiOverview {
+  text: string;
+  links: { title: string; url: string }[];
+}
+
+export interface SerpData {
+  results: SerpResult[];
+  aiOverview?: AiOverview;
+  relatedSearches: string[];
+  peopleAlsoAsk: { question: string; answer?: string }[];
+  totalResults?: string;
+}
