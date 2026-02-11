@@ -20,45 +20,109 @@ import { scrapeGoogleMaps, extractDetailedBusiness } from './scrapers/maps-scrap
 export const serviceRouter = new Hono();
 
 // ─── SERVICE CONFIGURATION ─────────────────────────────
-const SERVICE_NAME = 'google-maps-lead-generator';
-const PRICE_USDC = 0.005;  // $0.005 per business record
-const DESCRIPTION = 'Extract structured business data from Google Maps: name, address, phone, website, email, hours, ratings, reviews, categories, and geocoordinates. Search by category + location with full pagination.';
+const SERVICE_NAME = 'lutra-multi-scraper';
+const PRICE_USDC = 0.005;  // $0.005 per request
+const DESCRIPTION = 'A unified scraping suite for Job Market Intelligence, Review Monitoring, and Social Profile data. Powered by mobile proxies to bypass anti-bot systems.';
 
 // ─── OUTPUT SCHEMA FOR AI AGENTS ──────────────────────
 const OUTPUT_SCHEMA = {
-  input: {
-    query: 'string — Search query/category (e.g., "plumbers", "restaurants") (required)',
-    location: 'string — Location to search (e.g., "Austin TX", "New York City") (required)',
-    limit: 'number — Max results to return (default: 20, max: 100)',
-    pageToken: 'string — Pagination token for next page (optional)',
+  endpoints: {
+    '/jobs': 'Get job listings from Indeed/LinkedIn',
+    '/reviews': 'Get reviews from Yelp/Trustpilot',
+    '/social': 'Get social profile data from Reddit/Twitter',
+    '/maps': 'Get business data from Google Maps',
   },
-  output: {
-    businesses: [{
-      name: 'string — Business name',
-      address: 'string | null — Full street address',
-      phone: 'string | null — Phone number',
-      website: 'string | null — Business website URL',
-      email: 'string | null — Email address (if found)',
-      hours: 'object | null — Operating hours by day',
-      rating: 'number | null — Google rating (1-5)',
-      reviewCount: 'number | null — Total review count',
-      categories: 'string[] — Business categories/types',
-      coordinates: '{ latitude, longitude } | null — Geo coordinates',
-      placeId: 'string | null — Google Place ID',
-      priceLevel: 'string | null — Price level ($, $$, $$$, $$$$)',
-      permanentlyClosed: 'boolean — Whether business is permanently closed',
-    }],
-    totalFound: 'number — Total businesses found',
-    nextPageToken: 'string | null — Token for next page of results',
-    searchQuery: 'string — The search query used',
-    location: 'string — The location searched',
-    proxy: '{ country: string, type: "mobile" }',
-    payment: '{ txHash, network, amount, settled }',
-  },
+  payment: 'All endpoints cost $0.005 USDC per call'
 };
 
-// ─── API ENDPOINT ─────────────────────────────────────
+// ─── API ENDPOINTS ─────────────────────────────────────
 
+// 1. Job Scraper (#16)
+serviceRouter.get('/jobs', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(
+      build402Response('/api/jobs', 'Job Market Scraper: Fetch jobs from Indeed/LinkedIn', PRICE_USDC, walletAddress, { query: 'string', location: 'string' }),
+      402,
+    );
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const query = c.req.query('query') || 'Software Engineer';
+  const location = c.req.query('location') || 'Remote';
+
+  const { scrapeIndeed } = await import('./scrapers/job-scraper');
+  try {
+    const results = await scrapeIndeed(query, location);
+    return c.json({ results, payment: { txHash: payment.txHash, settled: true } });
+  } catch (err: any) {
+    return c.json({ error: err.message }, 502);
+  }
+});
+
+// 2. Review Scraper (#14)
+serviceRouter.get('/reviews', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(
+      build402Response('/api/reviews', 'Review Scraper: Fetch reviews from Yelp/Trustpilot', PRICE_USDC, walletAddress, { slug: 'string (yelp business slug or trustpilot domain)' }),
+      402,
+    );
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const slug = c.req.query('slug');
+  if (!slug) return c.json({ error: 'Missing required parameter: slug' }, 400);
+
+  const { scrapeYelp, scrapeTrustpilot } = await import('./scrapers/review-scraper');
+  try {
+    const results = slug.includes('.') ? await scrapeTrustpilot(slug) : await scrapeYelp(slug);
+    return c.json({ results, payment: { txHash: payment.txHash, settled: true } });
+  } catch (err: any) {
+    return c.json({ error: err.message }, 502);
+  }
+});
+
+// 3. Social Scraper (#10)
+serviceRouter.get('/social', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(
+      build402Response('/api/social', 'Social Scraper: Fetch profile data from Reddit/Twitter', PRICE_USDC, walletAddress, { username: 'string', platform: 'reddit|twitter' }),
+      402,
+    );
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const username = c.req.query('username');
+  const platform = c.req.query('platform') || 'reddit';
+  if (!username) return c.json({ error: 'Missing required parameter: username' }, 400);
+
+  const { scrapeReddit, scrapeTwitter } = await import('./scrapers/social-scraper');
+  try {
+    const result = platform === 'reddit' ? await scrapeReddit(username) : await scrapeTwitter(username);
+    return c.json({ result, payment: { txHash: payment.txHash, settled: true } });
+  } catch (err: any) {
+    return c.json({ error: err.message }, 502);
+  }
+});
+
+// Legacy Maps Endpoint
 serviceRouter.get('/run', async (c) => {
   const walletAddress = process.env.WALLET_ADDRESS;
   if (!walletAddress) {
