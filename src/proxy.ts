@@ -32,17 +32,14 @@ export interface ProxyFetchOptions extends RequestInit {
  * Get credentials from https://client.proxies.sx or via x402 API:
  *   curl https://api.proxies.sx/v1/x402/proxy?country=US&traffic=1
  */
-export function getProxy(): ProxyConfig {
+export function getProxy(): ProxyConfig | null {
   const host = process.env.PROXY_HOST;
   const port = process.env.PROXY_HTTP_PORT;
   const user = process.env.PROXY_USER;
   const pass = process.env.PROXY_PASS;
 
   if (!host || !port || !user || !pass) {
-    throw new Error(
-      'Proxy not configured. Set PROXY_HOST, PROXY_HTTP_PORT, PROXY_USER, PROXY_PASS in .env. ' +
-      'Get credentials: https://client.proxies.sx or via x402 API'
-    );
+    return null;
   }
 
   return {
@@ -78,6 +75,13 @@ export async function proxyFetch(
     'Accept-Language': 'en-US,en;q=0.9',
   };
 
+  if (!proxy) {
+    return fetch(url, {
+      ...fetchOptions,
+      headers: { ...defaultHeaders, ...fetchOptions.headers as Record<string, string> },
+    });
+  }
+
   let lastError: Error | null = null;
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
@@ -104,5 +108,55 @@ export async function proxyFetch(
     }
   }
 
-  throw new Error(`Proxy fetch failed after ${maxRetries + 1} attempts: ${lastError?.message}`);
+/**
+ * Fetch a URL through Proxies.sx Browser API (headless browser).
+ * Use this for SPA sites like Twitter/X that require JavaScript.
+ */
+export async function browserFetch(url: string): Promise<string> {
+  const BROWSER_API = 'https://browser.proxies.sx/v1/sessions';
+  console.log(`[BrowserProxy] Creating session for: ${url}`);
+  
+  // 1. Create a session
+  // Note: This requires payment in a real environment.
+  // In the marketplace context, the service would have pre-paid or pass-through.
+  const sessionResponse = await fetch(BROWSER_API, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ country: 'US' })
+  });
+
+  if (!sessionResponse.ok) {
+    if (sessionResponse.status === 402) {
+      throw new Error('Browser session requires payment (x402)');
+    }
+    throw new Error(`Failed to create browser session: ${sessionResponse.status}`);
+  }
+
+  const { sessionId } = await sessionResponse.json();
+
+  try {
+    // 2. Navigate and get content
+    const commandResponse = await fetch(`${BROWSER_API}/${sessionId}/command`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'navigate', url })
+    });
+
+    if (!commandResponse.ok) {
+      throw new Error(`Browser navigation failed: ${commandResponse.status}`);
+    }
+
+    // 3. Get page content
+    const contentResponse = await fetch(`${BROWSER_API}/${sessionId}/command`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'evaluate', script: 'document.documentElement.outerHTML' })
+    });
+
+    const { result } = await contentResponse.json();
+    return result;
+  } finally {
+    // 4. Close session
+    await fetch(`${BROWSER_API}/${sessionId}`, { method: 'DELETE' });
+  }
 }

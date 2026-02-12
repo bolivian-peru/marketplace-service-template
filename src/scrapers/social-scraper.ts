@@ -4,7 +4,7 @@
  * Extracts profile data from Reddit and Twitter (X).
  */
 
-import { proxyFetch } from '../proxy';
+import { proxyFetch, browserFetch } from '../proxy';
 
 export interface SocialProfile {
   username: string;
@@ -44,27 +44,15 @@ export async function scrapeReddit(username: string): Promise<SocialProfile> {
 
 /**
  * Scrape Twitter Profile
- * Note: Twitter is heavily protected. This basic implementation 
- * attempts to scrape the public profile page.
+ * Note: Twitter is heavily protected. Uses browser.proxies.sx (headless).
  */
 export async function scrapeTwitter(username: string): Promise<SocialProfile> {
   const url = `https://twitter.com/${username}`;
-  console.log(`[SocialScraper] Fetching Twitter: ${url}`);
+  console.log(`[SocialScraper] Fetching Twitter via Headless: ${url}`);
   
-  const response = await proxyFetch(url, {
-    headers: {
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-    }
-  });
-
-  if (!response.ok) {
-    throw new Error(`Twitter fetch failed: ${response.status}`);
-  }
-
-  const html = await response.text();
+  const html = await browserFetch(url);
   
-  // Very basic regex extraction as Twitter is SPA and needs JS
-  // In a real production environment, we'd use browser.proxies.sx
+  // Extract data from the rendered HTML
   const bioMatch = html.match(/"description":"([^"]+)"/);
   const nameMatch = html.match(/"name":"([^"]+)"/);
   
