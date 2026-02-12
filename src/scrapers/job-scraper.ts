@@ -50,7 +50,8 @@ function parseIndeedHtml(html: string): JobListing[] {
   const listings: JobListing[] = [];
   
   // Strategy: Indeed job cards often have data-jk (job key)
-  const jobCardPattern = /data-jk="([^"]+)"[\s\S]*?class="jobTitle[^>]*>([\s\S]*?)<\/h2>[\s\S]*?class="companyName[^>]*>([\s\S]*?)<\/span>[\s\S]*?class="companyLocation[^>]*>([\s\S]*?)<\/div>/g;
+  // Updated regex to attempt salary and date extraction
+  const jobCardPattern = /data-jk="([^"]+)"[\s\S]*?class="jobTitle[^>]*>([\s\S]*?)<\/h2>[\s\S]*?class="companyName[^>]*>([\s\S]*?)<\/span>[\s\S]*?class="companyLocation[^>]*>([\s\S]*?)<\/div>(?:[\s\S]*?class="salary-section[^>]*>([\s\S]*?)<\/div>)?(?:[\s\S]*?class="date"[^>]*>([\s\S]*?)<\/span>)?/g;
   
   let match;
   while ((match = jobCardPattern.exec(html)) !== null) {
@@ -58,13 +59,15 @@ function parseIndeedHtml(html: string): JobListing[] {
     const title = decodeHtmlEntities(match[2].replace(/<[^>]+>/g, '').trim());
     const company = decodeHtmlEntities(match[3].replace(/<[^>]+>/g, '').trim());
     const location = decodeHtmlEntities(match[4].replace(/<[^>]+>/g, '').trim());
+    const salary = match[5] ? decodeHtmlEntities(match[5].replace(/<[^>]+>/g, '').trim()) : null;
+    const date = match[6] ? decodeHtmlEntities(match[6].replace(/<[^>]+>/g, '').trim()) : null;
     
     listings.push({
       title,
       company,
       location,
-      salary: null, // Need more specific regex for salary
-      date: null,
+      salary,
+      date,
       link: `https://www.indeed.com/viewjob?jk=${jk}`,
       platform: 'Indeed',
       remote: location.toLowerCase().includes('remote')
