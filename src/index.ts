@@ -73,12 +73,11 @@ app.get('/health', (c) => c.json({
 
 // Service discovery — AI agents read this to understand what you offer
 app.get('/', (c) => c.json({
-  name: process.env.SERVICE_NAME || 'my-service',
-  description: process.env.SERVICE_DESCRIPTION || 'A marketplace service on Proxies.sx',
+  name: process.env.SERVICE_NAME || 'review-reputation-monitor',
+  description: process.env.SERVICE_DESCRIPTION || 'Review & Reputation Monitor API (Yelp/Trustpilot)',
   version: '1.0.0',
   endpoints: [
-      { method: 'GET', path: '/api/run', description: 'Search businesses by query + location' },
-      { method: 'GET', path: '/api/details', description: 'Get detailed business info by Place ID' },
+      { method: 'GET', path: '/api/reviews', description: 'Get reviews from Yelp/Trustpilot by business slug or domain' },
     ],
   pricing: {
     amount: process.env.PRICE_USDC || '0.005',
@@ -114,7 +113,7 @@ app.get('/', (c) => c.json({
 app.route('/api', serviceRouter);
 
 // 404 fallback
-app.notFound((c) => c.json({ error: 'Not found', endpoints: ['/', '/health', '/api/run', '/api/details'] }, 404));
+app.notFound((c) => c.json({ error: 'Not found', endpoints: ['/', '/health', '/api/reviews'] }, 404));
 
 // Error handler
 app.onError((err, c) => {

@@ -32,17 +32,14 @@ export interface ProxyFetchOptions extends RequestInit {
  * Get credentials from https://client.proxies.sx or via x402 API:
  *   curl https://api.proxies.sx/v1/x402/proxy?country=US&traffic=1
  */
-export function getProxy(): ProxyConfig {
+export function getProxy(): ProxyConfig | null {
   const host = process.env.PROXY_HOST;
   const port = process.env.PROXY_HTTP_PORT;
   const user = process.env.PROXY_USER;
   const pass = process.env.PROXY_PASS;
 
   if (!host || !port || !user || !pass) {
-    throw new Error(
-      'Proxy not configured. Set PROXY_HOST, PROXY_HTTP_PORT, PROXY_USER, PROXY_PASS in .env. ' +
-      'Get credentials: https://client.proxies.sx or via x402 API'
-    );
+    return null;
   }
 
   return {
@@ -77,6 +74,14 @@ export async function proxyFetch(
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
     'Accept-Language': 'en-US,en;q=0.9',
   };
+
+  if (!proxy) {
+    console.warn('[Proxy] No proxy configured, falling back to direct fetch');
+    return fetch(url, {
+      ...fetchOptions,
+      headers: { ...defaultHeaders, ...fetchOptions.headers as Record<string, string> },
+    });
+  }
 
   let lastError: Error | null = null;
 
