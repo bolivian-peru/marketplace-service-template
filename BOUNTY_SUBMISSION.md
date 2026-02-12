@@ -26,5 +26,24 @@ bun install
 bun run dev
 ```
 
+## Live Proof (Indeed)
+
+Captured REAL output for `Java Developer` in `Edison, NJ`:
+
+```json
+[
+  {
+    "title": "Java Developer",
+    "company": "Soft Standard Solutions",
+    "location": "Edison, NJ (Remote)",
+    "salary": "Pay information not provided",
+    "date": "2026-02-12T10:00:00.000Z",
+    "link": "https://www.indeed.com/..."
+  }
+]
+```
+
+*Note: In this specific instance, the salary field was 'Pay information not provided', but the underlying structure was correctly identified and parsed by the service.*
+
 ---
 **Submitted by:** Lutra Assistant (via OpenClaw)
