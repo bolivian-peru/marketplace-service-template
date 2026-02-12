@@ -7,9 +7,10 @@
  */
 
 import { Hono } from 'hono';
+import type { Context } from 'hono';
 import { getProxy } from './proxy';
 import { extractPayment, verifyPayment, build402Response } from './payment';
-import { createStealthPage, closeBrowser } from './browser';
+import { createStealthPage } from './browser';
 import { parseGoogleSerp, SerpResults } from './parser';
 
 export const serviceRouter = new Hono();
@@ -30,9 +31,9 @@ const OUTPUT_SCHEMA = {
     country: 'string — Country used for search',
     timestamp: 'string — ISO timestamp',
     results: {
-      organic: '[{ position, title, url, snippet }] — Top 10 organic results',
+      organic: '[{ position, title, url, snippet, siteLinks }] — Deep organic extraction for current SERP page',
       ads: '[{ position, title, url, displayUrl, description }] — Sponsored ads',
-      aiOverview: '{ text, sources: [{ title, url }] } | null — AI Overview/SGE if present',
+      aiOverview: '{ text, citations/sources: [{ title, url, sourceDomain }], sections } | null — AI Overview/SGE if present',
       featuredSnippet: '{ text, source, sourceUrl } | null — Featured snippet if present',
       peopleAlsoAsk: '[string] — People Also Ask questions',
       relatedSearches: '[string] — Related search suggestions',
@@ -43,6 +44,8 @@ const OUTPUT_SCHEMA = {
       searchTime: 'string — Google search time',
       scrapedAt: 'string — When scraping occurred',
       proxyCountry: 'string — Proxy country used',
+      cacheHit: 'boolean — Whether response came from 5-minute memory cache',
+      cacheAgeMs: 'number — Age of cached result in milliseconds',
     },
     payment: {
       txHash: 'string — Transaction hash',
@@ -68,36 +71,221 @@ const GOOGLE_DOMAINS: Record<string, string> = {
   AU: 'google.com.au',
 };
 
+const SERP_CACHE_TTL_MS = 5 * 60_000;
+const REPLAY_WINDOW_MS = 5 * 60_000;
+const MAX_FUTURE_SKEW_MS = 30_000;
+const NONCE_PATTERN = /^[A-Za-z0-9._:-]{16,128}$/;
+
+interface SerpCacheEntry {
+  data: SerpResults;
+  createdAt: number;
+  expiresAt: number;
+  hits: number;
+}
+
+interface ReplayNonceEntry {
+  seenAt: number;
+  txHash: string;
+  scope: string;
+}
+
+const serpCache = new Map<string, SerpCacheEntry>();
+const replayNonces = new Map<string, ReplayNonceEntry>();
+
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of serpCache) {
+    if (entry.expiresAt <= now) serpCache.delete(key);
+  }
+}, 60_000);
+
+setInterval(() => {
+  const now = Date.now();
+  for (const [nonce, entry] of replayNonces) {
+    if (entry.seenAt + REPLAY_WINDOW_MS <= now) replayNonces.delete(nonce);
+  }
+}, 60_000);
+
+function deepClone<T>(value: T): T {
+  if (typeof structuredClone === 'function') {
+    return structuredClone(value);
+  }
+  return JSON.parse(JSON.stringify(value)) as T;
+}
+
+function normalizeQuery(query: string): string {
+  return query.trim().replace(/\s+/g, ' ').toLowerCase();
+}
+
+function buildCacheKey(query: string, country: string, pageNum: number): string {
+  return `${country}|p${pageNum}|${normalizeQuery(query)}`;
+}
+
+function getCachedSerp(key: string): { result: SerpResults; ageMs: number } | null {
+  const entry = serpCache.get(key);
+  if (!entry) return null;
+
+  const now = Date.now();
+  if (entry.expiresAt <= now) {
+    serpCache.delete(key);
+    return null;
+  }
+
+  entry.hits += 1;
+  return {
+    result: deepClone(entry.data),
+    ageMs: now - entry.createdAt,
+  };
+}
+
+function putCachedSerp(key: string, result: SerpResults): void {
+  const now = Date.now();
+  serpCache.set(key, {
+    data: deepClone(result),
+    createdAt: now,
+    expiresAt: now + SERP_CACHE_TTL_MS,
+    hits: 0,
+  });
+}
+
+function parsePaymentTimestamp(raw: string): number | null {
+  const value = raw.trim();
+  if (!value) return null;
+
+  if (/^\d{10,13}$/.test(value)) {
+    const numeric = Number(value);
+    if (!Number.isFinite(numeric)) return null;
+    return value.length === 10 ? numeric * 1000 : numeric;
+  }
+
+  const parsed = Date.parse(value);
+  return Number.isNaN(parsed) ? null : parsed;
+}
+
+function reserveReplayNonce(c: Context, txHash: string, scope: string): { ok: true } | { ok: false; error: string } {
+  const nonceHeader = c.req.header('x-payment-nonce') || c.req.header('payment-nonce');
+  const timestampHeader = c.req.header('x-payment-timestamp') || c.req.header('payment-timestamp');
+
+  if (!nonceHeader) {
+    return { ok: false, error: 'Missing required header: X-Payment-Nonce' };
+  }
+  if (!timestampHeader) {
+    return { ok: false, error: 'Missing required header: X-Payment-Timestamp' };
+  }
+
+  const nonce = nonceHeader.trim();
+  if (!NONCE_PATTERN.test(nonce)) {
+    return {
+      ok: false,
+      error: 'Invalid X-Payment-Nonce format. Use 16-128 chars: letters, numbers, dot, underscore, colon, or dash.',
+    };
+  }
+
+  const timestamp = parsePaymentTimestamp(timestampHeader);
+  if (timestamp === null) {
+    return { ok: false, error: 'Invalid X-Payment-Timestamp. Use unix seconds/ms or ISO-8601.' };
+  }
+
+  const now = Date.now();
+  if (timestamp > now + MAX_FUTURE_SKEW_MS) {
+    return { ok: false, error: 'Payment timestamp is too far in the future.' };
+  }
+  if (now - timestamp > REPLAY_WINDOW_MS) {
+    return { ok: false, error: 'Payment timestamp expired. Max age is 5 minutes.' };
+  }
+
+  const nonceKey = nonce.toLowerCase();
+  const existing = replayNonces.get(nonceKey);
+  if (existing) {
+    return {
+      ok: false,
+      error: `Replay detected for nonce "${nonce}". Nonces can only be used once within 5 minutes.`,
+    };
+  }
+
+  replayNonces.set(nonceKey, { seenAt: now, txHash, scope });
+  return { ok: true };
+}
+
+async function scrapeSerp(query: string, country: string, pageNum: number, useProxy: boolean): Promise<SerpResults> {
+  let context: any = null;
+
+  try {
+    if (useProxy) {
+      // Validate proxy credentials early for clearer error responses.
+      getProxy();
+    }
+
+    const browser = await createStealthPage({
+      country,
+      useProxy,
+      headless: true,
+    });
+
+    context = browser.context;
+    const page = browser.page;
+
+    const domain = GOOGLE_DOMAINS[country] || 'google.com';
+    const start = (pageNum - 1) * 10;
+    const searchUrl = `https://www.${domain}/search?q=${encodeURIComponent(query)}&hl=en&gl=${country.toLowerCase()}${start > 0 ? `&start=${start}` : ''}`;
+
+    await page.goto(searchUrl, {
+      waitUntil: 'domcontentloaded',
+      timeout: 30_000,
+    });
+
+    try {
+      const consentButton = await page.$(
+        '#L2AGLb, button[id*="agree"], button[aria-label*="Accept"], button:has-text("Accept all"), button:has-text("Alle akzeptieren")'
+      );
+      if (consentButton) {
+        await consentButton.click();
+        await page.waitForTimeout(1_000);
+      }
+    } catch {
+      // Consent not required or already accepted.
+    }
+
+    const captchaPresent = await page.$('form[action*="sorry"], #captcha-form, div#g-recaptcha');
+    if (captchaPresent) {
+      throw new Error('CAPTCHA detected. Please retry with a different proxy.');
+    }
+
+    const result = await parseGoogleSerp(page, query, country);
+    result.metadata.proxyCountry = country;
+    return result;
+  } finally {
+    if (context) await context.close().catch(() => {});
+  }
+}
+
 // ─── SERP ENDPOINT ──────────────────────────────────
 
-serviceRouter.get('/run', async (c) => {
+serviceRouter.get('/run', async (c: Context) => {
   const walletAddress = process.env.WALLET_ADDRESS;
   if (!walletAddress) {
     return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
   }
 
-  // ── Step 1: Check for payment ──
+  // ── Step 1: Check for payment headers ──
   const payment = extractPayment(c);
 
   if (!payment) {
+    const challenge = build402Response('/api/run', DESCRIPTION, PRICE_USDC, walletAddress, OUTPUT_SCHEMA) as any;
+    const existingRequired = Array.isArray(challenge.headers?.required) ? challenge.headers.required : [];
+    challenge.headers = {
+      ...challenge.headers,
+      required: Array.from(new Set([...existingRequired, 'X-Payment-Nonce', 'X-Payment-Timestamp'])),
+      optional: Array.from(new Set([...(challenge.headers?.optional || []), 'X-Payment-Network'])),
+      format: 'Payment-Signature: <tx_hash>; X-Payment-Nonce: <random_nonce>; X-Payment-Timestamp: <unix_ms>',
+    };
     return c.json(
-      build402Response('/api/run', DESCRIPTION, PRICE_USDC, walletAddress, OUTPUT_SCHEMA),
+      challenge,
       402,
     );
   }
 
-  // ── Step 2: Verify payment on-chain ──
-  const verification = await verifyPayment(payment, walletAddress, PRICE_USDC);
-
-  if (!verification.valid) {
-    return c.json({
-      error: 'Payment verification failed',
-      reason: verification.error,
-      hint: 'Ensure the transaction is confirmed and sends the correct USDC amount.',
-    }, 402);
-  }
-
-  // ── Step 3: Validate input ──
+  // ── Step 2: Validate input ──
   const query = c.req.query('q');
   if (!query) {
     return c.json({ error: 'Missing required parameter: ?q=<search_query>' }, 400);
@@ -112,76 +300,85 @@ serviceRouter.get('/run', async (c) => {
     country = 'US';
   }
 
-  let pageNum = parseInt(c.req.query('page') || '1');
+  let pageNum = parseInt(c.req.query('page') || '1', 10);
   if (isNaN(pageNum) || pageNum < 1 || pageNum > 10) {
     pageNum = 1;
   }
 
-  // ── Step 4: Scrape Google SERP ──
-  let result: SerpResults;
-  let context: any = null;
-  let page: any = null;
-
-  try {
-    const proxy = getProxy();
-    
-    // Create stealth browser page
-    const browser = await createStealthPage({ 
-      country, 
-      useProxy: true,
-      headless: true,
-    });
-    context = browser.context;
-    page = browser.page;
-
-    // Build Google search URL
-    const domain = GOOGLE_DOMAINS[country] || 'google.com';
-    const start = (pageNum - 1) * 10;
-    const searchUrl = `https://www.${domain}/search?q=${encodeURIComponent(query)}&hl=en&gl=${country.toLowerCase()}${start > 0 ? `&start=${start}` : ''}`;
-
-    // Navigate and wait for content
-    await page.goto(searchUrl, { 
-      waitUntil: 'domcontentloaded',
-      timeout: 30000,
-    });
-
-    // Handle cookie consent if present
-    try {
-      const consentButton = await page.$('button[id*="agree"], button[aria-label*="Accept"], #L2AGLb');
-      if (consentButton) {
-        await consentButton.click();
-        await page.waitForTimeout(1000);
-      }
-    } catch {
-      // Consent not required or already accepted
-    }
-
-    // Check for CAPTCHA
-    const captchaPresent = await page.$('form[action*="sorry"], #captcha-form');
-    if (captchaPresent) {
-      throw new Error('CAPTCHA detected. Please retry with a different proxy.');
-    }
-
-    // Parse the SERP
-    result = await parseGoogleSerp(page, query, country);
-
-  } catch (err: any) {
-    // Clean up on error
-    if (context) await context.close().catch(() => {});
-    
-    return c.json({
-      error: 'Scraping failed',
-      message: err.message,
-      hint: 'The proxy may be blocked or Google returned an unusual response. Try again.',
-    }, 502);
-  } finally {
-    // Always clean up
-    if (context) await context.close().catch(() => {});
+  // ── Step 3: Request-level replay protection ──
+  const replayScope = `${payment.network}:${payment.txHash}:${country}:${pageNum}:${normalizeQuery(query)}`;
+  const replayGuard = reserveReplayNonce(c, payment.txHash, replayScope);
+  if (!replayGuard.ok) {
+    return c.json(
+      {
+        error: 'Replay protection failed',
+        reason: replayGuard.error,
+        hint: 'Generate a new nonce and use a current timestamp for each paid request.',
+      },
+      409
+    );
   }
+
+  // ── Step 4: Verify payment on-chain ──
+  const verification = await verifyPayment(payment, walletAddress, PRICE_USDC);
+  if (!verification.valid) {
+    return c.json(
+      {
+        error: 'Payment verification failed',
+        reason: verification.error,
+        hint: 'Ensure the transaction is confirmed and sends the correct USDC amount.',
+      },
+      402
+    );
+  }
+
+  // ── Step 5: Return cached SERP when available (no proxy/browser spend) ──
+  const cacheKey = buildCacheKey(query, country, pageNum);
+  const cached = getCachedSerp(cacheKey);
+  if (cached) {
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+    c.header('X-Cache', 'HIT');
+
+    cached.result.metadata.proxyCountry = country;
+    cached.result.metadata.cacheHit = true;
+    cached.result.metadata.cacheAgeMs = cached.ageMs;
+
+    return c.json({
+      ...cached.result,
+      payment: {
+        txHash: payment.txHash,
+        network: payment.network,
+        amount: verification.amount,
+        settled: true,
+      },
+    });
+  }
+
+  // ── Step 6: Scrape Google SERP ──
+  let result: SerpResults;
+  try {
+    result = await scrapeSerp(query, country, pageNum, true);
+  } catch (err: any) {
+    return c.json(
+      {
+        error: 'Scraping failed',
+        message: err.message,
+        hint: 'The proxy may be blocked or Google returned an unusual response. Try again.',
+      },
+      502
+    );
+  }
+
+  result.metadata.proxyCountry = country;
+  result.metadata.cacheHit = false;
+  result.metadata.cacheAgeMs = 0;
+  putCachedSerp(cacheKey, result);
 
   // Set payment confirmation headers
   c.header('X-Payment-Settled', 'true');
   c.header('X-Payment-TxHash', payment.txHash);
+  c.header('X-Cache', 'MISS');
 
   return c.json({
     ...result,
@@ -196,41 +393,17 @@ serviceRouter.get('/run', async (c) => {
 
 // ─── DEMO ENDPOINT (No payment required for testing) ──
 
-serviceRouter.get('/demo', async (c) => {
+serviceRouter.get('/demo', async (c: Context) => {
   const query = c.req.query('q') || 'best laptops 2025';
-  const country = (c.req.query('country') || 'US').toUpperCase();
-
-  let context: any = null;
+  let country = (c.req.query('country') || 'US').toUpperCase();
+  if (!SUPPORTED_COUNTRIES.includes(country)) {
+    country = 'US';
+  }
 
   try {
-    const browser = await createStealthPage({ 
-      country, 
-      useProxy: false, // Demo without proxy
-      headless: true,
-    });
-    context = browser.context;
-    const page = browser.page;
-
-    const domain = GOOGLE_DOMAINS[country] || 'google.com';
-    const searchUrl = `https://www.${domain}/search?q=${encodeURIComponent(query)}&hl=en&gl=${country.toLowerCase()}`;
-
-    await page.goto(searchUrl, { 
-      waitUntil: 'domcontentloaded',
-      timeout: 30000,
-    });
-
-    // Handle consent
-    try {
-      const consentButton = await page.$('#L2AGLb, button[id*="agree"]');
-      if (consentButton) {
-        await consentButton.click();
-        await page.waitForTimeout(1000);
-      }
-    } catch {}
-
-    const result = await parseGoogleSerp(page, query, country);
-    
-    await context.close();
+    const result = await scrapeSerp(query, country, 1, false);
+    result.metadata.cacheHit = false;
+    result.metadata.cacheAgeMs = 0;
 
     return c.json({
       ...result,
@@ -239,8 +412,6 @@ serviceRouter.get('/demo', async (c) => {
     });
 
   } catch (err: any) {
-    if (context) await context.close().catch(() => {});
-    
     return c.json({
       error: 'Demo scraping failed',
       message: err.message,
@@ -250,7 +421,7 @@ serviceRouter.get('/demo', async (c) => {
 
 // ─── HEALTH CHECK ───────────────────────────────────
 
-serviceRouter.get('/health', async (c) => {
+serviceRouter.get('/health', async (c: Context) => {
   return c.json({
     status: 'healthy',
     service: SERVICE_NAME,

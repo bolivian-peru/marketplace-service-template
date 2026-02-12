@@ -1,0 +1,44 @@
+Implemented in `src/parser.ts` and `src/service.ts` with deeper extraction, cache, and replay defense.
+
+**What changed**
+
+- `src/parser.ts:8`  
+  Increased extraction depth and resiliency:
+  - Multi-layout AI Overview detection with scoring/fallbacks (`src/parser.ts:199`)
+  - Deep citation/source extraction with URL normalization + Google redirect decoding (`src/parser.ts:113`, `src/parser.ts:233`)
+  - Organic extraction expanded to up to 25 results with dedupe, sitelinks, domain/date/display URL fields (`src/parser.ts:277`)
+  - Added robust extraction for ads, featured snippets, PAA, related searches, knowledge panel, local pack, video snippets (`src/parser.ts:363` onward)
+  - Metadata parsing improved for total results + search time (`src/parser.ts:177`)
+  - Kept compatibility by returning both `aiOverview.citations` and `aiOverview.sources` (`src/parser.ts:268`)
+
+- `src/service.ts:74`  
+  Added 5-minute in-memory SERP cache:
+  - TTL cache store/lookup/cleanup (`src/service.ts:92`, `src/service.ts:124`, `src/service.ts:141`)
+  - Cache key normalized by query/country/page (`src/service.ts:116`, `src/service.ts:120`)
+  - Cache short-circuit before proxy/browser scraping in `/run` (`src/service.ts:335`)
+  - Response metadata now includes `cacheHit` and `cacheAgeMs` (`src/service.ts:47`, `src/service.ts:343`, `src/service.ts:374`)
+  - Added `X-Cache: HIT|MISS` response header (`src/service.ts:341`, `src/service.ts:381`)
+
+- `src/service.ts:165`  
+  Added nonce/timestamp replay protection for x402-paid requests:
+  - Requires `X-Payment-Nonce` and `X-Payment-Timestamp` in `/run` (`src/service.ts:166`)
+  - Validates nonce format, timestamp parsing, 5-minute freshness, and future skew (`src/service.ts:176`, `src/service.ts:184`, `src/service.ts:189`)
+  - Blocks nonce reuse in-memory for 5 minutes (`src/service.ts:197`)
+  - Upgraded 402 challenge response to advertise required replay headers (`src/service.ts:273`)
+
+- `src/service.ts:210`  
+  Refactored scraping into `scrapeSerp(...)` for stronger shared handling:
+  - Early proxy validation
+  - Consent handling fallbacks
+  - CAPTCHA detection
+  - Consistent cleanup in `finally`
+
+**Validation**
+
+- Attempted `npm run typecheck`, but the workspace is missing dependencies (`node_modules` absent), and TypeScript failed on missing `bun-types`.
+- I could not run full compile/runtime verification in this environment until dependencies are installed.
+
+**Next steps**
+
+1. Install dependencies and run `npm run typecheck` + `npm run test`.
+2. If browser clients will call `/api/run`, add new replay headers to CORS allow-list in `src/index.ts` (`X-Payment-Nonce`, `X-Payment-Timestamp`).
