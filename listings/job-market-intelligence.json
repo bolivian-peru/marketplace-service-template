@@ -1,0 +1,42 @@
+{
+  "id": "job-market-intelligence",
+  "name": "Job Market Intelligence API",
+  "description": "Multi-platform job aggregator extracting structured data from Indeed and LinkedIn. Returns job title, company, location, salary, skills, work type, applicant count.",
+  "longDescription": "Complete job market intelligence API aggregating listings from Indeed and LinkedIn. Extracts structured data including job titles, companies, locations, salary ranges (when available), posting dates, required skills/technologies, work arrangements (remote/hybrid/onsite), applicant counts (LinkedIn), and direct job URLs. Powered by mobile proxies for reliable access. Search by role + location with flexible result limits.",
+  "endpoint": "https://your-service-domain.com/api/jobs",
+  "docsUrl": "https://github.com/bolivian-peru/marketplace-service-template/blob/master/PROOF.md",
+  "pricing": {
+    "model": "per-request",
+    "amount": "0.003",
+    "currency": "USDC",
+    "networks": [
+      {
+        "network": "base",
+        "chainId": "8453",
+        "recipient": "YOUR_WALLET_ADDRESS_HERE",
+        "asset": "USDC",
+        "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+      },
+      {
+        "network": "solana",
+        "recipient": "YOUR_WALLET_ADDRESS_HERE",
+        "asset": "USDC",
+        "assetAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+      }
+    ]
+  },
+  "category": "data",
+  "tags": ["jobs", "indeed", "linkedin", "job-search", "recruiting", "career", "hiring", "employment", "scraper", "job-listings"],
+  "owner": {
+    "name": "dlin38",
+    "github": "dlin38"
+  },
+  "status": "pending",
+  "featured": false,
+  "addedAt": "2026-02-12",
+  "updatedAt": "2026-02-12",
+  "x402": {
+    "discoveryUrl": "https://your-service-domain.com/api/jobs",
+    "wellKnown": "https://your-service-domain.com/.well-known/x402.json"
+  }
+}

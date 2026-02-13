@@ -372,3 +372,141 @@ serviceRouter.get('/serp', async (c) => {
     }, 502);
   }
 });
+
+// ═══════════════════════════════════════════════════════
+// ─── JOB MARKET INTELLIGENCE ─────────────────────────
+// ═══════════════════════════════════════════════════════
+
+import { searchJobs } from './scrapers/job-scraper';
+
+const JOBS_SERVICE_NAME = 'job-market-intelligence';
+const JOBS_PRICE_USDC = 0.003;  // $0.003 per request
+const JOBS_DESCRIPTION = 'Multi-platform job aggregator extracting structured data from Indeed and LinkedIn: job title, company, location, salary, posting date, skills, work type, applicant count. Search by role + location.';
+
+const JOBS_OUTPUT_SCHEMA = {
+  input: {
+    role: 'string — Job role/title to search (e.g., "Software Engineer") (required)',
+    location: 'string — Location (e.g., "Austin TX", "Remote") (required)',
+    platforms: 'string — Comma-separated platforms: indeed,linkedin (default: "indeed,linkedin")',
+    limit: 'number — Max results to return (default: 20, max: 100)',
+  },
+  output: {
+    jobs: [{
+      title: 'string — Job title',
+      company: 'string — Company name',
+      location: 'string — Job location',
+      salaryRange: 'string | null — Salary range (when available)',
+      postingDate: 'string | null — How long ago posted',
+      requiredSkills: 'string[] — Required skills/technologies',
+      workType: '"remote" | "hybrid" | "onsite" | "unknown" — Work arrangement',
+      applicantCount: 'number | null — Number of applicants (LinkedIn only)',
+      jobUrl: 'string — Direct job listing URL',
+      platform: '"indeed" | "linkedin" — Source platform',
+    }],
+    totalFound: 'number — Total jobs found',
+    platforms: 'string[] — Platforms searched',
+    searchQuery: 'string — The search query used',
+    proxy: '{ country: string, type: "mobile" }',
+    payment: '{ txHash, network, amount, settled }',
+  },
+};
+
+// ─── JOBS API ENDPOINT ───────────────────────────────
+
+serviceRouter.get('/jobs', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) {
+    return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+  }
+
+  // ── Step 1: Check for payment ──
+  const payment = extractPayment(c);
+
+  if (!payment) {
+    return c.json(
+      build402Response('/api/jobs', JOBS_DESCRIPTION, JOBS_PRICE_USDC, walletAddress, JOBS_OUTPUT_SCHEMA),
+      402,
+    );
+  }
+
+  // ── Step 2: Verify payment on-chain ──
+  const verification = await verifyPayment(payment, walletAddress, JOBS_PRICE_USDC);
+
+  if (!verification.valid) {
+    return c.json({
+      error: 'Payment verification failed',
+      reason: verification.error,
+      hint: 'Ensure the transaction is confirmed and sends the correct USDC amount to the recipient wallet.',
+    }, 402);
+  }
+
+  // ── Step 3: Validate input ──
+  const role = c.req.query('role');
+  const location = c.req.query('location');
+  const platformsParam = c.req.query('platforms') || 'indeed,linkedin';
+  const limitParam = c.req.query('limit');
+
+  if (!role) {
+    return c.json({
+      error: 'Missing required parameter: role',
+      hint: 'Provide a job role like ?role=Software%20Engineer&location=Austin%20TX',
+      example: '/api/jobs?role=Software%20Engineer&location=Austin%20TX&limit=20',
+    }, 400);
+  }
+
+  if (!location) {
+    return c.json({
+      error: 'Missing required parameter: location',
+      hint: 'Provide a location like ?role=Data%20Analyst&location=Remote',
+      example: '/api/jobs?role=Data%20Analyst&location=Remote&platforms=linkedin',
+    }, 400);
+  }
+
+  const platforms = platformsParam.split(',').map(p => p.trim().toLowerCase()).filter(p => p === 'indeed' || p === 'linkedin');
+  if (platforms.length === 0) {
+    return c.json({
+      error: 'Invalid platforms parameter',
+      hint: 'Supported platforms: indeed, linkedin',
+      example: '/api/jobs?role=Product%20Manager&location=San%20Francisco&platforms=indeed,linkedin',
+    }, 400);
+  }
+
+  const limit = limitParam ? parseInt(limitParam, 10) : 20;
+  if (isNaN(limit) || limit < 1 || limit > 100) {
+    return c.json({
+      error: 'Invalid limit parameter',
+      hint: 'Limit must be between 1 and 100',
+    }, 400);
+  }
+
+  // ── Step 4: Execute job search ──
+  try {
+    const proxy = getProxy();  // FIX: Removed await - getProxy() is synchronous
+    
+    const result = await searchJobs({
+      role,
+      location,
+      platforms: platforms as ('indeed' | 'linkedin')[],
+      limit,
+    });
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      proxy: { country: proxy.country, type: 'mobile' },
+      payment: {
+        txHash: payment.txHash,
+        network: payment.network,
+        amount: verification.amount,
+        settled: true,
+      },
+    });
+  } catch (err: any) {
+    return c.json({
+      error: 'Failed to fetch job listings',
+      message: err.message,
+    }, 502);
+  }
+});
