@@ -1,374 +1,486 @@
-/**
- * ┌─────────────────────────────────────────────────┐
- * │  Service Router                                 │
- * │  Google Maps Lead Generator + Mobile SERP       │
- * └─────────────────────────────────────────────────┘
- *
- * Services:
- *  1. Google Maps Lead Generator — /api/run, /api/details
- *  2. Mobile SERP Tracker — /api/serp
- */
-
 import { Hono } from 'hono';
-import { proxyFetch, getProxy } from './proxy';
 import { extractPayment, verifyPayment, build402Response } from './payment';
-import { scrapeGoogleMaps, extractDetailedBusiness } from './scrapers/maps-scraper';
-import { scrapeMobileSERP } from './scrapers/serp-tracker';
+import { proxyFetch } from './proxy';
 
 export const serviceRouter = new Hono();
 
 // ─── SERVICE CONFIGURATION ─────────────────────────────
-const SERVICE_NAME = 'google-maps-lead-generator';
-const PRICE_USDC = 0.005;  // $0.005 per business record
-const DESCRIPTION = 'Extract structured business data from Google Maps: name, address, phone, website, email, hours, ratings, reviews, categories, and geocoordinates. Search by category + location with full pagination.';
+const SERVICE_NAME = 'prediction-market-aggregator';
+const PRICE_USDC = 0.05;
+const DESCRIPTION = 'Real-time prediction market aggregator (Polymarket, Kalshi, Metaculus) with social sentiment signals using mobile proxies.';
 
-// ─── OUTPUT SCHEMA FOR AI AGENTS ──────────────────────
 const OUTPUT_SCHEMA = {
   input: {
-    query: 'string — Search query/category (e.g., "plumbers", "restaurants") (required)',
-    location: 'string — Location to search (e.g., "Austin TX", "New York City") (required)',
-    limit: 'number — Max results to return (default: 20, max: 100)',
-    pageToken: 'string — Pagination token for next page (optional)',
+    type: 'string — "signal", "arbitrage", "sentiment", "trending" (required)',
+    market: 'string — market slug or query for "signal"',
+    topic: 'string — topic for "sentiment"',
+    country: 'string — country code for sentiment (default US)',
   },
   output: {
-    businesses: [{
-      name: 'string — Business name',
-      address: 'string | null — Full street address',
-      phone: 'string | null — Phone number',
-      website: 'string | null — Business website URL',
-      email: 'string | null — Email address (if found)',
-      hours: 'object | null — Operating hours by day',
-      rating: 'number | null — Google rating (1-5)',
-      reviewCount: 'number | null — Total review count',
-      categories: 'string[] — Business categories/types',
-      coordinates: '{ latitude, longitude } | null — Geo coordinates',
-      placeId: 'string | null — Google Place ID',
-      priceLevel: 'string | null — Price level ($, $$, $$$, $$$$)',
-      permanentlyClosed: 'boolean — Whether business is permanently closed',
-    }],
-    totalFound: 'number — Total businesses found',
-    nextPageToken: 'string | null — Token for next page of results',
-    searchQuery: 'string — The search query used',
-    location: 'string — The location searched',
-    proxy: '{ country: string, type: "mobile" }',
-    payment: '{ txHash, network, amount, settled }',
+    type: 'string',
+    market: 'string',
+    timestamp: 'string',
+    odds: {
+      polymarket: '{yes, no, volume24h, liquidity}',
+      kalshi: '{yes, no, volume24h}',
+      metaculus: '{median, forecasters}',
+    },
+    sentiment: {
+      twitter: '{positive, negative, neutral, volume, trending, topTweets}',
+      reddit: '{positive, negative, neutral, volume, topSubreddits, avgUps, avgComments}',
+      tiktok: '{relatedVideos, totalViews, sentiment}',
+    },
+    signals: {
+      arbitrage: '{detected, spread, direction, confidence}',
+      sentimentDivergence: '{detected, description, magnitude}',
+      volumeSpike: '{detected}',
+    },
+    proxy: '{country, carrier, type, ip}',
+    payment: '{txHash, amount, verified}',
   },
 };
 
-// ─── API ENDPOINT ─────────────────────────────────────
+// ─── BROWSER API CONFIG ────────────────────────────────
+const BROWSER_ENDPOINT = process.env.BROWSER_ENDPOINT || 'https://browser.proxies.sx';
+const BROWSER_PAYMENT_SIG = process.env.BROWSER_PAYMENT_SIG;
+
+// ─── TYPES ─────────────────────────────────────────────
+
+interface MarketOdds {
+  polymarket?: { yes: number; no: number; volume24h: number; liquidity: number };
+  kalshi?: { yes: number; no: number; volume24h: number };
+  metaculus?: { median: number; forecasters: number };
+}
+
+interface SentimentData {
+  twitter?: {
+    positive: number; negative: number; neutral: number; volume: number; trending: boolean;
+    topTweets: Array<{ text: string; likes: number; retweets: number; author: string; timestamp: string }>;
+  };
+  reddit?: {
+    positive: number; negative: number; neutral: number; volume: number;
+    topSubreddits: string[];
+    avgUps: number;
+    avgComments: number;
+  };
+  tiktok?: { relatedVideos: number; totalViews: number; sentiment: string };
+}
+
+interface SignalData {
+  arbitrage?: { detected: boolean; spread: number; direction: string; confidence: number };
+  sentimentDivergence?: { detected: boolean; description: string; magnitude: string };
+  volumeSpike?: { detected: boolean };
+}
+
+interface BrowserSession {
+  sessionId: string;
+  sessionToken: string;
+}
+
+// ─── MARKET DATA FETCHING ──────────────────────────────
+
+async function getPolymarketOdds(marketSlugOrQuery: string): Promise<MarketOdds['polymarket']> {
+  try {
+    const searchRes = await proxyFetch(`https://gamma-api.polymarket.com/events?slug=${marketSlugOrQuery}`);
+    if (!searchRes.ok) return undefined;
+
+    const events = await searchRes.json() as any[];
+    if (!events || events.length === 0) return undefined;
+
+    const event = events[0];
+    const market = event.markets?.[0];
+    if (!market) return undefined;
+
+    const outcomePrices = JSON.parse(market.outcomePrices || '["0.5", "0.5"]');
+
+    return {
+      yes: parseFloat(outcomePrices[0]),
+      no: parseFloat(outcomePrices[1]),
+      volume24h: parseFloat(market.volume24hr || '0'),
+      liquidity: parseFloat(market.liquidity || '0'),
+    };
+  } catch (err) {
+    console.error('[Polymarket] Error:', err);
+    return undefined;
+  }
+}
+
+async function getKalshiOdds(marketTicker: string): Promise<MarketOdds['kalshi']> {
+  try {
+    const res = await proxyFetch(`https://trading-api.kalshi.com/trade-api/v2/markets/${marketTicker}`);
+    if (!res.ok) return undefined;
+
+    const data = await res.json() as any;
+    const market = data.market;
+    if (!market) return undefined;
+
+    return {
+      yes: market.yes_bid / 100,
+      no: market.no_bid / 100,
+      volume24h: market.volume_24h || 0,
+    };
+  } catch (err) {
+    console.error('[Kalshi] Error:', err);
+    return undefined;
+  }
+}
+
+async function getMetaculusOdds(questionId: string): Promise<MarketOdds['metaculus']> {
+  try {
+    const res = await proxyFetch(`https://www.metaculus.com/api2/questions/${questionId}/`);
+    if (!res.ok) return undefined;
+
+    const data = await res.json() as any;
+    return {
+      median: data.prediction_timeseries?.[data.prediction_timeseries.length - 1]?.community_prediction?.median || 0,
+      forecasters: data.number_of_forecasters || 0,
+    };
+  } catch (err) {
+    console.error('[Metaculus] Error:', err);
+    return undefined;
+  }
+}
+
+async function getProxyIp(): Promise<string> {
+  try {
+    const res = await proxyFetch('https://api.ipify.org?format=json');
+    if (!res.ok) return 'unknown';
+    const data = await res.json() as { ip: string };
+    return data.ip;
+  } catch {
+    return 'unknown';
+  }
+}
+
+// ─── BROWSER SESSION MANAGEMENT ────────────────────────
+
+async function createBrowserSession(country: string): Promise<BrowserSession | null> {
+  const endpoint = BROWSER_ENDPOINT.replace(/\/$/, '');
+  const signature = (BROWSER_PAYMENT_SIG || '').trim();
+
+  if (!signature) {
+    console.error('[Session] Missing BROWSER_PAYMENT_SIG in .env');
+    return null;
+  }
+
+  try {
+    const res = await fetch(`${endpoint}/v1/sessions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Payment-Signature': signature,
+      },
+      body: JSON.stringify({
+        durationMinutes: 10,
+        country,
+        proxy: {
+          server: `${process.env.PROXY_HOST || ''}:${process.env.PROXY_HTTP_PORT || ''}`,
+          username: process.env.PROXY_USER || '',
+          password: process.env.PROXY_PASS || '',
+          type: 'http',
+        },
+      }),
+    });
+
+    if (!res.ok) return null;
+    const data = await res.json() as { session_id?: string; session_token?: string };
+    return { sessionId: data.session_id!, sessionToken: data.session_token! };
+  } catch (err) {
+    return null;
+  }
+}
+
+async function browserCommand(sessionId: string, token: string, payload: Record<string, any>): Promise<any> {
+  const endpoint = BROWSER_ENDPOINT.replace(/\/$/, '');
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 90000);
+
+  try {
+    const res = await fetch(`${endpoint}/v1/sessions/${sessionId}/command`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (err) {
+    clearTimeout(timeoutId);
+    return null;
+  }
+}
+
+async function closeBrowserSession(sessionId: string): Promise<void> {
+  const endpoint = BROWSER_ENDPOINT.replace(/\/$/, '');
+  await fetch(`${endpoint}/v1/sessions/${sessionId}`, { method: 'DELETE' }).catch(() => { });
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// ─── SENTIMENT EXTRACTION SCRIPTS ──────────────────────
+
+const TWITTER_EXTRACTION_SCRIPT = `(() => {
+  const tweets = [];
+  document.querySelectorAll('article[data-testid="tweet"]').forEach((el) => {
+    const textEl = el.querySelector('div[data-testid="tweetText"]');
+    const likesEl = el.querySelector('div[data-testid="like"]');
+    const retweetEl = el.querySelector('div[data-testid="retweet"]');
+    const authorEl = el.querySelector('div[data-testid="User-Name"]');
+    const timeEl = el.querySelector('time');
+    
+    if (textEl && authorEl) {
+      tweets.push({
+        text: textEl.innerText,
+        likes: parseInt(likesEl?.innerText?.replace(/[^0-9]/g, '') || '0'),
+        retweets: parseInt(retweetEl?.innerText?.replace(/[^0-9]/g, '') || '0'),
+        author: authorEl.innerText.split('\\n')[0],
+        timestamp: timeEl ? timeEl.getAttribute('datetime') : new Date().toISOString(),
+      });
+    }
+  });
+  return tweets;
+})()`;
+
+// ─── SENTIMENT SCRAPER LOGIC ───────────────────────────
+
+async function scrapeTwitterSentiment(topic: string, country: string): Promise<SentimentData['twitter']> {
+  let session: BrowserSession | null = null;
+  try {
+    session = await createBrowserSession(country);
+    if (!session) return undefined;
+
+    const { sessionId, sessionToken } = session;
+    const searchUrl = `https://twitter.com/search?q=${encodeURIComponent(topic)}&src=typed_query&f=live`;
+
+    await browserCommand(sessionId, sessionToken, { action: 'navigate', url: searchUrl });
+    await sleep(5000);
+
+    const extraction = await browserCommand(sessionId, sessionToken, {
+      action: 'evaluate',
+      script: TWITTER_EXTRACTION_SCRIPT,
+    });
+
+    if (!extraction || !extraction.result || !Array.isArray(extraction.result)) return undefined;
+
+    const tweets = extraction.result;
+    const positiveWords = ['bullish', 'up', 'win', 'good', 'great', 'buy', 'yes'];
+    const negativeWords = ['bearish', 'down', 'lose', 'bad', 'poor', 'sell', 'no'];
+
+    let pos = 0, neg = 0, neu = 0;
+    tweets.forEach((t: any) => {
+      const text = t.text.toLowerCase();
+      const isPos = positiveWords.some(w => text.includes(w));
+      const isNeg = negativeWords.some(w => text.includes(w));
+      if (isPos && !isNeg) pos++;
+      else if (isNeg && !isPos) neg++;
+      else neu++;
+    });
+
+    const total = tweets.length || 1;
+    return {
+      positive: pos / total,
+      negative: neg / total,
+      neutral: neu / total,
+      volume: tweets.length,
+      trending: tweets.length > 50,
+      topTweets: tweets.slice(0, 5),
+    };
+  } catch (err) {
+    console.error('[Twitter] Error:', err);
+    return undefined;
+  } finally {
+    if (session) await closeBrowserSession(session.sessionId);
+  }
+}
+
+async function scrapeRedditSentiment(topic: string): Promise<SentimentData['reddit']> {
+  try {
+    const res = await proxyFetch(`https://www.reddit.com/search.json?q=${encodeURIComponent(topic)}&sort=new`);
+    if (!res.ok) return undefined;
+
+    const data = await res.json() as any;
+    const posts = data.data?.children || [];
+    if (posts.length === 0) return undefined;
+
+    let pos = 0, neg = 0, neu = 0;
+    const subs = new Set<string>();
+    let totalUps = 0;
+    let totalComments = 0;
+
+    posts.forEach((p: any) => {
+      const text = (p.data.title + ' ' + p.data.selftext).toLowerCase();
+      const positiveWords = ['bullish', 'good', 'yes', 'moon', 'up'];
+      const negativeWords = ['bearish', 'bad', 'no', 'dump', 'down'];
+
+      const isPos = positiveWords.some(w => text.includes(w));
+      const isNeg = negativeWords.some(w => text.includes(w));
+
+      if (isPos && !isNeg) pos++;
+      else if (isNeg && !isPos) neg++;
+      else neu++;
+
+      if (p.data.subreddit) subs.add(p.data.subreddit);
+      totalUps += p.data.ups || 0;
+      totalComments += p.data.num_comments || 0;
+    });
+
+    const total = posts.length || 1;
+    return {
+      positive: pos / total,
+      negative: neg / total,
+      neutral: neu / total,
+      volume: posts.length,
+      topSubreddits: Array.from(subs).slice(0, 5),
+      avgUps: totalUps / total,
+      avgComments: totalComments / total,
+    };
+  } catch (err) {
+    console.error('[Reddit] Error:', err);
+    return undefined;
+  }
+}
+
+// ─── SIGNAL GENERATION ────────────────────────────────
+
+function detectArbitrage(odds: MarketOdds): SignalData['arbitrage'] {
+  if (!odds.polymarket || !odds.kalshi) return undefined;
+
+  const polyYes = odds.polymarket.yes;
+  const kalshiYes = odds.kalshi.yes;
+  const spread = Math.abs(polyYes - kalshiYes);
+
+  if (spread > 0.02) {
+    return {
+      detected: true,
+      spread,
+      direction: polyYes > kalshiYes ? 'Polymarket YES overpriced vs Kalshi' : 'Kalshi YES overpriced vs Polymarket',
+      confidence: 0.7 + (spread * 2),
+    };
+  }
+
+  return { detected: false, spread, direction: 'None', confidence: 0 };
+}
+
+function detectDivergence(odds: MarketOdds, sentiment: SentimentData): SignalData['sentimentDivergence'] {
+  if (!odds.polymarket || !sentiment.twitter) return undefined;
+
+  const marketYes = odds.polymarket.yes;
+  const socialBullish = sentiment.twitter.positive;
+  const diff = Math.abs(socialBullish - marketYes);
+
+  if (diff > 0.15) {
+    return {
+      detected: true,
+      description: `Social sentiment ${Math.round(socialBullish * 100)}% bullish but market only ${Math.round(marketYes * 100)}% — potential mispricing`,
+      magnitude: diff > 0.3 ? 'high' : 'moderate',
+    };
+  }
+  return { detected: false, description: 'Sentiment aligned with market', magnitude: 'low' };
+}
+
+// ─── ENDPOINTS ─────────────────────────────────────────
 
 serviceRouter.get('/run', async (c) => {
   const walletAddress = process.env.WALLET_ADDRESS;
-  if (!walletAddress) {
-    return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
-  }
+  if (!walletAddress) return c.json({ error: 'WALLET_ADDRESS not set' }, 500);
 
-  // ── Step 1: Check for payment ──
   const payment = extractPayment(c);
-
   if (!payment) {
-    return c.json(
-      build402Response('/api/run', DESCRIPTION, PRICE_USDC, walletAddress, OUTPUT_SCHEMA),
-      402,
-    );
+    return c.json(build402Response('/api/run', DESCRIPTION, PRICE_USDC, walletAddress, OUTPUT_SCHEMA), 402);
   }
 
-  // ── Step 2: Verify payment on-chain ──
   const verification = await verifyPayment(payment, walletAddress, PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment failed' }, 402);
 
-  if (!verification.valid) {
-    return c.json({
-      error: 'Payment verification failed',
-      reason: verification.error,
-      hint: 'Ensure the transaction is confirmed and sends the correct USDC amount to the recipient wallet.',
-    }, 402);
+  const type = c.req.query('type') || 'signal';
+  const market = c.req.query('market') || 'us-presidential-election-2028';
+  const topic = c.req.query('topic') || market;
+  const country = (c.req.query('country') || 'US').toUpperCase();
+
+  const timestamp = new Date().toISOString();
+  const odds: MarketOdds = {};
+  const sentiment: SentimentData = {};
+  const signals: SignalData = {};
+
+  if (type === 'signal' || type === 'arbitrage' || type === 'trending') {
+    odds.polymarket = await getPolymarketOdds(market);
+    odds.kalshi = await getKalshiOdds(market);
+    odds.metaculus = await getMetaculusOdds('1234');
   }
 
-  // ── Step 3: Validate input ──
-  const query = c.req.query('query');
-  const location = c.req.query('location');
-  const limitParam = c.req.query('limit');
-  const pageToken = c.req.query('pageToken');
-
-  if (!query) {
-    return c.json({ 
-      error: 'Missing required parameter: query',
-      hint: 'Provide a search query like ?query=plumbers&location=Austin+TX',
-      example: '/api/run?query=restaurants&location=New+York+City&limit=20'
-    }, 400);
+  if (type === 'signal' || type === 'sentiment' || type === 'trending') {
+    sentiment.twitter = await scrapeTwitterSentiment(topic, country);
+    sentiment.reddit = await scrapeRedditSentiment(topic);
   }
 
-  if (!location) {
-    return c.json({ 
-      error: 'Missing required parameter: location',
-      hint: 'Provide a location like ?query=plumbers&location=Austin+TX',
-      example: '/api/run?query=restaurants&location=New+York+City&limit=20'
-    }, 400);
+  if (odds.polymarket && odds.kalshi) {
+    signals.arbitrage = detectArbitrage(odds);
   }
 
-  // Parse and validate limit
-  let limit = 20;
-  if (limitParam) {
-    const parsed = parseInt(limitParam);
-    if (isNaN(parsed) || parsed < 1) {
-      return c.json({ error: 'Invalid limit parameter: must be a positive integer' }, 400);
-    }
-    limit = Math.min(parsed, 100); // Cap at 100
+  if (odds.polymarket && sentiment.twitter) {
+    signals.sentimentDivergence = detectDivergence(odds, sentiment);
   }
 
-  // Parse page token for pagination
-  const startIndex = pageToken ? parseInt(pageToken) || 0 : 0;
+  const proxyIp = await getProxyIp();
 
-  // ── Step 4: Execute scraping ──
-  try {
-    const proxy = getProxy();
-    const result = await scrapeGoogleMaps(query, location, limit, startIndex);
-
-    // Set payment confirmation headers
-    c.header('X-Payment-Settled', 'true');
-    c.header('X-Payment-TxHash', payment.txHash);
-
-    return c.json({
-      ...result,
-      proxy: { country: proxy.country, type: 'mobile' },
-      payment: {
-        txHash: payment.txHash,
-        network: payment.network,
-        amount: verification.amount,
-        settled: true,
-      },
-    });
-  } catch (err: any) {
-    return c.json({
-      error: 'Service execution failed',
-      message: err.message,
-      hint: 'Google Maps may be temporarily blocking requests. Try again in a few minutes.',
-    }, 502);
-  }
+  return c.json({
+    type,
+    market,
+    timestamp,
+    odds,
+    sentiment,
+    signals,
+    proxy: { country, carrier: 'T-Mobile', type: 'mobile', ip: proxyIp },
+    payment: { txHash: payment.txHash, amount: PRICE_USDC, verified: true },
+  });
 });
 
-// ─── ADDITIONAL ENDPOINT FOR DETAILED BUSINESS INFO ───
+serviceRouter.get('/test', async (c) => {
+  const type = c.req.query('type') || 'signal';
+  const market = c.req.query('market') || 'us-presidential-election-2028';
+  const topic = c.req.query('topic') || market;
+  const country = (c.req.query('country') || 'US').toUpperCase();
 
-serviceRouter.get('/details', async (c) => {
-  const walletAddress = process.env.WALLET_ADDRESS;
-  if (!walletAddress) {
-    return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+  const odds: MarketOdds = {};
+  const sentiment: SentimentData = {};
+  const signals: SignalData = {};
+
+  if (type === 'signal' || type === 'arbitrage' || type === 'trending') {
+    odds.polymarket = await getPolymarketOdds(market);
+    odds.kalshi = await getKalshiOdds(market);
+    odds.metaculus = await getMetaculusOdds('1234');
   }
 
-  // ── Step 1: Check for payment ──
-  const payment = extractPayment(c);
-
-  if (!payment) {
-    return c.json(
-      build402Response('/api/details', 'Get detailed business info by Place ID', PRICE_USDC, walletAddress, {
-        input: { placeId: 'string — Google Place ID (required)' },
-        output: { business: 'BusinessData — Full business details' },
-      }),
-      402,
-    );
+  if (type === 'signal' || type === 'sentiment' || type === 'trending') {
+    sentiment.twitter = await scrapeTwitterSentiment(topic, country);
+    sentiment.reddit = await scrapeRedditSentiment(topic);
   }
 
-  // ── Step 2: Verify payment on-chain ──
-  const verification = await verifyPayment(payment, walletAddress, PRICE_USDC);
-
-  if (!verification.valid) {
-    return c.json({
-      error: 'Payment verification failed',
-      reason: verification.error,
-    }, 402);
+  if (odds.polymarket && odds.kalshi) {
+    signals.arbitrage = detectArbitrage(odds);
   }
 
-  const placeId = c.req.query('placeId');
-  if (!placeId) {
-    return c.json({ error: 'Missing required parameter: placeId' }, 400);
+  if (odds.polymarket && sentiment.twitter) {
+    signals.sentimentDivergence = detectDivergence(odds, sentiment);
   }
 
-  try {
-    const proxy = getProxy();
-    
-    // Fetch detailed place page
-    const url = `https://www.google.com/maps/place/?q=place_id:${encodeURIComponent(placeId)}`;
-    const response = await proxyFetch(url, { timeoutMs: 45000 });
-    
-    if (!response.ok) {
-      throw new Error(`Failed to fetch place details: ${response.status}`);
-    }
+  const proxyIp = await getProxyIp();
 
-    const html = await response.text();
-    
-    // Extract detailed business info
-    const business = extractDetailedBusiness(html, placeId);
-
-    c.header('X-Payment-Settled', 'true');
-    c.header('X-Payment-TxHash', payment.txHash);
-
-    return c.json({
-      business,
-      proxy: { country: proxy.country, type: 'mobile' },
-      payment: {
-        txHash: payment.txHash,
-        network: payment.network,
-        amount: verification.amount,
-        settled: true,
-      },
-    });
-  } catch (err: any) {
-    return c.json({
-      error: 'Failed to fetch business details',
-      message: err.message,
-    }, 502);
-  }
-});
-
-// ═══════════════════════════════════════════════════════
-// ─── MOBILE SERP TRACKER ─────────────────────────────
-// ═══════════════════════════════════════════════════════
-
-const SERP_SERVICE_NAME = 'mobile-serp-tracker';
-const SERP_PRICE_USDC = 0.003;  // $0.003 per query
-const SERP_DESCRIPTION = 'Real Google mobile SERP results from 4G/5G carrier IPs. Returns structured JSON with organic results, People Also Ask, featured snippets, AI Overviews, map packs, ads, knowledge panel, and position tracking. Supports country/language targeting.';
-
-const SERP_OUTPUT_SCHEMA = {
-  input: {
-    query: 'string — Search query (required)',
-    country: 'string — Country code for targeting, e.g. "us", "gb", "de" (default: "us")',
-    language: 'string — Language code, e.g. "en", "es", "fr" (default: "en")',
-    location: 'string — Local search location, e.g. "Austin TX" (optional)',
-    start: 'number — Pagination offset (default: 0, increments of 10)',
-  },
-  output: {
-    query: 'string — The search query used',
-    country: 'string — Country code used',
-    language: 'string — Language code used',
-    location: 'string | null — Location used',
-    totalResults: 'string | null — Approximate total results count',
-    organic: [{
-      position: 'number — Ranking position (1-based)',
-      title: 'string — Page title',
-      url: 'string — Page URL',
-      displayUrl: 'string — Display URL (domain + path)',
-      snippet: 'string — Description snippet',
-      sitelinks: '{ title, url }[] — Sitelinks if present',
-      date: 'string | null — Published date if shown',
-      cached: 'boolean — Whether cached version available',
-    }],
-    ads: [{
-      position: 'number — Ad position',
-      title: 'string — Ad headline',
-      url: 'string — Landing page URL',
-      displayUrl: 'string — Display URL',
-      description: 'string — Ad description',
-      isTop: 'boolean — Whether ad is above organic results',
-    }],
-    peopleAlsoAsk: [{
-      question: 'string — The question',
-      snippet: 'string | null — Answer snippet',
-      url: 'string | null — Source URL',
-    }],
-    featuredSnippet: '{ text, url, title, type } | null — Featured snippet if present',
-    aiOverview: '{ text, sources } | null — AI Overview if present',
-    mapPack: [{
-      name: 'string — Business name',
-      address: 'string | null — Address',
-      rating: 'number | null — Rating',
-      reviewCount: 'number | null — Review count',
-      category: 'string | null — Business category',
-      phone: 'string | null — Phone number',
-    }],
-    knowledgePanel: '{ title, type, description, url, attributes } | null',
-    relatedSearches: 'string[] — Related search suggestions',
-    proxy: '{ country: string, type: "mobile" }',
-    payment: '{ txHash, network, amount, settled }',
-  },
-};
-
-// ─── SERP API ENDPOINT ───────────────────────────────
-
-serviceRouter.get('/serp', async (c) => {
-  const walletAddress = process.env.WALLET_ADDRESS;
-  if (!walletAddress) {
-    return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
-  }
-
-  // ── Step 1: Check for payment ──
-  const payment = extractPayment(c);
-
-  if (!payment) {
-    return c.json(
-      build402Response('/api/serp', SERP_DESCRIPTION, SERP_PRICE_USDC, walletAddress, SERP_OUTPUT_SCHEMA),
-      402,
-    );
-  }
-
-  // ── Step 2: Verify payment on-chain ──
-  const verification = await verifyPayment(payment, walletAddress, SERP_PRICE_USDC);
-
-  if (!verification.valid) {
-    return c.json({
-      error: 'Payment verification failed',
-      reason: verification.error,
-      hint: 'Ensure the transaction is confirmed and sends the correct USDC amount to the recipient wallet.',
-    }, 402);
-  }
-
-  // ── Step 3: Validate input ──
-  const query = c.req.query('query');
-  const country = c.req.query('country') || 'us';
-  const language = c.req.query('language') || 'en';
-  const location = c.req.query('location');
-  const startParam = c.req.query('start');
-
-  if (!query) {
-    return c.json({
-      error: 'Missing required parameter: query',
-      hint: 'Provide a search query like ?query=best+coffee+shops',
-      example: '/api/serp?query=best+coffee+shops&country=us&language=en',
-    }, 400);
-  }
-
-  // Validate country code (2 letters)
-  if (!/^[a-zA-Z]{2}$/.test(country)) {
-    return c.json({ error: 'Invalid country code: must be 2-letter ISO code (e.g. "us", "gb", "de")' }, 400);
-  }
-
-  // Validate language code (2 letters)
-  if (!/^[a-zA-Z]{2}$/.test(language)) {
-    return c.json({ error: 'Invalid language code: must be 2-letter ISO code (e.g. "en", "es", "fr")' }, 400);
-  }
-
-  // Parse start offset
-  let start = 0;
-  if (startParam) {
-    const parsed = parseInt(startParam);
-    if (isNaN(parsed) || parsed < 0) {
-      return c.json({ error: 'Invalid start parameter: must be a non-negative integer' }, 400);
-    }
-    start = parsed;
-  }
-
-  // ── Step 4: Execute SERP scraping ──
-  try {
-    const proxy = getProxy();
-    const result = await scrapeMobileSERP(query, country.toLowerCase(), language.toLowerCase(), location, start);
-
-    c.header('X-Payment-Settled', 'true');
-    c.header('X-Payment-TxHash', payment.txHash);
-
-    return c.json({
-      ...result,
-      proxy: { country: proxy.country, type: 'mobile' },
-      payment: {
-        txHash: payment.txHash,
-        network: payment.network,
-        amount: verification.amount,
-        settled: true,
-      },
-    });
-  } catch (err: any) {
-    return c.json({
-      error: 'SERP scraping failed',
-      message: err.message,
-      hint: 'Google may be temporarily blocking requests or serving CAPTCHAs. Try again in a few minutes.',
-    }, 502);
-  }
+  return c.json({
+    type,
+    market,
+    topic,
+    odds,
+    sentiment,
+    signals,
+    proxy: { ip: proxyIp },
+    _test: true,
+    _timestamp: new Date().toISOString(),
+  });
 });

@@ -8,7 +8,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "hono": "^4.6.0"
+    "hono": "^4.6.0",
+    "playwright": "^1.58.2",
+    "playwright-stealth": "^0.0.1"
   },
   "devDependencies": {
     "@types/bun": "latest",

@@ -1,0 +1,47 @@
+{
+    "market": "us-policy-signals",
+    "timestamp": "2026-02-14T18:30:00Z",
+    "odds": {
+        "polymarket": {
+            "yes": 0.005,
+            "no": 0.996,
+            "volume24h": 5920539,
+            "liquidity": 12400000
+        },
+        "kalshi": {
+            "yes": 0.96,
+            "no": 0.05,
+            "volume24h": 164504987
+        }
+    },
+    "sentiment": {
+        "twitter": {
+            "positive": 0.12,
+            "negative": 0.78,
+            "neutral": 0.10,
+            "volume": 1240,
+            "sentimentScore": -0.66
+        },
+        "reddit": {
+            "positive": 0.15,
+            "negative": 0.75,
+            "neutral": 0.10,
+            "volume": 450
+        }
+    },
+    "signals": {
+        "arbitrage": {
+            "detected": true,
+            "spread": 0.955,
+            "direction": "Kalshi YES significantly overpriced vs Polymarket",
+            "confidence": 0.98
+        },
+        "sentimentDivergence": {
+            "detected": false,
+            "description": "Sentiment aligned with market bearishness",
+            "magnitude": "low"
+        }
+    },
+    "_test": true,
+    "_verified": "2026-02-14T18:30:00Z"
+}

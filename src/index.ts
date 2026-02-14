@@ -19,6 +19,7 @@ const app = new Hono();
 app.use('*', logger());
 
 app.use('*', cors({
+  origin: '*',
   allowHeaders: ['Content-Type', 'Payment-Signature', 'X-Payment-Signature', 'X-Payment-Network'],
   exposeHeaders: ['X-Payment-Settled', 'X-Payment-TxHash', 'Retry-After'],
 }));
@@ -77,9 +78,9 @@ app.get('/', (c) => c.json({
   description: process.env.SERVICE_DESCRIPTION || 'A marketplace service on Proxies.sx',
   version: '1.0.0',
   endpoints: [
-      { method: 'GET', path: '/api/run', description: 'Search businesses by query + location' },
-      { method: 'GET', path: '/api/details', description: 'Get detailed business info by Place ID' },
-    ],
+    { method: 'GET', path: '/api/run', description: 'Comprehensive signal report (signal, arbitrage, sentiment, trending)' },
+    { method: 'GET', path: '/api/test', description: 'Debug endpoint for real-time market data verification' },
+  ],
   pricing: {
     amount: process.env.PRICE_USDC || '0.005',
     currency: 'USDC',
@@ -125,4 +126,5 @@ app.onError((err, c) => {
 export default {
   port: parseInt(process.env.PORT || '3000'),
   fetch: app.fetch,
+  idleTimeout: 255, // Max timeout for browser scraping
 };
