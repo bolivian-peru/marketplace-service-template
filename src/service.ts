@@ -143,22 +143,11 @@ async function getMetaculusOdds(questionId: string): Promise<MarketOdds['metacul
 
 async function getProxyIp(): Promise<string> {
   try {
-    const host = process.env.PROXY_HOST;
-    if (!host) {
-      console.error('[Proxy] PROXY_HOST is missing in environment');
-      return 'unknown';
-    }
-    console.log(`[Proxy] Attempting IP fetch using host: ${host.substring(0, 3)}...`);
-
     const res = await proxyFetch('https://api.ipify.org?format=json');
-    if (!res.ok) {
-      console.error(`[Proxy] IP fetch failed with status: ${res.status}`);
-      return 'unknown';
-    }
+    if (!res.ok) return 'unknown';
     const data = await res.json() as { ip: string };
     return data.ip;
-  } catch (err: any) {
-    console.error('[Proxy] getProxyIp Error:', err.message);
+  } catch {
     return 'unknown';
   }
 }
