@@ -442,24 +442,43 @@ serviceRouter.get('/run', async (c) => {
 });
 
 serviceRouter.get('/test', async (c) => {
+  const type = c.req.query('type') || 'signal';
   const market = c.req.query('market') || 'us-presidential-election-2028';
   const topic = c.req.query('topic') || market;
-  const odds = {
-    polymarket: await getPolymarketOdds(market),
-    kalshi: await getKalshiOdds(market),
-  };
-  const sentiment = {
-    reddit: await scrapeRedditSentiment(topic),
-  };
+  const country = (c.req.query('country') || 'US').toUpperCase();
+
+  const odds: MarketOdds = {};
+  const sentiment: SentimentData = {};
+  const signals: SignalData = {};
+
+  if (type === 'signal' || type === 'arbitrage' || type === 'trending') {
+    odds.polymarket = await getPolymarketOdds(market);
+    odds.kalshi = await getKalshiOdds(market);
+    odds.metaculus = await getMetaculusOdds('1234');
+  }
+
+  if (type === 'signal' || type === 'sentiment' || type === 'trending') {
+    sentiment.twitter = await scrapeTwitterSentiment(topic, country);
+    sentiment.reddit = await scrapeRedditSentiment(topic);
+  }
+
+  if (odds.polymarket && odds.kalshi) {
+    signals.arbitrage = detectArbitrage(odds);
+  }
+
+  if (odds.polymarket && sentiment.twitter) {
+    signals.sentimentDivergence = detectDivergence(odds, sentiment);
+  }
+
   const proxyIp = await getProxyIp();
 
   return c.json({
+    type,
     market,
+    topic,
     odds,
     sentiment,
-    signals: {
-      arbitrage: detectArbitrage(odds),
-    },
+    signals,
     proxy: { ip: proxyIp },
     _test: true,
     _timestamp: new Date().toISOString(),
