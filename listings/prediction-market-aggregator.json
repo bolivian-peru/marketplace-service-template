@@ -1,0 +1,62 @@
+{
+    "id": "prediction-market-aggregator",
+    "name": "Prediction Market Signal Aggregator",
+    "description": "Combine real-time prediction market odds with live social sentiment data to detect mispricings and arbitrage.",
+    "longDescription": "API that aggregates real-time odds from Polymarket, Kalshi, and Metaculus while scraping social sentiment from Twitter/X and Reddit using mobile proxies. Detects cross-platform arbitrage spreads and sentiment divergence signals to help traders find edge in prediction markets.",
+    "endpoint": "https://prediction-aggregator.rakesh.io",
+    "docsUrl": "https://github.com/bolivian-peru/marketplace-service-template",
+    "pricing": {
+        "model": "per-request",
+        "amount": "0.05",
+        "currency": "USDC",
+        "networks": [
+            {
+                "network": "solana",
+                "chainId": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+                "recipient": "7XkzGKKhgZGLvRaZmJjQSVjyLZpJcXsNvkMvSZsrviPf",
+                "asset": "USDC",
+                "assetAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+            },
+            {
+                "network": "base",
+                "chainId": "eip155:8453",
+                "recipient": "7XkzGKKhgZGLvRaZmJjQSVjyLZpJcXsNvkMvSZsrviPf",
+                "asset": "USDC",
+                "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+            }
+        ]
+    },
+    "category": "trading",
+    "tags": [
+        "prediction-market",
+        "polymarket",
+        "kalshi",
+        "arbitrage",
+        "sentiment",
+        "trading",
+        "crypto",
+        "mobile-proxy",
+        "social-scraping"
+    ],
+    "features": [
+        "Real-time odds from Polymarket, Kalshi, Metaculus",
+        "Live Twitter/X sentiment scraping via mobile proxies",
+        "Reddit sentiment analysis",
+        "Cross-platform arbitrage detection (0.02 spread floor)",
+        "Sentiment-market divergence signals",
+        "x402 USDC payments (Solana & Base)",
+        "Mobile proxy infrastructure for reliable scraping"
+    ],
+    "owner": {
+        "name": "Rakesh",
+        "github": "rakesh0x",
+        "twitter": "rakesh0x",
+        "telegram": "sxproxies"
+    },
+    "status": "pending",
+    "featured": true,
+    "addedAt": "2026-02-14",
+    "x402": {
+        "discoveryUrl": "https://prediction-aggregator.rakesh.io/api/run"
+    }
+}
