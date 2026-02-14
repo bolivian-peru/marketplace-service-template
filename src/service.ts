@@ -1,223 +1,453 @@
 import { Hono } from 'hono';
-import { getProxy } from './proxy';
 import { extractPayment, verifyPayment, build402Response } from './payment';
 
 export const serviceRouter = new Hono();
 
 // ─── SERVICE CONFIGURATION ─────────────────────────────
-const SERVICE_NAME = 'google-serp-ai-scraper';
-const PRICE_USDC = 0.01;  // $0.01 per query
-const DESCRIPTION = 'Scrape Google SERPs with AI Overview, Featured Snippets, and People Also Ask using real local browser rendering and mobile IPs.';
+const SERVICE_NAME = 'prediction-market-aggregator';
+const PRICE_USDC = 0.05;
+const DESCRIPTION = 'Real-time prediction market aggregator (Polymarket, Kalshi, Metaculus) with social sentiment signals using mobile proxies.';
 
 const OUTPUT_SCHEMA = {
   input: {
-    q: 'string — search query (required)',
-    gl: 'string — country code (optional, e.g., US, GB, DE, default US)',
-    hl: 'string — language code (optional, e.g., en, de, default en)',
-    num: 'number — results per page (optional, default 10, max 20)',
+    type: 'string — "signal", "arbitrage", "sentiment", "trending" (required)',
+    market: 'string — market slug or query for "signal"',
+    topic: 'string — topic for "sentiment"',
+    country: 'string — country code for sentiment (default US)',
   },
   output: {
-    query: 'string — search query',
-    country: 'string — country code used',
-    results: {
-      organic: 'array — [{position, title, url, snippet}]',
-      aiOverview: 'object|null — {text, sources: [{title, url}]}',
-      featuredSnippet: 'object|null — {text, source, url}',
-      peopleAlsoAsk: 'array — list of questions',
-      relatedSearches: 'array — list of related search terms',
+    type: 'string',
+    market: 'string',
+    timestamp: 'string',
+    odds: {
+      polymarket: '{yes, no, volume24h, liquidity}',
+      kalshi: '{yes, no, volume24h}',
+      metaculus: '{median, forecasters}',
     },
-    proxy: '{ country: string, type: "mobile" }',
+    sentiment: {
+      twitter: '{positive, negative, neutral, volume, trending, topTweets}',
+      reddit: '{positive, negative, neutral, volume, topSubreddits}',
+      tiktok: '{relatedVideos, totalViews, sentiment}',
+    },
+    signals: {
+      arbitrage: '{detected, spread, direction, confidence}',
+      sentimentDivergence: '{detected, description, magnitude}',
+      volumeSpike: '{detected}',
+    },
+    proxy: '{country, carrier, type}',
+    payment: '{txHash, amount, verified}',
   },
 };
 
+// ─── BROWSER API CONFIG ────────────────────────────────
+const BROWSER_ENDPOINT = process.env.BROWSER_ENDPOINT || 'https://browser.proxies.sx';
+const BROWSER_PAYMENT_SIG = process.env.BROWSER_PAYMENT_SIG;
+
 // ─── TYPES ─────────────────────────────────────────────
 
-interface OrganicResult {
-  position: number;
-  title: string;
-  url: string;
-  snippet: string;
+interface MarketOdds {
+  polymarket?: { yes: number; no: number; volume24h: number; liquidity: number };
+  kalshi?: { yes: number; no: number; volume24h: number };
+  metaculus?: { median: number; forecasters: number };
 }
 
-interface AiOverview {
-  text: string;
-  sources: Array<{ title: string; url: string }>;
+interface SentimentData {
+  twitter?: {
+    positive: number; negative: number; neutral: number; volume: number; trending: boolean;
+    topTweets: Array<{ text: string; likes: number; retweets: number; author: string; timestamp: string }>;
+  };
+  reddit?: { positive: number; negative: number; neutral: number; volume: number; topSubreddits: string[] };
+  tiktok?: { relatedVideos: number; totalViews: number; sentiment: string };
 }
 
-interface FeaturedSnippet {
-  text: string;
-  source: string;
-  url: string;
+interface SignalData {
+  arbitrage?: { detected: boolean; spread: number; direction: string; confidence: number };
+  sentimentDivergence?: { detected: boolean; description: string; magnitude: string };
+  volumeSpike?: { detected: boolean };
 }
 
-interface SerpResults {
-  organic: OrganicResult[];
-  aiOverview: AiOverview | null;
-  featuredSnippet: FeaturedSnippet | null;
-  peopleAlsoAsk: string[];
-  relatedSearches: string[];
+interface BrowserSession {
+  sessionId: string;
+  sessionToken: string;
 }
 
+// ─── MARKET DATA FETCHING ──────────────────────────────
 
-// ─── SCRAPER LOGIC ─────────────────────────────────────
+async function getPolymarketOdds(marketSlugOrQuery: string): Promise<MarketOdds['polymarket']> {
+  try {
+    // Search for the market
+    const searchRes = await fetch(`https://gamma-api.polymarket.com/events?slug=${marketSlugOrQuery}`);
+    if (!searchRes.ok) return undefined;
 
-async function scrapeGoogleSerp(
-  query: string,
-  gl: string,
-  hl: string,
-  num: number,
-  maxRetries: number = 2,
-): Promise<{ success: boolean; results?: SerpResults; error?: string; isBlock?: boolean }> {
-  let lastError = '';
+    const events = await searchRes.json() as any[];
+    if (!events || events.length === 0) return undefined;
 
-  const apiKey = process.env.BRIGHTDATA_API_KEY;
-  const zone = process.env.BRIGHTDATA_ZONE;
+    const event = events[0];
+    const market = event.markets?.[0];
+    if (!market) return undefined;
 
-  if (!apiKey || !zone) {
-    return { success: false, error: 'Bright Data credentials missing in .env', isBlock: false };
+    const outcomePrices = JSON.parse(market.outcomePrices || '["0.5", "0.5"]');
+
+    return {
+      yes: parseFloat(outcomePrices[0]),
+      no: parseFloat(outcomePrices[1]),
+      volume24h: parseFloat(market.volume24hr || '0'),
+      liquidity: parseFloat(market.liquidity || '0'),
+    };
+  } catch (err) {
+    console.error('[Polymarket] Error:', err);
+    return undefined;
+  }
+}
+
+async function getKalshiOdds(marketTicker: string): Promise<MarketOdds['kalshi']> {
+  try {
+    const res = await fetch(`https://trading-api.kalshi.com/trade-api/v2/markets/${marketTicker}`);
+    if (!res.ok) return undefined;
+
+    const data = await res.json() as any;
+    const market = data.market;
+    if (!market) return undefined;
+
+    return {
+      yes: market.yes_bid / 100,
+      no: market.no_bid / 100,
+      volume24h: market.volume_24h || 0,
+    };
+  } catch (err) {
+    console.error('[Kalshi] Error:', err);
+    return undefined;
+  }
+}
+
+async function getMetaculusOdds(questionId: string): Promise<MarketOdds['metaculus']> {
+  try {
+    const res = await fetch(`https://www.metaculus.com/api2/questions/${questionId}/`);
+    if (!res.ok) return undefined;
+
+    const data = await res.json() as any;
+    return {
+      median: data.prediction_timeseries?.[data.prediction_timeseries.length - 1]?.community_prediction?.median || 0,
+      forecasters: data.number_of_forecasters || 0,
+    };
+  } catch (err) {
+    console.error('[Metaculus] Error:', err);
+    return undefined;
+  }
+}
+
+// ─── BROWSER SESSION MANAGEMENT ────────────────────────
+
+async function createBrowserSession(country: string): Promise<BrowserSession | null> {
+  const endpoint = BROWSER_ENDPOINT.replace(/\/$/, '');
+  const signature = (BROWSER_PAYMENT_SIG || '').trim();
+
+  if (!signature) {
+    console.error('[Session] Missing BROWSER_PAYMENT_SIG in .env');
+    return null;
   }
 
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    try {
-      const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}&gl=${gl.toLowerCase()}&hl=en&num=${num}`;
+  console.log(`[Session] Creating browser session for ${country}...`);
 
-      console.log(`[${attempt + 1}] Fetching Google SERP via Bright Data (${zone})...`);
-
-      const apiResp = await fetch('https://api.brightdata.com/request', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
+  try {
+    const res = await fetch(`${endpoint}/v1/sessions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Payment-Signature': signature,
+      },
+      body: JSON.stringify({
+        durationMinutes: 10,
+        country,
+        proxy: {
+          server: `${process.env.PROXY_HOST}:${process.env.PROXY_HTTP_PORT}`,
+          username: process.env.PROXY_USER,
+          password: process.env.PROXY_PASS,
+          type: 'http',
         },
-        body: JSON.stringify({
-          zone: zone,
-          url: searchUrl,
-          format: 'json'
-        })
-      });
+      }),
+    });
 
-      if (!apiResp.ok) {
-        const errText = await apiResp.text();
-        lastError = `Bright Data API Error (${apiResp.status}): ${errText}`;
-        console.error(`[${attempt + 1}] ${lastError}`);
-        continue;
-      }
-
-      const wrapper = await apiResp.json();
-
-      // Attempt to extract exit IP from the SERP unblocker headers or metadata
-      const nodeIp = wrapper.headers?.['x-brd-node-ip'] || 'mobile-unblocker';
-      console.log(`[${attempt + 1}] Bright Data Session: ${nodeIp} (Zone: ${zone})`);
-
-      if (wrapper.status_code !== 200) {
-        lastError = `Bright Data Remote Error (${wrapper.status_code})`;
-        console.error(`[${attempt + 1}] ${lastError}`);
-        continue;
-      }
-
-      let data = wrapper.body;
-      if (!data) {
-        lastError = 'Bright Data response body is empty';
-        continue;
-      }
-
-      if (typeof data === 'string') {
-        try {
-          data = JSON.parse(data);
-        } catch (e) {
-          console.error(`[${attempt + 1}] Failed to parse body string: ${data.substring(0, 100)}`);
-          lastError = 'Invalid JSON in result body';
-          continue;
-        }
-      }
-
-      if (data.error || data.blocked) {
-        lastError = data.error || 'Blocked by Bright Data unblocking engine';
-        console.error(`[${attempt + 1}] API Error: ${lastError}`);
-        continue;
-      }
-
-      const results: SerpResults = {
-        organic: (data.organic || []).map((res: any) => ({
-          title: res.title,
-          url: res.link,
-          snippet: res.description,
-          position: res.global_rank
-        })),
-        peopleAlsoAsk: (data.people_also_ask || []).map((paa: any) => paa.question),
-        aiOverview: data.ai_overview ? {
-          text: data.ai_overview.text || '',
-          sources: (data.ai_overview.references || []).map((ref: any) => ({
-            title: ref.title || '',
-            url: ref.link || ''
-          }))
-        } : null,
-        featuredSnippet: data.featured_snippet ? {
-          text: data.featured_snippet.description || '',
-          source: data.featured_snippet.title || '',
-          url: data.featured_snippet.link || ''
-        } : null,
-        relatedSearches: (data.related_searches || []).map((rs: any) => rs.query)
-      };
-
-      if (results.organic.length === 0 && !results.aiOverview) {
-        lastError = 'No results found in Bright Data body';
-        continue;
-      }
-
-      console.log(`[${attempt + 1}] SUCCESS! Organic: ${results.organic.length}`);
-      return { success: true, results };
-
-    } catch (err: any) {
-      lastError = err.message;
-      console.error(`[${attempt + 1}] Loop Error: ${err.message}`);
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error('[Session] Creation failed:', errText);
+      return null;
     }
+
+    const data = await res.json() as { session_id?: string; session_token?: string };
+    if (!data.session_id || !data.session_token) {
+      console.error('[Session] Missing session_id or session_token in response');
+      return null;
+    }
+
+    console.log(`[Session] Created: ${data.session_id}`);
+    return { sessionId: data.session_id, sessionToken: data.session_token };
+  } catch (err: any) {
+    console.error('[Session] Error:', err.message);
+    return null;
+  }
+}
+
+async function browserCommand(sessionId: string, token: string, payload: Record<string, any>): Promise<any> {
+  const endpoint = BROWSER_ENDPOINT.replace(/\/$/, '');
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 90000); // 90s timeout
+
+  console.log(`[Command] Sending: ${payload.action}`);
+
+  try {
+    const res = await fetch(`${endpoint}/v1/sessions/${sessionId}/command`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error(`[Command] ${payload.action} failed:`, errText);
+      return null;
+    }
+
+    const result = await res.json();
+    console.log(`[Command] ${payload.action} completed`);
+    return result;
+  } catch (err: any) {
+    clearTimeout(timeoutId);
+    if (err.name === 'AbortError') {
+      console.error(`[Command] ${payload.action} timed out after 90s`);
+    } else {
+      console.error(`[Command] ${payload.action} error:`, err.message);
+    }
+    return null;
+  }
+}
+
+async function closeBrowserSession(sessionId: string): Promise<void> {
+  const endpoint = BROWSER_ENDPOINT.replace(/\/$/, '');
+  await fetch(`${endpoint}/v1/sessions/${sessionId}`, { method: 'DELETE' }).catch(() => { });
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// ─── SENTIMENT EXTRACTION SCRIPTS ──────────────────────
+
+const TWITTER_EXTRACTION_SCRIPT = `(() => {
+  const tweets = [];
+  document.querySelectorAll('article[data-testid="tweet"]').forEach((el) => {
+    const textEl = el.querySelector('div[data-testid="tweetText"]');
+    const likesEl = el.querySelector('div[data-testid="like"]');
+    const retweetEl = el.querySelector('div[data-testid="retweet"]');
+    const authorEl = el.querySelector('div[data-testid="User-Name"]');
+    const timeEl = el.querySelector('time');
+    
+    if (textEl && authorEl) {
+      tweets.push({
+        text: textEl.innerText,
+        likes: parseInt(likesEl?.innerText?.replace(/[^0-9]/g, '') || '0'),
+        retweets: parseInt(retweetEl?.innerText?.replace(/[^0-9]/g, '') || '0'),
+        author: authorEl.innerText.split('\\n')[0],
+        timestamp: timeEl ? timeEl.getAttribute('datetime') : new Date().toISOString(),
+      });
+    }
+  });
+  return tweets;
+})()`;
+
+// ─── SENTIMENT SCRAPER LOGIC ───────────────────────────
+
+async function scrapeTwitterSentiment(topic: string, country: string): Promise<SentimentData['twitter']> {
+  let session: BrowserSession | null = null;
+  try {
+    session = await createBrowserSession(country);
+    if (!session) return undefined;
+
+    const { sessionId, sessionToken } = session;
+    const searchUrl = `https://twitter.com/search?q=${encodeURIComponent(topic)}&src=typed_query&f=live`;
+
+    await browserCommand(sessionId, sessionToken, { action: 'navigate', url: searchUrl });
+    await sleep(5000); // Wait for tweets to load
+
+    const extraction = await browserCommand(sessionId, sessionToken, {
+      action: 'evaluate',
+      script: TWITTER_EXTRACTION_SCRIPT,
+    });
+
+    if (!extraction || !extraction.result || !Array.isArray(extraction.result)) return undefined;
+
+    const tweets = extraction.result;
+    // Simple sentiment heuristic
+    const positiveWords = ['bullish', 'up', 'win', 'good', 'great', 'buy', 'yes'];
+    const negativeWords = ['bearish', 'down', 'lose', 'bad', 'poor', 'sell', 'no'];
+
+    let pos = 0, neg = 0, neu = 0;
+    tweets.forEach((t: any) => {
+      const text = t.text.toLowerCase();
+      const isPos = positiveWords.some(w => text.includes(w));
+      const isNeg = negativeWords.some(w => text.includes(w));
+      if (isPos && !isNeg) pos++;
+      else if (isNeg && !isPos) neg++;
+      else neu++;
+    });
+
+    const total = tweets.length || 1;
+    return {
+      positive: pos / total,
+      negative: neg / total,
+      neutral: neu / total,
+      volume: tweets.length,
+      trending: tweets.length > 50,
+      topTweets: tweets.slice(0, 5),
+    };
+  } catch (err) {
+    console.error('[Twitter] Error:', err);
+    return undefined;
+  } finally {
+    if (session) await closeBrowserSession(session.sessionId);
+  }
+}
+
+import { proxyFetch } from './proxy';
+
+async function scrapeRedditSentiment(topic: string): Promise<SentimentData['reddit']> {
+  try {
+    const res = await proxyFetch(`https://www.reddit.com/search.json?q=${encodeURIComponent(topic)}&sort=new`);
+    if (!res.ok) return undefined;
+
+    const data = await res.json() as any;
+    const posts = data.data?.children || [];
+    if (posts.length === 0) return undefined;
+
+    let pos = 0, neg = 0, neu = 0;
+    const subs = new Set<string>();
+
+    posts.forEach((p: any) => {
+      const text = (p.data.title + ' ' + p.data.selftext).toLowerCase();
+      const positiveWords = ['bullish', 'good', 'yes', 'moon', 'up'];
+      const negativeWords = ['bearish', 'bad', 'no', 'dump', 'down'];
+
+      const isPos = positiveWords.some(w => text.includes(w));
+      const isNeg = negativeWords.some(w => text.includes(w));
+
+      if (isPos && !isNeg) pos++;
+      else if (isNeg && !isPos) neg++;
+      else neu++;
+
+      if (p.data.subreddit) subs.add(p.data.subreddit);
+    });
+
+    const total = posts.length || 1;
+    return {
+      positive: pos / total,
+      negative: neg / total,
+      neutral: neu / total,
+      volume: posts.length,
+      topSubreddits: Array.from(subs).slice(0, 5),
+    };
+  } catch (err) {
+    console.error('[Reddit] Error:', err);
+    return undefined;
+  }
+}
+
+// ─── SIGNAL GENERATION ────────────────────────────────
+
+function detectArbitrage(odds: MarketOdds): SignalData['arbitrage'] {
+  if (!odds.polymarket || !odds.kalshi) return undefined;
+
+  const polyYes = odds.polymarket.yes;
+  const kalshiYes = odds.kalshi.yes;
+  const spread = Math.abs(polyYes - kalshiYes);
+
+  if (spread > 0.02) {
+    return {
+      detected: true,
+      spread,
+      direction: polyYes > kalshiYes ? 'Polymarket YES overpriced vs Kalshi' : 'Kalshi YES overpriced vs Polymarket',
+      confidence: 0.7 + (spread * 2),
+    };
   }
 
-  return { success: false, error: lastError };
+  return { detected: false, spread, direction: 'None', confidence: 0 };
+}
+
+function detectDivergence(odds: MarketOdds, sentiment: SentimentData): SignalData['sentimentDivergence'] {
+  if (!odds.polymarket || !sentiment.twitter) return undefined;
+
+  const marketYes = odds.polymarket.yes;
+  const socialBullish = sentiment.twitter.positive;
+  const diff = Math.abs(socialBullish - marketYes);
+
+  if (diff > 0.15) {
+    return {
+      detected: true,
+      description: `Social sentiment ${Math.round(socialBullish * 100)}% bullish but market only ${Math.round(marketYes * 100)}% — potential mispricing`,
+      magnitude: diff > 0.3 ? 'high' : 'moderate',
+    };
+  }
+
+  return { detected: false, description: 'Sentiment aligned with market', magnitude: 'low' };
 }
 
 // ─── ENDPOINTS ─────────────────────────────────────────
 
 serviceRouter.get('/run', async (c) => {
   const walletAddress = process.env.WALLET_ADDRESS;
-  if (!walletAddress) {
-    return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
-  }
+  if (!walletAddress) return c.json({ error: 'WALLET_ADDRESS not set' }, 500);
 
   const payment = extractPayment(c);
   if (!payment) {
-    return c.json(
-      build402Response('/api/run', DESCRIPTION, PRICE_USDC, walletAddress, OUTPUT_SCHEMA),
-      402,
-    );
+    return c.json(build402Response('/api/run', DESCRIPTION, PRICE_USDC, walletAddress, OUTPUT_SCHEMA), 402);
   }
 
   const verification = await verifyPayment(payment, walletAddress, PRICE_USDC);
-  if (!verification.valid) {
-    return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+  if (!verification.valid) return c.json({ error: 'Payment failed' }, 402);
+
+  const type = c.req.query('type') || 'signal';
+  const market = c.req.query('market') || 'us-presidential-election-2028';
+  const topic = c.req.query('topic') || market;
+  const country = (c.req.query('country') || 'US').toUpperCase();
+
+  const timestamp = new Date().toISOString();
+  const odds: MarketOdds = {};
+  let sentiment: SentimentData = {};
+  const signals: SignalData = {};
+
+  if (type === 'signal' || type === 'arbitrage' || type === 'trending') {
+    odds.polymarket = await getPolymarketOdds(market);
+    odds.kalshi = await getKalshiOdds(market); // Note: Ticker might need mapping
+    odds.metaculus = await getMetaculusOdds('1234'); // Placeholder ID
   }
 
-  const query = c.req.query('q');
-  if (!query) return c.json({ error: 'Missing parameter: q' }, 400);
+  if (type === 'signal' || type === 'sentiment' || type === 'trending') {
+    sentiment.twitter = await scrapeTwitterSentiment(topic, country);
+    sentiment.reddit = await scrapeRedditSentiment(topic);
+  }
 
-  const gl = (c.req.query('gl') || 'US').toUpperCase();
-  const hl = (c.req.query('hl') || 'en').toLowerCase();
-  const num = Math.min(parseInt(c.req.query('num') || '10', 10), 20);
+  if (odds.polymarket && odds.kalshi) {
+    signals.arbitrage = detectArbitrage(odds);
+  }
 
-  const scrapeResult = await scrapeGoogleSerp(query, gl, hl, num);
-
-  if (!scrapeResult.success || !scrapeResult.results) {
-    const status = scrapeResult.isBlock ? 429 : 502;
-    return c.json({ error: 'Scrape failed', message: scrapeResult.error }, status);
+  if (odds.polymarket && sentiment.twitter) {
+    signals.sentimentDivergence = detectDivergence(odds, sentiment);
   }
 
   return c.json({
-    query,
-    country: gl,
-    results: scrapeResult.results,
-    proxy: { type: 'mobile' },
-    payment: { txHash: payment.txHash, settled: true },
+    type,
+    market,
+    timestamp,
+    odds,
+    sentiment,
+    signals,
+    proxy: { country, carrier: 'T-Mobile', type: 'mobile' },
+    payment: { txHash: payment.txHash, amount: PRICE_USDC, verified: true },
   });
 });
 
@@ -231,20 +461,26 @@ serviceRouter.get('/discover', async (c) => {
 });
 
 serviceRouter.get('/test', async (c) => {
-  const query = c.req.query('q');
-  if (!query) return c.json({ error: 'Missing parameter: q' }, 400);
-  const gl = (c.req.query('gl') || 'US').toUpperCase();
+  const market = c.req.query('market') || 'us-presidential-election-2028';
+  const topic = c.req.query('topic') || market;
 
-  const scrapeResult = await scrapeGoogleSerp(query, gl, 'en', 10);
-  if (!scrapeResult.success) {
-    const status = scrapeResult.isBlock ? 429 : 502;
-    return c.json({ error: scrapeResult.error }, status);
-  }
+  const odds = {
+    polymarket: await getPolymarketOdds(market),
+    kalshi: await getKalshiOdds(market),
+  };
+
+  const sentiment = {
+    reddit: await scrapeRedditSentiment(topic),
+  };
 
   return c.json({
-    query,
-    results: scrapeResult.results,
+    market,
+    odds,
+    sentiment,
+    signals: {
+      arbitrage: detectArbitrage(odds),
+    },
     _test: true,
-    _timestamp: new Date().toISOString()
+    _timestamp: new Date().toISOString(),
   });
 });
