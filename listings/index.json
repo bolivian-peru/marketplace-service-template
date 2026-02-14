@@ -16,7 +16,14 @@
         "currency": "USDC"
       },
       "category": "proxy",
-      "tags": ["mobile", "4g", "5g", "rotating", "residential", "scraping"],
+      "tags": [
+        "mobile",
+        "4g",
+        "5g",
+        "rotating",
+        "residential",
+        "scraping"
+      ],
       "owner": {
         "name": "Proxies.sx",
         "twitter": "sxproxies",
@@ -39,7 +46,13 @@
         "currency": "USDC"
       },
       "category": "browser",
-      "tags": ["antidetect", "camoufox", "fingerprint", "automation", "stealth"],
+      "tags": [
+        "antidetect",
+        "camoufox",
+        "fingerprint",
+        "automation",
+        "stealth"
+      ],
       "owner": {
         "name": "Proxies.sx",
         "twitter": "sxproxies",
@@ -62,7 +75,13 @@
         "currency": "USDC"
       },
       "category": "scraper",
-      "tags": ["google-maps", "lead-generation", "business-data", "b2b", "scraper"],
+      "tags": [
+        "google-maps",
+        "lead-generation",
+        "business-data",
+        "b2b",
+        "scraper"
+      ],
       "owner": {
         "name": "aliraza556",
         "github": "aliraza556"
@@ -70,6 +89,34 @@
       "status": "active",
       "featured": true,
       "detailsFile": "google-maps-lead-generator.json"
+    },
+    {
+      "id": "prediction-market-aggregator",
+      "name": "Prediction Market Signal Aggregator",
+      "description": "Combine real-time prediction market odds with live social sentiment data. $0.05/request. x402 payments.",
+      "endpoint": "https://marketplace-service-template.onrender.com",
+      "docsUrl": "https://github.com/bolivian-peru/marketplace-service-template",
+      "pricing": {
+        "model": "per-request",
+        "amount": "0.05",
+        "currency": "USDC"
+      },
+      "category": "trading",
+      "tags": [
+        "prediction-market",
+        "polymarket",
+        "kalshi",
+        "arbitrage",
+        "sentiment",
+        "trading"
+      ],
+      "owner": {
+        "name": "Rakesh",
+        "github": "rakesh0x"
+      },
+      "status": "active",
+      "featured": true,
+      "detailsFile": "prediction-market-aggregator.json"
     }
   ],
   "networks": {
@@ -90,7 +137,14 @@
       "gasCost": "~$0.01"
     }
   },
-  "categories": ["proxy", "browser", "scraper", "data", "automation", "other"],
+  "categories": [
+    "proxy",
+    "browser",
+    "scraper",
+    "data",
+    "automation",
+    "other"
+  ],
   "links": {
     "marketplace": "https://agents.proxies.sx/marketplace/",
     "submit": "https://github.com/bolivian-peru/marketplace-service-template/pulls",
