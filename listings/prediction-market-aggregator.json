@@ -3,7 +3,7 @@
     "name": "Prediction Market Signal Aggregator",
     "description": "Combine real-time prediction market odds with live social sentiment data to detect mispricings and arbitrage.",
     "longDescription": "API that aggregates real-time odds from Polymarket, Kalshi, and Metaculus while scraping social sentiment from Twitter/X and Reddit using mobile proxies. Detects cross-platform arbitrage spreads and sentiment divergence signals to help traders find edge in prediction markets.",
-    "endpoint": "https://prediction-aggregator.rakesh.io",
+    "endpoint": "https://marketplace-service-template.onrender.com",
     "docsUrl": "https://github.com/bolivian-peru/marketplace-service-template",
     "pricing": {
         "model": "per-request",
@@ -57,6 +57,6 @@
     "featured": true,
     "addedAt": "2026-02-14",
     "x402": {
-        "discoveryUrl": "https://prediction-aggregator.rakesh.io/api/run"
+        "discoveryUrl": "https://marketplace-service-template.onrender.com/api/run"
     }
 }
