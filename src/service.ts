@@ -76,7 +76,7 @@ interface BrowserSession {
 async function getPolymarketOdds(marketSlugOrQuery: string): Promise<MarketOdds['polymarket']> {
   try {
     // Search for the market
-    const searchRes = await fetch(`https://gamma-api.polymarket.com/events?slug=${marketSlugOrQuery}`);
+    const searchRes = await proxyFetch(`https://gamma-api.polymarket.com/events?slug=${marketSlugOrQuery}`);
     if (!searchRes.ok) return undefined;
 
     const events = await searchRes.json() as any[];
@@ -102,7 +102,7 @@ async function getPolymarketOdds(marketSlugOrQuery: string): Promise<MarketOdds[
 
 async function getKalshiOdds(marketTicker: string): Promise<MarketOdds['kalshi']> {
   try {
-    const res = await fetch(`https://trading-api.kalshi.com/trade-api/v2/markets/${marketTicker}`);
+    const res = await proxyFetch(`https://trading-api.kalshi.com/trade-api/v2/markets/${marketTicker}`);
     if (!res.ok) return undefined;
 
     const data = await res.json() as any;
@@ -122,7 +122,7 @@ async function getKalshiOdds(marketTicker: string): Promise<MarketOdds['kalshi']
 
 async function getMetaculusOdds(questionId: string): Promise<MarketOdds['metaculus']> {
   try {
-    const res = await fetch(`https://www.metaculus.com/api2/questions/${questionId}/`);
+    const res = await proxyFetch(`https://www.metaculus.com/api2/questions/${questionId}/`);
     if (!res.ok) return undefined;
 
     const data = await res.json() as any;
