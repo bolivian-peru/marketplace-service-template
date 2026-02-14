@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
-  "updatedAt": "2026-02-05",
-  "count": 2,
+  "updatedAt": "2026-02-08",
+  "count": 3,
   "services": [
     {
       "id": "proxies-sx-mobile",
@@ -48,6 +48,28 @@
       "status": "active",
       "featured": true,
       "detailsFile": "proxies-sx-browser.json"
+    },
+    {
+      "id": "google-maps-lead-generator",
+      "name": "Google Maps Lead Generator",
+      "description": "Extract structured business data from Google Maps. $0.005/record. x402 payments.",
+      "endpoint": "https://api.proxies.sx/v1/x402/maps",
+      "docsUrl": "https://agents.proxies.sx/marketplace/skill.md",
+      "pricing": {
+        "model": "per-request",
+        "amount": "0.005",
+        "minimum": "0.005",
+        "currency": "USDC"
+      },
+      "category": "scraper",
+      "tags": ["google-maps", "lead-generation", "business-data", "b2b", "scraper"],
+      "owner": {
+        "name": "aliraza556",
+        "github": "aliraza556"
+      },
+      "status": "active",
+      "featured": true,
+      "detailsFile": "google-maps-lead-generator.json"
     }
   ],
   "networks": {

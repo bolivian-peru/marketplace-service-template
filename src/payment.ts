@@ -174,10 +174,24 @@ async function verifySolana(
     return { valid: false, error: 'Transaction failed on-chain' };
   }
 
+  // Build a map of token account address → owner wallet from postTokenBalances
+  // This lets us verify that a token account belongs to the expected recipient wallet
+  const accountKeys = tx.transaction?.message?.accountKeys || [];
+  const tokenAccountOwners = new Map<string, string>();
+  for (const bal of tx.meta?.postTokenBalances || []) {
+    if (bal.mint === USDC_SOLANA && bal.owner) {
+      const accountAddr = accountKeys[bal.accountIndex]?.pubkey;
+      if (accountAddr) {
+        tokenAccountOwners.set(accountAddr, bal.owner);
+      }
+    }
+  }
+
   // Find USDC transfer instructions
   const instructions = tx.transaction?.message?.instructions || [];
   const innerInstructions = tx.meta?.innerInstructions?.flatMap((i: any) => i.instructions) || [];
   const allInstructions = [...instructions, ...innerInstructions];
+  const minAmount = expectedAmountUSDC * (1 - tolerancePercent / 100);
 
   for (const ix of allInstructions) {
     const parsed = ix.parsed;
@@ -189,27 +203,35 @@ async function verifySolana(
       ix.program === 'spl-token'
     ) {
       const info = parsed.info;
+
+      // For transferChecked, verify this is actually USDC
+      if (parsed.type === 'transferChecked' && info.mint !== USDC_SOLANA) {
+        continue;
+      }
+
       const amount = parsed.type === 'transferChecked'
         ? Number(info.tokenAmount?.uiAmount || 0)
         : Number(info.amount || 0) / 10 ** USDC_DECIMALS_SOLANA;
 
-      // We need to check the mint for transferChecked, or verify the token accounts
-      // For simplicity, check if amount and destination match
-      const destination = info.destination || info.authority;
-      const minAmount = expectedAmountUSDC * (1 - tolerancePercent / 100);
+      if (amount < minAmount) continue;
 
-      if (amount >= minAmount) {
+      // The destination is a token account (ATA), not the wallet address.
+      // Resolve the owner wallet via postTokenBalances.
+      const destinationTokenAccount = info.destination;
+      const recipientWallet = tokenAccountOwners.get(destinationTokenAccount) || destinationTokenAccount;
+
+      if (recipientWallet === expectedRecipient) {
         return {
           valid: true,
           amount,
           sender: info.source || info.authority,
-          recipient: destination,
+          recipient: recipientWallet,
         };
       }
     }
   }
 
-  return { valid: false, error: 'No matching USDC transfer found in transaction' };
+  return { valid: false, error: 'No matching USDC transfer to recipient found in transaction' };
 }
 
 // ─── BASE (EVM) VERIFICATION ────────────────────────

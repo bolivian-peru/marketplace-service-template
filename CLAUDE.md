@@ -6,11 +6,27 @@
 
 ```
 src/
-├── service.ts    ← EDIT THIS (your service logic, pricing, description)
-├── index.ts      ← DON'T EDIT (server, CORS, rate limiting, discovery)
-├── payment.ts    ← DON'T EDIT (x402 USDC verification on Solana + Base)
-└── proxy.ts      ← DON'T EDIT (proxy credentials + fetch with retry)
+├── service.ts             ← EDIT THIS (your service logic, pricing, description)
+├── scrapers/
+│   └── maps-scraper.ts    ← Reference implementation (Google Maps scraping)
+├── types/
+│   └── index.ts           ← TypeScript interfaces for your service
+├── utils/
+│   └── helpers.ts         ← Reusable extraction helper functions
+├── index.ts               ← DON'T EDIT (server, CORS, rate limiting, discovery)
+├── payment.ts             ← DON'T EDIT (x402 USDC verification on Solana + Base)
+└── proxy.ts               ← DON'T EDIT (proxy credentials + fetch with retry)
 ```
+
+## Current Implementation: Google Maps Lead Generator
+
+The repo ships with a working reference implementation — a Google Maps Lead Generator built by @aliraza556.
+
+**Endpoints:**
+- `GET /api/run?query=plumbers&location=Austin+TX&limit=20` — Search businesses
+- `GET /api/details?placeId=<google_place_id>` — Get detailed business info
+- `GET /health` — Health check
+- `GET /` — Service discovery JSON
 
 ## What to Change in service.ts
 
@@ -66,9 +82,9 @@ bun run typecheck    # Type checking
 ## Testing
 
 ```bash
-curl localhost:3000/health                          # → 200 healthy
-curl localhost:3000/                                # → 200 service discovery JSON
-curl localhost:3000/api/run?url=https://example.com # → 402 payment required (correct!)
+curl localhost:3000/health                                        # → 200 healthy
+curl localhost:3000/                                              # → 200 service discovery JSON
+curl "localhost:3000/api/run?query=plumbers&location=Austin+TX"   # → 402 payment required (correct!)
 ```
 
 The 402 response contains everything an AI agent needs to make a payment and retry.

@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import { extractPayment, verifyPayment, build402Response } from './payment';
+import { proxyFetch } from './proxy';
 
 export const serviceRouter = new Hono();
 
@@ -75,7 +76,6 @@ interface BrowserSession {
 
 async function getPolymarketOdds(marketSlugOrQuery: string): Promise<MarketOdds['polymarket']> {
   try {
-    // Search for the market
     const searchRes = await proxyFetch(`https://gamma-api.polymarket.com/events?slug=${marketSlugOrQuery}`);
     if (!searchRes.ok) return undefined;
 
@@ -147,8 +147,6 @@ async function createBrowserSession(country: string): Promise<BrowserSession | n
     return null;
   }
 
-  console.log(`[Session] Creating browser session for ${country}...`);
-
   try {
     const res = await fetch(`${endpoint}/v1/sessions`, {
       method: 'POST',
@@ -168,22 +166,10 @@ async function createBrowserSession(country: string): Promise<BrowserSession | n
       }),
     });
 
-    if (!res.ok) {
-      const errText = await res.text();
-      console.error('[Session] Creation failed:', errText);
-      return null;
-    }
-
+    if (!res.ok) return null;
     const data = await res.json() as { session_id?: string; session_token?: string };
-    if (!data.session_id || !data.session_token) {
-      console.error('[Session] Missing session_id or session_token in response');
-      return null;
-    }
-
-    console.log(`[Session] Created: ${data.session_id}`);
     return { sessionId: data.session_id, sessionToken: data.session_token };
-  } catch (err: any) {
-    console.error('[Session] Error:', err.message);
+  } catch (err) {
     return null;
   }
 }
@@ -191,9 +177,7 @@ async function createBrowserSession(country: string): Promise<BrowserSession | n
 async function browserCommand(sessionId: string, token: string, payload: Record<string, any>): Promise<any> {
   const endpoint = BROWSER_ENDPOINT.replace(/\/$/, '');
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 90000); // 90s timeout
-
-  console.log(`[Command] Sending: ${payload.action}`);
+  const timeoutId = setTimeout(() => controller.abort(), 90000);
 
   try {
     const res = await fetch(`${endpoint}/v1/sessions/${sessionId}/command`, {
@@ -205,25 +189,11 @@ async function browserCommand(sessionId: string, token: string, payload: Record<
       body: JSON.stringify(payload),
       signal: controller.signal,
     });
-
     clearTimeout(timeoutId);
-
-    if (!res.ok) {
-      const errText = await res.text();
-      console.error(`[Command] ${payload.action} failed:`, errText);
-      return null;
-    }
-
-    const result = await res.json();
-    console.log(`[Command] ${payload.action} completed`);
-    return result;
-  } catch (err: any) {
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (err) {
     clearTimeout(timeoutId);
-    if (err.name === 'AbortError') {
-      console.error(`[Command] ${payload.action} timed out after 90s`);
-    } else {
-      console.error(`[Command] ${payload.action} error:`, err.message);
-    }
     return null;
   }
 }
@@ -273,7 +243,7 @@ async function scrapeTwitterSentiment(topic: string, country: string): Promise<S
     const searchUrl = `https://twitter.com/search?q=${encodeURIComponent(topic)}&src=typed_query&f=live`;
 
     await browserCommand(sessionId, sessionToken, { action: 'navigate', url: searchUrl });
-    await sleep(5000); // Wait for tweets to load
+    await sleep(5000);
 
     const extraction = await browserCommand(sessionId, sessionToken, {
       action: 'evaluate',
@@ -283,7 +253,6 @@ async function scrapeTwitterSentiment(topic: string, country: string): Promise<S
     if (!extraction || !extraction.result || !Array.isArray(extraction.result)) return undefined;
 
     const tweets = extraction.result;
-    // Simple sentiment heuristic
     const positiveWords = ['bullish', 'up', 'win', 'good', 'great', 'buy', 'yes'];
     const negativeWords = ['bearish', 'down', 'lose', 'bad', 'poor', 'sell', 'no'];
 
@@ -313,8 +282,6 @@ async function scrapeTwitterSentiment(topic: string, country: string): Promise<S
     if (session) await closeBrowserSession(session.sessionId);
   }
 }
-
-import { proxyFetch } from './proxy';
 
 async function scrapeRedditSentiment(topic: string): Promise<SentimentData['reddit']> {
   try {
@@ -392,7 +359,6 @@ function detectDivergence(odds: MarketOdds, sentiment: SentimentData): SignalDat
       magnitude: diff > 0.3 ? 'high' : 'moderate',
     };
   }
-
   return { detected: false, description: 'Sentiment aligned with market', magnitude: 'low' };
 }
 
@@ -417,13 +383,13 @@ serviceRouter.get('/run', async (c) => {
 
   const timestamp = new Date().toISOString();
   const odds: MarketOdds = {};
-  let sentiment: SentimentData = {};
+  const sentiment: SentimentData = {};
   const signals: SignalData = {};
 
   if (type === 'signal' || type === 'arbitrage' || type === 'trending') {
     odds.polymarket = await getPolymarketOdds(market);
-    odds.kalshi = await getKalshiOdds(market); // Note: Ticker might need mapping
-    odds.metaculus = await getMetaculusOdds('1234'); // Placeholder ID
+    odds.kalshi = await getKalshiOdds(market);
+    odds.metaculus = await getMetaculusOdds('1234');
   }
 
   if (type === 'signal' || type === 'sentiment' || type === 'trending') {
@@ -451,28 +417,16 @@ serviceRouter.get('/run', async (c) => {
   });
 });
 
-serviceRouter.get('/discover', async (c) => {
-  const walletAddress = process.env.WALLET_ADDRESS;
-  if (!walletAddress) return c.json({ error: 'WALLET_ADDRESS not set' }, 500);
-  return c.json({
-    ...build402Response('/api/run', DESCRIPTION, PRICE_USDC, walletAddress, OUTPUT_SCHEMA),
-    service: SERVICE_NAME,
-  });
-});
-
 serviceRouter.get('/test', async (c) => {
   const market = c.req.query('market') || 'us-presidential-election-2028';
   const topic = c.req.query('topic') || market;
-
   const odds = {
     polymarket: await getPolymarketOdds(market),
     kalshi: await getKalshiOdds(market),
   };
-
   const sentiment = {
     reddit: await scrapeRedditSentiment(topic),
   };
-
   return c.json({
     market,
     odds,

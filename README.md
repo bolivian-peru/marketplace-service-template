@@ -6,6 +6,8 @@ Fork this repo → edit one file → deploy → start earning.
 
 You provide the idea. We provide 145+ mobile devices across 6 countries, x402 payment rails, and the marketplace to find customers.
 
+> **Reference implementation included:** This repo ships with a working **Google Maps Lead Generator** (`src/service.ts` + `src/scrapers/`) built by [@aliraza556](https://github.com/aliraza556). Use it as-is or replace with your own service logic.
+
 ## 💰 The Economics
 
 You're arbitraging infrastructure. Buy proxy bandwidth wholesale, sell API calls retail.
@@ -76,7 +78,7 @@ curl http://localhost:3000/health
 curl http://localhost:3000/
 # → Service discovery JSON (AI agents read this)
 
-curl http://localhost:3000/api/run?url=https://example.com
+curl "http://localhost:3000/api/run?query=plumbers&location=Austin+TX"
 # → 402 with payment instructions (this is correct!)
 ```
 
@@ -124,12 +126,91 @@ Supports **Solana** (~400ms, ~$0.0001 gas) and **Base** (~2s, ~$0.01 gas).
 | File | Purpose | Edit? |
 |------|---------|-------|
 | `src/service.ts` | Your service logic, pricing, description | **✏️ YES** |
+| `src/scrapers/maps-scraper.ts` | Google Maps scraping logic (reference impl) | Replace with yours |
+| `src/types/index.ts` | TypeScript interfaces | Replace with yours |
+| `src/utils/helpers.ts` | Extraction helper functions | Replace with yours |
 | `src/index.ts` | Server, CORS, rate limiting, discovery | No |
 | `src/payment.ts` | On-chain USDC verification (Solana + Base) | No |
 | `src/proxy.ts` | Proxy credentials + fetch with retry | No |
 | `CLAUDE.md` | Instructions for AI agents editing this repo | No |
 | `SECURITY.md` | Security features and production checklist | Read it |
 | `Dockerfile` | Multi-stage build, non-root, health check | No |
+
+## Browser Identity Bundles (v1.1.0)
+
+The [Proxies.sx Browser API](https://browser.proxies.sx) now supports **Identity Bundles** — save and restore a complete browser identity across sessions.
+
+### What Are Identity Bundles?
+
+An Identity Bundle captures everything that makes a browser session unique:
+
+- **Cookies** — login sessions, consent states, tracking cookies
+- **localStorage / sessionStorage** — app preferences, cached tokens
+- **Browser fingerprint** — canvas, WebGL, fonts, screen resolution
+- **Proxy device binding** — same mobile IP device across sessions
+
+This means an AI agent can log into a site on Day 1, save the identity, then return on Day 30 with the exact same browser — same cookies, same fingerprint, same device IP. The site sees a returning user, not a new visitor.
+
+### Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/v1/sessions` | Create session (accepts `profile_id` to restore identity) |
+| `POST` | `/v1/sessions/:id/profile` | Save current session as an Identity Bundle |
+| `POST` | `/v1/sessions/:id/profile/load` | Load a saved Identity Bundle into active session |
+| `GET` | `/v1/profiles` | List all saved Identity Bundles |
+| `DELETE` | `/v1/profiles/:id` | Delete an Identity Bundle |
+
+### Workflow Example
+
+**Day 1 — Create identity and log in:**
+```bash
+# 1. Create a new browser session
+POST /v1/sessions
+Payment-Signature: <tx_hash>
+Body: { "country": "US" }
+# → { "sessionId": "sess_abc", ... }
+
+# 2. Navigate, log in, do work via CDP/commands
+POST /v1/sessions/sess_abc/command
+Body: { "action": "navigate", "url": "https://example.com/login" }
+
+# 3. Save the identity bundle (cookies, storage, fingerprint, device)
+POST /v1/sessions/sess_abc/profile
+# → { "profileId": "prof_xyz", "size": 48210, ... }
+```
+
+**Day 30 — Restore identity and continue:**
+```bash
+# 1. Create session WITH the saved profile — identity fully restored
+POST /v1/sessions
+Payment-Signature: <tx_hash>
+Body: { "country": "US", "profile_id": "prof_xyz" }
+# → Session starts with same cookies, fingerprint, and proxy device
+
+# 2. Navigate — site sees a returning user
+POST /v1/sessions/sess_abc/command
+Body: { "action": "navigate", "url": "https://example.com/dashboard" }
+# → Already logged in, no re-authentication needed
+```
+
+### Anti-Lock Rules
+
+Identity Bundles are designed to avoid account locks and detection. Follow these rules:
+
+| Rule | Why |
+|------|-----|
+| **One account = one Identity Bundle** | Never reuse a bundle across different site accounts |
+| **Consistent proxy device** | The bundle binds to a specific proxy device for IP consistency |
+| **Never geo-teleport** | If your bundle was created with a US proxy, always restore with a US proxy |
+| **Don't share bundles** | Each bundle should be used by a single agent/workflow |
+
+### Use Cases for Service Builders
+
+- **Account management services** — maintain persistent logins across sessions
+- **Social media monitors** — check feeds without re-authenticating
+- **E-commerce scrapers** — preserve cart state and price history cookies
+- **Form automation** — multi-step flows that span multiple sessions
 
 ## Security
 
@@ -193,23 +274,38 @@ Your service needs customers. The [Proxies.sx Marketplace](https://agents.proxie
 
 ## Bounty Board
 
-**$200 bounties** for builders. Each bounty pays **$200 in $SX token** upon approval.
+Build a service, earn $SX tokens. See [agents.proxies.sx/marketplace/#bounties](https://agents.proxies.sx/marketplace/#bounties) for the full board.
 
-| # | Service | Reward | Required | Claim | Status |
+### Wave 1 — $200 Bounties
+
+| # | Service | Reward | Required | Issue | Status |
 |---|---------|--------|----------|-------|--------|
-| 1 | ~~YouTube Transcript Scraper~~ | $200 in $SX token | proxy + x402 | — | **DONE** |
-| 2 | **Google SERP + AI Search Scraper** | $200 in $SX token | proxy + browser + x402 | [#1](https://github.com/bolivian-peru/marketplace-service-template/issues/1) | OPEN |
-| 3 | **Gmail Account Creator** | $200 in $SX token | proxy + browser + x402 | [#2](https://github.com/bolivian-peru/marketplace-service-template/issues/2) | OPEN |
-| 4 | **Instagram Account Creator** | $200 in $SX token | proxy + browser + x402 | [#3](https://github.com/bolivian-peru/marketplace-service-template/issues/3) | OPEN |
+| 1 | ~~YouTube Transcript Scraper~~ | $200 | proxy + x402 | — | **DONE** |
+| 2 | **Google SERP + AI Search Scraper** | $200 | proxy + browser + x402 | [#1](https://github.com/bolivian-peru/marketplace-service-template/issues/1) | OPEN |
+| 3 | **Gmail Account Creator + Warmer** | $200 | proxy + browser + x402 | [#2](https://github.com/bolivian-peru/marketplace-service-template/issues/2) | IN REVIEW |
+| 4 | **Instagram Account Creator + Warmer** | $200 | proxy + browser + x402 | [#3](https://github.com/bolivian-peru/marketplace-service-template/issues/3) | IN REVIEW |
+
+### Wave 2 — $50 Bounties
+
+| # | Service | Reward | Issue | Status |
+|---|---------|--------|-------|--------|
+| 7 | Mobile SERP Tracker | $50 | [#7](https://github.com/bolivian-peru/marketplace-service-template/issues/7) | OPEN |
+| 8 | E-Commerce Price & Stock Monitor | $50 | [#8](https://github.com/bolivian-peru/marketplace-service-template/issues/8) | OPEN |
+| 9 | ~~Google Maps Lead Generator~~ | $50 | [#9](https://github.com/bolivian-peru/marketplace-service-template/issues/9) | **DONE** ([PR #17](https://github.com/bolivian-peru/marketplace-service-template/pull/17)) |
+| 10 | Social Profile Intelligence API | $50 | [#10](https://github.com/bolivian-peru/marketplace-service-template/issues/10) | OPEN |
+| 11 | Ad Spy & Creative Intelligence | $50 | [#11](https://github.com/bolivian-peru/marketplace-service-template/issues/11) | OPEN |
+| 12 | Travel Price Tracker API | $50 | [#12](https://github.com/bolivian-peru/marketplace-service-template/issues/12) | OPEN |
+| 13 | Ad Verification & Brand Safety | $50 | [#13](https://github.com/bolivian-peru/marketplace-service-template/issues/13) | OPEN |
+| 14 | Review & Reputation Monitor | $50 | [#14](https://github.com/bolivian-peru/marketplace-service-template/issues/14) | OPEN |
+| 15 | Real Estate Listing Aggregator | $50 | [#15](https://github.com/bolivian-peru/marketplace-service-template/issues/15) | OPEN |
+| 16 | Job Market Intelligence API | $50 | [#16](https://github.com/bolivian-peru/marketplace-service-template/issues/16) | OPEN |
 
 **Rules:**
 1. Must use Proxies.sx mobile proxies
 2. Must gate with x402 USDC payments
 3. Must be a working, deployable service
 4. Claim by commenting on the issue linked above
-5. $200 in $SX token paid after Maya reviews and approves
-
-**See the full bounty board:** [agents.proxies.sx/marketplace/#bounties](https://agents.proxies.sx/marketplace/#bounties)
+5. $SX tokens paid after Maya reviews and approves
 
 ## Links
 

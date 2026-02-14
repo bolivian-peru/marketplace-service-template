@@ -77,7 +77,10 @@ app.get('/', (c) => c.json({
   name: process.env.SERVICE_NAME || 'my-service',
   description: process.env.SERVICE_DESCRIPTION || 'A marketplace service on Proxies.sx',
   version: '1.0.0',
-  endpoints: [{ method: 'GET', path: '/api/run', description: 'Execute service' }],
+  endpoints: [
+      { method: 'GET', path: '/api/run', description: 'Search businesses by query + location' },
+      { method: 'GET', path: '/api/details', description: 'Get detailed business info by Place ID' },
+    ],
   pricing: {
     amount: process.env.PRICE_USDC || '0.005',
     currency: 'USDC',
@@ -112,7 +115,7 @@ app.get('/', (c) => c.json({
 app.route('/api', serviceRouter);
 
 // 404 fallback
-app.notFound((c) => c.json({ error: 'Not found', endpoints: ['/', '/health', '/api/run'] }, 404));
+app.notFound((c) => c.json({ error: 'Not found', endpoints: ['/', '/health', '/api/run', '/api/details'] }, 404));
 
 // Error handler
 app.onError((err, c) => {

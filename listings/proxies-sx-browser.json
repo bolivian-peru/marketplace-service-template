@@ -2,7 +2,7 @@
   "id": "proxies-sx-browser",
   "name": "Proxies.sx Antidetect Browser",
   "description": "Isolated Camoufox browser sessions with unique fingerprints. $0.005/min. x402 payments.",
-  "longDescription": "Private isolated browser sessions running Camoufox (Firefox-based antidetect). Each session gets a unique fingerprint, clean storage, fresh cookies. Perfect for web automation, account management, scraping sites that require JavaScript. Sessions run in Docker containers — completely isolated from each other. Pay per minute with USDC. Note: This is a BROWSER service, not a proxy. Configure your own proxy if needed, or use with Proxies.sx mobile proxies.",
+  "longDescription": "Private isolated browser sessions running Camoufox (Firefox-based antidetect). Each session gets a unique fingerprint, clean storage, fresh cookies. Perfect for web automation, account management, scraping sites that require JavaScript. Sessions run in Docker containers \u2014 completely isolated from each other. Pay per minute with USDC. Note: This is a BROWSER service, not a proxy. Configure your own proxy if needed, or use with Proxies.sx mobile proxies.",
   "endpoint": "https://browser.proxies.sx",
   "docsUrl": "https://browser.proxies.sx/docs",
   "pricing": {
@@ -29,7 +29,18 @@
     ]
   },
   "category": "browser",
-  "tags": ["antidetect", "camoufox", "fingerprint", "automation", "scraping", "stealth", "isolated"],
+  "tags": [
+    "antidetect",
+    "camoufox",
+    "fingerprint",
+    "automation",
+    "scraping",
+    "stealth",
+    "isolated",
+    "identity-bundle",
+    "persistent-sessions",
+    "profile"
+  ],
   "features": [
     "Camoufox (Firefox-based antidetect)",
     "Unique fingerprint per session",
@@ -38,17 +49,34 @@
     "Playwright/Puppeteer support",
     "Screenshot and PDF export",
     "Human-like typing simulation",
-    "Country locale setting (timezone, language)"
+    "Country locale setting (timezone, language)",
+    "Identity Bundles \u2014 save/restore complete browser identity (v1.1.0)",
+    "Profile persistence \u2014 cookies, localStorage, fingerprint, proxy device binding"
   ],
   "commands": {
-    "navigate": { "action": "navigate", "url": "https://example.com" },
-    "type": { "action": "type_slow", "selector": "input", "text": "hello" },
-    "click": { "action": "click", "selector": "button" },
-    "screenshot": { "action": "screenshot" },
-    "evaluate": { "action": "evaluate", "script": "document.title" }
+    "navigate": {
+      "action": "navigate",
+      "url": "https://example.com"
+    },
+    "type": {
+      "action": "type_slow",
+      "selector": "input",
+      "text": "hello"
+    },
+    "click": {
+      "action": "click",
+      "selector": "button"
+    },
+    "screenshot": {
+      "action": "screenshot"
+    },
+    "evaluate": {
+      "action": "evaluate",
+      "script": "document.title"
+    }
   },
   "important": [
-    "NOT a proxy service — no proxies bundled",
+    "NOT a proxy service \u2014 no proxies bundled",
     "Country parameter = locale only (timezone, language), NOT IP location",
     "Configure your own proxy if IP matters",
     "Sessions auto-terminate after inactivity"
@@ -63,14 +91,17 @@
   "status": "active",
   "featured": true,
   "addedAt": "2025-06-01",
-  "updatedAt": "2026-02-05",
+  "updatedAt": "2026-02-08",
   "x402": {
     "discoveryUrl": "https://browser.proxies.sx/v1/sessions",
     "flow": [
-      "POST /v1/sessions → 402 with price",
+      "POST /v1/sessions \u2192 402 with price",
       "Pay USDC on Solana or Base",
       "POST /v1/sessions with Payment-Signature header",
-      "Receive session credentials + WebSocket URL"
+      "Receive session credentials + WebSocket URL",
+      "POST /v1/sessions with profile_id to restore saved identity",
+      "POST /v1/sessions/:id/profile to save identity bundle"
     ]
-  }
+  },
+  "version": "1.1.0"
 }

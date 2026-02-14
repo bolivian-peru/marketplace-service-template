@@ -9,10 +9,22 @@ assignees: ''
 ## Bounty Claim
 
 **Which bounty are you claiming?**
-- [ ] YouTube Transcript Scraper (100,000 $SX)
-- [ ] Google SERP + AI Search Scraper (100,000 $SX)
-- [ ] Gmail Account Creator (100,000 $SX)
-- [ ] Instagram Account Creator (100,000 $SX)
+
+### Wave 1 — $200 bounties
+- [ ] Google SERP + AI Search Scraper ($200)
+- [ ] Gmail Account Creator + Warmer ($200)
+- [ ] Instagram Account Creator + Warmer ($200)
+
+### Wave 2 — $50 bounties
+- [ ] Mobile SERP Tracker ($50)
+- [ ] E-Commerce Price & Stock Monitor ($50)
+- [ ] Social Profile Intelligence API ($50)
+- [ ] Ad Spy & Creative Intelligence ($50)
+- [ ] Travel Price Tracker API ($50)
+- [ ] Ad Verification & Brand Safety ($50)
+- [ ] Review & Reputation Monitor ($50)
+- [ ] Real Estate Listing Aggregator ($50)
+- [ ] Job Market Intelligence API ($50)
 
 ## Your Service
 
@@ -25,7 +37,7 @@ assignees: ''
 curl https://your-service.example.com/api/run?param=value
 ```
 
-**Source code:** <!-- Link to your fork or repo (optional but helps review) -->
+**Source code:** <!-- Link to your fork or repo -->
 
 ## Checklist
 
