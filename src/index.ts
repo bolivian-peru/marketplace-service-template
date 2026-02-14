@@ -78,9 +78,9 @@ app.get('/', (c) => c.json({
   description: process.env.SERVICE_DESCRIPTION || 'A marketplace service on Proxies.sx',
   version: '1.0.0',
   endpoints: [
-      { method: 'GET', path: '/api/run', description: 'Search businesses by query + location' },
-      { method: 'GET', path: '/api/details', description: 'Get detailed business info by Place ID' },
-    ],
+    { method: 'GET', path: '/api/run', description: 'Comprehensive signal report (signal, arbitrage, sentiment, trending)' },
+    { method: 'GET', path: '/api/test', description: 'Debug endpoint for real-time market data verification' },
+  ],
   pricing: {
     amount: process.env.PRICE_USDC || '0.005',
     currency: 'USDC',
