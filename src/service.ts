@@ -27,7 +27,7 @@ const OUTPUT_SCHEMA = {
     },
     sentiment: {
       twitter: '{positive, negative, neutral, volume, trending, topTweets}',
-      reddit: '{positive, negative, neutral, volume, topSubreddits}',
+      reddit: '{positive, negative, neutral, volume, topSubreddits, avgUps, avgComments}',
       tiktok: '{relatedVideos, totalViews, sentiment}',
     },
     signals: {
@@ -35,7 +35,7 @@ const OUTPUT_SCHEMA = {
       sentimentDivergence: '{detected, description, magnitude}',
       volumeSpike: '{detected}',
     },
-    proxy: '{country, carrier, type}',
+    proxy: '{country, carrier, type, ip}',
     payment: '{txHash, amount, verified}',
   },
 };
@@ -57,7 +57,12 @@ interface SentimentData {
     positive: number; negative: number; neutral: number; volume: number; trending: boolean;
     topTweets: Array<{ text: string; likes: number; retweets: number; author: string; timestamp: string }>;
   };
-  reddit?: { positive: number; negative: number; neutral: number; volume: number; topSubreddits: string[] };
+  reddit?: {
+    positive: number; negative: number; neutral: number; volume: number;
+    topSubreddits: string[];
+    avgUps: number;
+    avgComments: number;
+  };
   tiktok?: { relatedVideos: number; totalViews: number; sentiment: string };
 }
 
@@ -133,6 +138,17 @@ async function getMetaculusOdds(questionId: string): Promise<MarketOdds['metacul
   } catch (err) {
     console.error('[Metaculus] Error:', err);
     return undefined;
+  }
+}
+
+async function getProxyIp(): Promise<string> {
+  try {
+    const res = await proxyFetch('https://api.ipify.org?format=json');
+    if (!res.ok) return 'unknown';
+    const data = await res.json() as { ip: string };
+    return data.ip;
+  } catch {
+    return 'unknown';
   }
 }
 
@@ -294,6 +310,8 @@ async function scrapeRedditSentiment(topic: string): Promise<SentimentData['redd
 
     let pos = 0, neg = 0, neu = 0;
     const subs = new Set<string>();
+    let totalUps = 0;
+    let totalComments = 0;
 
     posts.forEach((p: any) => {
       const text = (p.data.title + ' ' + p.data.selftext).toLowerCase();
@@ -308,6 +326,8 @@ async function scrapeRedditSentiment(topic: string): Promise<SentimentData['redd
       else neu++;
 
       if (p.data.subreddit) subs.add(p.data.subreddit);
+      totalUps += p.data.ups || 0;
+      totalComments += p.data.num_comments || 0;
     });
 
     const total = posts.length || 1;
@@ -317,6 +337,8 @@ async function scrapeRedditSentiment(topic: string): Promise<SentimentData['redd
       neutral: neu / total,
       volume: posts.length,
       topSubreddits: Array.from(subs).slice(0, 5),
+      avgUps: totalUps / total,
+      avgComments: totalComments / total,
     };
   } catch (err) {
     console.error('[Reddit] Error:', err);
@@ -405,6 +427,8 @@ serviceRouter.get('/run', async (c) => {
     signals.sentimentDivergence = detectDivergence(odds, sentiment);
   }
 
+  const proxyIp = await getProxyIp();
+
   return c.json({
     type,
     market,
@@ -412,7 +436,7 @@ serviceRouter.get('/run', async (c) => {
     odds,
     sentiment,
     signals,
-    proxy: { country, carrier: 'T-Mobile', type: 'mobile' },
+    proxy: { country, carrier: 'T-Mobile', type: 'mobile', ip: proxyIp },
     payment: { txHash: payment.txHash, amount: PRICE_USDC, verified: true },
   });
 });
@@ -427,6 +451,8 @@ serviceRouter.get('/test', async (c) => {
   const sentiment = {
     reddit: await scrapeRedditSentiment(topic),
   };
+  const proxyIp = await getProxyIp();
+
   return c.json({
     market,
     odds,
@@ -434,6 +460,7 @@ serviceRouter.get('/test', async (c) => {
     signals: {
       arbitrage: detectArbitrage(odds),
     },
+    proxy: { ip: proxyIp },
     _test: true,
     _timestamp: new Date().toISOString(),
   });
