@@ -152,17 +152,6 @@ async function getProxyIp(): Promise<string> {
   }
 }
 
-async function getProxyIp(): Promise<string> {
-  try {
-    const res = await proxyFetch('https://api.ipify.org?format=json');
-    if (!res.ok) return 'unknown';
-    const data = await res.json() as { ip: string };
-    return data.ip;
-  } catch {
-    return 'unknown';
-  }
-}
-
 // ─── BROWSER SESSION MANAGEMENT ────────────────────────
 
 async function createBrowserSession(country: string): Promise<BrowserSession | null> {
@@ -185,9 +174,9 @@ async function createBrowserSession(country: string): Promise<BrowserSession | n
         durationMinutes: 10,
         country,
         proxy: {
-          server: `${process.env.PROXY_HOST}:${process.env.PROXY_HTTP_PORT}`,
-          username: process.env.PROXY_USER,
-          password: process.env.PROXY_PASS,
+          server: `${process.env.PROXY_HOST || ''}:${process.env.PROXY_HTTP_PORT || ''}`,
+          username: process.env.PROXY_USER || '',
+          password: process.env.PROXY_PASS || '',
           type: 'http',
         },
       }),
@@ -195,7 +184,7 @@ async function createBrowserSession(country: string): Promise<BrowserSession | n
 
     if (!res.ok) return null;
     const data = await res.json() as { session_id?: string; session_token?: string };
-    return { sessionId: data.session_id, sessionToken: data.session_token };
+    return { sessionId: data.session_id!, sessionToken: data.session_token! };
   } catch (err) {
     return null;
   }
