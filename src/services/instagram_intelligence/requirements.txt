@@ -1,0 +1,8 @@
+# Instagram Intelligence API Dependencies
+flask>=2.3.0
+requests>=2.28.0
+python-dotenv>=1.0.0
+Pillow>=9.0.0
+
+# For production
+gunicorn>=21.0.0
