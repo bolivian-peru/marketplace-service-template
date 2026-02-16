@@ -48,7 +48,7 @@ export function getProxy(): ProxyConfig {
   return {
     url: `http://${user}:${pass}@${host}:${port}`,
     host,
-    port: parseInt(port),
+    port: parseInt(port, 10),
     user,
     pass,
     country: process.env.PROXY_COUNTRY || 'US',
@@ -87,7 +87,7 @@ export async function proxyFetch(
 
       const response = await fetch(url, {
         ...fetchOptions,
-        headers: { ...defaultHeaders, ...fetchOptions.headers as Record<string, string> },
+        headers: { ...defaultHeaders, ...(fetchOptions.headers as Record<string, string>) },
         signal: controller.signal,
         // @ts-ignore — Bun supports the proxy option natively
         proxy: proxy.url,

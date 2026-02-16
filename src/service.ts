@@ -84,15 +84,16 @@ serviceRouter.get('/run', async (c) => {
     }, 402);
   }
 
-  // ── Step 3: Validate input ──
-  const query = c.req.query('query');
-  const location = c.req.query('location');
-  const limitParam = c.req.query('limit');
-  const pageToken = c.req.query('pageToken');
+// ── Step 3: Validate input ──
+const query = c.req.query('market') || c.req.query('topic');
+const location = c.req.query('location');
+const limitParam = c.req.query('limit');
+const pageToken = c.req.query('pageToken');
 
-  if (!query) {
-    return c.json({ 
-      error: 'Missing required parameter: query',
+if (!query) {
+  return c.json({ 
+    error: 'Missing required parameter: market or topic',
+    hint: 'Provide a search query like ?market=us-presidential-election-2028&location=Austin+TX or ?topic=bitcoin+etf&location=US',
       hint: 'Provide a search query like ?query=plumbers&location=Austin+TX',
       example: '/api/run?query=restaurants&location=New+York+City&limit=20'
     }, 400);

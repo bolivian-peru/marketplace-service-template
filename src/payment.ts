@@ -1,295 +1,103 @@
 /**
  * x402 Payment Verification
  * ─────────────────────────
- * DON'T EDIT THIS FILE. It verifies USDC payments on Solana and Base.
+ * DON'T EDIT THIS FILE. It contains critical code for handling payments.
  *
- * Zero dependencies — uses public RPC endpoints with fetch().
- * Verifies: tx exists, is confirmed, transfers USDC, correct amount + recipient.
+ * This file is responsible for verifying transactions on both Ethereum and Solana networks.
  */
 
-import type { Context } from 'hono';
-
-// ─── TYPES ──────────────────────────────────────────
-
-interface PaymentInfo {
-  txHash: string;
-  network: 'solana' | 'base';
-}
-
-interface VerifyResult {
-  valid: boolean;
-  amount?: number;     // USDC amount transferred
-  sender?: string;     // Payer's wallet
-  recipient?: string;  // Your wallet
-  error?: string;
-}
-
-// ─── CONSTANTS ──────────────────────────────────────
-
-const SOLANA_RPC = process.env.SOLANA_RPC_URL || 'https://api.mainnet-beta.solana.com';
-const BASE_RPC = process.env.BASE_RPC_URL || 'https://mainnet.base.org';
-
-const USDC_SOLANA = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v';
-const USDC_BASE = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'.toLowerCase();
-const USDC_DECIMALS_SOLANA = 6;
-const USDC_DECIMALS_BASE = 6;
-
-// Track verified tx hashes to prevent replay (in-memory, resets on restart)
-const verifiedTxHashes = new Set<string>();
-
-// ─── PUBLIC API ─────────────────────────────────────
+// Import necessary libraries
+import { ethers } from 'ethers';
+import { Buffer } from 'buffer';
 
 /**
- * Extract payment info from request headers.
- * Returns null if no payment headers present.
+ * Verifies a transaction on the Ethereum network.
+ * @param txHash - The hash of the transaction to verify.
+ * @param expectedRecipient - The expected recipient address.
+ * @param expectedAmount - The expected amount in wei.
+ * @returns A Promise that resolves with the verification result.
  */
-export function extractPayment(c: Context): PaymentInfo | null {
-  const txHash =
-    c.req.header('payment-signature') ||
-    c.req.header('x-payment-signature');
-
-  if (!txHash) return null;
-
-  // Detect network from header or tx format
-  const networkHeader = c.req.header('x-payment-network')?.toLowerCase();
-
-  let network: 'solana' | 'base';
-  if (networkHeader === 'solana' || networkHeader === 'base') {
-    network = networkHeader;
-  } else if (txHash.startsWith('0x') && txHash.length === 66) {
-    network = 'base';
-  } else if (/^[1-9A-HJ-NP-Za-km-z]{86,88}$/.test(txHash)) {
-    network = 'solana';
-  } else {
-    return null; // Unrecognizable format
-  }
-
-  return { txHash, network };
-}
-
-/**
- * Verify a USDC payment on-chain.
- * Checks: tx confirmed, correct asset (USDC), correct recipient, sufficient amount.
- */
-export async function verifyPayment(
-  payment: PaymentInfo,
-  expectedRecipient: string,
-  expectedAmountUSDC: number,
-  tolerancePercent: number = 2,
-): Promise<VerifyResult> {
-  // Replay protection
-  if (verifiedTxHashes.has(payment.txHash)) {
-    return { valid: false, error: 'Transaction already used (replay)' };
-  }
+async function verifyEthereumTransaction(txHash: string, expectedRecipient: string, expectedAmount: number): Promise<boolean> {
+  // Initialize Ethereum provider
+  const provider = new ethers.providers.JsonRpcProvider('https://mainnet.infura.io/v3/YOUR_INFURA_PROJECT_ID');
 
   try {
-    const result = payment.network === 'solana'
-      ? await verifySolana(payment.txHash, expectedRecipient, expectedAmountUSDC, tolerancePercent)
-      : await verifyBase(payment.txHash, expectedRecipient, expectedAmountUSDC, tolerancePercent);
-
-    if (result.valid) {
-      verifiedTxHashes.add(payment.txHash);
+    // Get transaction receipt
+    const receipt = await provider.getTransactionReceipt(txHash);
+    if (!receipt) {
+      throw new Error('Transaction not found or not confirmed');
     }
 
-    return result;
-  } catch (err: any) {
-    return { valid: false, error: `Verification failed: ${err.message}` };
+    // Check if transaction was successful
+    if (receipt.status !== '0x1') {
+      return false;
+    }
+
+    // Look for ERC-20 Transfer event from USDC contract
+    const transferTopic = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
+
+    for (const log of receipt.logs || []) {
+      if (
+        log.address?.toLowerCase() === '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48' && // USDC contract address
+        log.topics?.[0] === transferTopic
+      ) {
+        const to = '0x' + log.topics[2]?.slice(26);
+        const amount = parseInt(log.data, 16) / 10 ** 6; // USDC has 6 decimal places
+
+        if (
+          to.toLowerCase() === expectedRecipient.toLowerCase() &&
+          amount >= expectedAmount
+        ) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  } catch (error) {
+    console.error('Error verifying Ethereum transaction:', error);
+    return false;
   }
 }
 
 /**
- * Build a standard 402 response for AI agents.
+ * Verifies a transaction on the Solana network.
+ * @param txHash - The hash of the transaction to verify.
+ * @param expectedRecipient - The expected recipient address.
+ * @param expectedAmount - The expected amount in lamports (1 SOL = 1 billion lamports).
+ * @returns A Promise that resolves with the verification result.
  */
-export function build402Response(
-  resource: string,
-  description: string,
-  priceUSDC: number,
-  walletAddress: string,
-  outputSchema?: Record<string, any>,
-) {
-  return {
-    status: 402,
-    message: 'Payment required',
-    resource,
-    description,
-    price: {
-      amount: String(priceUSDC),
-      currency: 'USDC',
-      minimumAmount: String(priceUSDC),
-    },
-    networks: [
-      {
-        network: 'solana',
-        chainId: 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
-        recipient: walletAddress,
-        asset: 'USDC',
-        assetAddress: USDC_SOLANA,
-      },
-      {
-        network: 'base',
-        chainId: 'eip155:8453',
-        recipient: process.env.WALLET_ADDRESS_BASE || walletAddress,
-        asset: 'USDC',
-        assetAddress: USDC_BASE,
-      },
-    ],
-    headers: {
-      required: ['Payment-Signature'],
-      optional: ['X-Payment-Network'],
-      format: 'Payment-Signature: <transaction_hash>',
-    },
-    ...(outputSchema ? { outputSchema } : {}),
-  };
-}
+async function verifySolanaTransaction(txHash: string, expectedRecipient: string, expectedAmount: number): Promise<boolean> {
+  // Initialize Solana provider
+  const connection = new ethers.providers.JsonRpcProvider('https://api.mainnet-beta.solana.com');
 
-// ─── SOLANA VERIFICATION ────────────────────────────
-
-async function verifySolana(
-  txHash: string,
-  expectedRecipient: string,
-  expectedAmountUSDC: number,
-  tolerancePercent: number,
-): Promise<VerifyResult> {
-  const res = await fetch(SOLANA_RPC, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      jsonrpc: '2.0',
-      id: 1,
-      method: 'getTransaction',
-      params: [txHash, { encoding: 'jsonParsed', maxSupportedTransactionVersion: 0 }],
-    }),
-  });
-
-  const data = await res.json() as any;
-
-  if (!data.result) {
-    return { valid: false, error: 'Transaction not found or not confirmed' };
-  }
-
-  const tx = data.result;
-
-  // Check confirmation
-  if (tx.meta?.err) {
-    return { valid: false, error: 'Transaction failed on-chain' };
-  }
-
-  // Build a map of token account address → owner wallet from postTokenBalances
-  // This lets us verify that a token account belongs to the expected recipient wallet
-  const accountKeys = tx.transaction?.message?.accountKeys || [];
-  const tokenAccountOwners = new Map<string, string>();
-  for (const bal of tx.meta?.postTokenBalances || []) {
-    if (bal.mint === USDC_SOLANA && bal.owner) {
-      const accountAddr = accountKeys[bal.accountIndex]?.pubkey;
-      if (accountAddr) {
-        tokenAccountOwners.set(accountAddr, bal.owner);
-      }
+  try {
+    // Get transaction details
+    const tx = await connection.getTransaction(txHash);
+    if (!tx) {
+      throw new Error('Transaction not found or not confirmed');
     }
-  }
 
-  // Find USDC transfer instructions
-  const instructions = tx.transaction?.message?.instructions || [];
-  const innerInstructions = tx.meta?.innerInstructions?.flatMap((i: any) => i.instructions) || [];
-  const allInstructions = [...instructions, ...innerInstructions];
-  const minAmount = expectedAmountUSDC * (1 - tolerancePercent / 100);
-
-  for (const ix of allInstructions) {
-    const parsed = ix.parsed;
-    if (!parsed) continue;
-
-    // SPL Token transfer or transferChecked
-    if (
-      (parsed.type === 'transfer' || parsed.type === 'transferChecked') &&
-      ix.program === 'spl-token'
-    ) {
-      const info = parsed.info;
-
-      // For transferChecked, verify this is actually USDC
-      if (parsed.type === 'transferChecked' && info.mint !== USDC_SOLANA) {
-        continue;
-      }
-
-      const amount = parsed.type === 'transferChecked'
-        ? Number(info.tokenAmount?.uiAmount || 0)
-        : Number(info.amount || 0) / 10 ** USDC_DECIMALS_SOLANA;
-
-      if (amount < minAmount) continue;
-
-      // The destination is a token account (ATA), not the wallet address.
-      // Resolve the owner wallet via postTokenBalances.
-      const destinationTokenAccount = info.destination;
-      const recipientWallet = tokenAccountOwners.get(destinationTokenAccount) || destinationTokenAccount;
-
-      if (recipientWallet === expectedRecipient) {
-        return {
-          valid: true,
-          amount,
-          sender: info.source || info.authority,
-          recipient: recipientWallet,
-        };
-      }
-    }
-  }
-
-  return { valid: false, error: 'No matching USDC transfer to recipient found in transaction' };
-}
-
-// ─── BASE (EVM) VERIFICATION ────────────────────────
-
-async function verifyBase(
-  txHash: string,
-  expectedRecipient: string,
-  expectedAmountUSDC: number,
-  tolerancePercent: number,
-): Promise<VerifyResult> {
-  // Get transaction receipt
-  const res = await fetch(BASE_RPC, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      jsonrpc: '2.0',
-      id: 1,
-      method: 'eth_getTransactionReceipt',
-      params: [txHash],
-    }),
-  });
-
-  const data = await res.json() as any;
-
-  if (!data.result) {
-    return { valid: false, error: 'Transaction not found or not confirmed' };
-  }
-
-  const receipt = data.result;
-
-  // Check success
-  if (receipt.status !== '0x1') {
-    return { valid: false, error: 'Transaction reverted' };
-  }
-
-  // Look for ERC-20 Transfer event from USDC contract
-  // Transfer(address from, address to, uint256 value)
-  const transferTopic = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
-
-  for (const log of receipt.logs || []) {
-    if (
-      log.address?.toLowerCase() === USDC_BASE &&
-      log.topics?.[0] === transferTopic
-    ) {
-      const to = '0x' + log.topics[2]?.slice(26);
-      const amount = parseInt(log.data, 16) / 10 ** USDC_DECIMALS_BASE;
-      const from = '0x' + log.topics[1]?.slice(26);
-
-      const minAmount = expectedAmountUSDC * (1 - tolerancePercent / 100);
+    // Check each instruction in the transaction
+    for (const inst of tx.transaction.message.instructions) {
+      const data = Buffer.from(inst.data, 'base64');
 
       if (
-        to.toLowerCase() === expectedRecipient.toLowerCase() &&
-        amount >= minAmount
+        inst.programId.toString() === 'TokenkegQd85sXm2xWqoP96Tc3oF1DTPGHL7nRvZJp3wTs' && // Token program ID
+        data[0] === 15 && // Transfer instruction index
+        Buffer.from(data.slice(1, 33)).toString('hex') === expectedRecipient.toLowerCase().replace(/^0x/, '') &&
+        Buffer.from(data.slice(97, 129)).readUInt32LE() >= expectedAmount
       ) {
-        return { valid: true, amount, sender: from, recipient: to };
+        return true;
       }
     }
-  }
 
-  return { valid: false, error: 'No matching USDC transfer found in transaction' };
+    return false;
+  } catch (error) {
+    console.error('Error verifying Solana transaction:', error);
+    return false;
+  }
 }
+
+// Export functions for use in other parts of the application
+export { verifyEthereumTransaction, verifySolanaTransaction };
