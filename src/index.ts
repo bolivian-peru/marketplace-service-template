@@ -66,7 +66,7 @@ app.get('/health', (c) => c.json({
   service: process.env.SERVICE_NAME || 'marketplace-service',
   version: '1.0.0',
   timestamp: new Date().toISOString(),
-  endpoints: ['/api/jobs', '/api/reviews/search', '/api/reviews/:place_id', '/api/reviews/summary/:place_id', '/api/business/:place_id'],
+  endpoints: ['/api/jobs', '/api/reviews/search', '/api/reviews/:place_id', '/api/reviews/summary/:place_id', '/api/business/:place_id', '/api/linkedin/person', '/api/linkedin/company', '/api/linkedin/search/people', '/api/linkedin/company/:id/employees'],
 }));
 
 app.get('/', (c) => c.json({
@@ -79,6 +79,10 @@ app.get('/', (c) => c.json({
     { method: 'GET', path: '/api/reviews/:place_id', description: 'Fetch Google reviews by Place ID', price: '0.02 USDC' },
     { method: 'GET', path: '/api/business/:place_id', description: 'Get business details + review summary', price: '0.01 USDC' },
     { method: 'GET', path: '/api/reviews/summary/:place_id', description: 'Get review summary stats', price: '0.005 USDC' },
+    { method: 'GET', path: '/api/linkedin/person', description: 'LinkedIn person enrichment by profile URL', price: '0.03 USDC' },
+    { method: 'GET', path: '/api/linkedin/company', description: 'LinkedIn company enrichment by company URL', price: '0.05 USDC' },
+    { method: 'GET', path: '/api/linkedin/search/people', description: 'LinkedIn people search by title/location/industry', price: '0.10 USDC' },
+    { method: 'GET', path: '/api/linkedin/company/:id/employees', description: 'LinkedIn employee lookup by company + title', price: '0.10 USDC' },
   ],
   pricing: {
     amount: process.env.PRICE_USDC || '0.005',
@@ -112,7 +116,7 @@ app.get('/', (c) => c.json({
 
 app.route('/api', serviceRouter);
 
-app.notFound((c) => c.json({ error: 'Not found', endpoints: ['/', '/health', '/api/jobs', '/api/reviews/search', '/api/reviews/:place_id', '/api/business/:place_id', '/api/reviews/summary/:place_id'] }, 404));
+app.notFound((c) => c.json({ error: 'Not found', endpoints: ['/', '/health', '/api/jobs', '/api/reviews/search', '/api/reviews/:place_id', '/api/business/:place_id', '/api/reviews/summary/:place_id', '/api/linkedin/person', '/api/linkedin/company', '/api/linkedin/search/people', '/api/linkedin/company/:id/employees'] }, 404));
 
 app.onError((err, c) => {
   console.error(`[ERROR] ${err.message}`);
