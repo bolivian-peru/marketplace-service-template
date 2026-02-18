@@ -1476,3 +1476,127 @@ serviceRouter.get('/marketplace/new', async (c) => {
     return c.json({ error: 'FB Marketplace monitor failed', details: err.message }, 500);
   }
 });
+
+// ═══ Food Delivery Price Intelligence API (Bounty #76) — $50 ═══
+
+import { searchRestaurants, getRestaurantDetails, getMenu, comparePrices } from './scrapers/food-delivery';
+
+const FOOD_PRICES = { search: 0.01, restaurant: 0.02, menu: 0.02, compare: 0.03 };
+
+serviceRouter.get('/food/search', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/api/food/search', 'Search restaurants by keyword and location', FOOD_PRICES.search, WALLET_ADDRESS, { input: { query: 'string', address: 'string (ZIP or city)', platform: 'ubereats|doordash (default: ubereats)' }, output: { restaurants: 'FoodRestaurant[]' } }), 402);
+  const verified = await verifyPayment(payment.txHash, payment.network, FOOD_PRICES.search, WALLET_ADDRESS);
+  if (!verified.valid) return c.json({ error: 'Payment verification failed' }, 402);
+  const clientIp = getClientIp(c);
+  if (!checkProxyRateLimit(clientIp)) return c.json({ error: 'Rate limit exceeded.' }, 429);
+  try {
+    const query = c.req.query('query'); const address = c.req.query('address'); const platform = c.req.query('platform') || 'ubereats';
+    if (!query || !address) return c.json({ error: 'query and address required' }, 400);
+    const proxyIp = await getProxyExitIp();
+    const results = await searchRestaurants(query, address, platform);
+    return c.json({ results, meta: { query, address, platform, total: results.length, proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'T-Mobile' } }, payment: { txHash: payment.txHash, amount: String(FOOD_PRICES.search), verified: true } });
+  } catch (err: any) { return c.json({ error: 'Restaurant search failed', details: err.message }, 500); }
+});
+
+serviceRouter.get('/food/restaurant/:id', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/api/food/restaurant/:id', 'Full restaurant details + menu', FOOD_PRICES.restaurant, WALLET_ADDRESS, { input: { id: 'string', platform: 'ubereats (default)' }, output: { restaurant: 'FoodRestaurant', menu: 'FoodMenuItem[]' } }), 402);
+  const verified = await verifyPayment(payment.txHash, payment.network, FOOD_PRICES.restaurant, WALLET_ADDRESS);
+  if (!verified.valid) return c.json({ error: 'Payment verification failed' }, 402);
+  try {
+    const id = c.req.param('id'); const platform = c.req.query('platform') || 'ubereats';
+    const proxyIp = await getProxyExitIp();
+    const data = await getRestaurantDetails(id, platform);
+    return c.json({ ...data, meta: { proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'T-Mobile' } }, payment: { txHash: payment.txHash, amount: String(FOOD_PRICES.restaurant), verified: true } });
+  } catch (err: any) { return c.json({ error: 'Restaurant details failed', details: err.message }, 500); }
+});
+
+serviceRouter.get('/food/menu/:restaurant_id', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/api/food/menu/:restaurant_id', 'Full menu extraction', FOOD_PRICES.menu, WALLET_ADDRESS, { input: { restaurant_id: 'string', platform: 'ubereats (default)' }, output: { menu: 'FoodMenuItem[]' } }), 402);
+  const verified = await verifyPayment(payment.txHash, payment.network, FOOD_PRICES.menu, WALLET_ADDRESS);
+  if (!verified.valid) return c.json({ error: 'Payment verification failed' }, 402);
+  try {
+    const id = c.req.param('restaurant_id'); const platform = c.req.query('platform') || 'ubereats';
+    const proxyIp = await getProxyExitIp();
+    const menu = await getMenu(id, platform);
+    return c.json({ menu, meta: { total_items: menu.length, proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'T-Mobile' } }, payment: { txHash: payment.txHash, amount: String(FOOD_PRICES.menu), verified: true } });
+  } catch (err: any) { return c.json({ error: 'Menu extraction failed', details: err.message }, 500); }
+});
+
+serviceRouter.get('/food/compare', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/api/food/compare', 'Cross-platform price comparison', FOOD_PRICES.compare, WALLET_ADDRESS, { input: { query: 'string', address: 'string' }, output: { ubereats: 'FoodRestaurant[]', doordash: 'FoodRestaurant[]' } }), 402);
+  const verified = await verifyPayment(payment.txHash, payment.network, FOOD_PRICES.compare, WALLET_ADDRESS);
+  if (!verified.valid) return c.json({ error: 'Payment verification failed' }, 402);
+  try {
+    const query = c.req.query('query'); const address = c.req.query('address');
+    if (!query || !address) return c.json({ error: 'query and address required' }, 400);
+    const proxyIp = await getProxyExitIp();
+    const data = await comparePrices(query, address);
+    return c.json({ ...data, meta: { query, address, proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'T-Mobile' } }, payment: { txHash: payment.txHash, amount: String(FOOD_PRICES.compare), verified: true } });
+  } catch (err: any) { return c.json({ error: 'Price comparison failed', details: err.message }, 500); }
+});
+
+
+// ═══ Airbnb & Short-Term Rental Intelligence API (Bounty #78) — $75 ═══
+
+import { searchListings as searchAirbnb, getListingDetail as getAirbnbListing, getMarketStats as getAirbnbStats, getListingReviews as getAirbnbReviews } from './scrapers/airbnb';
+
+const ABB_PRICES = { search: 0.02, listing: 0.01, market: 0.05, reviews: 0.01 };
+
+serviceRouter.get('/airbnb/search', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/api/airbnb/search', 'Search Airbnb listings by location/dates/guests', ABB_PRICES.search, WALLET_ADDRESS, { input: { location: 'string', checkin: 'YYYY-MM-DD', checkout: 'YYYY-MM-DD', guests: 'number', min_price: 'number', max_price: 'number' }, output: { results: 'AirbnbListing[]', market_overview: 'AirbnbMarketStats' } }), 402);
+  const verified = await verifyPayment(payment.txHash, payment.network, ABB_PRICES.search, WALLET_ADDRESS);
+  if (!verified.valid) return c.json({ error: 'Payment verification failed' }, 402);
+  try {
+    const location = c.req.query('location'); if (!location) return c.json({ error: 'location required' }, 400);
+    const checkin = c.req.query('checkin'); const checkout = c.req.query('checkout');
+    const guests = parseInt(c.req.query('guests') || '2');
+    const minPrice = c.req.query('min_price') ? parseFloat(c.req.query('min_price')!) : undefined;
+    const maxPrice = c.req.query('max_price') ? parseFloat(c.req.query('max_price')!) : undefined;
+    const proxyIp = await getProxyExitIp();
+    const data = await searchAirbnb(location, checkin, checkout, guests, minPrice, maxPrice);
+    return c.json({ ...data, meta: { location, checkin, checkout, guests, proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'Verizon' } }, payment: { txHash: payment.txHash, amount: String(ABB_PRICES.search), verified: true } });
+  } catch (err: any) { return c.json({ error: 'Airbnb search failed', details: err.message }, 500); }
+});
+
+serviceRouter.get('/airbnb/listing/:id', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/api/airbnb/listing/:id', 'Full Airbnb listing details', ABB_PRICES.listing, WALLET_ADDRESS, { input: { id: 'string' }, output: { listing: 'AirbnbListing' } }), 402);
+  const verified = await verifyPayment(payment.txHash, payment.network, ABB_PRICES.listing, WALLET_ADDRESS);
+  if (!verified.valid) return c.json({ error: 'Payment verification failed' }, 402);
+  try {
+    const id = c.req.param('id'); const proxyIp = await getProxyExitIp();
+    const listing = await getAirbnbListing(id);
+    return c.json({ listing, meta: { proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'Verizon' } }, payment: { txHash: payment.txHash, amount: String(ABB_PRICES.listing), verified: true } });
+  } catch (err: any) { return c.json({ error: 'Listing fetch failed', details: err.message }, 500); }
+});
+
+serviceRouter.get('/airbnb/market-stats', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/api/airbnb/market-stats', 'Market statistics for a location', ABB_PRICES.market, WALLET_ADDRESS, { input: { location: 'string' }, output: { stats: 'AirbnbMarketStats — avg_daily_rate, median, listing count, price range' } }), 402);
+  const verified = await verifyPayment(payment.txHash, payment.network, ABB_PRICES.market, WALLET_ADDRESS);
+  if (!verified.valid) return c.json({ error: 'Payment verification failed' }, 402);
+  try {
+    const location = c.req.query('location'); if (!location) return c.json({ error: 'location required' }, 400);
+    const proxyIp = await getProxyExitIp();
+    const stats = await getAirbnbStats(location);
+    return c.json({ location, stats, meta: { proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'Verizon' } }, payment: { txHash: payment.txHash, amount: String(ABB_PRICES.market), verified: true } });
+  } catch (err: any) { return c.json({ error: 'Market stats failed', details: err.message }, 500); }
+});
+
+serviceRouter.get('/airbnb/reviews/:listing_id', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/api/airbnb/reviews/:listing_id', 'Listing reviews', ABB_PRICES.reviews, WALLET_ADDRESS, { input: { listing_id: 'string', limit: 'number (default: 10)' }, output: { reviews: 'AirbnbReview[]' } }), 402);
+  const verified = await verifyPayment(payment.txHash, payment.network, ABB_PRICES.reviews, WALLET_ADDRESS);
+  if (!verified.valid) return c.json({ error: 'Payment verification failed' }, 402);
+  try {
+    const id = c.req.param('listing_id'); const limit = Math.min(parseInt(c.req.query('limit') || '10'), 50);
+    const proxyIp = await getProxyExitIp();
+    const reviews = await getAirbnbReviews(id, limit);
+    return c.json({ listing_id: id, reviews, meta: { total: reviews.length, proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'Verizon' } }, payment: { txHash: payment.txHash, amount: String(ABB_PRICES.reviews), verified: true } });
+  } catch (err: any) { return c.json({ error: 'Reviews fetch failed', details: err.message }, 500); }
+});
