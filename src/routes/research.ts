@@ -16,6 +16,8 @@ import { extractPayment, verifyPayment, build402Response } from '../payment';
 import { getProxy, proxyFetch } from '../proxy';
 import { searchReddit } from '../scrapers/reddit';
 import { searchWeb, getTrendingWeb } from '../scrapers/web';
+import { searchYouTube, getYouTubeTrending } from '../scrapers/youtube';
+import { searchTwitter, getTwitterTrending } from '../scrapers/twitter';
 import { aggregateSentiment } from '../analysis/sentiment';
 import { detectPatterns } from '../analysis/patterns';
 import type {
@@ -34,7 +36,7 @@ const PRICE_SINGLE = 0.10;
 const PRICE_MULTI = 0.50;
 const PRICE_FULL = 1.00;
 
-const SUPPORTED_PLATFORMS: Platform[] = ['reddit', 'web'];
+const SUPPORTED_PLATFORMS: Platform[] = ['reddit', 'web', 'youtube', 'twitter'];
 const DEFAULT_PLATFORMS: Platform[] = ['reddit', 'web'];
 
 const MAX_TOPIC_LENGTH = 200;
@@ -44,6 +46,8 @@ const MAX_DAYS = 90;
 const MAX_REDDIT_RESULTS = 50;
 const MAX_WEB_RESULTS = 20;
 const MAX_TRENDING_RESULTS = 20;
+const MAX_YOUTUBE_RESULTS = 20;
+const MAX_TWITTER_RESULTS = 20;
 
 const RESEARCH_RATE_LIMIT_PER_MIN = Math.max(
   1,
@@ -54,12 +58,12 @@ const rateLimits = new Map<string, { count: number; resetAt: number }>();
 
 const DESCRIPTION =
   'Trend Intelligence API: cross-platform research synthesis with pattern detection and sentiment analysis. ' +
-  'Scrapes Reddit + web simultaneously, finds cross-platform signals, returns structured intelligence report.';
+  'Scrapes Reddit, web, YouTube, and Twitter/X simultaneously, finds cross-platform signals, returns structured intelligence report.';
 
 const OUTPUT_SCHEMA = {
   input: {
     topic: 'string (required) - topic or keyword to research',
-    platforms: '("reddit" | "web")[] (optional, default: ["reddit", "web"])',
+    platforms: '("reddit" | "web" | "youtube" | "twitter")[] (optional, default: ["reddit", "web"])',
     days: 'number (optional, default: 30, max: 90)',
     country: 'string (optional, default: "US") - ISO country code',
   },
@@ -75,7 +79,7 @@ const OUTPUT_SCHEMA = {
   pricing: {
     single_platform: '$0.10 USDC',
     cross_platform: '$0.50 USDC (2-3 platforms)',
-    full_report: '$1.00 USDC (all platforms)',
+    full_report: '$1.00 USDC (4 platforms)',
   },
 };
 
@@ -157,7 +161,7 @@ function parsePlatforms(input: unknown): { platforms: Platform[]; error?: string
   const unique = Array.from(new Set(normalized));
 
   if (unique.length === 0) {
-    return { platforms: [], error: 'No supported platforms selected. Use reddit and/or web.' };
+    return { platforms: [], error: 'No supported platforms selected. Use reddit, web, youtube, and/or twitter.' };
   }
 
   return { platforms: unique };
@@ -264,7 +268,8 @@ researchRouter.post('/', async (c) => {
 
   const country = parseCountry(body.country);
 
-  const price = platforms.length >= 3 ? PRICE_FULL : platforms.length >= 2 ? PRICE_MULTI : PRICE_SINGLE;
+  // 4 platforms = full report, 2-3 = multi, 1 = single
+  const price = platforms.length >= 4 ? PRICE_FULL : platforms.length >= 2 ? PRICE_MULTI : PRICE_SINGLE;
 
   let verification: Awaited<ReturnType<typeof verifyPayment>>;
   try {
@@ -285,11 +290,20 @@ researchRouter.post('/', async (c) => {
     platforms.includes('reddit') ? searchReddit(topic, days, MAX_REDDIT_RESULTS) : Promise.resolve([]),
     platforms.includes('web') ? searchWeb(topic, MAX_WEB_RESULTS) : Promise.resolve([]),
     platforms.includes('web') ? getTrendingWeb(country, MAX_TRENDING_RESULTS) : Promise.resolve([]),
+    platforms.includes('youtube') ? searchYouTube(topic, days, MAX_YOUTUBE_RESULTS) : Promise.resolve([]),
+    platforms.includes('youtube') ? getYouTubeTrending(country, MAX_TRENDING_RESULTS) : Promise.resolve([]),
+    platforms.includes('twitter') ? searchTwitter(topic, days, MAX_TWITTER_RESULTS) : Promise.resolve([]),
+    platforms.includes('twitter') ? getTwitterTrending(country, MAX_TRENDING_RESULTS) : Promise.resolve([]),
   ]);
 
   const redditPosts = scrapeResults[0].status === 'fulfilled' ? scrapeResults[0].value : [];
   const webResults = scrapeResults[1].status === 'fulfilled' ? scrapeResults[1].value : [];
   const webTrending = scrapeResults[2].status === 'fulfilled' ? scrapeResults[2].value : [];
+  const youtubeResults = scrapeResults[3].status === 'fulfilled' ? scrapeResults[3].value : [];
+  const youtubeTrending = scrapeResults[4].status === 'fulfilled' ? scrapeResults[4].value : [];
+  const twitterResults = scrapeResults[5].status === 'fulfilled' ? scrapeResults[5].value : [];
+  // twitterTrending is fetched but merged into twitterResults for pattern detection
+  const twitterTrending = scrapeResults[6].status === 'fulfilled' ? scrapeResults[6].value : [];
 
   for (const result of scrapeResults) {
     if (result.status === 'rejected') {
@@ -309,9 +323,22 @@ researchRouter.post('/', async (c) => {
     sentimentByPlatform.web = aggregateSentiment(texts);
   }
 
+  if (youtubeResults.length > 0) {
+    const texts = youtubeResults.map((v) => `${v.title.slice(0, 300)} ${v.description.slice(0, 1000)}`);
+    sentimentByPlatform.youtube = aggregateSentiment(texts);
+  }
+
+  const allTwitter = [...twitterResults, ...twitterTrending];
+  if (allTwitter.length > 0) {
+    const texts = allTwitter.map((t) => t.text.slice(0, 500));
+    sentimentByPlatform.twitter = aggregateSentiment(texts);
+  }
+
   const allTexts = [
     ...redditPosts.map((p) => `${p.title.slice(0, 300)} ${p.selftext.slice(0, 1000)}`),
     ...webResults.map((r) => `${r.title.slice(0, 300)} ${r.snippet.slice(0, 1000)}`),
+    ...youtubeResults.map((v) => `${v.title.slice(0, 300)} ${v.description.slice(0, 1000)}`),
+    ...allTwitter.map((t) => t.text.slice(0, 500)),
   ];
   const overallSentiment = aggregateSentiment(allTexts);
 
@@ -342,17 +369,43 @@ researchRouter.post('/', async (c) => {
       engagement: 0,
       source: r.source,
     })),
+    ...youtubeResults
+      .slice()
+      .sort((a, b) => b.engagementScore - a.engagementScore)
+      .slice(0, 3)
+      .map((v) => ({
+        platform: 'youtube',
+        title: v.title,
+        url: v.url,
+        engagement: Math.round(v.engagementScore),
+      })),
+    ...allTwitter
+      .slice()
+      .sort((a, b) => b.engagementScore - a.engagementScore)
+      .slice(0, 3)
+      .map((t) => ({
+        platform: 'twitter',
+        title: t.text.slice(0, 120),
+        url: t.url,
+        engagement: Math.round(t.engagementScore),
+      })),
   ]
     .sort((a, b) => b.engagement - a.engagement)
-    .slice(0, 8);
+    .slice(0, 10);
 
   const emergingPatterns = patterns.filter((p) => p.strength === 'emerging');
   const emergingTopics = emergingPatterns.slice(0, 5).map((p) => p.pattern);
 
-  const sourcesChecked = redditPosts.length + webResults.length + webTrending.length;
+  const sourcesChecked =
+    redditPosts.length + webResults.length + webTrending.length +
+    youtubeResults.length + youtubeTrending.length +
+    twitterResults.length + twitterTrending.length;
+
   const platformsUsed = [
     redditPosts.length > 0 ? 'reddit' : null,
     webResults.length > 0 || webTrending.length > 0 ? 'web' : null,
+    youtubeResults.length > 0 || youtubeTrending.length > 0 ? 'youtube' : null,
+    allTwitter.length > 0 ? 'twitter' : null,
   ].filter(Boolean) as string[];
 
   c.header('X-Payment-Settled', 'true');
