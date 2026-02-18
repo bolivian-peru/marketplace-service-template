@@ -1,48 +1,149 @@
 /**
  * GET /api/trending
- * ─────────────────
  * Returns currently trending topics across requested platforms.
  *
- * Price: $0.10 USDC (single-tier, lightweight endpoint)
- *
- * Query params:
- *   country  - ISO country code (default: US)
- *   platforms - comma-separated: reddit,web (default: reddit,web)
- *   limit    - max topics per platform (default: 20, max: 50)
+ * Price: $0.10 USDC
  */
 
 import { Hono } from 'hono';
+import type { Context } from 'hono';
 import { extractPayment, verifyPayment, build402Response } from '../payment';
-import { getProxy } from '../proxy';
+import { getProxy, proxyFetch } from '../proxy';
 import { getRedditTrending } from '../scrapers/reddit';
 import { getTrendingWeb } from '../scrapers/web';
 import type { TrendingResponse, TrendingItem } from '../types/index';
 
-// ─── CONSTANTS ──────────────────────────────────────
-
 const WALLET_ADDRESS = process.env.WALLET_ADDRESS ?? '';
 const PRICE_USDC = 0.10;
 
+const SUPPORTED_PLATFORMS = new Set(['reddit', 'web']);
+const DEFAULT_PLATFORMS = ['reddit', 'web'];
+const MAX_LIMIT = 50;
+const MIN_LIMIT = 1;
+const MAX_PLATFORM_PARAM_LENGTH = 64;
+
+const TRENDING_RATE_LIMIT_PER_MIN = Math.max(
+  1,
+  Math.min(parseInt(process.env.TRENDING_RATE_LIMIT_PER_MIN ?? '30', 10) || 30, 300),
+);
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const rateLimits = new Map<string, { count: number; resetAt: number }>();
+
 const DESCRIPTION =
-  'Trending Topics API: fetch what\'s trending right now on Reddit and/or the web. ' +
+  'Trending Topics API: fetch what is trending right now on Reddit and/or the web. ' +
   'Returns engagement-ranked topics with source URLs.';
 
 const OUTPUT_SCHEMA = {
   input: {
-    country: 'string (optional, default: "US") — ISO country code for web trends',
-    platforms: 'string (optional, default: "reddit,web") — comma-separated platform list',
-    limit: 'number (optional, default: 20, max: 50) — topics per platform',
+    country: 'string (optional, default: "US") - ISO country code for web trends',
+    platforms: 'string (optional, default: "reddit,web") - comma-separated platform list',
+    limit: 'number (optional, default: 20, max: 50) - topics per platform',
   },
   output: {
     country: 'string',
     platforms: 'string[]',
-    trending: 'TrendingItem[] — { topic, platform, engagement, traffic?, url? }',
+    trending: 'TrendingItem[] - { topic, platform, engagement, traffic?, url? }',
     generated_at: 'string (ISO 8601)',
     meta: '{ proxy: { ip, country, type } }',
   },
 };
 
-// ─── ROUTER ─────────────────────────────────────────
+function normalizeClientIp(c: Context): string {
+  const forwarded = c.req.header('x-forwarded-for')?.split(',')[0]?.trim();
+  const realIp = c.req.header('x-real-ip')?.trim();
+  const cfIp = c.req.header('cf-connecting-ip')?.trim();
+  const candidate = forwarded || realIp || cfIp || 'unknown';
+
+  if (!candidate || candidate.length > 64 || /[\r\n]/.test(candidate)) {
+    return 'unknown';
+  }
+
+  return candidate;
+}
+
+function checkRateLimit(ip: string): { allowed: boolean; retryAfter: number } {
+  const now = Date.now();
+
+  if (rateLimits.size > 10_000) {
+    for (const [key, value] of rateLimits) {
+      if (now > value.resetAt) {
+        rateLimits.delete(key);
+      }
+    }
+  }
+
+  const entry = rateLimits.get(ip);
+  if (!entry || now > entry.resetAt) {
+    rateLimits.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return { allowed: true, retryAfter: 0 };
+  }
+
+  entry.count += 1;
+  if (entry.count > TRENDING_RATE_LIMIT_PER_MIN) {
+    const retryAfter = Math.max(1, Math.ceil((entry.resetAt - now) / 1000));
+    return { allowed: false, retryAfter };
+  }
+
+  return { allowed: true, retryAfter: 0 };
+}
+
+function parseCountry(countryParam: string | undefined): string {
+  if (!countryParam) return 'US';
+  const normalized = countryParam.trim().toUpperCase();
+  if (!/^[A-Z]{2}$/.test(normalized)) return 'US';
+  return normalized;
+}
+
+function parsePlatforms(platformParam: string | undefined): { platforms: string[]; error?: string } {
+  if (!platformParam) {
+    return { platforms: [...DEFAULT_PLATFORMS] };
+  }
+
+  if (platformParam.length > MAX_PLATFORM_PARAM_LENGTH) {
+    return { platforms: [], error: `platforms query is too long. Max ${MAX_PLATFORM_PARAM_LENGTH} characters.` };
+  }
+
+  const normalized = platformParam
+    .split(',')
+    .map((p) => p.trim().toLowerCase())
+    .filter((p) => SUPPORTED_PLATFORMS.has(p));
+
+  const unique = Array.from(new Set(normalized));
+  if (unique.length === 0) {
+    return { platforms: [], error: 'No supported platforms requested. Use reddit and/or web.' };
+  }
+
+  return { platforms: unique };
+}
+
+function parseLimit(limitParam: string | undefined): number {
+  const parsed = Number.parseInt(limitParam ?? '20', 10);
+  if (!Number.isFinite(parsed)) return 20;
+  return Math.min(Math.max(parsed, MIN_LIMIT), MAX_LIMIT);
+}
+
+function toSafeHeaderValue(value: string): string {
+  return value.replace(/[\r\n]/g, '').slice(0, 256);
+}
+
+async function getProxyExitIp(): Promise<string | null> {
+  try {
+    const ipRes = await proxyFetch('https://api.ipify.org?format=json', {
+      headers: { Accept: 'application/json' },
+      maxRetries: 1,
+      timeoutMs: 5_000,
+    });
+
+    if (!ipRes.ok) return null;
+
+    const ipData = await ipRes.json() as { ip?: string };
+    const ip = typeof ipData?.ip === 'string' ? ipData.ip.trim() : '';
+    if (!ip || ip.length > 64) return null;
+    return ip;
+  } catch {
+    return null;
+  }
+}
 
 export const trendingRouter = new Hono();
 
@@ -51,7 +152,15 @@ trendingRouter.get('/', async (c) => {
     return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
   }
 
-  // ─── Payment gate ────────────────────────────────
+  const ip = normalizeClientIp(c);
+  const rateStatus = checkRateLimit(ip);
+  if (!rateStatus.allowed) {
+    c.header('Retry-After', String(rateStatus.retryAfter));
+    return c.json(
+      { error: 'Rate limit exceeded for /api/trending', retryAfter: rateStatus.retryAfter },
+      429,
+    );
+  }
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -61,44 +170,33 @@ trendingRouter.get('/', async (c) => {
     );
   }
 
-  const verification = await verifyPayment(payment, WALLET_ADDRESS, PRICE_USDC);
+  let verification: Awaited<ReturnType<typeof verifyPayment>>;
+  try {
+    verification = await verifyPayment(payment, WALLET_ADDRESS, PRICE_USDC);
+  } catch (error) {
+    console.error('[trending] Payment verification error:', error);
+    return c.json({ error: 'Payment verification temporarily unavailable' }, 502);
+  }
+
   if (!verification.valid) {
     return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
   }
 
-  // ─── Parse query params ──────────────────────────
+  const country = parseCountry(c.req.query('country'));
+  const platformsParse = parsePlatforms(c.req.query('platforms'));
+  if (platformsParse.error) {
+    return c.json({ error: platformsParse.error }, 400);
+  }
+  const requestedPlatforms = platformsParse.platforms;
 
-  const country = (c.req.query('country') ?? 'US').toUpperCase().slice(0, 2);
-  const platformParam = c.req.query('platforms') ?? 'reddit,web';
-  const requestedPlatforms = platformParam.split(',').map((p) => p.trim().toLowerCase());
-  const limit = Math.min(Math.max(parseInt(c.req.query('limit') ?? '20') || 20, 1), 50);
-
-  // ─── Fetch trending from each platform ───────────
+  const limit = parseLimit(c.req.query('limit'));
 
   const proxyConfig = getProxy();
-  let proxyIp: string | null = null;
-
-  try {
-    const ipRes = await fetch('https://api.ipify.org?format=json', {
-      signal: AbortSignal.timeout(5_000),
-      // @ts-ignore - Bun proxy support
-      proxy: proxyConfig.url,
-    });
-    if (ipRes.ok) {
-      const ipData = await ipRes.json() as { ip?: string };
-      proxyIp = typeof ipData?.ip === 'string' ? ipData.ip : null;
-    }
-  } catch {
-    // non-fatal
-  }
+  const proxyIp = await getProxyExitIp();
 
   const fetches = await Promise.allSettled([
-    requestedPlatforms.includes('reddit')
-      ? getRedditTrending(limit)
-      : Promise.resolve([]),
-    requestedPlatforms.includes('web')
-      ? getTrendingWeb(country, limit)
-      : Promise.resolve([]),
+    requestedPlatforms.includes('reddit') ? getRedditTrending(limit) : Promise.resolve([]),
+    requestedPlatforms.includes('web') ? getTrendingWeb(country, limit) : Promise.resolve([]),
   ]);
 
   const redditTrending = fetches[0].status === 'fulfilled' ? fetches[0].value : [];
@@ -109,8 +207,6 @@ trendingRouter.get('/', async (c) => {
       console.error('[trending] Fetch error:', result.reason);
     }
   }
-
-  // ─── Normalize into unified trending list ────────
 
   const trendingItems: TrendingItem[] = [
     ...redditTrending.map((post): TrendingItem => ({
@@ -128,7 +224,6 @@ trendingRouter.get('/', async (c) => {
     })),
   ];
 
-  // Sort by engagement where available, then by appearance order
   trendingItems.sort((a, b) => {
     if (a.engagement !== null && b.engagement !== null) return b.engagement - a.engagement;
     if (a.engagement !== null) return -1;
@@ -142,7 +237,7 @@ trendingRouter.get('/', async (c) => {
   ].filter(Boolean) as string[];
 
   c.header('X-Payment-Settled', 'true');
-  c.header('X-Payment-TxHash', payment.txHash);
+  c.header('X-Payment-TxHash', toSafeHeaderValue(payment.txHash));
 
   const response: TrendingResponse = {
     country,
