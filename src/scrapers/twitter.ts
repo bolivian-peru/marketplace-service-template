@@ -239,52 +239,49 @@ export async function searchTwitter(
 
   const safeLimit = clamp(limit, 1, MAX_LIMIT);
 
-  // "site:x.com" restricts DDG to Twitter/X indexed content
-  const query = `site:x.com ${safeTopic}`;
+  // Multiple query variants because engines index X content inconsistently.
+  const queries = [
+    `site:x.com ${safeTopic}`,
+    `${safeTopic} x.com`,
+    `${safeTopic} from:twitter`,
+  ];
 
-  const url = `${OPENSERP_BASE}/mega/search?text=${encodeURIComponent(query)}`;
+  const engines = ['google,bing,duckduckgo', 'google,bing', 'google'];
+  const timeRange = days > 30 ? 'year' : days > 7 ? 'month' : 'week';
 
-  let rawResults: unknown;
-  try {
-    const res = await fetch(url, {
-      signal: AbortSignal.timeout(TIMEOUT_MS),
-      headers: { 'User-Agent': BOT_UA, Accept: 'application/json' },
-    });
+  const collected: TwitterResult[] = [];
 
-    if (res.status === 429) {
-      console.warn('[twitter] OpenSERP rate-limited (429) for topic:', safeTopic);
-      return [];
+  for (const q of queries) {
+    for (const engineSet of engines) {
+      if (collected.length >= safeLimit) break;
+
+      const url = `${SEARXNG_BASE}/search?q=${encodeURIComponent(q)}&format=json&engines=${engineSet}&time_range=${timeRange}`;
+
+      try {
+        const res = await fetch(url, {
+          signal: AbortSignal.timeout(TIMEOUT_MS),
+          headers: { 'User-Agent': BOT_UA, Accept: 'application/json' },
+        });
+
+        if (!res.ok) continue;
+
+        const payload = await res.json() as { results?: unknown[] };
+        const results = Array.isArray(payload?.results) ? payload.results : [];
+
+        for (const item of results) {
+          if (collected.length >= safeLimit) break;
+          if (!item || typeof item !== 'object') continue;
+          const mapped = mapSearXNGResult(item as SearXNGWebResult);
+          if (mapped) collected.push(mapped);
+        }
+      } catch {
+        continue;
+      }
     }
-    if (!res.ok) {
-      console.error(`[twitter] OpenSERP error ${res.status} for topic: ${safeTopic}`);
-      return [];
-    }
-
-    rawResults = await res.json();
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : String(err);
-    console.error('[twitter] OpenSERP fetch failed:', msg);
-    return [];
+    if (collected.length >= safeLimit) break;
   }
 
-  if (!Array.isArray(rawResults)) {
-    console.warn('[twitter] OpenSERP returned unexpected shape for topic:', safeTopic);
-    return [];
-  }
-
-  const mapped: TwitterResult[] = [];
-  for (const item of rawResults) {
-    if (mapped.length >= safeLimit) break;
-    if (!item || typeof item !== 'object') continue;
-    try {
-      const result = mapOpenSERPResult(item as OpenSERPResult);
-      if (result) mapped.push(result);
-    } catch {
-      continue;
-    }
-  }
-
-  return deduplicateByUrl(mapped).slice(0, safeLimit);
+  return deduplicateByUrl(collected).slice(0, safeLimit);
 }
 
 /**
