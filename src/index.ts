@@ -77,6 +77,10 @@ app.get('/', (c) => c.json({
     { method: 'GET', path: '/api/run', description: 'Google Maps Lead Generator — search businesses by category + location', price: '0.005 USDC' },
     { method: 'GET', path: '/api/details', description: 'Google Maps Place Details — detailed business info by Place ID', price: '0.005 USDC' },
     { method: 'GET', path: '/api/jobs', description: 'Get job listings (Indeed/LinkedIn) with salary + date + proxy metadata' },
+    { method: 'GET', path: '/api/reddit/search', description: 'Search Reddit posts by keyword', price: '0.005 USDC' },
+    { method: 'GET', path: '/api/reddit/trending', description: 'Get trending/popular Reddit posts', price: '0.005 USDC' },
+    { method: 'GET', path: '/api/reddit/subreddit/:name', description: 'Browse a subreddit', price: '0.005 USDC' },
+    { method: 'GET', path: '/api/reddit/thread/:permalink', description: 'Fetch post comments', price: '0.01 USDC' },
     { method: 'GET', path: '/api/reviews/search', description: 'Search businesses by query + location', price: '0.01 USDC' },
     { method: 'GET', path: '/api/reviews/:place_id', description: 'Fetch Google reviews by Place ID', price: '0.02 USDC' },
     { method: 'GET', path: '/api/business/:place_id', description: 'Get business details + review summary', price: '0.01 USDC' },
@@ -114,7 +118,7 @@ app.get('/', (c) => c.json({
 
 app.route('/api', serviceRouter);
 
-app.notFound((c) => c.json({ error: 'Not found', endpoints: ['/', '/health', '/api/run', '/api/details', '/api/jobs', '/api/reviews/search', '/api/reviews/:place_id', '/api/business/:place_id', '/api/reviews/summary/:place_id'] }, 404));
+app.notFound((c) => c.json({ error: 'Not found', endpoints: ['/', '/health', '/api/run', '/api/details', '/api/jobs', '/api/reviews/search', '/api/reviews/:place_id', '/api/business/:place_id', '/api/reviews/summary/:place_id', '/api/reddit/search', '/api/reddit/trending', '/api/reddit/subreddit/:name', '/api/reddit/thread/:permalink'] }, 404));
 
 app.onError((err, c) => {
   console.error(`[ERROR] ${err.message}`);

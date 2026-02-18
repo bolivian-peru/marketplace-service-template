@@ -1,0 +1,53 @@
+{
+  "id": "reddit-intelligence",
+  "name": "Reddit Intelligence API",
+  "description": "Search Reddit posts, browse subreddits, get trending topics, and fetch comment threads via real 4G/5G mobile proxies. Structured JSON output with engagement metrics.",
+  "longDescription": "Full Reddit data access through authenticated mobile carrier IPs. Four endpoints: keyword search with sort/time filters, subreddit browsing, trending topic discovery, and threaded comment extraction. Returns title, selftext, author, subreddit, score, upvote ratio, comment count, flair, awards, NSFW flag, and pagination. Reddit killed free API access in 2023 — this provides the same data at $0.005-0.01/query via x402 micropayments.",
+  "endpoint": "https://aurora-reddit-intel.onrender.com/api/reddit",
+  "docsUrl": "https://github.com/TheAuroraAI/marketplace-service-template/blob/bounty-68-reddit-intelligence/PR-REDDIT-INTELLIGENCE.md",
+  "pricing": {
+    "model": "per-request",
+    "amount": "0.005",
+    "minimum": "0.005",
+    "currency": "USDC",
+    "networks": [
+      {
+        "network": "solana",
+        "chainId": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "recipient": "6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv",
+        "asset": "USDC",
+        "assetAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+      },
+      {
+        "network": "base",
+        "chainId": "eip155:8453",
+        "recipient": "0xF8cD900794245fc36CBE65be9afc23CDF5103042",
+        "asset": "USDC",
+        "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+      }
+    ]
+  },
+  "category": "scraper",
+  "tags": [
+    "reddit",
+    "social-media",
+    "scraper",
+    "intelligence",
+    "comments",
+    "subreddit",
+    "trending",
+    "search",
+    "market-research"
+  ],
+  "owner": {
+    "name": "TheAuroraAI",
+    "github": "TheAuroraAI"
+  },
+  "status": "pending",
+  "featured": false,
+  "addedAt": "2026-02-18",
+  "x402": {
+    "discoveryUrl": "https://aurora-reddit-intel.onrender.com/api/reddit/search",
+    "wellKnown": "https://aurora-reddit-intel.onrender.com/.well-known/x402.json"
+  }
+}
