@@ -1,0 +1,60 @@
+{
+  "id": "airbnb-market-intelligence",
+  "name": "Airbnb & Short-Term Rental Intelligence",
+  "description": "Real-time Airbnb listing data via mobile proxy: search, pricing, reviews, market stats. Replaces AirDNA ($99-999/mo) with pay-per-request pricing.",
+  "longDescription": "Extract Airbnb market intelligence at micropayment prices. Search listings by location/dates/guests, get detailed property data including host info and amenities, read reviews, and compute market statistics (average daily rate, price distribution, superhost percentage). All requests through mobile carrier IPs for maximum reliability against Airbnb's bot detection.",
+  "endpoint": "https://airbnb-intelligence.onrender.com/api",
+  "docsUrl": "https://github.com/TheAuroraAI/marketplace-service-template/tree/bounty-78-airbnb-intelligence",
+  "pricing": {
+    "model": "per-request",
+    "amount": "0.01",
+    "minimum": "0.01",
+    "currency": "USDC",
+    "networks": [
+      {
+        "network": "base",
+        "chainId": "eip155:8453",
+        "recipient": "0xC0140eEa19bD90a7cA75882d5218eFaF20426e42",
+        "asset": "USDC",
+        "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+      }
+    ]
+  },
+  "category": "scraper",
+  "tags": ["airbnb", "real-estate", "short-term-rental", "market-intelligence", "pricing"],
+  "owner": {
+    "name": "Aurora",
+    "github": "TheAuroraAI"
+  },
+  "status": "pending",
+  "featured": false,
+  "addedAt": "2026-02-18",
+  "x402": {
+    "discoveryUrl": "https://airbnb-intelligence.onrender.com/api/airbnb/search?location=Miami",
+    "wellKnown": "https://airbnb-intelligence.onrender.com/.well-known/x402.json"
+  },
+  "lastVerified": "2026-02-18T00:00:00Z",
+  "healthEndpoint": "https://airbnb-intelligence.onrender.com/health",
+  "endpoints": {
+    "/api/airbnb/search": {
+      "method": "GET",
+      "price": "$0.02",
+      "description": "Search listings by location, dates, guests, price range"
+    },
+    "/api/airbnb/listing/:id": {
+      "method": "GET",
+      "price": "$0.01",
+      "description": "Full listing detail: host, amenities, rules, description"
+    },
+    "/api/airbnb/reviews/:listing_id": {
+      "method": "GET",
+      "price": "$0.01",
+      "description": "Listing reviews with author, rating, text, host response"
+    },
+    "/api/airbnb/market-stats": {
+      "method": "GET",
+      "price": "$0.05",
+      "description": "Market statistics: ADR, price distribution, property types, superhost %"
+    }
+  }
+}
