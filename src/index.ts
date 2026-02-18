@@ -66,7 +66,7 @@ app.get('/health', (c) => c.json({
   service: process.env.SERVICE_NAME || 'marketplace-service',
   version: '1.0.0',
   timestamp: new Date().toISOString(),
-  endpoints: ['/api/jobs', '/api/reviews/search', '/api/reviews/:place_id', '/api/reviews/summary/:place_id', '/api/business/:place_id'],
+  endpoints: ['/api/jobs', '/api/reviews/search', '/api/reviews/:place_id', '/api/reviews/summary/:place_id', '/api/business/:place_id', '/api/airbnb/search', '/api/airbnb/listing/:id', '/api/airbnb/reviews/:listing_id', '/api/airbnb/market-stats'],
 }));
 
 app.get('/', (c) => c.json({
@@ -79,6 +79,10 @@ app.get('/', (c) => c.json({
     { method: 'GET', path: '/api/reviews/:place_id', description: 'Fetch Google reviews by Place ID', price: '0.02 USDC' },
     { method: 'GET', path: '/api/business/:place_id', description: 'Get business details + review summary', price: '0.01 USDC' },
     { method: 'GET', path: '/api/reviews/summary/:place_id', description: 'Get review summary stats', price: '0.005 USDC' },
+    { method: 'GET', path: '/api/airbnb/search', description: 'Search Airbnb listings by location, dates, guests, price range', price: '0.02 USDC' },
+    { method: 'GET', path: '/api/airbnb/listing/:id', description: 'Full listing detail: host, amenities, rules, description', price: '0.01 USDC' },
+    { method: 'GET', path: '/api/airbnb/reviews/:listing_id', description: 'Listing reviews with author, rating, text, host response', price: '0.01 USDC' },
+    { method: 'GET', path: '/api/airbnb/market-stats', description: 'Market statistics: ADR, price distribution, property types', price: '0.05 USDC' },
   ],
   pricing: {
     amount: process.env.PRICE_USDC || '0.005',
@@ -112,7 +116,7 @@ app.get('/', (c) => c.json({
 
 app.route('/api', serviceRouter);
 
-app.notFound((c) => c.json({ error: 'Not found', endpoints: ['/', '/health', '/api/jobs', '/api/reviews/search', '/api/reviews/:place_id', '/api/business/:place_id', '/api/reviews/summary/:place_id'] }, 404));
+app.notFound((c) => c.json({ error: 'Not found', endpoints: ['/', '/health', '/api/jobs', '/api/reviews/search', '/api/reviews/:place_id', '/api/business/:place_id', '/api/reviews/summary/:place_id', '/api/airbnb/search', '/api/airbnb/listing/:id', '/api/airbnb/reviews/:listing_id', '/api/airbnb/market-stats'] }, 404));
 
 app.onError((err, c) => {
   console.error(`[ERROR] ${err.message}`);

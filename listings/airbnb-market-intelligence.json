@@ -3,7 +3,7 @@
   "name": "Airbnb & Short-Term Rental Intelligence",
   "description": "Real-time Airbnb listing data via mobile proxy: search, pricing, reviews, market stats. Replaces AirDNA ($99-999/mo) with pay-per-request pricing.",
   "longDescription": "Extract Airbnb market intelligence at micropayment prices. Search listings by location/dates/guests, get detailed property data including host info and amenities, read reviews, and compute market statistics (average daily rate, price distribution, superhost percentage). All requests through mobile carrier IPs for maximum reliability against Airbnb's bot detection.",
-  "endpoint": "https://airbnb-intelligence.onrender.com/api",
+  "endpoint": "https://karma-fisher-showers-jerusalem.trycloudflare.com/api",
   "docsUrl": "https://github.com/TheAuroraAI/marketplace-service-template/tree/bounty-78-airbnb-intelligence",
   "pricing": {
     "model": "per-request",
@@ -12,9 +12,16 @@
     "currency": "USDC",
     "networks": [
       {
+        "network": "solana",
+        "chainId": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "recipient": "6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv",
+        "asset": "USDC",
+        "assetAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+      },
+      {
         "network": "base",
         "chainId": "eip155:8453",
-        "recipient": "0xC0140eEa19bD90a7cA75882d5218eFaF20426e42",
+        "recipient": "0xF8cD900794245fc36CBE65be9afc23CDF5103042",
         "asset": "USDC",
         "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
       }
@@ -30,11 +37,11 @@
   "featured": false,
   "addedAt": "2026-02-18",
   "x402": {
-    "discoveryUrl": "https://airbnb-intelligence.onrender.com/api/airbnb/search?location=Miami",
-    "wellKnown": "https://airbnb-intelligence.onrender.com/.well-known/x402.json"
+    "discoveryUrl": "https://karma-fisher-showers-jerusalem.trycloudflare.com/api/airbnb/search?location=Miami",
+    "wellKnown": "https://karma-fisher-showers-jerusalem.trycloudflare.com/.well-known/x402.json"
   },
   "lastVerified": "2026-02-18T00:00:00Z",
-  "healthEndpoint": "https://airbnb-intelligence.onrender.com/health",
+  "healthEndpoint": "https://karma-fisher-showers-jerusalem.trycloudflare.com/health",
   "endpoints": {
     "/api/airbnb/search": {
       "method": "GET",
