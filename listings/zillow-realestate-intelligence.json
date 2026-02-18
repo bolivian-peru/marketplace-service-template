@@ -1,0 +1,33 @@
+{
+  "name": "Real Estate Listing Intelligence API (Zillow)",
+  "description": "Property listings, Zestimate values, price history, comparable sales, and market trends from Zillow. Search by address, ZIP code, or city via mobile proxy bypass.",
+  "category": "real-estate",
+  "endpoints": [
+    {
+      "method": "GET",
+      "path": "/api/realestate/property/:zpid",
+      "price": "$0.02 USDC",
+      "description": "Property details, Zestimate, price history, photos"
+    },
+    {
+      "method": "GET",
+      "path": "/api/realestate/search",
+      "price": "$0.01 USDC",
+      "description": "Search by address, ZIP, or city with filters"
+    },
+    {
+      "method": "GET",
+      "path": "/api/realestate/market",
+      "price": "$0.05 USDC",
+      "description": "Market stats by ZIP \u2014 median values, inventory"
+    },
+    {
+      "method": "GET",
+      "path": "/api/realestate/comps/:zpid",
+      "price": "$0.03 USDC",
+      "description": "Comparable sales near a property"
+    }
+  ],
+  "pricing_model": "x402 micropayment per request",
+  "wallet": "A6M8icBwgDPwYhaWAjhJw267nbtkuivKH2q6sKPZgQEf"
+}

@@ -1,0 +1,33 @@
+{
+  "name": "Amazon Product & BSR Tracker API",
+  "description": "Real-time Amazon product data \u2014 price, BSR rank, reviews, buy box, competitor analysis. Multi-marketplace support (US, UK, DE, FR, CA, JP, AU, IN).",
+  "category": "ecommerce",
+  "endpoints": [
+    {
+      "method": "GET",
+      "path": "/api/amazon/product/:asin",
+      "price": "$0.005 USDC",
+      "description": "Product details, BSR, price, buy box, availability"
+    },
+    {
+      "method": "GET",
+      "path": "/api/amazon/search",
+      "price": "$0.01 USDC",
+      "description": "Search products by keyword with category filter"
+    },
+    {
+      "method": "GET",
+      "path": "/api/amazon/bestsellers",
+      "price": "$0.01 USDC",
+      "description": "Best sellers by category"
+    },
+    {
+      "method": "GET",
+      "path": "/api/amazon/reviews/:asin",
+      "price": "$0.02 USDC",
+      "description": "Product reviews with ratings and dates"
+    }
+  ],
+  "pricing_model": "x402 micropayment per request",
+  "wallet": "A6M8icBwgDPwYhaWAjhJw267nbtkuivKH2q6sKPZgQEf"
+}

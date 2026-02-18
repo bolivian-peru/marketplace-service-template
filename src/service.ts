@@ -1600,3 +1600,160 @@ serviceRouter.get('/airbnb/reviews/:listing_id', async (c) => {
     return c.json({ listing_id: id, reviews, meta: { total: reviews.length, proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'Verizon' } }, payment: { txHash: payment.txHash, amount: String(ABB_PRICES.reviews), verified: true } });
   } catch (err: any) { return c.json({ error: 'Reviews fetch failed', details: err.message }, 500); }
 });
+
+
+// ═══════════════════════════════════════════════════════════════
+// ZILLOW / REAL ESTATE INTELLIGENCE API — Bounty #79
+// ═══════════════════════════════════════════════════════════════
+
+import { getZillowProperty, searchZillow, getZillowMarketStats, getZillowComps } from './scrapers/zillow';
+
+const RE_PRICES = { property: 0.02, search: 0.01, market: 0.05, comps: 0.03 };
+
+serviceRouter.get('/realestate/property/:zpid', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/api/realestate/property/:zpid', 'Property details, Zestimate, price history', RE_PRICES.property, WALLET_ADDRESS, { input: { zpid: 'string' }, output: { property: 'ZillowProperty — address, price, zestimate, price_history, details, neighborhood, photos' } }), 402);
+  const verified = await verifyPayment(payment.txHash, payment.network, RE_PRICES.property, WALLET_ADDRESS);
+  if (!verified.valid) return c.json({ error: 'Payment verification failed' }, 402);
+  try {
+    const zpid = c.req.param('zpid');
+    const proxyIp = await getProxyExitIp();
+    const property = await getZillowProperty(zpid);
+    if (!property) return c.json({ error: 'Property not found or blocked' }, 404);
+    return c.json({ ...property, meta: { proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'T-Mobile' } }, payment: { txHash: payment.txHash, amount: String(RE_PRICES.property), verified: true } });
+  } catch (err: any) { return c.json({ error: 'Property fetch failed', details: err.message }, 500); }
+});
+
+serviceRouter.get('/realestate/search', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/api/realestate/search', 'Search properties by address, ZIP, or city', RE_PRICES.search, WALLET_ADDRESS, { input: { address: 'string?', zip: 'string?', type: 'for_sale|for_rent|sold?', min_price: 'number?', max_price: 'number?', beds: 'number?' }, output: { results: 'ZillowSearchResult[]' } }), 402);
+  const verified = await verifyPayment(payment.txHash, payment.network, RE_PRICES.search, WALLET_ADDRESS);
+  if (!verified.valid) return c.json({ error: 'Payment verification failed' }, 402);
+  try {
+    const query = c.req.query('address') || c.req.query('zip') || c.req.query('city') || '';
+    if (!query) return c.json({ error: 'address, zip, or city required' }, 400);
+    const filters = { type: c.req.query('type'), min_price: c.req.query('min_price') ? parseInt(c.req.query('min_price')!) : undefined, max_price: c.req.query('max_price') ? parseInt(c.req.query('max_price')!) : undefined, beds: c.req.query('beds') ? parseInt(c.req.query('beds')!) : undefined };
+    const proxyIp = await getProxyExitIp();
+    const results = await searchZillow(query, filters);
+    return c.json({ query, results, meta: { total: results.length, proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'T-Mobile' } }, payment: { txHash: payment.txHash, amount: String(RE_PRICES.search), verified: true } });
+  } catch (err: any) { return c.json({ error: 'Search failed', details: err.message }, 500); }
+});
+
+serviceRouter.get('/realestate/market', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/api/realestate/market', 'Market statistics by ZIP code', RE_PRICES.market, WALLET_ADDRESS, { input: { zip: 'string' }, output: { stats: 'ZillowMarketStats — median values, inventory, price range' } }), 402);
+  const verified = await verifyPayment(payment.txHash, payment.network, RE_PRICES.market, WALLET_ADDRESS);
+  if (!verified.valid) return c.json({ error: 'Payment verification failed' }, 402);
+  try {
+    const zip = c.req.query('zip'); if (!zip) return c.json({ error: 'zip required' }, 400);
+    const proxyIp = await getProxyExitIp();
+    const stats = await getZillowMarketStats(zip);
+    return c.json({ ...stats, meta: { proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'T-Mobile' } }, payment: { txHash: payment.txHash, amount: String(RE_PRICES.market), verified: true } });
+  } catch (err: any) { return c.json({ error: 'Market stats failed', details: err.message }, 500); }
+});
+
+serviceRouter.get('/realestate/comps/:zpid', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/api/realestate/comps/:zpid', 'Comparable sales near a property', RE_PRICES.comps, WALLET_ADDRESS, { input: { zpid: 'string', radius: 'string? (default: 0.5mi)' }, output: { comps: 'ZillowSearchResult[]' } }), 402);
+  const verified = await verifyPayment(payment.txHash, payment.network, RE_PRICES.comps, WALLET_ADDRESS);
+  if (!verified.valid) return c.json({ error: 'Payment verification failed' }, 402);
+  try {
+    const zpid = c.req.param('zpid');
+    const radius = parseFloat(c.req.query('radius') || '0.5');
+    const proxyIp = await getProxyExitIp();
+    const comps = await getZillowComps(zpid, radius);
+    return c.json({ zpid, comps, meta: { total: comps.length, radius: `${radius}mi`, proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'T-Mobile' } }, payment: { txHash: payment.txHash, amount: String(RE_PRICES.comps), verified: true } });
+  } catch (err: any) { return c.json({ error: 'Comps fetch failed', details: err.message }, 500); }
+});
+
+
+// ═══════════════════════════════════════════════════════════════
+// AMAZON PRODUCT & BSR TRACKER API — Bounty #72
+// ═══════════════════════════════════════════════════════════════
+
+import { getAmazonProduct, searchAmazon, getAmazonBestsellers, getAmazonReviews } from './scrapers/amazon';
+
+const AMZ_PRICES = { product: 0.005, search: 0.01, bestsellers: 0.01, reviews: 0.02 };
+
+serviceRouter.get('/amazon/product/:asin', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/api/amazon/product/:asin', 'Product details, BSR, price, buy box', AMZ_PRICES.product, WALLET_ADDRESS, { input: { asin: 'string', marketplace: 'US|UK|DE|FR|CA? (default: US)' }, output: { product: 'AmazonProduct — price, bsr, rating, buy_box, availability' } }), 402);
+  const verified = await verifyPayment(payment.txHash, payment.network, AMZ_PRICES.product, WALLET_ADDRESS);
+  if (!verified.valid) return c.json({ error: 'Payment verification failed' }, 402);
+  try {
+    const asin = c.req.param('asin');
+    const marketplace = c.req.query('marketplace') || 'US';
+    const proxyIp = await getProxyExitIp();
+    const product = await getAmazonProduct(asin, marketplace);
+    if (!product) return c.json({ error: 'Product not found or CAPTCHA blocked' }, 404);
+    return c.json({ ...product, meta: { marketplace, proxy: { ip: proxyIp || 'mobile', country: marketplace, carrier: 'AT&T' } }, payment: { txHash: payment.txHash, amount: String(AMZ_PRICES.product), verified: true } });
+  } catch (err: any) { return c.json({ error: 'Product fetch failed', details: err.message }, 500); }
+});
+
+serviceRouter.get('/amazon/search', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/api/amazon/search', 'Search Amazon products by keyword', AMZ_PRICES.search, WALLET_ADDRESS, { input: { query: 'string', category: 'string?', marketplace: 'US|UK|DE? (default: US)' }, output: { results: 'AmazonSearchResult[] — up to 20' } }), 402);
+  const verified = await verifyPayment(payment.txHash, payment.network, AMZ_PRICES.search, WALLET_ADDRESS);
+  if (!verified.valid) return c.json({ error: 'Payment verification failed' }, 402);
+  try {
+    const query = c.req.query('query'); if (!query) return c.json({ error: 'query required' }, 400);
+    const category = c.req.query('category');
+    const marketplace = c.req.query('marketplace') || 'US';
+    const proxyIp = await getProxyExitIp();
+    const results = await searchAmazon(query, marketplace, category || undefined);
+    return c.json({ query, results, meta: { total: results.length, marketplace, proxy: { ip: proxyIp || 'mobile', country: marketplace, carrier: 'AT&T' } }, payment: { txHash: payment.txHash, amount: String(AMZ_PRICES.search), verified: true } });
+  } catch (err: any) { return c.json({ error: 'Search failed', details: err.message }, 500); }
+});
+
+serviceRouter.get('/amazon/bestsellers', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/api/amazon/bestsellers', 'Best sellers by category', AMZ_PRICES.bestsellers, WALLET_ADDRESS, { input: { category: 'string? (default: electronics)', marketplace: 'US|UK|DE? (default: US)' }, output: { results: 'AmazonSearchResult[]' } }), 402);
+  const verified = await verifyPayment(payment.txHash, payment.network, AMZ_PRICES.bestsellers, WALLET_ADDRESS);
+  if (!verified.valid) return c.json({ error: 'Payment verification failed' }, 402);
+  try {
+    const category = c.req.query('category') || 'electronics';
+    const marketplace = c.req.query('marketplace') || 'US';
+    const proxyIp = await getProxyExitIp();
+    const results = await getAmazonBestsellers(category, marketplace);
+    return c.json({ category, results, meta: { total: results.length, marketplace, proxy: { ip: proxyIp || 'mobile', country: marketplace, carrier: 'AT&T' } }, payment: { txHash: payment.txHash, amount: String(AMZ_PRICES.bestsellers), verified: true } });
+  } catch (err: any) { return c.json({ error: 'Bestsellers fetch failed', details: err.message }, 500); }
+});
+
+serviceRouter.get('/amazon/reviews/:asin', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/api/amazon/reviews/:asin', 'Product reviews', AMZ_PRICES.reviews, WALLET_ADDRESS, { input: { asin: 'string', sort: 'recent|helpful? (default: recent)', limit: 'number? (default: 10, max: 50)', marketplace: 'US|UK|DE? (default: US)' }, output: { reviews: 'AmazonReview[]' } }), 402);
+  const verified = await verifyPayment(payment.txHash, payment.network, AMZ_PRICES.reviews, WALLET_ADDRESS);
+  if (!verified.valid) return c.json({ error: 'Payment verification failed' }, 402);
+  try {
+    const asin = c.req.param('asin');
+    const sort = c.req.query('sort') || 'recent';
+    const limit = Math.min(parseInt(c.req.query('limit') || '10'), 50);
+    const marketplace = c.req.query('marketplace') || 'US';
+    const proxyIp = await getProxyExitIp();
+    const reviews = await getAmazonReviews(asin, marketplace, sort, limit);
+    return c.json({ asin, reviews, meta: { total: reviews.length, sort, marketplace, proxy: { ip: proxyIp || 'mobile', country: marketplace, carrier: 'AT&T' } }, payment: { txHash: payment.txHash, amount: String(AMZ_PRICES.reviews), verified: true } });
+  } catch (err: any) { return c.json({ error: 'Reviews fetch failed', details: err.message }, 500); }
+});
+
+
+// ═══════════════════════════════════════════════════════════════
+// GOOGLE DISCOVER FEED INTELLIGENCE API — Bounty #52
+// ═══════════════════════════════════════════════════════════════
+
+import { getDiscoverFeed } from './scrapers/discover';
+
+const DISCOVER_PRICES = { feed: 0.02 };
+
+serviceRouter.get('/discover/feed', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/api/discover/feed', 'Google Discover feed by country and category', DISCOVER_PRICES.feed, WALLET_ADDRESS, { input: { country: 'US|UK|DE|FR|ES|PL? (default: US)', category: 'technology|science|business|entertainment|sports|health|news?' }, output: { discover_feed: 'DiscoverArticle[] — title, source, url, snippet, imageUrl, contentType, publishedAt' } }), 402);
+  const verified = await verifyPayment(payment.txHash, payment.network, DISCOVER_PRICES.feed, WALLET_ADDRESS);
+  if (!verified.valid) return c.json({ error: 'Payment verification failed' }, 402);
+  try {
+    const country = c.req.query('country') || 'US';
+    const category = c.req.query('category');
+    const proxyIp = await getProxyExitIp();
+    const feed = await getDiscoverFeed(country, category || undefined);
+    return c.json({ ...feed, proxy: { ip: proxyIp || 'mobile', country, carrier: 'Mobile', type: 'mobile' }, payment: { txHash: payment.txHash, amount: String(DISCOVER_PRICES.feed), verified: true } });
+  } catch (err: any) { return c.json({ error: 'Discover feed fetch failed', details: err.message }, 500); }
+});

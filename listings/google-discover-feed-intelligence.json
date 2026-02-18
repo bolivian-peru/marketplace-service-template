@@ -1,0 +1,15 @@
+{
+  "name": "Google Discover Feed Intelligence API",
+  "description": "Captures Google Discover feed content from real mobile carrier connections. Mobile-only feed invisible to desktop \u2014 zero competition data source for SEO/content teams.",
+  "category": "search-intelligence",
+  "endpoints": [
+    {
+      "method": "GET",
+      "path": "/api/discover/feed",
+      "price": "$0.02 USDC",
+      "description": "Discover feed by country and category (6 countries, 8 categories)"
+    }
+  ],
+  "pricing_model": "x402 micropayment per request",
+  "wallet": "A6M8icBwgDPwYhaWAjhJw267nbtkuivKH2q6sKPZgQEf"
+}
