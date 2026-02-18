@@ -15,7 +15,7 @@ import { getYouTubeTrending } from '../scrapers/youtube';
 import { getTwitterTrending } from '../scrapers/twitter';
 import type { TrendingResponse, TrendingItem } from '../types/index';
 
-const WALLET_ADDRESS = process.env.WALLET_ADDRESS ?? 'Ed7KDSoEWQz4rzbpaV4qYQCxAomzpUU89sA6fgdRbTTs';
+const WALLET_ADDRESS = process.env.WALLET_ADDRESS ?? '32akW7C2Mmf1zBUYEZZpgUFVXS2gqk9Z1UqJ3KddeLAr';
 const PRICE_USDC = 0.10;
 
 const SUPPORTED_PLATFORMS = new Set(['reddit', 'web', 'youtube', 'twitter', 'x']);

@@ -128,7 +128,7 @@ export function build402Response(
       {
         network: 'base',
         chainId: 'eip155:8453',
-        recipient: '0xF8cD900794245fc36CBE65be9afc23CDF5103042',
+        recipient: '0x2b7287ec19336AC78c129DD2Da6931e14F3BcE29',
         asset: 'USDC',
         assetAddress: USDC_BASE,
       },

@@ -97,7 +97,7 @@ app.get('/', (c) => c.json({
       {
         network: 'solana',
         chainId: 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
-        recipient: 'Ed7KDSoEWQz4rzbpaV4qYQCxAomzpUU89sA6fgdRbTTs',
+        recipient: '32akW7C2Mmf1zBUYEZZpgUFVXS2gqk9Z1UqJ3KddeLAr',
         asset: 'USDC',
         assetAddress: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
         settlementTime: '~400ms',
@@ -105,7 +105,7 @@ app.get('/', (c) => c.json({
       {
         network: 'base',
         chainId: 'eip155:8453',
-        recipient: '0xF8cD900794245fc36CBE65be9afc23CDF5103042',
+        recipient: '0x2b7287ec19336AC78c129DD2Da6931e14F3BcE29',
         asset: 'USDC',
         assetAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
         settlementTime: '~2s',

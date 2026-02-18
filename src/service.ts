@@ -43,7 +43,7 @@ async function getProxyExitIp(): Promise<string | null> {
 }
 
 serviceRouter.get('/jobs', async (c) => {
-  const walletAddress = 'Ed7KDSoEWQz4rzbpaV4qYQCxAomzpUU89sA6fgdRbTTs';
+  const walletAddress = '32akW7C2Mmf1zBUYEZZpgUFVXS2gqk9Z1UqJ3KddeLAr';
 
   const payment = extractPayment(c);
   if (!payment) {

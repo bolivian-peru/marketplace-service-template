@@ -30,7 +30,7 @@ import type {
 
 // Constants
 
-const WALLET_ADDRESS = process.env.WALLET_ADDRESS ?? 'Ed7KDSoEWQz4rzbpaV4qYQCxAomzpUU89sA6fgdRbTTs';
+const WALLET_ADDRESS = process.env.WALLET_ADDRESS ?? '32akW7C2Mmf1zBUYEZZpgUFVXS2gqk9Z1UqJ3KddeLAr';
 
 const PRICE_SINGLE = 0.10;
 const PRICE_MULTI = 0.50;
