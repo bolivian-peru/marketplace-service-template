@@ -1,0 +1,20 @@
+{
+  "name": "Trend Intelligence Cross-Platform Research API",
+  "description": "Cross-platform research engine synthesizing Reddit, X/Twitter, YouTube into structured intelligence reports with pattern detection and sentiment analysis.",
+  "category": "intelligence",
+  "endpoints": [
+    {
+      "method": "POST",
+      "path": "/api/research",
+      "price": "$0.10-$1.00 USDC",
+      "description": "Cross-platform research + synthesis"
+    },
+    {
+      "method": "GET",
+      "path": "/api/trending",
+      "price": "$0.05 USDC",
+      "description": "Trending topics across platforms"
+    }
+  ],
+  "wallet": "A6M8icBwgDPwYhaWAjhJw267nbtkuivKH2q6sKPZgQEf"
+}

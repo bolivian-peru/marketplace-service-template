@@ -1,0 +1,32 @@
+{
+  "name": "App Store Intelligence API",
+  "description": "Apple App Store + Google Play rankings, metadata, reviews, and search. Multi-country support.",
+  "category": "app-intelligence",
+  "endpoints": [
+    {
+      "method": "GET",
+      "path": "/api/appstore/rankings",
+      "price": "$0.01 USDC",
+      "description": "Top rankings by store/category/country"
+    },
+    {
+      "method": "GET",
+      "path": "/api/appstore/app",
+      "price": "$0.01 USDC",
+      "description": "App details + metadata"
+    },
+    {
+      "method": "GET",
+      "path": "/api/appstore/search",
+      "price": "$0.01 USDC",
+      "description": "Search by keyword"
+    },
+    {
+      "method": "GET",
+      "path": "/api/appstore/reviews",
+      "price": "$0.02 USDC",
+      "description": "App reviews"
+    }
+  ],
+  "wallet": "A6M8icBwgDPwYhaWAjhJw267nbtkuivKH2q6sKPZgQEf"
+}

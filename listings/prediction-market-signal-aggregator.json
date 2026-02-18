@@ -1,0 +1,20 @@
+{
+  "name": "Prediction Market Signal Aggregator",
+  "description": "Combines Polymarket, Kalshi, Metaculus odds with real-time social sentiment to detect mispricings and arbitrage opportunities.",
+  "category": "trading-intelligence",
+  "endpoints": [
+    {
+      "method": "GET",
+      "path": "/api/prediction/signal",
+      "price": "$0.05 USDC",
+      "description": "Market signal with odds + sentiment"
+    },
+    {
+      "method": "GET",
+      "path": "/api/prediction/arbitrage",
+      "price": "$0.10 USDC",
+      "description": "Cross-platform arbitrage detection"
+    }
+  ],
+  "wallet": "A6M8icBwgDPwYhaWAjhJw267nbtkuivKH2q6sKPZgQEf"
+}

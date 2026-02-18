@@ -1757,3 +1757,146 @@ serviceRouter.get('/discover/feed', async (c) => {
     return c.json({ ...feed, proxy: { ip: proxyIp || 'mobile', country, carrier: 'Mobile', type: 'mobile' }, payment: { txHash: payment.txHash, amount: String(DISCOVER_PRICES.feed), verified: true } });
   } catch (err: any) { return c.json({ error: 'Discover feed fetch failed', details: err.message }, 500); }
 });
+
+
+// ═══════════════════════════════════════════════════════════════
+// TREND INTELLIGENCE CROSS-PLATFORM RESEARCH API — Bounty #70
+// ═══════════════════════════════════════════════════════════════
+
+import { researchTopic, getTrending } from './scrapers/trend';
+
+const TREND_PRICES = { single: 0.10, cross: 0.50, full: 1.00, trending: 0.05 };
+
+serviceRouter.post('/research', async (c) => {
+  const payment = extractPayment(c);
+  const body = await c.req.json().catch(() => ({}));
+  const platforms = body.platforms || ['reddit', 'x', 'youtube'];
+  const price = platforms.length >= 3 ? TREND_PRICES.full : platforms.length >= 2 ? TREND_PRICES.cross : TREND_PRICES.single;
+  if (!payment) return c.json(build402Response('/api/research', 'Cross-platform trend research + synthesis', price, WALLET_ADDRESS, { input: { topic: 'string', platforms: 'string[] (reddit, x, youtube)', days: 'number? (default: 30)', country: 'string? (default: US)' }, output: { patterns: 'TrendPattern[]', sentiment: 'TrendSentiment', top_discussions: 'Discussion[]' } }), 402);
+  const verified = await verifyPayment(payment.txHash, payment.network, price, WALLET_ADDRESS);
+  if (!verified.valid) return c.json({ error: 'Payment verification failed' }, 402);
+  try {
+    const topic = body.topic; if (!topic) return c.json({ error: 'topic required' }, 400);
+    const days = body.days || 30;
+    const proxyIp = await getProxyExitIp();
+    const report = await researchTopic(topic, platforms, days);
+    return c.json({ ...report, meta: { platforms_used: platforms, proxy: { ip: proxyIp || 'mobile', country: body.country || 'US', carrier: 'AT&T' } }, payment: { txHash: payment.txHash, amount: String(price), verified: true } });
+  } catch (err: any) { return c.json({ error: 'Research failed', details: err.message }, 500); }
+});
+
+serviceRouter.get('/trending', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/api/trending', 'Trending topics across platforms', TREND_PRICES.trending, WALLET_ADDRESS, { input: { country: 'string? (default: US)', platforms: 'string? (comma-separated, default: reddit,x)' }, output: { trending: 'TrendingItem[]' } }), 402);
+  const verified = await verifyPayment(payment.txHash, payment.network, TREND_PRICES.trending, WALLET_ADDRESS);
+  if (!verified.valid) return c.json({ error: 'Payment verification failed' }, 402);
+  try {
+    const country = c.req.query('country') || 'US';
+    const platforms = (c.req.query('platforms') || 'reddit,x').split(',');
+    const proxyIp = await getProxyExitIp();
+    const result = await getTrending(country, platforms);
+    return c.json({ ...result, meta: { proxy: { ip: proxyIp || 'mobile', country, carrier: 'AT&T' } }, payment: { txHash: payment.txHash, amount: String(TREND_PRICES.trending), verified: true } });
+  } catch (err: any) { return c.json({ error: 'Trending fetch failed', details: err.message }, 500); }
+});
+
+
+// ═══════════════════════════════════════════════════════════════
+// PREDICTION MARKET SIGNAL AGGREGATOR API — Bounty #55
+// ═══════════════════════════════════════════════════════════════
+
+import { getPredictionSignal, getArbitrage } from './scrapers/prediction';
+
+const PRED_PRICES = { signal: 0.05, arbitrage: 0.10, sentiment: 0.03 };
+
+serviceRouter.get('/prediction/signal', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/api/prediction/signal', 'Prediction market signal with odds + sentiment', PRED_PRICES.signal, WALLET_ADDRESS, { input: { market: 'string (topic/event name)' }, output: { odds: 'MarketOdds (Polymarket, Kalshi, Metaculus)', sentiment: 'SocialSentiment (Reddit, Twitter)', signals: 'TradingSignal[]' } }), 402);
+  const verified = await verifyPayment(payment.txHash, payment.network, PRED_PRICES.signal, WALLET_ADDRESS);
+  if (!verified.valid) return c.json({ error: 'Payment verification failed' }, 402);
+  try {
+    const market = c.req.query('market'); if (!market) return c.json({ error: 'market query required' }, 400);
+    const proxyIp = await getProxyExitIp();
+    const signal = await getPredictionSignal(market);
+    return c.json({ ...signal, meta: { proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'AT&T' } }, payment: { txHash: payment.txHash, amount: String(PRED_PRICES.signal), verified: true } });
+  } catch (err: any) { return c.json({ error: 'Signal fetch failed', details: err.message }, 500); }
+});
+
+serviceRouter.get('/prediction/arbitrage', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/api/prediction/arbitrage', 'Cross-platform prediction market arbitrage detection', PRED_PRICES.arbitrage, WALLET_ADDRESS, { input: {}, output: { opportunities: 'ArbitrageOpportunity[]' } }), 402);
+  const verified = await verifyPayment(payment.txHash, payment.network, PRED_PRICES.arbitrage, WALLET_ADDRESS);
+  if (!verified.valid) return c.json({ error: 'Payment verification failed' }, 402);
+  try {
+    const proxyIp = await getProxyExitIp();
+    const result = await getArbitrage();
+    return c.json({ ...result, meta: { proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'AT&T' } }, payment: { txHash: payment.txHash, amount: String(PRED_PRICES.arbitrage), verified: true } });
+  } catch (err: any) { return c.json({ error: 'Arbitrage scan failed', details: err.message }, 500); }
+});
+
+
+// ═══════════════════════════════════════════════════════════════
+// APP STORE INTELLIGENCE API — Bounty #54
+// ═══════════════════════════════════════════════════════════════
+
+import { getAppleRankings, getAppleApp, searchAppleApps, getPlayStoreApp, searchPlayStore, getAppleReviews } from './scrapers/appstore';
+
+const APP_PRICES = { rankings: 0.01, app: 0.01, search: 0.01, reviews: 0.02 };
+
+serviceRouter.get('/appstore/rankings', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/api/appstore/rankings', 'Top app rankings by store, category, country', APP_PRICES.rankings, WALLET_ADDRESS, { input: { store: 'apple|google? (default: apple)', category: 'string? (default: games)', country: 'string? (default: us)' }, output: { rankings: 'AppInfo[]' } }), 402);
+  const verified = await verifyPayment(payment.txHash, payment.network, APP_PRICES.rankings, WALLET_ADDRESS);
+  if (!verified.valid) return c.json({ error: 'Payment verification failed' }, 402);
+  try {
+    const store = c.req.query('store') || 'apple';
+    const category = c.req.query('category') || 'games';
+    const country = c.req.query('country') || 'us';
+    const proxyIp = await getProxyExitIp();
+    const rankings = store === 'apple' ? await getAppleRankings(category, country) : [];
+    return c.json({ store, category, country, rankings, meta: { total: rankings.length, proxy: { ip: proxyIp || 'mobile', country: country.toUpperCase(), carrier: 'T-Mobile' } }, payment: { txHash: payment.txHash, amount: String(APP_PRICES.rankings), verified: true } });
+  } catch (err: any) { return c.json({ error: 'Rankings fetch failed', details: err.message }, 500); }
+});
+
+serviceRouter.get('/appstore/app', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/api/appstore/app', 'App details + metadata', APP_PRICES.app, WALLET_ADDRESS, { input: { store: 'apple|google', appId: 'string', country: 'string? (default: us)' }, output: { app: 'AppInfo' } }), 402);
+  const verified = await verifyPayment(payment.txHash, payment.network, APP_PRICES.app, WALLET_ADDRESS);
+  if (!verified.valid) return c.json({ error: 'Payment verification failed' }, 402);
+  try {
+    const store = c.req.query('store') || 'apple';
+    const appId = c.req.query('appId'); if (!appId) return c.json({ error: 'appId required' }, 400);
+    const country = c.req.query('country') || 'us';
+    const proxyIp = await getProxyExitIp();
+    const app = store === 'google' ? await getPlayStoreApp(appId, country) : await getAppleApp(appId, country);
+    if (!app) return c.json({ error: 'App not found' }, 404);
+    return c.json({ ...app, meta: { store, proxy: { ip: proxyIp || 'mobile', country: country.toUpperCase(), carrier: 'T-Mobile' } }, payment: { txHash: payment.txHash, amount: String(APP_PRICES.app), verified: true } });
+  } catch (err: any) { return c.json({ error: 'App fetch failed', details: err.message }, 500); }
+});
+
+serviceRouter.get('/appstore/search', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/api/appstore/search', 'Search apps by keyword', APP_PRICES.search, WALLET_ADDRESS, { input: { store: 'apple|google', query: 'string', country: 'string? (default: us)' }, output: { results: 'AppInfo[]' } }), 402);
+  const verified = await verifyPayment(payment.txHash, payment.network, APP_PRICES.search, WALLET_ADDRESS);
+  if (!verified.valid) return c.json({ error: 'Payment verification failed' }, 402);
+  try {
+    const store = c.req.query('store') || 'apple';
+    const query = c.req.query('query'); if (!query) return c.json({ error: 'query required' }, 400);
+    const country = c.req.query('country') || 'us';
+    const proxyIp = await getProxyExitIp();
+    const results = store === 'google' ? await searchPlayStore(query, country) : await searchAppleApps(query, country);
+    return c.json({ store, query, results, meta: { total: results.length, proxy: { ip: proxyIp || 'mobile', country: country.toUpperCase(), carrier: 'T-Mobile' } }, payment: { txHash: payment.txHash, amount: String(APP_PRICES.search), verified: true } });
+  } catch (err: any) { return c.json({ error: 'Search failed', details: err.message }, 500); }
+});
+
+serviceRouter.get('/appstore/reviews', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/api/appstore/reviews', 'App reviews', APP_PRICES.reviews, WALLET_ADDRESS, { input: { store: 'apple', appId: 'string', country: 'string? (default: us)' }, output: { reviews: 'AppReview[]' } }), 402);
+  const verified = await verifyPayment(payment.txHash, payment.network, APP_PRICES.reviews, WALLET_ADDRESS);
+  if (!verified.valid) return c.json({ error: 'Payment verification failed' }, 402);
+  try {
+    const appId = c.req.query('appId'); if (!appId) return c.json({ error: 'appId required' }, 400);
+    const country = c.req.query('country') || 'us';
+    const proxyIp = await getProxyExitIp();
+    const reviews = await getAppleReviews(appId, country);
+    return c.json({ appId, reviews, meta: { total: reviews.length, proxy: { ip: proxyIp || 'mobile', country: country.toUpperCase(), carrier: 'T-Mobile' } }, payment: { txHash: payment.txHash, amount: String(APP_PRICES.reviews), verified: true } });
+  } catch (err: any) { return c.json({ error: 'Reviews fetch failed', details: err.message }, 500); }
+});
