@@ -1,0 +1,92 @@
+{
+  "name": "x-twitter-intelligence",
+  "title": "X/Twitter Real-Time Search API",
+  "description": "Search tweets by keyword/hashtag, get trending topics by region, extract user profiles with engagement metrics, and monitor full conversation threads \u2014 all without X's $42K/year API, routed through mobile proxies.",
+  "version": "1.0.0",
+  "author": "Mellowambience",
+  "pricing": {
+    "search": {
+      "price": 0.01,
+      "unit": "USDC",
+      "description": "Search tweets by keyword"
+    },
+    "trending": {
+      "price": 0.005,
+      "unit": "USDC",
+      "description": "Trending topics by country"
+    },
+    "user_profile": {
+      "price": 0.01,
+      "unit": "USDC",
+      "description": "User profile with metrics"
+    },
+    "user_tweets": {
+      "price": 0.01,
+      "unit": "USDC",
+      "description": "User's recent tweets"
+    },
+    "thread": {
+      "price": 0.02,
+      "unit": "USDC",
+      "description": "Full conversation thread"
+    }
+  },
+  "endpoints": [
+    {
+      "path": "/api/x/search",
+      "method": "GET",
+      "params": {
+        "query": "string (required)",
+        "sort": "latest|top|people|media",
+        "limit": "number (1-100)"
+      },
+      "price": "$0.01 USDC"
+    },
+    {
+      "path": "/api/x/trending",
+      "method": "GET",
+      "params": {
+        "country": "US|UK|CA|AU|IN|BR|JP|DE|FR|MX|WORLDWIDE"
+      },
+      "price": "$0.005 USDC"
+    },
+    {
+      "path": "/api/x/user/:handle",
+      "method": "GET",
+      "params": {
+        "handle": "string (required)"
+      },
+      "price": "$0.01 USDC"
+    },
+    {
+      "path": "/api/x/user/:handle/tweets",
+      "method": "GET",
+      "params": {
+        "handle": "string (required)",
+        "limit": "number (1-200)"
+      },
+      "price": "$0.01 USDC"
+    },
+    {
+      "path": "/api/x/thread/:tweet_id",
+      "method": "GET",
+      "params": {
+        "tweet_id": "string (required)"
+      },
+      "price": "$0.02 USDC"
+    }
+  ],
+  "wallet": "A6M8icBwgDPwYhaWAjhJw267nbtkuivKH2q6sKPZgQEf",
+  "network": "solana",
+  "tags": [
+    "twitter",
+    "x",
+    "search",
+    "trending",
+    "social-intelligence",
+    "real-time"
+  ],
+  "requirements": [
+    "Proxies.sx mobile proxy credentials"
+  ]
+}

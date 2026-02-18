@@ -701,3 +701,248 @@ serviceRouter.get('/reddit/thread/:id/comments', async (c) => {
     return c.json({ error: 'Thread fetch failed', details: err.message }, 500);
   }
 });
+
+
+// ═══════════════════════════════════════════════════════
+// X/Twitter Real-Time Search API (Bounty #73) — $100
+// ═══════════════════════════════════════════════════════
+
+import { searchTweets, getTrending as getXTrending, getUserProfile, getUserTweets, getThread as getXThread, COUNTRY_WOEIDS } from './scrapers/twitter';
+
+const X_PRICES = {
+  search: 0.01,
+  trending: 0.005,
+  profile: 0.01,
+  tweets: 0.01,
+  thread: 0.02,
+};
+
+// ─── GET /api/x/search ──────────────────────────────
+serviceRouter.get('/x/search', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(
+      build402Response('/api/x/search', 'Search tweets by keyword or hashtag', X_PRICES.search, WALLET_ADDRESS, {
+        input: {
+          query: 'string (required) — Search keyword, hashtag, or from:user',
+          sort: 'string (optional: latest|top|people|media, default: latest)',
+          limit: 'number (optional, default: 20, max: 100)',
+        },
+        output: { results: 'Tweet[] — id, author, text, likes, retweets, replies, views, url, media, hashtags', meta: 'proxy info' },
+      }),
+      402,
+    );
+  }
+
+  const verified = await verifyPayment(payment.txHash, payment.network, X_PRICES.search, WALLET_ADDRESS);
+  if (!verified.valid) {
+    return c.json({ error: 'Payment verification failed', details: verified.error }, 402);
+  }
+
+  const clientIp = getClientIp(c);
+  if (!checkProxyRateLimit(clientIp)) {
+    return c.json({ error: 'Rate limit exceeded. Try again in 60 seconds.' }, 429);
+  }
+
+  try {
+    const query = c.req.query('query');
+    if (!query) return c.json({ error: 'query parameter is required' }, 400);
+
+    const sort = (c.req.query('sort') as any) || 'latest';
+    const limit = Math.min(parseInt(c.req.query('limit') || '20'), 100);
+    const proxyIp = await getProxyExitIp();
+    const data = await searchTweets(query, sort, limit);
+
+    return c.json({
+      query,
+      ...data,
+      meta: {
+        sort,
+        total_results: data.total_results,
+        proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'T-Mobile' },
+      },
+      payment: { txHash: payment.txHash, amount: String(X_PRICES.search), verified: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'X search failed', details: err.message }, 500);
+  }
+});
+
+// ─── GET /api/x/trending ────────────────────────────
+serviceRouter.get('/x/trending', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(
+      build402Response('/api/x/trending', 'Trending topics on X by country', X_PRICES.trending, WALLET_ADDRESS, {
+        input: { country: 'string (optional: US|UK|CA|AU|IN|BR|JP|DE|FR|MX|WORLDWIDE, default: US)' },
+        output: { trends: 'TrendingTopic[] — name, tweet_volume, rank, category' },
+      }),
+      402,
+    );
+  }
+
+  const verified = await verifyPayment(payment.txHash, payment.network, X_PRICES.trending, WALLET_ADDRESS);
+  if (!verified.valid) {
+    return c.json({ error: 'Payment verification failed', details: verified.error }, 402);
+  }
+
+  const clientIp = getClientIp(c);
+  if (!checkProxyRateLimit(clientIp)) {
+    return c.json({ error: 'Rate limit exceeded. Try again in 60 seconds.' }, 429);
+  }
+
+  try {
+    const country = (c.req.query('country') || 'US').toUpperCase();
+    const woeid = COUNTRY_WOEIDS[country] || COUNTRY_WOEIDS.US;
+    const proxyIp = await getProxyExitIp();
+    const trends = await getXTrending(woeid);
+
+    return c.json({
+      country,
+      trends,
+      meta: {
+        woeid,
+        total_trends: trends.length,
+        proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'T-Mobile' },
+      },
+      payment: { txHash: payment.txHash, amount: String(X_PRICES.trending), verified: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'X trending failed', details: err.message }, 500);
+  }
+});
+
+// ─── GET /api/x/user/:handle ────────────────────────
+serviceRouter.get('/x/user/:handle', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(
+      build402Response('/api/x/user/:handle', 'X user profile with metrics', X_PRICES.profile, WALLET_ADDRESS, {
+        input: { handle: 'string (required) — X handle without @' },
+        output: { profile: 'XUserProfile — handle, name, bio, followers, following, tweet_count, verified, location' },
+      }),
+      402,
+    );
+  }
+
+  const verified = await verifyPayment(payment.txHash, payment.network, X_PRICES.profile, WALLET_ADDRESS);
+  if (!verified.valid) {
+    return c.json({ error: 'Payment verification failed', details: verified.error }, 402);
+  }
+
+  const clientIp = getClientIp(c);
+  if (!checkProxyRateLimit(clientIp)) {
+    return c.json({ error: 'Rate limit exceeded. Try again in 60 seconds.' }, 429);
+  }
+
+  try {
+    const handle = c.req.param('handle');
+    if (!handle) return c.json({ error: 'handle is required' }, 400);
+
+    const proxyIp = await getProxyExitIp();
+    const profile = await getUserProfile(handle);
+
+    return c.json({
+      profile,
+      meta: {
+        handle,
+        proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'T-Mobile' },
+      },
+      payment: { txHash: payment.txHash, amount: String(X_PRICES.profile), verified: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'X user profile failed', details: err.message }, 500);
+  }
+});
+
+// ─── GET /api/x/user/:handle/tweets ─────────────────
+serviceRouter.get('/x/user/:handle/tweets', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(
+      build402Response('/api/x/user/:handle/tweets', 'Recent tweets from a user', X_PRICES.tweets, WALLET_ADDRESS, {
+        input: {
+          handle: 'string (required) — X handle without @',
+          limit: 'number (optional, default: 20, max: 200)',
+        },
+        output: { tweets: 'Tweet[] — full tweet data with engagement metrics' },
+      }),
+      402,
+    );
+  }
+
+  const verified = await verifyPayment(payment.txHash, payment.network, X_PRICES.tweets, WALLET_ADDRESS);
+  if (!verified.valid) {
+    return c.json({ error: 'Payment verification failed', details: verified.error }, 402);
+  }
+
+  const clientIp = getClientIp(c);
+  if (!checkProxyRateLimit(clientIp)) {
+    return c.json({ error: 'Rate limit exceeded. Try again in 60 seconds.' }, 429);
+  }
+
+  try {
+    const handle = c.req.param('handle');
+    if (!handle) return c.json({ error: 'handle is required' }, 400);
+
+    const limit = Math.min(parseInt(c.req.query('limit') || '20'), 200);
+    const proxyIp = await getProxyExitIp();
+    const tweets = await getUserTweets(handle, limit);
+
+    return c.json({
+      handle,
+      tweets,
+      meta: {
+        total_tweets: tweets.length,
+        proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'T-Mobile' },
+      },
+      payment: { txHash: payment.txHash, amount: String(X_PRICES.tweets), verified: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'X user tweets failed', details: err.message }, 500);
+  }
+});
+
+// ─── GET /api/x/thread/:tweet_id ────────────────────
+serviceRouter.get('/x/thread/:tweet_id', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(
+      build402Response('/api/x/thread/:tweet_id', 'Full conversation thread from a tweet', X_PRICES.thread, WALLET_ADDRESS, {
+        input: { tweet_id: 'string (required) — Tweet ID' },
+        output: { root: 'Tweet — the original tweet', conversation: 'Tweet[] — replies and thread', total: 'number' },
+      }),
+      402,
+    );
+  }
+
+  const verified = await verifyPayment(payment.txHash, payment.network, X_PRICES.thread, WALLET_ADDRESS);
+  if (!verified.valid) {
+    return c.json({ error: 'Payment verification failed', details: verified.error }, 402);
+  }
+
+  const clientIp = getClientIp(c);
+  if (!checkProxyRateLimit(clientIp)) {
+    return c.json({ error: 'Rate limit exceeded. Try again in 60 seconds.' }, 429);
+  }
+
+  try {
+    const tweetId = c.req.param('tweet_id');
+    if (!tweetId) return c.json({ error: 'tweet_id is required' }, 400);
+
+    const proxyIp = await getProxyExitIp();
+    const thread = await getXThread(tweetId);
+
+    return c.json({
+      ...thread,
+      meta: {
+        tweet_id: tweetId,
+        conversation_size: thread.total,
+        proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'T-Mobile' },
+      },
+      payment: { txHash: payment.txHash, amount: String(X_PRICES.thread), verified: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'X thread fetch failed', details: err.message }, 500);
+  }
+});
