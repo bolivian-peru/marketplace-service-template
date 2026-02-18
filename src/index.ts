@@ -97,7 +97,7 @@ app.get('/', (c) => c.json({
       {
         network: 'solana',
         chainId: 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
-        recipient: '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv',
+        recipient: 'Ed7KDSoEWQz4rzbpaV4qYQCxAomzpUU89sA6fgdRbTTs',
         asset: 'USDC',
         assetAddress: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
         settlementTime: '~400ms',
