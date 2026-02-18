@@ -6,7 +6,7 @@
 
 // ─── TREND INTELLIGENCE TYPES (Bounty #70) ──────────
 
-export type Platform = 'reddit' | 'web' | 'x' | 'youtube';
+export type Platform = 'reddit' | 'web' | 'x' | 'youtube' | 'twitter';
 export type SignalStrength = 'established' | 'reinforced' | 'emerging';
 export type SentimentLabel = 'positive' | 'neutral' | 'negative';
 
@@ -27,9 +27,37 @@ export interface PatternEvidence {
 export interface TrendPattern {
   pattern: string;
   strength: SignalStrength;
-  sources: ('reddit' | 'web')[];
+  sources: ('reddit' | 'web' | 'youtube' | 'twitter')[];
   totalEngagement: number;
   evidence: PatternEvidence[];
+}
+
+// ─── YOUTUBE TYPES ───────────────────────────────────
+
+export interface YouTubeResult {
+  videoId: string;
+  title: string;
+  url: string;
+  channelName: string | null;
+  viewCount: number | null;
+  description: string;
+  publishedAt: string | null;
+  engagementScore: number;
+  platform: 'youtube';
+}
+
+// ─── TWITTER TYPES ───────────────────────────────────
+
+export interface TwitterResult {
+  tweetId: string | null;
+  author: string | null;
+  text: string;
+  url: string;
+  likes: number | null;
+  retweets: number | null;
+  engagementScore: number;
+  publishedAt: string | null;
+  platform: 'twitter';
 }
 
 export interface PlatformSentimentBreakdown {
