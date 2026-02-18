@@ -10,12 +10,15 @@ import { proxyFetch, getProxy } from './proxy';
 import { extractPayment, verifyPayment, build402Response } from './payment';
 import { scrapeIndeed, scrapeLinkedIn, type JobListing } from './scrapers/job-scraper';
 import { fetchReviews, fetchBusinessDetails, fetchReviewSummary, searchBusinesses } from './scrapers/reviews';
+import { scrapeUberEatsSearch, scrapeUberEatsMenu, scrapeUberEatsRestaurant } from './scrapers/food-scraper';
 
 export const serviceRouter = new Hono();
 
 const SERVICE_NAME = 'job-market-intelligence';
 const PRICE_USDC = 0.005;
 const DESCRIPTION = 'Job Market Intelligence API (Indeed/LinkedIn): title, company, location, salary, date, link, remote + proxy exit metadata.';
+const PRICE_FOOD_SEARCH = 0.01;
+const PRICE_FOOD_MENU = 0.02;
 
 async function getProxyExitIp(): Promise<string | null> {
   try {
@@ -334,4 +337,112 @@ serviceRouter.get('/business/:place_id', async (c) => {
   } catch (err: any) {
     return c.json({ error: 'Business details fetch failed', message: err?.message || String(err) }, 502);
   }
+});
+// ─── FOOD DELIVERY ENDPOINT (Bounty #76) ─────────────
+
+serviceRouter.get('/food/search', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/food/search', 'Search food delivery restaurants (Uber Eats)', PRICE_FOOD_SEARCH, walletAddress, {
+      input: { query: 'string (required)', address: 'string (optional, default: "New York, NY")' },
+      output: { results: 'Restaurant[]' },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, PRICE_FOOD_SEARCH);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const query = c.req.query('query');
+  const address = c.req.query('address') || 'New York, NY';
+
+  if (!query) return c.json({ error: 'Missing query' }, 400);
+
+  try {
+    const proxy = getProxy();
+    const results = await scrapeUberEatsSearch(query, address);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      results,
+      meta: { proxy: { country: proxy.country, type: 'mobile' } },
+      payment: { txHash: payment.txHash, amount: verification.amount, settled: true }
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Food search failed', message: err.message }, 502);
+  }
+});
+
+serviceRouter.get('/food/restaurant/:id', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+      return c.json(build402Response('/api/food/restaurant/:id', 'Get restaurant details', PRICE_FOOD_MENU, walletAddress, {
+          input: { id: 'string (required)' },
+          output: { restaurant: 'RestaurantDetails' }
+      }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, PRICE_FOOD_MENU);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const id = c.req.param('id');
+  if (!id) return c.json({ error: 'Missing id' }, 400);
+
+  try {
+      const proxy = getProxy();
+      const result = await scrapeUberEatsRestaurant(id);
+
+      c.header('X-Payment-Settled', 'true');
+      c.header('X-Payment-TxHash', payment.txHash);
+
+      return c.json({
+          result,
+          meta: { proxy: { country: proxy.country, type: 'mobile' } },
+          payment: { txHash: payment.txHash, amount: verification.amount, settled: true }
+      });
+  } catch (err: any) {
+      return c.json({ error: 'Restaurant details failed', message: err.message }, 502);
+  }
+});
+
+serviceRouter.get('/food/menu/:id', async (c) => {
+    const walletAddress = process.env.WALLET_ADDRESS;
+    if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+    const payment = extractPayment(c);
+    if (!payment) {
+        return c.json(build402Response('/api/food/menu/:id', 'Get restaurant menu', PRICE_FOOD_MENU, walletAddress, {
+            input: { id: 'string (required)' },
+            output: { menu: 'MenuItem[]' }
+        }), 402);
+    }
+
+    const verification = await verifyPayment(payment, walletAddress, PRICE_FOOD_MENU);
+    if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+    const id = c.req.param('id');
+    if (!id) return c.json({ error: 'Missing id' }, 400);
+
+    try {
+        const proxy = getProxy();
+        const menu = await scrapeUberEatsMenu(id);
+
+        c.header('X-Payment-Settled', 'true');
+        c.header('X-Payment-TxHash', payment.txHash);
+
+        return c.json({
+            menu,
+            meta: { proxy: { country: proxy.country, type: 'mobile' } },
+            payment: { txHash: payment.txHash, amount: verification.amount, settled: true }
+        });
+    } catch (err: any) {
+        return c.json({ error: 'Menu fetch failed', message: err.message }, 502);
+    }
 });
