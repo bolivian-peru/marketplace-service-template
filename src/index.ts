@@ -66,7 +66,7 @@ app.get('/health', (c) => c.json({
   service: process.env.SERVICE_NAME || 'marketplace-service',
   version: '1.0.0',
   timestamp: new Date().toISOString(),
-  endpoints: ['/api/jobs', '/api/reviews/search', '/api/reviews/:place_id', '/api/reviews/summary/:place_id', '/api/business/:place_id'],
+  endpoints: ['/api/jobs', '/api/reviews/search', '/api/reviews/:place_id', '/api/reviews/summary/:place_id', '/api/business/:place_id', '/api/realestate/property/:zpid', '/api/realestate/search', '/api/realestate/comps/:zpid', '/api/realestate/market'],
 }));
 
 app.get('/', (c) => c.json({
@@ -79,6 +79,10 @@ app.get('/', (c) => c.json({
     { method: 'GET', path: '/api/reviews/:place_id', description: 'Fetch Google reviews by Place ID', price: '0.02 USDC' },
     { method: 'GET', path: '/api/business/:place_id', description: 'Get business details + review summary', price: '0.01 USDC' },
     { method: 'GET', path: '/api/reviews/summary/:place_id', description: 'Get review summary stats', price: '0.005 USDC' },
+    { method: 'GET', path: '/api/realestate/property/:zpid', description: 'Full Zillow property: price, Zestimate, history, neighborhood', price: '0.02 USDC' },
+    { method: 'GET', path: '/api/realestate/search', description: 'Search Zillow by address, ZIP, or city with filters', price: '0.01 USDC' },
+    { method: 'GET', path: '/api/realestate/comps/:zpid', description: 'Comparable sales with distance and similarity', price: '0.03 USDC' },
+    { method: 'GET', path: '/api/realestate/market', description: 'ZIP-level market stats: median value, rent, inventory', price: '0.05 USDC' },
   ],
   pricing: {
     amount: process.env.PRICE_USDC || '0.005',
@@ -112,7 +116,7 @@ app.get('/', (c) => c.json({
 
 app.route('/api', serviceRouter);
 
-app.notFound((c) => c.json({ error: 'Not found', endpoints: ['/', '/health', '/api/jobs', '/api/reviews/search', '/api/reviews/:place_id', '/api/business/:place_id', '/api/reviews/summary/:place_id'] }, 404));
+app.notFound((c) => c.json({ error: 'Not found', endpoints: ['/', '/health', '/api/jobs', '/api/reviews/search', '/api/reviews/:place_id', '/api/business/:place_id', '/api/reviews/summary/:place_id', '/api/realestate/property/:zpid', '/api/realestate/search', '/api/realestate/comps/:zpid', '/api/realestate/market'] }, 404));
 
 app.onError((err, c) => {
   console.error(`[ERROR] ${err.message}`);
