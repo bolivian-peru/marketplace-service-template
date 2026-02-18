@@ -1,22 +1,11 @@
 /**
- * Cross-Platform Pattern Detection
- * ──────────────────────────────────
- * The core intelligence layer. Finds topics that appear across multiple
- * platforms, scores their signal strength, and groups evidence.
- *
- * Algorithm:
- *   1. Extract weighted keywords from each platform's data
- *   2. Find keywords that appear across 2+ platforms = "signal"
- *   3. Score by engagement weight + platform breadth
- *   4. Classify: established (3+), reinforced (2+), emerging (1, high engagement)
- *   5. Return top patterns with evidence
+ * Cross-platform pattern detection.
+ * Finds topics appearing across sources and scores signal strength.
  */
 
 import type { RedditPost } from '../scrapers/reddit';
 import type { WebResult, TrendingTopic } from '../scrapers/web';
 import type { SignalStrength, TrendPattern, PatternEvidence } from '../types/index';
-
-// ─── CONSTANTS ──────────────────────────────────────
 
 const STOPWORDS = new Set([
   'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for',
@@ -36,10 +25,20 @@ const STOPWORDS = new Set([
 ]);
 
 const MIN_KEYWORD_LENGTH = 3;
+const MAX_KEYWORD_LENGTH = 80;
 const MAX_PATTERNS = 10;
-const EMERGING_ENGAGEMENT_THRESHOLD = 100; // min score for "emerging" single-source signal
+const EMERGING_ENGAGEMENT_THRESHOLD = 100;
+const MAX_ITEMS_PER_PLATFORM = 100;
+const MAX_TEXT_LENGTH = 1_200;
+const MAX_TOKENS_PER_TEXT = 150;
+const MAX_TERMS_PER_TEXT = 250;
+const MAX_KEYWORDS_PER_PLATFORM = 4_000;
+const MAX_SIGNAL_KEYWORDS = 6_000;
 
-// ─── INTERNAL TYPES ─────────────────────────────────
+function clamp(value: number, min: number, max: number): number {
+  if (!Number.isFinite(value)) return min;
+  return Math.min(Math.max(Math.floor(value), min), max);
+}
 
 interface KeywordSignal {
   keyword: string;
@@ -48,56 +47,87 @@ interface KeywordSignal {
   evidence: PatternEvidence[];
 }
 
-// ─── HELPERS ────────────────────────────────────────
-
-function tokenizeText(text: string): string[] {
-  return text
-    .toLowerCase()
-    .replace(/[^\w\s]/g, ' ')
-    .split(/\s+/)
-    .filter((w) => w.length >= MIN_KEYWORD_LENGTH && !STOPWORDS.has(w) && !/^\d+$/.test(w));
+function normalizeKeyword(term: string): string | null {
+  const normalized = term.trim().toLowerCase();
+  if (normalized.length < MIN_KEYWORD_LENGTH || normalized.length > MAX_KEYWORD_LENGTH) {
+    return null;
+  }
+  if (!/^[a-z0-9 ]+$/.test(normalized)) {
+    return null;
+  }
+  if (STOPWORDS.has(normalized)) {
+    return null;
+  }
+  return normalized;
 }
 
-/**
- * Extract bigrams (two-word phrases) from a token array.
- * Bigrams often capture more meaningful signals than single words.
- */
+function tokenizeText(text: string): string[] {
+  const normalizedText = text
+    .toLowerCase()
+    .slice(0, MAX_TEXT_LENGTH)
+    .replace(/[^\w\s]/g, ' ');
+
+  const words = normalizedText
+    .split(/\s+/)
+    .filter((w) => w.length >= MIN_KEYWORD_LENGTH && !STOPWORDS.has(w) && !/^\d+$/.test(w));
+
+  return words.slice(0, MAX_TOKENS_PER_TEXT);
+}
+
 function extractBigrams(tokens: string[]): string[] {
   const bigrams: string[] = [];
-  for (let i = 0; i < tokens.length - 1; i++) {
-    bigrams.push(`${tokens[i]} ${tokens[i + 1]}`);
+  const tokenCount = Math.min(tokens.length, MAX_TOKENS_PER_TEXT);
+
+  for (let i = 0; i < tokenCount - 1; i++) {
+    const phrase = `${tokens[i]} ${tokens[i + 1]}`;
+    const normalized = normalizeKeyword(phrase);
+    if (normalized) {
+      bigrams.push(normalized);
+    }
   }
+
   return bigrams;
 }
 
-/**
- * Compute an engagement weight for a Reddit post.
- * Combines score (upvotes) and comment count, with diminishing returns.
- */
 function redditEngagement(post: RedditPost): number {
-  return Math.log1p(post.score) * 10 + Math.log1p(post.numComments) * 5;
+  return Math.log1p(Math.max(0, post.score)) * 10 + Math.log1p(Math.max(0, post.numComments)) * 5;
 }
 
-/**
- * Compute engagement weight for a web result.
- * Web results don't have engagement metrics, so use a base value.
- */
 function webEngagement(): number {
-  return 20; // flat weight - web results indicate editorial relevance
+  return 20;
 }
 
-// ─── KEYWORD EXTRACTION ─────────────────────────────
+function addKeyword(
+  map: Map<string, { weight: number; evidence: PatternEvidence[] }>,
+  term: string,
+  weight: number,
+  evidence: PatternEvidence,
+): void {
+  if (map.size >= MAX_KEYWORDS_PER_PLATFORM && !map.has(term)) {
+    return;
+  }
+
+  const existing = map.get(term);
+  if (existing) {
+    existing.weight += weight;
+    if (existing.evidence.length < 5) {
+      existing.evidence.push(evidence);
+    }
+  } else {
+    map.set(term, { weight, evidence: [evidence] });
+  }
+}
 
 function extractRedditKeywords(
   posts: RedditPost[],
 ): Map<string, { weight: number; evidence: PatternEvidence[] }> {
   const keywords = new Map<string, { weight: number; evidence: PatternEvidence[] }>();
 
-  for (const post of posts) {
+  for (const post of posts.slice(0, MAX_ITEMS_PER_PLATFORM)) {
     const text = `${post.title} ${post.selftext}`;
     const tokens = tokenizeText(text);
     const bigrams = extractBigrams(tokens);
-    const allTerms = [...tokens, ...bigrams];
+    const allTerms = Array.from(new Set([...tokens, ...bigrams])).slice(0, MAX_TERMS_PER_TEXT);
     const engagement = redditEngagement(post);
 
     const evidence: PatternEvidence = {
@@ -111,17 +141,10 @@ function extractRedditKeywords(
       created: post.created,
     };
 
-    for (const term of allTerms) {
-      const existing = keywords.get(term);
-      if (existing) {
-        existing.weight += engagement;
-        // Add evidence only once per post per keyword (first occurrence)
-        if (existing.evidence.length < 5) {
-          existing.evidence.push(evidence);
-        }
-      } else {
-        keywords.set(term, { weight: engagement, evidence: [evidence] });
-      }
+    for (const rawTerm of allTerms) {
+      const term = normalizeKeyword(rawTerm);
+      if (!term) continue;
+      addKeyword(keywords, term, engagement, evidence);
     }
   }
 
@@ -133,11 +156,11 @@ function extractWebKeywords(
 ): Map<string, { weight: number; evidence: PatternEvidence[] }> {
   const keywords = new Map<string, { weight: number; evidence: PatternEvidence[] }>();
 
-  for (const result of results) {
+  for (const result of results.slice(0, MAX_ITEMS_PER_PLATFORM)) {
     const text = `${result.title} ${result.snippet}`;
     const tokens = tokenizeText(text);
     const bigrams = extractBigrams(tokens);
-    const allTerms = [...tokens, ...bigrams];
+    const allTerms = Array.from(new Set([...tokens, ...bigrams])).slice(0, MAX_TERMS_PER_TEXT);
     const engagement = webEngagement();
 
     const evidence: PatternEvidence = {
@@ -148,16 +171,10 @@ function extractWebKeywords(
       source: result.source,
     };
 
-    for (const term of allTerms) {
-      const existing = keywords.get(term);
-      if (existing) {
-        existing.weight += engagement;
-        if (existing.evidence.length < 5) {
-          existing.evidence.push(evidence);
-        }
-      } else {
-        keywords.set(term, { weight: engagement, evidence: [evidence] });
-      }
+    for (const rawTerm of allTerms) {
+      const term = normalizeKeyword(rawTerm);
+      if (!term) continue;
+      addKeyword(keywords, term, engagement, evidence);
     }
   }
 
@@ -169,8 +186,7 @@ function extractTrendingKeywords(
 ): Map<string, { weight: number; evidence: PatternEvidence[] }> {
   const keywords = new Map<string, { weight: number; evidence: PatternEvidence[] }>();
 
-  for (const topic of topics) {
-    // Parse traffic estimate (e.g. "200K+")
+  for (const topic of topics.slice(0, MAX_ITEMS_PER_PLATFORM)) {
     let trafficWeight = 50;
     if (topic.traffic) {
       const m = topic.traffic.match(/([\d.]+)([KkMm]?)/);
@@ -178,13 +194,13 @@ function extractTrendingKeywords(
         let n = parseFloat(m[1]);
         if (m[2]?.toLowerCase() === 'k') n *= 1000;
         if (m[2]?.toLowerCase() === 'm') n *= 1_000_000;
-        trafficWeight = Math.log1p(n) * 5;
+        trafficWeight = Math.log1p(Math.max(0, n)) * 5;
       }
     }
 
     const tokens = tokenizeText(topic.title);
     const bigrams = extractBigrams(tokens);
-    const allTerms = [...tokens, ...bigrams];
+    const allTerms = Array.from(new Set([...tokens, ...bigrams])).slice(0, MAX_TERMS_PER_TEXT);
 
     const evidence: PatternEvidence = {
       platform: 'web',
@@ -194,21 +210,15 @@ function extractTrendingKeywords(
       source: 'Google Trends',
     };
 
-    for (const term of allTerms) {
-      const existing = keywords.get(term);
-      if (existing) {
-        existing.weight += trafficWeight;
-        if (existing.evidence.length < 5) existing.evidence.push(evidence);
-      } else {
-        keywords.set(term, { weight: trafficWeight, evidence: [evidence] });
-      }
+    for (const rawTerm of allTerms) {
+      const term = normalizeKeyword(rawTerm);
+      if (!term) continue;
+      addKeyword(keywords, term, trafficWeight, evidence);
     }
   }
 
   return keywords;
 }
-
-// ─── SIGNAL CLASSIFICATION ──────────────────────────
 
 function classifyStrength(
   platformCount: number,
@@ -217,10 +227,8 @@ function classifyStrength(
   if (platformCount >= 3) return 'established';
   if (platformCount >= 2) return 'reinforced';
   if (totalEngagement >= EMERGING_ENGAGEMENT_THRESHOLD) return 'emerging';
-  return 'emerging'; // single source, lower engagement - still worth reporting
+  return 'emerging';
 }
-
-// ─── PUBLIC API ─────────────────────────────────────
 
 export interface PlatformData {
   reddit?: RedditPost[];
@@ -228,12 +236,7 @@ export interface PlatformData {
   webTrending?: TrendingTopic[];
 }
 
-/**
- * Detect cross-platform patterns from scraped data.
- * Returns top patterns sorted by signal strength and engagement.
- */
 export function detectPatterns(data: PlatformData): TrendPattern[] {
-  // Build per-platform keyword maps
   const platformMaps: { platform: string; map: Map<string, { weight: number; evidence: PatternEvidence[] }> }[] = [];
 
   if (data.reddit && data.reddit.length > 0) {
@@ -248,16 +251,24 @@ export function detectPatterns(data: PlatformData): TrendPattern[] {
 
   if (platformMaps.length === 0) return [];
 
-  // Merge all keywords into a signal map
   const signals = new Map<string, KeywordSignal>();
 
   for (const { platform, map } of platformMaps) {
     for (const [keyword, { weight, evidence }] of map) {
+      if (signals.size >= MAX_SIGNAL_KEYWORDS && !signals.has(keyword)) {
+        continue;
+      }
+
       const existing = signals.get(keyword);
       if (existing) {
         existing.platforms.add(platform);
         existing.totalEngagement += weight;
-        existing.evidence.push(...evidence.slice(0, 2));
+        if (existing.evidence.length < 5) {
+          existing.evidence.push(...evidence.slice(0, 2));
+          if (existing.evidence.length > 5) {
+            existing.evidence = existing.evidence.slice(0, 5);
+          }
+        }
       } else {
         signals.set(keyword, {
           keyword,
@@ -269,24 +280,24 @@ export function detectPatterns(data: PlatformData): TrendPattern[] {
     }
   }
 
-  // Score and filter
   const scored: TrendPattern[] = [];
 
   for (const signal of signals.values()) {
     const platformCount = signal.platforms.size;
-    // Skip low-weight single-platform signals to reduce noise
+
     if (platformCount === 1 && signal.totalEngagement < EMERGING_ENGAGEMENT_THRESHOLD) {
       continue;
     }
-    // Skip very short keywords (2 chars) that slipped through
-    if (signal.keyword.length < MIN_KEYWORD_LENGTH) continue;
+
+    if (signal.keyword.length < MIN_KEYWORD_LENGTH || signal.keyword.length > MAX_KEYWORD_LENGTH) {
+      continue;
+    }
 
     const strength = classifyStrength(platformCount, signal.totalEngagement);
     const platformList = Array.from(signal.platforms).map((p) =>
-      p === 'web_trending' ? 'web' : p
+      p === 'web_trending' ? 'web' : p,
     ) as ('reddit' | 'web')[];
 
-    // Deduplicate platforms
     const uniquePlatforms = Array.from(new Set(platformList)) as ('reddit' | 'web')[];
 
     scored.push({
@@ -298,7 +309,6 @@ export function detectPatterns(data: PlatformData): TrendPattern[] {
     });
   }
 
-  // Sort: established > reinforced > emerging, then by engagement
   const strengthOrder: Record<SignalStrength, number> = {
     established: 3,
     reinforced: 2,
@@ -314,16 +324,14 @@ export function detectPatterns(data: PlatformData): TrendPattern[] {
   return scored.slice(0, MAX_PATTERNS);
 }
 
-/**
- * Get the top N keywords from a single platform's data - used for trending endpoint.
- */
 export function getTopKeywords(
   posts: RedditPost[],
   limit: number = 10,
 ): { keyword: string; weight: number; evidence: PatternEvidence[] }[] {
-  const map = extractRedditKeywords(posts);
+  const safeLimit = clamp(limit, 1, 50);
+  const map = extractRedditKeywords(posts.slice(0, MAX_ITEMS_PER_PLATFORM));
   return Array.from(map.entries())
     .map(([keyword, data]) => ({ keyword, ...data }))
     .sort((a, b) => b.weight - a.weight)
-    .slice(0, limit);
+    .slice(0, safeLimit);
 }

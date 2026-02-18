@@ -1,6 +1,5 @@
 /**
  * POST /api/research
- * ──────────────────
  * Cross-platform trend intelligence synthesis.
  *
  * Pricing tiers (x402):
@@ -9,12 +8,12 @@
  *   $1.00 USDC - all platforms + full report
  *
  * MVP platforms: reddit, web
- * Stretch: x, youtube (require additional proxy/auth setup)
  */
 
 import { Hono } from 'hono';
+import type { Context } from 'hono';
 import { extractPayment, verifyPayment, build402Response } from '../payment';
-import { getProxy } from '../proxy';
+import { getProxy, proxyFetch } from '../proxy';
 import { searchReddit } from '../scrapers/reddit';
 import { searchWeb, getTrendingWeb } from '../scrapers/web';
 import { aggregateSentiment } from '../analysis/sentiment';
@@ -27,16 +26,31 @@ import type {
   Platform,
 } from '../types/index';
 
-// ─── CONSTANTS ──────────────────────────────────────
+// Constants
 
 const WALLET_ADDRESS = process.env.WALLET_ADDRESS ?? '';
 
-// Pricing by platform count
 const PRICE_SINGLE = 0.10;
 const PRICE_MULTI = 0.50;
 const PRICE_FULL = 1.00;
 
 const SUPPORTED_PLATFORMS: Platform[] = ['reddit', 'web'];
+const DEFAULT_PLATFORMS: Platform[] = ['reddit', 'web'];
+
+const MAX_TOPIC_LENGTH = 200;
+const MIN_TOPIC_LENGTH = 2;
+const MAX_BODY_BYTES = 8 * 1024;
+const MAX_DAYS = 90;
+const MAX_REDDIT_RESULTS = 50;
+const MAX_WEB_RESULTS = 20;
+const MAX_TRENDING_RESULTS = 20;
+
+const RESEARCH_RATE_LIMIT_PER_MIN = Math.max(
+  1,
+  Math.min(parseInt(process.env.RESEARCH_RATE_LIMIT_PER_MIN ?? '12', 10) || 12, 120),
+);
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const rateLimits = new Map<string, { count: number; resetAt: number }>();
 
 const DESCRIPTION =
   'Trend Intelligence API: cross-platform research synthesis with pattern detection and sentiment analysis. ' +
@@ -44,18 +58,18 @@ const DESCRIPTION =
 
 const OUTPUT_SCHEMA = {
   input: {
-    topic: 'string (required) — topic or keyword to research',
+    topic: 'string (required) - topic or keyword to research',
     platforms: '("reddit" | "web")[] (optional, default: ["reddit", "web"])',
     days: 'number (optional, default: 30, max: 90)',
-    country: 'string (optional, default: "US") — ISO country code',
+    country: 'string (optional, default: "US") - ISO country code',
   },
   output: {
     topic: 'string',
     timeframe: 'string',
-    patterns: 'TrendPattern[] — cross-platform signals with strength classification',
+    patterns: 'TrendPattern[] - cross-platform signals with strength classification',
     sentiment: '{ overall, by_platform: Record<platform, { positive%, neutral%, negative% }> }',
-    top_discussions: 'TopDiscussion[] — highest-engagement posts across platforms',
-    emerging_topics: 'string[] — single-platform high-engagement signals',
+    top_discussions: 'TopDiscussion[] - highest-engagement posts across platforms',
+    emerging_topics: 'string[] - single-platform high-engagement signals',
     meta: '{ sources_checked, platforms_used, proxy, generated_at }',
   },
   pricing: {
@@ -65,7 +79,114 @@ const OUTPUT_SCHEMA = {
   },
 };
 
-// ─── ROUTER ─────────────────────────────────────────
+function normalizeClientIp(c: Context): string {
+  const forwarded = c.req.header('x-forwarded-for')?.split(',')[0]?.trim();
+  const realIp = c.req.header('x-real-ip')?.trim();
+  const cfIp = c.req.header('cf-connecting-ip')?.trim();
+  const candidate = forwarded || realIp || cfIp || 'unknown';
+
+  if (!candidate || candidate.length > 64 || /[\r\n]/.test(candidate)) {
+    return 'unknown';
+  }
+
+  return candidate;
+}
+
+function checkRateLimit(ip: string): { allowed: boolean; retryAfter: number } {
+  const now = Date.now();
+
+  if (rateLimits.size > 10_000) {
+    for (const [key, value] of rateLimits) {
+      if (now > value.resetAt) {
+        rateLimits.delete(key);
+      }
+    }
+  }
+
+  const current = rateLimits.get(ip);
+  if (!current || now > current.resetAt) {
+    rateLimits.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return { allowed: true, retryAfter: 0 };
+  }
+
+  current.count += 1;
+  if (current.count > RESEARCH_RATE_LIMIT_PER_MIN) {
+    const retryAfter = Math.max(1, Math.ceil((current.resetAt - now) / 1000));
+    return { allowed: false, retryAfter };
+  }
+
+  return { allowed: true, retryAfter: 0 };
+}
+
+function parseCountry(input: unknown): string {
+  if (typeof input !== 'string') return 'US';
+  const normalized = input.trim().toUpperCase();
+  if (!/^[A-Z]{2}$/.test(normalized)) return 'US';
+  return normalized;
+}
+
+function sanitizeTopic(input: unknown): string | null {
+  if (typeof input !== 'string') return null;
+  const normalized = input.trim().replace(/\s+/g, ' ');
+  if (normalized.length < MIN_TOPIC_LENGTH || normalized.length > MAX_TOPIC_LENGTH) {
+    return null;
+  }
+  if (/[\r\n\0]/.test(normalized)) {
+    return null;
+  }
+  return normalized;
+}
+
+function parsePlatforms(input: unknown): { platforms: Platform[]; error?: string } {
+  if (input === undefined) {
+    return { platforms: [...DEFAULT_PLATFORMS] };
+  }
+
+  if (!Array.isArray(input)) {
+    return { platforms: [], error: 'platforms must be an array' };
+  }
+
+  if (input.length > SUPPORTED_PLATFORMS.length) {
+    return { platforms: [], error: `Too many platforms requested. Max ${SUPPORTED_PLATFORMS.length}` };
+  }
+
+  const normalized = input
+    .map((p) => (typeof p === 'string' ? p.trim().toLowerCase() : ''))
+    .filter((p): p is Platform => SUPPORTED_PLATFORMS.includes(p as Platform));
+
+  const unique = Array.from(new Set(normalized));
+
+  if (unique.length === 0) {
+    return { platforms: [], error: 'No supported platforms selected. Use reddit and/or web.' };
+  }
+
+  return { platforms: unique };
+}
+
+function toSafeHeaderValue(value: string): string {
+  return value.replace(/[\r\n]/g, '').slice(0, 256);
+}
+
+async function getProxyExitIp(): Promise<string | null> {
+  try {
+    const ipRes = await proxyFetch('https://api.ipify.org?format=json', {
+      headers: { Accept: 'application/json' },
+      maxRetries: 1,
+      timeoutMs: 5_000,
+    });
+
+    if (!ipRes.ok) return null;
+
+    const ipData = await ipRes.json() as { ip?: string };
+    const ip = typeof ipData?.ip === 'string' ? ipData.ip.trim() : '';
+    if (!ip || ip.length > 64) return null;
+    return ip;
+  } catch {
+    return null;
+  }
+}
+
+// Router
 
 export const researchRouter = new Hono();
 
@@ -74,114 +195,125 @@ researchRouter.post('/', async (c) => {
     return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
   }
 
-  // ─── Payment gate ────────────────────────────────
+  const ip = normalizeClientIp(c);
+  const rateStatus = checkRateLimit(ip);
+  if (!rateStatus.allowed) {
+    c.header('Retry-After', String(rateStatus.retryAfter));
+    return c.json(
+      {
+        error: 'Rate limit exceeded for /api/research',
+        retryAfter: rateStatus.retryAfter,
+      },
+      429,
+    );
+  }
+
+  const contentType = c.req.header('content-type') ?? '';
+  if (contentType && !contentType.toLowerCase().includes('application/json')) {
+    return c.json({ error: 'Content-Type must be application/json' }, 415);
+  }
+
+  const contentLengthHeader = c.req.header('content-length');
+  if (contentLengthHeader) {
+    const contentLength = Number(contentLengthHeader);
+    if (Number.isFinite(contentLength) && contentLength > MAX_BODY_BYTES) {
+      return c.json({ error: `Request body too large. Max ${MAX_BODY_BYTES} bytes.` }, 413);
+    }
+  }
 
   const payment = extractPayment(c);
   if (!payment) {
-    // We need to know the tier to quote the right price. Default to cross-platform.
     return c.json(
       build402Response('/api/research', DESCRIPTION, PRICE_MULTI, WALLET_ADDRESS, OUTPUT_SCHEMA),
       402,
     );
   }
 
-  // ─── Parse request body ──────────────────────────
-
-  let body: Partial<ResearchRequest> = {};
+  let parsedBody: unknown;
   try {
-    body = await c.req.json() as Partial<ResearchRequest>;
+    parsedBody = await c.req.json();
   } catch {
     return c.json({ error: 'Invalid JSON body' }, 400);
   }
 
-  const topic = body.topic?.trim();
-  if (!topic) {
-    return c.json({ error: 'Missing required field: topic' }, 400);
+  if (!parsedBody || typeof parsedBody !== 'object' || Array.isArray(parsedBody)) {
+    return c.json({ error: 'JSON body must be an object' }, 400);
   }
 
-  // Validate and filter platforms
-  const requestedPlatforms = (body.platforms ?? ['reddit', 'web']).filter(
-    (p): p is Platform => SUPPORTED_PLATFORMS.includes(p as Platform),
-  );
-  const platforms = requestedPlatforms.length > 0 ? requestedPlatforms : ['reddit', 'web'] as Platform[];
+  const body = parsedBody as Partial<ResearchRequest>;
 
-  const days = Math.min(Math.max(Number(body.days ?? 30) || 30, 1), 90);
-  const country = (body.country ?? 'US').toUpperCase().slice(0, 2);
+  const topic = sanitizeTopic(body.topic);
+  if (!topic) {
+    return c.json(
+      { error: `Invalid topic. Length must be ${MIN_TOPIC_LENGTH}-${MAX_TOPIC_LENGTH} characters.` },
+      400,
+    );
+  }
 
-  // Determine price tier
+  const platformsParse = parsePlatforms(body.platforms);
+  if (platformsParse.error) {
+    return c.json({ error: platformsParse.error }, 400);
+  }
+  const platforms = platformsParse.platforms;
+
+  const rawDays = Number(body.days ?? 30);
+  if (!Number.isFinite(rawDays)) {
+    return c.json({ error: 'days must be a valid number' }, 400);
+  }
+  const days = Math.min(Math.max(Math.floor(rawDays), 1), MAX_DAYS);
+
+  const country = parseCountry(body.country);
+
   const price = platforms.length >= 3 ? PRICE_FULL : platforms.length >= 2 ? PRICE_MULTI : PRICE_SINGLE;
 
-  // Verify payment
-  const verification = await verifyPayment(payment, WALLET_ADDRESS, price);
+  let verification: Awaited<ReturnType<typeof verifyPayment>>;
+  try {
+    verification = await verifyPayment(payment, WALLET_ADDRESS, price);
+  } catch (error) {
+    console.error('[research] Payment verification error:', error);
+    return c.json({ error: 'Payment verification temporarily unavailable' }, 502);
+  }
+
   if (!verification.valid) {
     return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
   }
 
-  // ─── Scrape platforms in parallel ───────────────
-
   const proxyConfig = getProxy();
-  let proxyIp: string | null = null;
-
-  // Attempt to get exit IP for metadata
-  try {
-    const ipRes = await fetch('https://api.ipify.org?format=json', {
-      signal: AbortSignal.timeout(5_000),
-      // @ts-ignore - Bun proxy support
-      proxy: proxyConfig.url,
-    });
-    if (ipRes.ok) {
-      const ipData = await ipRes.json() as { ip?: string };
-      proxyIp = typeof ipData?.ip === 'string' ? ipData.ip : null;
-    }
-  } catch {
-    // non-fatal
-  }
+  const proxyIp = await getProxyExitIp();
 
   const scrapeResults = await Promise.allSettled([
-    platforms.includes('reddit')
-      ? searchReddit(topic, days, 50)
-      : Promise.resolve([]),
-    platforms.includes('web')
-      ? searchWeb(topic, 20)
-      : Promise.resolve([]),
-    platforms.includes('web')
-      ? getTrendingWeb(country, 20)
-      : Promise.resolve([]),
+    platforms.includes('reddit') ? searchReddit(topic, days, MAX_REDDIT_RESULTS) : Promise.resolve([]),
+    platforms.includes('web') ? searchWeb(topic, MAX_WEB_RESULTS) : Promise.resolve([]),
+    platforms.includes('web') ? getTrendingWeb(country, MAX_TRENDING_RESULTS) : Promise.resolve([]),
   ]);
 
   const redditPosts = scrapeResults[0].status === 'fulfilled' ? scrapeResults[0].value : [];
   const webResults = scrapeResults[1].status === 'fulfilled' ? scrapeResults[1].value : [];
   const webTrending = scrapeResults[2].status === 'fulfilled' ? scrapeResults[2].value : [];
 
-  // Log scrape errors without failing the request
   for (const result of scrapeResults) {
     if (result.status === 'rejected') {
       console.error('[research] Scrape error:', result.reason);
     }
   }
 
-  // ─── Sentiment analysis ──────────────────────────
-
   const sentimentByPlatform: Record<string, PlatformSentimentBreakdown> = {};
 
   if (redditPosts.length > 0) {
-    const texts = redditPosts.map((p) => `${p.title} ${p.selftext}`);
-    sentimentByPlatform['reddit'] = aggregateSentiment(texts);
+    const texts = redditPosts.map((p) => `${p.title.slice(0, 300)} ${p.selftext.slice(0, 1000)}`);
+    sentimentByPlatform.reddit = aggregateSentiment(texts);
   }
 
   if (webResults.length > 0) {
-    const texts = webResults.map((r) => `${r.title} ${r.snippet}`);
-    sentimentByPlatform['web'] = aggregateSentiment(texts);
+    const texts = webResults.map((r) => `${r.title.slice(0, 300)} ${r.snippet.slice(0, 1000)}`);
+    sentimentByPlatform.web = aggregateSentiment(texts);
   }
 
-  // Aggregate overall sentiment
   const allTexts = [
-    ...redditPosts.map((p) => `${p.title} ${p.selftext}`),
-    ...webResults.map((r) => `${r.title} ${r.snippet}`),
+    ...redditPosts.map((p) => `${p.title.slice(0, 300)} ${p.selftext.slice(0, 1000)}`),
+    ...webResults.map((r) => `${r.title.slice(0, 300)} ${r.snippet.slice(0, 1000)}`),
   ];
   const overallSentiment = aggregateSentiment(allTexts);
-
-  // ─── Pattern detection ───────────────────────────
 
   const patterns = detectPatterns({
     reddit: redditPosts,
@@ -189,10 +321,9 @@ researchRouter.post('/', async (c) => {
     webTrending,
   });
 
-  // ─── Top discussions ─────────────────────────────
-
   const topDiscussions: TopDiscussion[] = [
     ...redditPosts
+      .slice()
       .sort((a, b) => b.score - a.score)
       .slice(0, 5)
       .map((p) => ({
@@ -211,14 +342,12 @@ researchRouter.post('/', async (c) => {
       engagement: 0,
       source: r.source,
     })),
-  ].sort((a, b) => b.engagement - a.engagement).slice(0, 8);
-
-  // ─── Emerging topics (single-source high-engagement) ──
+  ]
+    .sort((a, b) => b.engagement - a.engagement)
+    .slice(0, 8);
 
   const emergingPatterns = patterns.filter((p) => p.strength === 'emerging');
   const emergingTopics = emergingPatterns.slice(0, 5).map((p) => p.pattern);
-
-  // ─── Build response ──────────────────────────────
 
   const sourcesChecked = redditPosts.length + webResults.length + webTrending.length;
   const platformsUsed = [
@@ -227,7 +356,7 @@ researchRouter.post('/', async (c) => {
   ].filter(Boolean) as string[];
 
   c.header('X-Payment-Settled', 'true');
-  c.header('X-Payment-TxHash', payment.txHash);
+  c.header('X-Payment-TxHash', toSafeHeaderValue(payment.txHash));
 
   const response: ResearchResponse = {
     topic,
