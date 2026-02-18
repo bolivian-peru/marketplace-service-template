@@ -10,6 +10,7 @@ import { proxyFetch, getProxy } from './proxy';
 import { extractPayment, verifyPayment, build402Response } from './payment';
 import { scrapeIndeed, scrapeLinkedIn, type JobListing } from './scrapers/job-scraper';
 import { fetchReviews, fetchBusinessDetails, fetchReviewSummary, searchBusinesses } from './scrapers/reviews';
+import { scrapeProduct, searchAmazon, scrapeBestsellers, scrapeReviews } from './scrapers/amazon-scraper';
 
 export const serviceRouter = new Hono();
 
@@ -333,5 +334,234 @@ serviceRouter.get('/business/:place_id', async (c) => {
     });
   } catch (err: any) {
     return c.json({ error: 'Business details fetch failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+
+// ═══════════════════════════════════════════════════════
+// ─── AMAZON PRODUCT & BSR TRACKER API (Bounty #72) ──
+// ═══════════════════════════════════════════════════════
+
+const AMAZON_PRODUCT_PRICE = 0.005;    // $0.005 per product lookup
+const AMAZON_SEARCH_PRICE = 0.01;      // $0.01 per search query
+const AMAZON_REVIEWS_PRICE = 0.02;     // $0.02 per reviews fetch
+const AMAZON_BESTSELLERS_PRICE = 0.01; // $0.01 per bestsellers fetch
+
+// ─── GET /api/amazon/product/:asin ──────────────────
+
+serviceRouter.get('/amazon/product/:asin', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/amazon/product/:asin', 'Get Amazon product data: price, BSR, rating, reviews count, buy box, availability', AMAZON_PRODUCT_PRICE, walletAddress, {
+      input: {
+        asin: 'string (required, in path) — Amazon product ASIN (e.g., B0BSHF7WHW)',
+        marketplace: '"US" | "UK" | "DE" | "FR" | "ES" | "IT" | "CA" | "JP" | "AU" (default: "US")',
+      },
+      output: {
+        asin: 'string', title: 'string',
+        price: '{ current, currency, was, discount_pct }',
+        bsr: '{ rank, category, sub_category_ranks }',
+        rating: 'number', reviews_count: 'number',
+        buy_box: '{ seller, is_amazon, fulfilled_by }',
+        availability: 'string', brand: 'string',
+        images: 'string[]', description: 'string', features: 'string[]',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, AMAZON_PRODUCT_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const asin = c.req.param('asin');
+  if (!asin || !/^[A-Z0-9]{10}$/.test(asin)) {
+    return c.json({ error: 'Invalid ASIN. Must be 10 alphanumeric characters.', example: '/api/amazon/product/B0BSHF7WHW' }, 400);
+  }
+
+  const marketplace = (c.req.query('marketplace') || 'US').toUpperCase();
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const product = await scrapeProduct(asin, marketplace);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...product,
+      meta: {
+        marketplace,
+        proxy: { ip, country: proxy.country, host: proxy.host, type: 'mobile' },
+      },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Amazon product scrape failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/amazon/search ─────────────────────────
+
+serviceRouter.get('/amazon/search', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/amazon/search', 'Search Amazon products by keyword with category filter', AMAZON_SEARCH_PRICE, walletAddress, {
+      input: {
+        query: 'string (required) — search keywords',
+        marketplace: '"US" | "UK" | "DE" | "FR" | "ES" | "IT" | "CA" | "JP" | "AU" (default: "US")',
+        category: 'string (optional) — Amazon category node (e.g., "electronics", "books")',
+        limit: 'number (default: 20, max: 50)',
+      },
+      output: {
+        results: 'AmazonSearchResult[] — asin, title, price, rating, reviews_count, image, is_prime, is_sponsored, url',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, AMAZON_SEARCH_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const query = c.req.query('query');
+  if (!query) return c.json({ error: 'Missing required parameter: query', example: '/api/amazon/search?query=wireless+headphones&marketplace=US' }, 400);
+
+  const marketplace = (c.req.query('marketplace') || 'US').toUpperCase();
+  const category = c.req.query('category');
+  const limit = Math.min(Math.max(parseInt(c.req.query('limit') || '20') || 20, 1), 50);
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const results = await searchAmazon(query, marketplace, category, limit);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      query,
+      marketplace,
+      category: category || null,
+      results,
+      totalResults: results.length,
+      meta: {
+        proxy: { ip, country: proxy.country, host: proxy.host, type: 'mobile' },
+      },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Amazon search failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/amazon/bestsellers ────────────────────
+
+serviceRouter.get('/amazon/bestsellers', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/amazon/bestsellers', 'Get Amazon bestseller rankings by category', AMAZON_BESTSELLERS_PRICE, walletAddress, {
+      input: {
+        category: 'string (default: "electronics") — Amazon category slug',
+        marketplace: '"US" | "UK" | "DE" | "FR" | "ES" | "IT" | "CA" | "JP" | "AU" (default: "US")',
+        limit: 'number (default: 50, max: 100)',
+      },
+      output: {
+        rankings: 'BestsellerItem[] — rank, asin, title, price, rating, reviews_count, image, url',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, AMAZON_BESTSELLERS_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const category = c.req.query('category') || 'electronics';
+  const marketplace = (c.req.query('marketplace') || 'US').toUpperCase();
+  const limit = Math.min(Math.max(parseInt(c.req.query('limit') || '50') || 50, 1), 100);
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const rankings = await scrapeBestsellers(category, marketplace, limit);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      category,
+      marketplace,
+      rankings,
+      totalRanked: rankings.length,
+      timestamp: new Date().toISOString(),
+      meta: {
+        proxy: { ip, country: proxy.country, host: proxy.host, type: 'mobile' },
+      },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Amazon bestsellers fetch failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/amazon/reviews/:asin ──────────────────
+
+serviceRouter.get('/amazon/reviews/:asin', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/amazon/reviews/:asin', 'Fetch Amazon product reviews by ASIN', AMAZON_REVIEWS_PRICE, walletAddress, {
+      input: {
+        asin: 'string (required, in path) — Amazon product ASIN',
+        marketplace: '"US" | "UK" | "DE" | "FR" | "ES" | "IT" | "CA" | "JP" | "AU" (default: "US")',
+        sort: '"recent" | "helpful" (default: "recent")',
+        limit: 'number (default: 10, max: 20)',
+      },
+      output: {
+        reviews: 'AmazonReview[] — title, body, rating, author, date, verified_purchase, helpful_votes',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, AMAZON_REVIEWS_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const asin = c.req.param('asin');
+  if (!asin || !/^[A-Z0-9]{10}$/.test(asin)) {
+    return c.json({ error: 'Invalid ASIN. Must be 10 alphanumeric characters.' }, 400);
+  }
+
+  const marketplace = (c.req.query('marketplace') || 'US').toUpperCase();
+  const sort = c.req.query('sort') || 'recent';
+  const limit = Math.min(Math.max(parseInt(c.req.query('limit') || '10') || 10, 1), 20);
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const reviews = await scrapeReviews(asin, marketplace, sort, limit);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      asin,
+      marketplace,
+      sort,
+      reviews,
+      totalReturned: reviews.length,
+      meta: {
+        proxy: { ip, country: proxy.country, host: proxy.host, type: 'mobile' },
+      },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Amazon reviews fetch failed', message: err?.message || String(err) }, 502);
   }
 });
