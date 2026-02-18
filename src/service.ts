@@ -1,8 +1,11 @@
 /**
- * Service Router — Job Market Intelligence (Bounty #16)
+ * Service Router — Marketplace API
  *
- * Exposes ONLY:
- *   GET /api/jobs
+ * Exposes:
+ *   GET /api/run       (Google Maps Lead Generator)
+ *   GET /api/details   (Google Maps Place details)
+ *   GET /api/jobs      (Job Market Intelligence)
+ *   GET /api/reviews/* (Google Reviews & Business Data)
  */
 
 import { Hono } from 'hono';
@@ -10,24 +13,47 @@ import { proxyFetch, getProxy } from './proxy';
 import { extractPayment, verifyPayment, build402Response } from './payment';
 import { scrapeIndeed, scrapeLinkedIn, type JobListing } from './scrapers/job-scraper';
 import { fetchReviews, fetchBusinessDetails, fetchReviewSummary, searchBusinesses } from './scrapers/reviews';
-import {
-  buildSignalPayload,
-  buildArbitragePayload,
-  buildSentimentPayload,
-  buildTrendingPayload,
-  type FullSignalResponse,
-  type ArbitrageResponse,
-  type SentimentResponse,
-  type TrendingResponse,
-} from './scrapers/prediction-market';
+import { scrapeGoogleMaps, extractDetailedBusiness } from './scrapers/maps-scraper';
 
 export const serviceRouter = new Hono();
 
 const SERVICE_NAME = 'job-market-intelligence';
 const PRICE_USDC = 0.005;
 const DESCRIPTION = 'Job Market Intelligence API (Indeed/LinkedIn): title, company, location, salary, date, link, remote + proxy exit metadata.';
-const PREDICTION_PRICE_USDC = 0.05;
-const PREDICTION_DESCRIPTION = 'Prediction market signal aggregator (Polymarket + Kalshi + Metaculus + social sentiment from X/Reddit/TikTok).';
+const MAPS_PRICE_USDC = 0.005;
+const MAPS_DESCRIPTION = 'Extract structured business data from Google Maps: name, address, phone, website, email, hours, ratings, reviews, categories, and geocoordinates. Search by category + location with full pagination.';
+
+const MAPS_OUTPUT_SCHEMA = {
+  input: {
+    query: 'string — Search query/category (required)',
+    location: 'string — Location to search (required)',
+    limit: 'number — Max results to return (default: 20, max: 100)',
+    pageToken: 'string — Pagination token for next page (optional)',
+  },
+  output: {
+    businesses: [{
+      name: 'string',
+      address: 'string | null',
+      phone: 'string | null',
+      website: 'string | null',
+      email: 'string | null',
+      hours: 'object | null',
+      rating: 'number | null',
+      reviewCount: 'number | null',
+      categories: 'string[]',
+      coordinates: '{ latitude, longitude } | null',
+      placeId: 'string | null',
+      priceLevel: 'string | null',
+      permanentlyClosed: 'boolean',
+    }],
+    totalFound: 'number',
+    nextPageToken: 'string | null',
+    searchQuery: 'string',
+    location: 'string',
+    proxy: '{ country: string, type: "mobile" }',
+    payment: '{ txHash, network, amount, settled }',
+  },
+};
 
 async function getProxyExitIp(): Promise<string | null> {
   try {
@@ -53,85 +79,151 @@ serviceRouter.get('/run', async (c) => {
   const payment = extractPayment(c);
   if (!payment) {
     return c.json(
-      build402Response(
-        '/api/run',
-        PREDICTION_DESCRIPTION,
-        PREDICTION_PRICE_USDC,
-        walletAddress,
-        {
-          input: {
-            type: '"signal" | "arbitrage" | "sentiment" | "trending" (required)',
-            market: 'string (required for type=signal)',
-            topic: 'string (optional for type=sentiment/arbitrage)',
-            country: 'string (optional, default: US)',
-          },
-          output: {
-            signal: '{ odds, sentiment, signals, proxy }',
-            arbitrage: '{ opportunities[] }',
-            sentiment: '{ twitter, reddit, tiktok }',
-            trending: '{ markets[] with divergence and spread }',
-          },
-        },
-      ),
+      build402Response('/api/run', MAPS_DESCRIPTION, MAPS_PRICE_USDC, walletAddress, MAPS_OUTPUT_SCHEMA),
       402,
     );
   }
 
-  const verification = await verifyPayment(payment, walletAddress, PREDICTION_PRICE_USDC);
-  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+  const verification = await verifyPayment(payment, walletAddress, MAPS_PRICE_USDC);
+  if (!verification.valid) {
+    return c.json({
+      error: 'Payment verification failed',
+      reason: verification.error,
+      hint: 'Ensure the transaction is confirmed and sends the correct USDC amount to the recipient wallet.',
+    }, 402);
+  }
 
-  const type = (c.req.query('type') || 'signal').toLowerCase();
-  const market = c.req.query('market') || '';
-  const topic = c.req.query('topic') || '';
-  const country = c.req.query('country') || 'US';
+  const clientIp = c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  if (!checkProxyRateLimit(clientIp)) {
+    c.header('Retry-After', '60');
+    return c.json({ error: 'Proxy rate limit exceeded. Max 20 requests/min to protect proxy quota.', retryAfter: 60 }, 429);
+  }
+
+  const query = c.req.query('query');
+  const location = c.req.query('location');
+  const limitParam = c.req.query('limit');
+  const pageToken = c.req.query('pageToken');
+
+  if (!query) {
+    return c.json({
+      error: 'Missing required parameter: query',
+      hint: 'Provide a search query like ?query=plumbers&location=Austin+TX',
+      example: '/api/run?query=restaurants&location=New+York+City&limit=20',
+    }, 400);
+  }
+
+  if (!location) {
+    return c.json({
+      error: 'Missing required parameter: location',
+      hint: 'Provide a location like ?query=plumbers&location=Austin+TX',
+      example: '/api/run?query=restaurants&location=New+York+City&limit=20',
+    }, 400);
+  }
+
+  let limit = 20;
+  if (limitParam) {
+    const parsed = parseInt(limitParam);
+    if (isNaN(parsed) || parsed < 1) {
+      return c.json({ error: 'Invalid limit parameter: must be a positive integer' }, 400);
+    }
+    limit = Math.min(parsed, 100);
+  }
+
+  const startIndex = pageToken ? parseInt(pageToken) || 0 : 0;
 
   try {
-    let payload: FullSignalResponse | ArbitrageResponse | SentimentResponse | TrendingResponse;
-
-    if (type === 'signal') {
-      if (!market) {
-        return c.json({
-          error: 'Missing required parameter: market for type=signal',
-          example: '/api/run?type=signal&market=us-presidential-election-2028',
-        }, 400);
-      }
-      payload = await buildSignalPayload({ market, topic: topic || market, country });
-    } else if (type === 'arbitrage') {
-      payload = await buildArbitragePayload({ topic, country });
-    } else if (type === 'sentiment') {
-      const resolvedTopic = topic || market;
-      if (!resolvedTopic) {
-        return c.json({
-          error: 'Missing required parameter: topic (or market) for type=sentiment',
-          example: '/api/run?type=sentiment&topic=bitcoin+etf&country=US',
-        }, 400);
-      }
-      payload = await buildSentimentPayload({ topic: resolvedTopic, country });
-    } else if (type === 'trending') {
-      payload = await buildTrendingPayload({ country });
-    } else {
-      return c.json({
-        error: 'Invalid type. Use one of: signal, arbitrage, sentiment, trending',
-        example: '/api/run?type=signal&market=us-presidential-election-2028',
-      }, 400);
-    }
+    const proxy = getProxy();
+    const result = await scrapeGoogleMaps(query, location, limit, startIndex);
 
     c.header('X-Payment-Settled', 'true');
     c.header('X-Payment-TxHash', payment.txHash);
 
-    const payloadObject = payload as unknown as Record<string, unknown>;
-
     return c.json({
-      ...payloadObject,
+      ...result,
+      proxy: { country: proxy.country, type: 'mobile' },
       payment: {
         txHash: payment.txHash,
-        amount: verification.amount ?? PREDICTION_PRICE_USDC,
-        verified: true,
+        network: payment.network,
+        amount: verification.amount,
+        settled: true,
       },
     });
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : String(err);
-    return c.json({ error: 'Prediction signal generation failed', message }, 502);
+  } catch (err: any) {
+    return c.json({
+      error: 'Service execution failed',
+      message: err.message,
+      hint: 'Google Maps may be temporarily blocking requests. Try again in a few minutes.',
+    }, 502);
+  }
+});
+
+serviceRouter.get('/details', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) {
+    return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+  }
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(
+      build402Response('/api/details', 'Get detailed business info by Place ID', MAPS_PRICE_USDC, walletAddress, {
+        input: { placeId: 'string — Google Place ID (required)' },
+        output: { business: 'BusinessData — Full business details' },
+      }),
+      402,
+    );
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, MAPS_PRICE_USDC);
+  if (!verification.valid) {
+    return c.json({
+      error: 'Payment verification failed',
+      reason: verification.error,
+    }, 402);
+  }
+
+  const clientIp = c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  if (!checkProxyRateLimit(clientIp)) {
+    c.header('Retry-After', '60');
+    return c.json({ error: 'Proxy rate limit exceeded. Max 20 requests/min to protect proxy quota.', retryAfter: 60 }, 429);
+  }
+
+  const placeId = c.req.query('placeId');
+  if (!placeId) {
+    return c.json({ error: 'Missing required parameter: placeId' }, 400);
+  }
+
+  try {
+    const proxy = getProxy();
+    const url = `https://www.google.com/maps/place/?q=place_id:${encodeURIComponent(placeId)}`;
+    const response = await proxyFetch(url, { timeoutMs: 45_000 });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch place details: ${response.status}`);
+    }
+
+    const html = await response.text();
+    const business = extractDetailedBusiness(html, placeId);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      business,
+      proxy: { country: proxy.country, type: 'mobile' },
+      payment: {
+        txHash: payment.txHash,
+        network: payment.network,
+        amount: verification.amount,
+        settled: true,
+      },
+    });
+  } catch (err: any) {
+    return c.json({
+      error: 'Failed to fetch business details',
+      message: err.message,
+      hint: 'Invalid place ID or Google blocked the request.',
+    }, 502);
   }
 });
 
