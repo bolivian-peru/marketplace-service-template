@@ -456,3 +456,87 @@ serviceRouter.get('/realestate/market', async (c) => {
     return c.json({ ...stats, meta: { proxy: { ip, country: proxy.country, host: proxy.host, type: 'mobile' } }, payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
   } catch (err: any) { return c.json({ error: 'Market stats failed', message: err?.message || String(err) }, 502); }
 });
+
+
+// ═══════════════════════════════════════════════════════
+// ─── FACEBOOK MARKETPLACE MONITOR API (Bounty #75) ───
+// ═══════════════════════════════════════════════════════
+
+const FB_SEARCH_PRICE = 0.01;
+const FB_LISTING_PRICE = 0.005;
+const FB_MONITOR_PRICE = 0.02;
+
+serviceRouter.get('/marketplace/search', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/marketplace/search', 'Search Facebook Marketplace', FB_SEARCH_PRICE, walletAddress, {
+      input: { query: 'string (required)', location: 'string', min_price: 'number', max_price: 'number', limit: 'number (default: 20)' },
+      output: { results: 'MarketplaceListing[]', totalFound: 'number' },
+    }), 402);
+  }
+  const verification = await verifyPayment(payment, walletAddress, FB_SEARCH_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment failed', reason: verification.error }, 402);
+  const query = c.req.query('query');
+  if (!query) return c.json({ error: 'Missing query' }, 400);
+  const clientIp = c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  if (!checkProxyRateLimit(clientIp)) { c.header('Retry-After', '60'); return c.json({ error: 'Rate limited' }, 429); }
+  try {
+    const proxy = getProxy(); const ip = await getProxyExitIp();
+    const result = await searchMarketplace(query, { location: c.req.query('location'), minPrice: c.req.query('min_price') ? parseInt(c.req.query('min_price')!) : undefined, maxPrice: c.req.query('max_price') ? parseInt(c.req.query('max_price')!) : undefined }, Math.min(parseInt(c.req.query('limit') || '20') || 20, 40));
+    c.header('X-Payment-Settled', 'true'); c.header('X-Payment-TxHash', payment.txHash);
+    return c.json({ ...result, meta: { proxy: { ip, country: proxy.country, host: proxy.host, type: 'mobile' } }, payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
+  } catch (err: any) { return c.json({ error: 'Search failed', message: err?.message || String(err) }, 502); }
+});
+
+serviceRouter.get('/marketplace/listing/:id', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/marketplace/listing/:id', 'Get listing details', FB_LISTING_PRICE, walletAddress, {
+      input: { id: 'string (required)' }, output: { listing: 'MarketplaceListing' },
+    }), 402);
+  }
+  const verification = await verifyPayment(payment, walletAddress, FB_LISTING_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment failed', reason: verification.error }, 402);
+  const id = c.req.param('id');
+  if (!id || !/^\d+$/.test(id)) return c.json({ error: 'Invalid listing ID' }, 400);
+  const clientIp = c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  if (!checkProxyRateLimit(clientIp)) { c.header('Retry-After', '60'); return c.json({ error: 'Rate limited' }, 429); }
+  try {
+    const proxy = getProxy(); const ip = await getProxyExitIp();
+    const listing = await getListingDetail(id);
+    c.header('X-Payment-Settled', 'true'); c.header('X-Payment-TxHash', payment.txHash);
+    return c.json({ ...listing, meta: { proxy: { ip, country: proxy.country, host: proxy.host, type: 'mobile' } }, payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
+  } catch (err: any) { return c.json({ error: 'Fetch failed', message: err?.message || String(err) }, 502); }
+});
+
+serviceRouter.get('/marketplace/categories', async (c) => {
+  return c.json({ location: c.req.query('location') || 'all', categories: await getCategories() });
+});
+
+serviceRouter.get('/marketplace/new', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/marketplace/new', 'Monitor new listings', FB_MONITOR_PRICE, walletAddress, {
+      input: { query: 'string (required)', since: 'string (default: "1h")', location: 'string', limit: 'number' },
+      output: { results: 'MarketplaceListing[]', totalFound: 'number' },
+    }), 402);
+  }
+  const verification = await verifyPayment(payment, walletAddress, FB_MONITOR_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment failed', reason: verification.error }, 402);
+  const query = c.req.query('query');
+  if (!query) return c.json({ error: 'Missing query' }, 400);
+  const clientIp = c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  if (!checkProxyRateLimit(clientIp)) { c.header('Retry-After', '60'); return c.json({ error: 'Rate limited' }, 429); }
+  try {
+    const proxy = getProxy(); const ip = await getProxyExitIp();
+    const result = await getNewListings(query, parseInt(c.req.query('since') || '1') || 1, c.req.query('location'), Math.min(parseInt(c.req.query('limit') || '20') || 20, 40));
+    c.header('X-Payment-Settled', 'true'); c.header('X-Payment-TxHash', payment.txHash);
+    return c.json({ ...result, meta: { proxy: { ip, country: proxy.country, host: proxy.host, type: 'mobile' } }, payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
+  } catch (err: any) { return c.json({ error: 'Monitor failed', message: err?.message || String(err) }, 502); }
+});
