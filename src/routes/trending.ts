@@ -11,12 +11,14 @@ import { extractPayment, verifyPayment, build402Response } from '../payment';
 import { getProxy, proxyFetch } from '../proxy';
 import { getRedditTrending } from '../scrapers/reddit';
 import { getTrendingWeb } from '../scrapers/web';
+import { getYouTubeTrending } from '../scrapers/youtube';
+import { getTwitterTrending } from '../scrapers/twitter';
 import type { TrendingResponse, TrendingItem } from '../types/index';
 
 const WALLET_ADDRESS = process.env.WALLET_ADDRESS ?? '';
 const PRICE_USDC = 0.10;
 
-const SUPPORTED_PLATFORMS = new Set(['reddit', 'web']);
+const SUPPORTED_PLATFORMS = new Set(['reddit', 'web', 'youtube', 'twitter']);
 const DEFAULT_PLATFORMS = ['reddit', 'web'];
 const MAX_LIMIT = 50;
 const MIN_LIMIT = 1;
@@ -30,13 +32,13 @@ const RATE_LIMIT_WINDOW_MS = 60_000;
 const rateLimits = new Map<string, { count: number; resetAt: number }>();
 
 const DESCRIPTION =
-  'Trending Topics API: fetch what is trending right now on Reddit and/or the web. ' +
+  'Trending Topics API: fetch what is trending right now on Reddit, web, YouTube, and Twitter/X. ' +
   'Returns engagement-ranked topics with source URLs.';
 
 const OUTPUT_SCHEMA = {
   input: {
-    country: 'string (optional, default: "US") - ISO country code for web trends',
-    platforms: 'string (optional, default: "reddit,web") - comma-separated platform list',
+    country: 'string (optional, default: "US") - ISO country code for web/YouTube/Twitter trends',
+    platforms: 'string (optional, default: "reddit,web") - comma-separated platform list: reddit, web, youtube, twitter',
     limit: 'number (optional, default: 20, max: 50) - topics per platform',
   },
   output: {
@@ -110,7 +112,7 @@ function parsePlatforms(platformParam: string | undefined): { platforms: string[
 
   const unique = Array.from(new Set(normalized));
   if (unique.length === 0) {
-    return { platforms: [], error: 'No supported platforms requested. Use reddit and/or web.' };
+    return { platforms: [], error: 'No supported platforms requested. Use reddit, web, youtube, and/or twitter.' };
   }
 
   return { platforms: unique };
@@ -197,10 +199,14 @@ trendingRouter.get('/', async (c) => {
   const fetches = await Promise.allSettled([
     requestedPlatforms.includes('reddit') ? getRedditTrending(limit) : Promise.resolve([]),
     requestedPlatforms.includes('web') ? getTrendingWeb(country, limit) : Promise.resolve([]),
+    requestedPlatforms.includes('youtube') ? getYouTubeTrending(country, limit) : Promise.resolve([]),
+    requestedPlatforms.includes('twitter') ? getTwitterTrending(country, limit) : Promise.resolve([]),
   ]);
 
   const redditTrending = fetches[0].status === 'fulfilled' ? fetches[0].value : [];
   const webTrending = fetches[1].status === 'fulfilled' ? fetches[1].value : [];
+  const youtubeTrending = fetches[2].status === 'fulfilled' ? fetches[2].value : [];
+  const twitterTrending = fetches[3].status === 'fulfilled' ? fetches[3].value : [];
 
   for (const result of fetches) {
     if (result.status === 'rejected') {
@@ -222,6 +228,18 @@ trendingRouter.get('/', async (c) => {
       traffic: topic.traffic,
       url: topic.articles[0]?.url,
     })),
+    ...youtubeTrending.map((video): TrendingItem => ({
+      topic: video.title,
+      platform: 'youtube',
+      engagement: Math.round(video.engagementScore),
+      url: video.url,
+    })),
+    ...twitterTrending.map((tweet): TrendingItem => ({
+      topic: tweet.text.slice(0, 120),
+      platform: 'twitter',
+      engagement: Math.round(tweet.engagementScore),
+      url: tweet.url,
+    })),
   ];
 
   trendingItems.sort((a, b) => {
@@ -234,6 +252,8 @@ trendingRouter.get('/', async (c) => {
   const platformsUsed = [
     redditTrending.length > 0 ? 'reddit' : null,
     webTrending.length > 0 ? 'web' : null,
+    youtubeTrending.length > 0 ? 'youtube' : null,
+    twitterTrending.length > 0 ? 'twitter' : null,
   ].filter(Boolean) as string[];
 
   c.header('X-Payment-Settled', 'true');
