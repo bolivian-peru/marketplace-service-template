@@ -17,6 +17,10 @@ import { scrapeGoogleMaps, extractDetailedBusiness } from './scrapers/maps-scrap
 
 export const serviceRouter = new Hono();
 
+// ─── TREND INTELLIGENCE ROUTES (Bounty #70) ─────────
+serviceRouter.route('/research', researchRouter);
+serviceRouter.route('/trending', trendingRouter);
+
 const SERVICE_NAME = 'job-market-intelligence';
 const PRICE_USDC = 0.005;
 const DESCRIPTION = 'Job Market Intelligence API (Indeed/LinkedIn): title, company, location, salary, date, link, remote + proxy exit metadata.';
