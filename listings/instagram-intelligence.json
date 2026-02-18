@@ -1,0 +1,97 @@
+{
+  "name": "instagram-intelligence",
+  "title": "Instagram Intelligence + AI Vision Analysis API",
+  "description": "Scrape Instagram profiles and posts via mobile proxy, with AI-powered vision analysis for account type detection, content themes, sentiment, authenticity scoring, and brand safety recommendations.",
+  "version": "1.0.0",
+  "pricing": {
+    "profile": {
+      "amount": "0.01",
+      "currency": "USDC",
+      "description": "Per profile lookup (followers, bio, engagement rate, posting frequency)"
+    },
+    "posts": {
+      "amount": "0.02",
+      "currency": "USDC",
+      "description": "Per posts fetch (up to 12 recent posts with captions, likes, hashtags)"
+    },
+    "analyze": {
+      "amount": "0.15",
+      "currency": "USDC",
+      "description": "Full analysis: profile + posts + AI vision (account type, themes, sentiment, authenticity)"
+    },
+    "images": {
+      "amount": "0.08",
+      "currency": "USDC",
+      "description": "AI vision analysis of post images only (content themes, style, brand safety)"
+    },
+    "audit": {
+      "amount": "0.05",
+      "currency": "USDC",
+      "description": "Authenticity audit: fake follower detection, engagement patterns, bot signals"
+    }
+  },
+  "endpoints": [
+    {
+      "method": "GET",
+      "path": "/api/instagram/profile/:username",
+      "description": "Get Instagram profile data with engagement metrics",
+      "params": {
+        "username": "Instagram username (required, in URL path)"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/instagram/posts/:username",
+      "description": "Get recent Instagram posts with captions, likes, comments, hashtags",
+      "params": {
+        "username": "Instagram username (required, in URL path)",
+        "limit": "1-50 (default: 12)"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/instagram/analyze/:username",
+      "description": "Full AI-powered profile analysis: account type, content themes, sentiment, authenticity, brand recommendations",
+      "params": {
+        "username": "Instagram username (required, in URL path)"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/instagram/analyze/:username/images",
+      "description": "AI vision analysis of post images: content themes, style, aesthetic consistency, brand safety score",
+      "params": {
+        "username": "Instagram username (required, in URL path)"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/instagram/audit/:username",
+      "description": "Authenticity audit: fake follower detection, engagement pattern analysis, bot signal detection",
+      "params": {
+        "username": "Instagram username (required, in URL path)"
+      }
+    }
+  ],
+  "features": [
+    "Instagram profile scraping (followers, bio, engagement rate, posting frequency)",
+    "Recent posts extraction (captions, likes, comments, hashtags, timestamps)",
+    "AI vision analysis via GPT-4o or Claude (with heuristic fallback)",
+    "Account type classification (influencer, business, personal, bot/fake, meme page, news media)",
+    "Content theme detection (travel, food, fashion, fitness, tech, beauty, etc.)",
+    "Sentiment analysis (positive/neutral/negative breakdown)",
+    "Authenticity scoring (0-100) with fake follower detection",
+    "Brand safety scoring and brand alignment recommendations",
+    "Estimated post value calculation",
+    "Sponsored content detection (#ad, #sponsored)",
+    "Mobile proxy for authentic Instagram data (avoids blocks)"
+  ],
+  "infrastructure": "Proxies.sx mobile proxies (real 4G/5G IPs) + OpenAI GPT-4o / Anthropic Claude vision",
+  "networks": ["solana", "base"],
+  "wallets": {
+    "solana": "6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv",
+    "base": "0xF8cD900794245fc36CBE65be9afc23CDF5103042"
+  },
+  "category": "data",
+  "tags": ["instagram", "social-media", "influencer", "ai-vision", "sentiment", "authenticity", "brand-safety", "scraper"]
+}
