@@ -1,0 +1,75 @@
+{
+  "name": "linkedin-enrichment",
+  "title": "LinkedIn People & Company Enrichment API",
+  "description": "Enrich business contacts with current title, company, skills from LinkedIn public profiles. Extract company data: employee count, growth, job openings. Search people by title + location + industry. All via mobile proxies.",
+  "version": "1.0.0",
+  "author": "Mellowambience",
+  "pricing": {
+    "person_profile": {
+      "price": 0.03,
+      "unit": "USDC",
+      "description": "Person profile enrichment"
+    },
+    "company_profile": {
+      "price": 0.05,
+      "unit": "USDC",
+      "description": "Company profile enrichment"
+    },
+    "people_search": {
+      "price": 0.1,
+      "unit": "USDC",
+      "description": "Search people by criteria"
+    },
+    "employee_search": {
+      "price": 0.1,
+      "unit": "USDC",
+      "description": "Search company employees"
+    }
+  },
+  "endpoints": [
+    {
+      "path": "/api/linkedin/person",
+      "method": "GET",
+      "params": {
+        "url": "LinkedIn profile URL or username"
+      },
+      "price": "$0.03 USDC"
+    },
+    {
+      "path": "/api/linkedin/company",
+      "method": "GET",
+      "params": {
+        "url": "LinkedIn company URL or slug"
+      },
+      "price": "$0.05 USDC"
+    },
+    {
+      "path": "/api/linkedin/search/people",
+      "method": "GET",
+      "params": {
+        "title": "optional",
+        "location": "optional",
+        "industry": "optional"
+      },
+      "price": "$0.10 USDC"
+    },
+    {
+      "path": "/api/linkedin/company/:id/employees",
+      "method": "GET",
+      "params": {
+        "id": "company slug",
+        "title": "optional"
+      },
+      "price": "$0.10 USDC"
+    }
+  ],
+  "wallet": "A6M8icBwgDPwYhaWAjhJw267nbtkuivKH2q6sKPZgQEf",
+  "network": "solana",
+  "tags": [
+    "linkedin",
+    "b2b",
+    "enrichment",
+    "sales-intelligence",
+    "lead-gen"
+  ]
+}

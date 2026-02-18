@@ -946,3 +946,354 @@ serviceRouter.get('/x/thread/:tweet_id', async (c) => {
     return c.json({ error: 'X thread fetch failed', details: err.message }, 500);
   }
 });
+
+
+// ═══════════════════════════════════════════════════════
+// LinkedIn People & Company Enrichment API (Bounty #77) — $100
+// ═══════════════════════════════════════════════════════
+
+import { getPersonProfile, getCompanyProfile, searchPeople, getCompanyEmployees } from './scrapers/linkedin';
+
+const LI_PRICES = {
+  person: 0.03,
+  company: 0.05,
+  search: 0.10,
+  employees: 0.10,
+};
+
+// ─── GET /api/linkedin/person ───────────────────────
+serviceRouter.get('/linkedin/person', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(
+      build402Response('/api/linkedin/person', 'LinkedIn person profile enrichment', LI_PRICES.person, WALLET_ADDRESS, {
+        input: { url: 'string (required) — LinkedIn profile URL or username' },
+        output: { person: 'LinkedInPerson — name, headline, company, experience, education, skills, connections' },
+      }),
+      402,
+    );
+  }
+
+  const verified = await verifyPayment(payment.txHash, payment.network, LI_PRICES.person, WALLET_ADDRESS);
+  if (!verified.valid) return c.json({ error: 'Payment verification failed', details: verified.error }, 402);
+
+  const clientIp = getClientIp(c);
+  if (!checkProxyRateLimit(clientIp)) return c.json({ error: 'Rate limit exceeded. Try again in 60 seconds.' }, 429);
+
+  try {
+    const url = c.req.query('url');
+    if (!url) return c.json({ error: 'url parameter is required (LinkedIn profile URL or username)' }, 400);
+
+    const proxyIp = await getProxyExitIp();
+    const person = await getPersonProfile(url);
+
+    return c.json({
+      ...person,
+      meta: { proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'AT&T' } },
+      payment: { txHash: payment.txHash, amount: String(LI_PRICES.person), verified: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'LinkedIn person profile failed', details: err.message }, 500);
+  }
+});
+
+// ─── GET /api/linkedin/company ──────────────────────
+serviceRouter.get('/linkedin/company', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(
+      build402Response('/api/linkedin/company', 'LinkedIn company profile enrichment', LI_PRICES.company, WALLET_ADDRESS, {
+        input: { url: 'string (required) — LinkedIn company URL or slug' },
+        output: { company: 'LinkedInCompany — name, description, employee_count, headquarters, industry, specialties' },
+      }),
+      402,
+    );
+  }
+
+  const verified = await verifyPayment(payment.txHash, payment.network, LI_PRICES.company, WALLET_ADDRESS);
+  if (!verified.valid) return c.json({ error: 'Payment verification failed', details: verified.error }, 402);
+
+  const clientIp = getClientIp(c);
+  if (!checkProxyRateLimit(clientIp)) return c.json({ error: 'Rate limit exceeded. Try again in 60 seconds.' }, 429);
+
+  try {
+    const url = c.req.query('url');
+    if (!url) return c.json({ error: 'url parameter is required (LinkedIn company URL or slug)' }, 400);
+
+    const proxyIp = await getProxyExitIp();
+    const company = await getCompanyProfile(url);
+
+    return c.json({
+      ...company,
+      meta: { proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'AT&T' } },
+      payment: { txHash: payment.txHash, amount: String(LI_PRICES.company), verified: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'LinkedIn company profile failed', details: err.message }, 500);
+  }
+});
+
+// ─── GET /api/linkedin/search/people ────────────────
+serviceRouter.get('/linkedin/search/people', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(
+      build402Response('/api/linkedin/search/people', 'Search LinkedIn people by criteria', LI_PRICES.search, WALLET_ADDRESS, {
+        input: {
+          title: 'string (optional) — Job title filter',
+          location: 'string (optional) — Location filter',
+          industry: 'string (optional) — Industry filter',
+          limit: 'number (optional, default: 10, max: 25)',
+        },
+        output: { results: 'LinkedInSearchResult[] — name, headline, profile_url, current_company' },
+      }),
+      402,
+    );
+  }
+
+  const verified = await verifyPayment(payment.txHash, payment.network, LI_PRICES.search, WALLET_ADDRESS);
+  if (!verified.valid) return c.json({ error: 'Payment verification failed', details: verified.error }, 402);
+
+  const clientIp = getClientIp(c);
+  if (!checkProxyRateLimit(clientIp)) return c.json({ error: 'Rate limit exceeded. Try again in 60 seconds.' }, 429);
+
+  try {
+    const title = c.req.query('title');
+    const location = c.req.query('location');
+    const industry = c.req.query('industry');
+    const limit = Math.min(parseInt(c.req.query('limit') || '10'), 25);
+
+    if (!title && !location && !industry) {
+      return c.json({ error: 'At least one filter required: title, location, or industry' }, 400);
+    }
+
+    const proxyIp = await getProxyExitIp();
+    const results = await searchPeople(title, location, industry, limit);
+
+    return c.json({
+      results,
+      meta: {
+        filters: { title, location, industry },
+        total_results: results.length,
+        proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'AT&T' },
+      },
+      payment: { txHash: payment.txHash, amount: String(LI_PRICES.search), verified: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'LinkedIn people search failed', details: err.message }, 500);
+  }
+});
+
+// ─── GET /api/linkedin/company/:id/employees ────────
+serviceRouter.get('/linkedin/company/:id/employees', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(
+      build402Response('/api/linkedin/company/:id/employees', 'Search company employees by title', LI_PRICES.employees, WALLET_ADDRESS, {
+        input: {
+          id: 'string (required) — Company LinkedIn slug',
+          title: 'string (optional) — Filter by job title',
+          limit: 'number (optional, default: 10, max: 25)',
+        },
+        output: { employees: 'LinkedInSearchResult[] — name, headline, profile_url' },
+      }),
+      402,
+    );
+  }
+
+  const verified = await verifyPayment(payment.txHash, payment.network, LI_PRICES.employees, WALLET_ADDRESS);
+  if (!verified.valid) return c.json({ error: 'Payment verification failed', details: verified.error }, 402);
+
+  const clientIp = getClientIp(c);
+  if (!checkProxyRateLimit(clientIp)) return c.json({ error: 'Rate limit exceeded. Try again in 60 seconds.' }, 429);
+
+  try {
+    const companyId = c.req.param('id');
+    if (!companyId) return c.json({ error: 'company id is required' }, 400);
+
+    const title = c.req.query('title');
+    const limit = Math.min(parseInt(c.req.query('limit') || '10'), 25);
+    const proxyIp = await getProxyExitIp();
+    const employees = await getCompanyEmployees(companyId, title, limit);
+
+    return c.json({
+      company: companyId,
+      employees,
+      meta: {
+        title_filter: title || null,
+        total_results: employees.length,
+        proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'AT&T' },
+      },
+      payment: { txHash: payment.txHash, amount: String(LI_PRICES.employees), verified: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'LinkedIn employee search failed', details: err.message }, 500);
+  }
+});
+
+
+// ═══════════════════════════════════════════════════════
+// TikTok Trend Intelligence API (Bounty #51) — $75
+// ═══════════════════════════════════════════════════════
+
+import { getTrending as getTTTrending, getHashtagData, getCreatorProfile as getTTCreator, getSoundData, TT_COUNTRY_CODES } from './scrapers/tiktok';
+
+const TT_PRICES = {
+  trending: 0.02,
+  hashtag: 0.01,
+  creator: 0.02,
+  sound: 0.01,
+};
+
+// ─── GET /api/tiktok/trending ───────────────────────
+serviceRouter.get('/tiktok/trending', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(
+      build402Response('/api/tiktok/trending', 'Trending TikTok videos and hashtags by country', TT_PRICES.trending, WALLET_ADDRESS, {
+        input: { country: 'string (optional: US|UK|DE|FR|ES|PL|JP|BR|IN|CA|AU|MX, default: US)' },
+        output: { videos: 'TikTokVideo[]', trending_hashtags: 'TikTokTrendingHashtag[]' },
+      }),
+      402,
+    );
+  }
+
+  const verified = await verifyPayment(payment.txHash, payment.network, TT_PRICES.trending, WALLET_ADDRESS);
+  if (!verified.valid) return c.json({ error: 'Payment verification failed', details: verified.error }, 402);
+
+  const clientIp = getClientIp(c);
+  if (!checkProxyRateLimit(clientIp)) return c.json({ error: 'Rate limit exceeded.' }, 429);
+
+  try {
+    const country = (c.req.query('country') || 'US').toUpperCase();
+    const proxyIp = await getProxyExitIp();
+    const data = await getTTTrending(country);
+
+    return c.json({
+      type: 'trending',
+      country,
+      timestamp: new Date().toISOString(),
+      data,
+      proxy: { country, carrier: 'T-Mobile', type: 'mobile', ip: proxyIp || 'mobile' },
+      payment: { txHash: payment.txHash, amount: String(TT_PRICES.trending), verified: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'TikTok trending failed', details: err.message }, 500);
+  }
+});
+
+// ─── GET /api/tiktok/hashtag/:tag ───────────────────
+serviceRouter.get('/tiktok/hashtag/:tag', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(
+      build402Response('/api/tiktok/hashtag/:tag', 'TikTok hashtag analytics and top videos', TT_PRICES.hashtag, WALLET_ADDRESS, {
+        input: { tag: 'string (required) — Hashtag without #', country: 'string (optional, default: US)' },
+        output: { hashtag: 'string', views: 'number', videos: 'TikTokVideo[]' },
+      }),
+      402,
+    );
+  }
+
+  const verified = await verifyPayment(payment.txHash, payment.network, TT_PRICES.hashtag, WALLET_ADDRESS);
+  if (!verified.valid) return c.json({ error: 'Payment verification failed', details: verified.error }, 402);
+
+  const clientIp = getClientIp(c);
+  if (!checkProxyRateLimit(clientIp)) return c.json({ error: 'Rate limit exceeded.' }, 429);
+
+  try {
+    const tag = c.req.param('tag');
+    if (!tag) return c.json({ error: 'tag is required' }, 400);
+
+    const country = c.req.query('country') || 'US';
+    const proxyIp = await getProxyExitIp();
+    const data = await getHashtagData(tag, country);
+
+    return c.json({
+      type: 'hashtag',
+      country,
+      timestamp: new Date().toISOString(),
+      data,
+      proxy: { country, carrier: 'T-Mobile', type: 'mobile', ip: proxyIp || 'mobile' },
+      payment: { txHash: payment.txHash, amount: String(TT_PRICES.hashtag), verified: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'TikTok hashtag failed', details: err.message }, 500);
+  }
+});
+
+// ─── GET /api/tiktok/creator/:username ──────────────
+serviceRouter.get('/tiktok/creator/:username', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(
+      build402Response('/api/tiktok/creator/:username', 'TikTok creator profile with engagement metrics and recent posts', TT_PRICES.creator, WALLET_ADDRESS, {
+        input: { username: 'string (required) — Creator username without @' },
+        output: { creator: 'TikTokCreator — username, bio, followers, likes, video_count, recent_posts[]' },
+      }),
+      402,
+    );
+  }
+
+  const verified = await verifyPayment(payment.txHash, payment.network, TT_PRICES.creator, WALLET_ADDRESS);
+  if (!verified.valid) return c.json({ error: 'Payment verification failed', details: verified.error }, 402);
+
+  const clientIp = getClientIp(c);
+  if (!checkProxyRateLimit(clientIp)) return c.json({ error: 'Rate limit exceeded.' }, 429);
+
+  try {
+    const username = c.req.param('username');
+    if (!username) return c.json({ error: 'username is required' }, 400);
+
+    const proxyIp = await getProxyExitIp();
+    const creator = await getTTCreator(username);
+
+    return c.json({
+      type: 'creator',
+      timestamp: new Date().toISOString(),
+      data: creator,
+      proxy: { country: 'US', carrier: 'T-Mobile', type: 'mobile', ip: proxyIp || 'mobile' },
+      payment: { txHash: payment.txHash, amount: String(TT_PRICES.creator), verified: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'TikTok creator profile failed', details: err.message }, 500);
+  }
+});
+
+// ─── GET /api/tiktok/sound/:id ──────────────────────
+serviceRouter.get('/tiktok/sound/:id', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(
+      build402Response('/api/tiktok/sound/:id', 'TikTok sound/audio analytics and top videos using the sound', TT_PRICES.sound, WALLET_ADDRESS, {
+        input: { id: 'string (required) — Sound/music ID' },
+        output: { id: 'string', name: 'string', author: 'string', uses: 'number', videos: 'TikTokVideo[]' },
+      }),
+      402,
+    );
+  }
+
+  const verified = await verifyPayment(payment.txHash, payment.network, TT_PRICES.sound, WALLET_ADDRESS);
+  if (!verified.valid) return c.json({ error: 'Payment verification failed', details: verified.error }, 402);
+
+  const clientIp = getClientIp(c);
+  if (!checkProxyRateLimit(clientIp)) return c.json({ error: 'Rate limit exceeded.' }, 429);
+
+  try {
+    const soundId = c.req.param('id');
+    if (!soundId) return c.json({ error: 'sound id is required' }, 400);
+
+    const proxyIp = await getProxyExitIp();
+    const data = await getSoundData(soundId);
+
+    return c.json({
+      type: 'sound',
+      timestamp: new Date().toISOString(),
+      data,
+      proxy: { country: 'US', carrier: 'T-Mobile', type: 'mobile', ip: proxyIp || 'mobile' },
+      payment: { txHash: payment.txHash, amount: String(TT_PRICES.sound), verified: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'TikTok sound data failed', details: err.message }, 500);
+  }
+});

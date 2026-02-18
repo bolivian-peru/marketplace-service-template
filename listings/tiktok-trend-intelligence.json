@@ -1,0 +1,72 @@
+{
+  "name": "tiktok-trend-intelligence",
+  "title": "TikTok Trend Intelligence API",
+  "description": "Real-time TikTok intelligence: trending videos by country, hashtag analytics, creator profiles with engagement metrics, sound/audio trend tracking. All via mobile proxies bypassing TikTok's encrypted signatures.",
+  "version": "1.0.0",
+  "author": "Mellowambience",
+  "pricing": {
+    "trending": {
+      "price": 0.02,
+      "unit": "USDC",
+      "description": "Trending videos + hashtags by country"
+    },
+    "hashtag": {
+      "price": 0.01,
+      "unit": "USDC",
+      "description": "Hashtag analytics + top videos"
+    },
+    "creator": {
+      "price": 0.02,
+      "unit": "USDC",
+      "description": "Creator profile + recent posts"
+    },
+    "sound": {
+      "price": 0.01,
+      "unit": "USDC",
+      "description": "Sound/audio analytics + usage"
+    }
+  },
+  "endpoints": [
+    {
+      "path": "/api/tiktok/trending",
+      "method": "GET",
+      "params": {
+        "country": "US|UK|DE|FR|ES|PL|JP|BR|IN|CA|AU|MX"
+      },
+      "price": "$0.02 USDC"
+    },
+    {
+      "path": "/api/tiktok/hashtag/:tag",
+      "method": "GET",
+      "params": {
+        "tag": "hashtag without #"
+      },
+      "price": "$0.01 USDC"
+    },
+    {
+      "path": "/api/tiktok/creator/:username",
+      "method": "GET",
+      "params": {
+        "username": "without @"
+      },
+      "price": "$0.02 USDC"
+    },
+    {
+      "path": "/api/tiktok/sound/:id",
+      "method": "GET",
+      "params": {
+        "id": "sound ID"
+      },
+      "price": "$0.01 USDC"
+    }
+  ],
+  "wallet": "A6M8icBwgDPwYhaWAjhJw267nbtkuivKH2q6sKPZgQEf",
+  "network": "solana",
+  "tags": [
+    "tiktok",
+    "trending",
+    "social-intelligence",
+    "hashtags",
+    "creator-analytics"
+  ]
+}
