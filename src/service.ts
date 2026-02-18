@@ -1,8 +1,12 @@
 /**
- * Service Router — Job Market Intelligence (Bounty #16)
+ * Service Router — Job Market Intelligence (Bounty #16) + Trend Intelligence (Bounty #70)
  *
- * Exposes ONLY:
- *   GET /api/jobs
+ * Exposes:
+ *   GET  /api/jobs
+ *   POST /api/research
+ *   GET  /api/trending
+ *   GET  /api/reviews/*
+ *   GET  /api/business/*
  */
 
 import { Hono } from 'hono';
@@ -10,8 +14,14 @@ import { proxyFetch, getProxy } from './proxy';
 import { extractPayment, verifyPayment, build402Response } from './payment';
 import { scrapeIndeed, scrapeLinkedIn, type JobListing } from './scrapers/job-scraper';
 import { fetchReviews, fetchBusinessDetails, fetchReviewSummary, searchBusinesses } from './scrapers/reviews';
+import { researchRouter } from './routes/research';
+import { trendingRouter } from './routes/trending';
 
 export const serviceRouter = new Hono();
+
+// ─── TREND INTELLIGENCE ROUTES (Bounty #70) ─────────
+serviceRouter.route('/research', researchRouter);
+serviceRouter.route('/trending', trendingRouter);
 
 const SERVICE_NAME = 'job-market-intelligence';
 const PRICE_USDC = 0.005;
