@@ -1,21 +1,11 @@
-/**
- * Service Router — Job Market Intelligence (Bounty #16)
- *
- * Exposes ONLY:
- *   GET /api/jobs
- */
-
 import { Hono } from 'hono';
 import { proxyFetch, getProxy } from './proxy';
 import { extractPayment, verifyPayment, build402Response } from './payment';
-import { scrapeIndeed, scrapeLinkedIn, type JobListing } from './scrapers/job-scraper';
-import { fetchReviews, fetchBusinessDetails, fetchReviewSummary, searchBusinesses } from './scrapers/reviews';
+import { getTrendingMarkets, searchMarkets, getMarketDetails } from './scrapers/prediction-market-scraper';
 
 export const serviceRouter = new Hono();
 
-const SERVICE_NAME = 'job-market-intelligence';
-const PRICE_USDC = 0.005;
-const DESCRIPTION = 'Job Market Intelligence API (Indeed/LinkedIn): title, company, location, salary, date, link, remote + proxy exit metadata.';
+const WALLET_ADDRESS = '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
 
 async function getProxyExitIp(): Promise<string | null> {
   try {
@@ -32,306 +22,77 @@ async function getProxyExitIp(): Promise<string | null> {
   }
 }
 
-serviceRouter.get('/jobs', async (c) => {
-  const walletAddress = '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+// GET /api/run?type=trending|search|details
+serviceRouter.get('/run', async (c) => {
+  const type = c.req.query('type') || 'trending';
+  const priceMap: Record<string, number> = { trending: 0.02, search: 0.02, details: 0.01 };
+  const price = priceMap[type] || 0.02;
 
   const payment = extractPayment(c);
   if (!payment) {
-    return c.json(
-      build402Response(
-        '/api/jobs',
-        DESCRIPTION,
-        PRICE_USDC,
-        walletAddress,
-        {
-          input: {
-            query: 'string (required) — job title / keywords (e.g., "Software Engineer")',
-            location: 'string (optional, default: "Remote")',
-            platform: '"indeed" | "linkedin" | "both" (optional, default: "indeed")',
-            limit: 'number (optional, default: 20, max: 50)'
-          },
-          output: {
-            results: 'JobListing[]',
-            meta: {
-              proxy: '{ ip, country, host, type:"mobile" }',
-              platform: 'indeed|linkedin|both',
-              limit: 'number'
-            },
-          },
+    return c.json(build402Response(
+      '/api/run',
+      'Prediction Market Signal Aggregator — real-time odds and probabilities from Polymarket, Metaculus, and PredictIt. Supports trending markets, search, and detailed market analysis.',
+      price,
+      WALLET_ADDRESS,
+      {
+        input: {
+          type: 'string — trending | search | details',
+          query: 'string (for search) — search query',
+          url: 'string (for details) — market URL',
+          category: 'string (optional) — politics, crypto, sports, science, etc.',
+          limit: 'number (optional, default 20) — max results',
         },
-      ),
-      402,
-    );
+        output: {
+          type: 'string',
+          markets: '{ title, platform, probability, volume, url, category, lastUpdated, traders, description }[]',
+          metadata: '{ totalMarkets, platforms, scrapedAt }',
+        },
+      },
+    ), 402);
   }
 
-  const verification = await verifyPayment(payment, walletAddress, PRICE_USDC);
+  const verification = await verifyPayment(payment, WALLET_ADDRESS, price);
   if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
-
-  const query = c.req.query('query') || 'Software Engineer';
-  const location = c.req.query('location') || 'Remote';
-  const platform = (c.req.query('platform') || 'indeed').toLowerCase();
-  const limit = Math.min(Math.max(parseInt(c.req.query('limit') || '20') || 20, 1), 50);
 
   try {
     const proxy = getProxy();
     const ip = await getProxyExitIp();
+    let result: any;
 
-    let results: JobListing[] = [];
-    if (platform === 'both') {
-      const [a, b] = await Promise.all([
-        scrapeIndeed(query, location, limit),
-        scrapeLinkedIn(query, location, limit),
-      ]);
-      results = [...a, ...b];
-    } else if (platform === 'linkedin') {
-      results = await scrapeLinkedIn(query, location, limit);
-    } else {
-      results = await scrapeIndeed(query, location, limit);
+    switch (type) {
+      case 'trending': {
+        const category = c.req.query('category') || '';
+        const limit = parseInt(c.req.query('limit') || '20');
+        result = await getTrendingMarkets(category, limit, proxyFetch);
+        break;
+      }
+      case 'search': {
+        const query = c.req.query('query') || '';
+        if (!query) return c.json({ error: 'Missing query parameter' }, 400);
+        const limit = parseInt(c.req.query('limit') || '20');
+        result = await searchMarkets(query, limit, proxyFetch);
+        break;
+      }
+      case 'details': {
+        const url = c.req.query('url') || '';
+        if (!url) return c.json({ error: 'Missing url parameter' }, 400);
+        result = await getMarketDetails(url, proxyFetch);
+        break;
+      }
+      default:
+        return c.json({ error: `Invalid type: ${type}`, valid_types: ['trending', 'search', 'details'] }, 400);
     }
 
     c.header('X-Payment-Settled', 'true');
     c.header('X-Payment-TxHash', payment.txHash);
 
     return c.json({
-      results,
-      meta: {
-        platform,
-        limit,
-        proxy: {
-          ip,
-          country: proxy.country,
-          host: proxy.host,
-          type: 'mobile',
-        },
-      },
-      payment: {
-        txHash: payment.txHash,
-        network: payment.network,
-        amount: verification.amount,
-        settled: true,
-      },
-    });
-  } catch (err: any) {
-    return c.json({ error: 'Scrape failed', message: err?.message || String(err) }, 502);
-  }
-});
-
-// ═══════════════════════════════════════════════════════
-// ─── GOOGLE REVIEWS & BUSINESS DATA API ─────────────
-// ═══════════════════════════════════════════════════════
-
-const REVIEWS_PRICE_USDC = 0.02;   // $0.02 per reviews fetch
-const BUSINESS_PRICE_USDC = 0.01;  // $0.01 per business lookup
-const SUMMARY_PRICE_USDC = 0.005;  // $0.005 per summary
-
-// ─── PROXY RATE LIMITING (prevent proxy quota abuse) ──
-const proxyUsage = new Map<string, { count: number; resetAt: number }>();
-const PROXY_RATE_LIMIT = 20; // max proxy-routed requests per minute per IP
-
-function checkProxyRateLimit(ip: string): boolean {
-  const now = Date.now();
-  const entry = proxyUsage.get(ip);
-  if (!entry || now > entry.resetAt) {
-    proxyUsage.set(ip, { count: 1, resetAt: now + 60_000 });
-    return true;
-  }
-  entry.count++;
-  return entry.count <= PROXY_RATE_LIMIT;
-}
-
-setInterval(() => {
-  const now = Date.now();
-  for (const [ip, entry] of proxyUsage) {
-    if (now > entry.resetAt) proxyUsage.delete(ip);
-  }
-}, 300_000);
-
-// ─── GET /api/reviews/search ────────────────────────
-
-serviceRouter.get('/reviews/search', async (c) => {
-  const walletAddress = process.env.WALLET_ADDRESS;
-  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
-
-  const payment = extractPayment(c);
-  if (!payment) {
-    return c.json(build402Response('/api/reviews/search', 'Search businesses by query + location', BUSINESS_PRICE_USDC, walletAddress, {
-      input: { query: 'string (required)', location: 'string (required)', limit: 'number (optional, default: 10)' },
-      output: { query: 'string', location: 'string', businesses: 'BusinessInfo[]', totalFound: 'number' },
-    }), 402);
-  }
-
-  const verification = await verifyPayment(payment, walletAddress, BUSINESS_PRICE_USDC);
-  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
-
-  const clientIp = c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
-  if (!checkProxyRateLimit(clientIp)) {
-    c.header('Retry-After', '60');
-    return c.json({ error: 'Proxy rate limit exceeded. Max 20 requests/min to protect proxy quota.', retryAfter: 60 }, 429);
-  }
-
-  const query = c.req.query('query');
-  const location = c.req.query('location');
-  const limit = Math.min(Math.max(parseInt(c.req.query('limit') || '10') || 10, 1), 20);
-
-  if (!query) return c.json({ error: 'Missing required parameter: query', example: '/api/reviews/search?query=pizza&location=NYC' }, 400);
-  if (!location) return c.json({ error: 'Missing required parameter: location', example: '/api/reviews/search?query=pizza&location=NYC' }, 400);
-
-  try {
-    const proxy = getProxy();
-    const result = await searchBusinesses(query, location, limit);
-
-    c.header('X-Payment-Settled', 'true');
-    c.header('X-Payment-TxHash', payment.txHash);
-
-    return c.json({
       ...result,
-      meta: { proxy: { country: proxy.country, type: 'mobile' } },
-      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+      proxy: { ip, country: proxy.country, carrier: proxy.host, type: 'mobile' },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, verified: true },
     });
   } catch (err: any) {
-    return c.json({ error: 'Search failed', message: err?.message || String(err) }, 502);
-  }
-});
-
-// ─── GET /api/reviews/summary/:place_id ─────────────
-
-serviceRouter.get('/reviews/summary/:place_id', async (c) => {
-  const walletAddress = process.env.WALLET_ADDRESS;
-  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
-
-  const payment = extractPayment(c);
-  if (!payment) {
-    return c.json(build402Response('/api/reviews/summary/:place_id', 'Get review summary stats: rating distribution, response rate, sentiment', SUMMARY_PRICE_USDC, walletAddress, {
-      input: { place_id: 'string (required) — Google Place ID (in URL path)' },
-      output: { business: '{ name, placeId, rating, totalReviews }', summary: '{ avgRating, totalReviews, ratingDistribution, responseRate, avgResponseTimeDays, sentimentBreakdown }' },
-    }), 402);
-  }
-
-  const verification = await verifyPayment(payment, walletAddress, SUMMARY_PRICE_USDC);
-  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
-
-  const summaryIp = c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
-  if (!checkProxyRateLimit(summaryIp)) {
-    c.header('Retry-After', '60');
-    return c.json({ error: 'Proxy rate limit exceeded. Max 20 requests/min to protect proxy quota.', retryAfter: 60 }, 429);
-  }
-
-  const placeId = c.req.param('place_id');
-  if (!placeId) return c.json({ error: 'Missing place_id in URL path' }, 400);
-
-  try {
-    const proxy = getProxy();
-    const result = await fetchReviewSummary(placeId);
-
-    c.header('X-Payment-Settled', 'true');
-    c.header('X-Payment-TxHash', payment.txHash);
-
-    return c.json({
-      ...result,
-      meta: { proxy: { country: proxy.country, type: 'mobile' } },
-      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
-    });
-  } catch (err: any) {
-    return c.json({ error: 'Summary fetch failed', message: err?.message || String(err) }, 502);
-  }
-});
-
-// ─── GET /api/reviews/:place_id ─────────────────────
-
-serviceRouter.get('/reviews/:place_id', async (c) => {
-  const walletAddress = process.env.WALLET_ADDRESS;
-  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
-
-  const payment = extractPayment(c);
-  if (!payment) {
-    return c.json(build402Response('/api/reviews/:place_id', 'Fetch Google reviews for a business by Place ID', REVIEWS_PRICE_USDC, walletAddress, {
-      input: {
-        place_id: 'string (required) — Google Place ID (in URL path)',
-        sort: '"newest" | "relevant" | "highest" | "lowest" (optional, default: "newest")',
-        limit: 'number (optional, default: 20, max: 50)',
-      },
-      output: { business: 'BusinessInfo', reviews: 'ReviewData[]', pagination: '{ total, returned, sort }' },
-    }), 402);
-  }
-
-  const verification = await verifyPayment(payment, walletAddress, REVIEWS_PRICE_USDC);
-  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
-
-  const reviewsIp = c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
-  if (!checkProxyRateLimit(reviewsIp)) {
-    c.header('Retry-After', '60');
-    return c.json({ error: 'Proxy rate limit exceeded. Max 20 requests/min to protect proxy quota.', retryAfter: 60 }, 429);
-  }
-
-  const placeId = c.req.param('place_id');
-  if (!placeId) return c.json({ error: 'Missing place_id in URL path' }, 400);
-
-  const sort = c.req.query('sort') || 'newest';
-  if (!['newest', 'relevant', 'highest', 'lowest'].includes(sort)) {
-    return c.json({ error: 'Invalid sort parameter. Use: newest, relevant, highest, lowest' }, 400);
-  }
-
-  const limit = Math.min(Math.max(parseInt(c.req.query('limit') || '20') || 20, 1), 50);
-
-  try {
-    const proxy = getProxy();
-    const result = await fetchReviews(placeId, sort, limit);
-
-    c.header('X-Payment-Settled', 'true');
-    c.header('X-Payment-TxHash', payment.txHash);
-
-    return c.json({
-      ...result,
-      meta: { proxy: { country: proxy.country, type: 'mobile' } },
-      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
-    });
-  } catch (err: any) {
-    return c.json({ error: 'Reviews fetch failed', message: err?.message || String(err) }, 502);
-  }
-});
-
-// ─── GET /api/business/:place_id ────────────────────
-
-serviceRouter.get('/business/:place_id', async (c) => {
-  const walletAddress = process.env.WALLET_ADDRESS;
-  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
-
-  const payment = extractPayment(c);
-  if (!payment) {
-    return c.json(build402Response('/api/business/:place_id', 'Get detailed business info + review summary by Place ID', BUSINESS_PRICE_USDC, walletAddress, {
-      input: { place_id: 'string (required) — Google Place ID (in URL path)' },
-      output: {
-        business: 'BusinessInfo — name, address, phone, website, hours, category, rating, photos, coordinates',
-        summary: 'ReviewSummary — ratingDistribution, responseRate, sentimentBreakdown',
-      },
-    }), 402);
-  }
-
-  const verification = await verifyPayment(payment, walletAddress, BUSINESS_PRICE_USDC);
-  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
-
-  const bizIp = c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
-  if (!checkProxyRateLimit(bizIp)) {
-    c.header('Retry-After', '60');
-    return c.json({ error: 'Proxy rate limit exceeded. Max 20 requests/min to protect proxy quota.', retryAfter: 60 }, 429);
-  }
-
-  const placeId = c.req.param('place_id');
-  if (!placeId) return c.json({ error: 'Missing place_id in URL path' }, 400);
-
-  try {
-    const proxy = getProxy();
-    const result = await fetchBusinessDetails(placeId);
-
-    c.header('X-Payment-Settled', 'true');
-    c.header('X-Payment-TxHash', payment.txHash);
-
-    return c.json({
-      ...result,
-      meta: { proxy: { country: proxy.country, type: 'mobile' } },
-      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
-    });
-  } catch (err: any) {
-    return c.json({ error: 'Business details fetch failed', message: err?.message || String(err) }, 502);
+    return c.json({ error: 'Prediction market scrape failed', message: err?.message || String(err) }, 502);
   }
 });
