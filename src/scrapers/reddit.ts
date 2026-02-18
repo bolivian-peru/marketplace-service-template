@@ -3,7 +3,30 @@
  * Uses Reddit public JSON endpoints through the mobile proxy.
  */
 
-import { proxyFetch } from '../proxy';
+// Direct fetch with mobile UA — Reddit public JSON works without proxy from clean IPs
+const MOBILE_UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1';
+
+async function directFetch(url: string, options: RequestInit & { timeoutMs?: number; maxRetries?: number } = {}): Promise<Response> {
+  const { maxRetries = 2, timeoutMs = 20_000, headers = {}, ...rest } = options;
+  let lastErr: Error | null = null;
+  for (let i = 0; i <= maxRetries; i++) {
+    try {
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), timeoutMs);
+      const res = await fetch(url, {
+        ...rest,
+        headers: { 'User-Agent': MOBILE_UA, Accept: 'application/json', ...headers as Record<string,string> },
+        signal: ctrl.signal,
+      });
+      clearTimeout(t);
+      return res;
+    } catch(e: any) {
+      lastErr = e;
+      if (i < maxRetries) await new Promise(r => setTimeout(r, 1000 * (i + 1)));
+    }
+  }
+  throw lastErr ?? new Error('fetch failed');
+}
 
 export interface RedditPost {
   id: string;
@@ -160,7 +183,7 @@ export async function searchReddit(
 
   const url = `${BASE_URL}/search.json?q=${encodeURIComponent(safeTopic)}&sort=top&t=${timeFilter}&limit=${safeLimit}&include_over_18=false`;
 
-  const response = await proxyFetch(url, {
+  const response = await directFetch(url, {
     headers: {
       'User-Agent': REDDIT_UA,
       Accept: 'application/json',
@@ -191,7 +214,7 @@ export async function getRedditTrending(
   const safeLimit = clamp(limit, 1, MAX_LIMIT);
   const url = `${BASE_URL}/r/all/hot.json?limit=${safeLimit}`;
 
-  const response = await proxyFetch(url, {
+  const response = await directFetch(url, {
     headers: {
       'User-Agent': REDDIT_UA,
       Accept: 'application/json',
@@ -227,7 +250,7 @@ export async function getSubredditTop(
   const timeFilter = getTimeFilter(safeDays);
   const url = `${BASE_URL}/r/${encodeURIComponent(safeSubreddit)}/top.json?t=${timeFilter}&limit=${safeLimit}`;
 
-  const response = await proxyFetch(url, {
+  const response = await directFetch(url, {
     headers: {
       'User-Agent': REDDIT_UA,
       Accept: 'application/json',

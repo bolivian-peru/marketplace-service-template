@@ -37,6 +37,7 @@ const PRICE_MULTI = 0.50;
 const PRICE_FULL = 1.00;
 
 const SUPPORTED_PLATFORMS: Platform[] = ['reddit', 'web', 'youtube', 'twitter'];
+const PLATFORM_ALIASES: Record<string, Platform> = { x: 'twitter', twitter: 'twitter' };
 const DEFAULT_PLATFORMS: Platform[] = ['reddit', 'web'];
 
 const MAX_TOPIC_LENGTH = 200;
@@ -63,7 +64,7 @@ const DESCRIPTION =
 const OUTPUT_SCHEMA = {
   input: {
     topic: 'string (required) - topic or keyword to research',
-    platforms: '("reddit" | "web" | "youtube" | "twitter")[] (optional, default: ["reddit", "web"])',
+    platforms: '("reddit" | "web" | "youtube" | "twitter" | "x")[] (optional, default: ["reddit", "web"])',
     days: 'number (optional, default: 30, max: 90)',
     country: 'string (optional, default: "US") - ISO country code',
   },
@@ -155,13 +156,17 @@ function parsePlatforms(input: unknown): { platforms: Platform[]; error?: string
   }
 
   const normalized = input
-    .map((p) => (typeof p === 'string' ? p.trim().toLowerCase() : ''))
+    .map((p) => {
+      if (typeof p !== 'string') return '';
+      const key = p.trim().toLowerCase();
+      return PLATFORM_ALIASES[key] ?? key;
+    })
     .filter((p): p is Platform => SUPPORTED_PLATFORMS.includes(p as Platform));
 
   const unique = Array.from(new Set(normalized));
 
   if (unique.length === 0) {
-    return { platforms: [], error: 'No supported platforms selected. Use reddit, web, youtube, and/or twitter.' };
+    return { platforms: [], error: 'No supported platforms selected. Use reddit, web, youtube, and/or twitter (x is accepted as alias).' };
   }
 
   return { platforms: unique };

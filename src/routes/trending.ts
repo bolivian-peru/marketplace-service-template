@@ -18,7 +18,7 @@ import type { TrendingResponse, TrendingItem } from '../types/index';
 const WALLET_ADDRESS = process.env.WALLET_ADDRESS ?? '';
 const PRICE_USDC = 0.10;
 
-const SUPPORTED_PLATFORMS = new Set(['reddit', 'web', 'youtube', 'twitter']);
+const SUPPORTED_PLATFORMS = new Set(['reddit', 'web', 'youtube', 'twitter', 'x']);
 const DEFAULT_PLATFORMS = ['reddit', 'web'];
 const MAX_LIMIT = 50;
 const MIN_LIMIT = 1;
@@ -38,7 +38,7 @@ const DESCRIPTION =
 const OUTPUT_SCHEMA = {
   input: {
     country: 'string (optional, default: "US") - ISO country code for web/YouTube/Twitter trends',
-    platforms: 'string (optional, default: "reddit,web") - comma-separated platform list: reddit, web, youtube, twitter',
+    platforms: 'string (optional, default: "reddit,web") - comma-separated platform list: reddit, web, youtube, twitter, x',
     limit: 'number (optional, default: 20, max: 50) - topics per platform',
   },
   output: {
@@ -108,11 +108,12 @@ function parsePlatforms(platformParam: string | undefined): { platforms: string[
   const normalized = platformParam
     .split(',')
     .map((p) => p.trim().toLowerCase())
+    .map((p) => (p === 'x' ? 'twitter' : p))
     .filter((p) => SUPPORTED_PLATFORMS.has(p));
 
   const unique = Array.from(new Set(normalized));
   if (unique.length === 0) {
-    return { platforms: [], error: 'No supported platforms requested. Use reddit, web, youtube, and/or twitter.' };
+    return { platforms: [], error: 'No supported platforms requested. Use reddit, web, youtube, and/or twitter (x is accepted as alias).' };
   }
 
   return { platforms: unique };
