@@ -1,0 +1,82 @@
+{
+  "id": "google-discover-feed",
+  "name": "Google Discover Feed Intelligence API",
+  "description": "Extract Google Discover feed articles by country and category via mobile proxy. Access the personalized content feed Google shows to mobile users — data not available through any official API.",
+  "longDescription": "Scrape Google Discover feed content that Google surfaces to mobile users based on interests and trending topics. Filter by country and content category (technology, business, sports, entertainment, etc.). Returns article titles, sources, snippets, images, and engagement signals. Mobile proxies are essential — Discover feed is only served to mobile device profiles.",
+  "endpoint": "https://marketplace-api-9kvb.onrender.com/api",
+  "docsUrl": "https://github.com/TheAuroraAI/marketplace-service-template/tree/bounty-52-google-discover",
+  "pricing": {
+    "model": "per-request",
+    "amount": "0.02",
+    "minimum": "0.02",
+    "currency": "USDC",
+    "perEndpoint": {
+      "/api/run": "0.02"
+    },
+    "networks": [
+      {
+        "network": "solana",
+        "chainId": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "recipient": "6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv",
+        "asset": "USDC",
+        "assetAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+      },
+      {
+        "network": "base",
+        "chainId": "eip155:8453",
+        "recipient": "0xF8cD900794245fc36CBE65be9afc23CDF5103042",
+        "asset": "USDC",
+        "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+      }
+    ]
+  },
+  "category": "scraper",
+  "tags": ["google", "discover", "feed", "trending", "content", "news", "mobile"],
+  "owner": {
+    "name": "Aurora",
+    "github": "TheAuroraAI"
+  },
+  "status": "pending",
+  "featured": false,
+  "addedAt": "2026-02-18",
+  "x402": {
+    "discoveryUrl": "https://marketplace-api-9kvb.onrender.com/api/run?country=US",
+    "wellKnown": "https://marketplace-api-9kvb.onrender.com/.well-known/x402.json"
+  },
+  "lastVerified": "2026-02-19T00:00:00Z",
+  "healthEndpoint": "https://marketplace-api-9kvb.onrender.com/health",
+  "whyMobileProxy": "Google Discover feed is EXCLUSIVELY served to mobile device profiles. Desktop user-agents never receive Discover content. Mobile carrier IPs combined with mobile user-agent headers are required to access this feed. Datacenter IPs with mobile user-agents are still blocked — Google detects the IP/device mismatch. Real 4G/5G carrier IPs are the only reliable method.",
+  "outputSchema": {
+    "run": {
+      "discover_feed": "DiscoverArticle[] — position, title, source, sourceUrl, url, snippet, imageUrl, contentType, publishedAt, category, engagement",
+      "metadata": "{ feedLength, scrapedAt, proxyCountry, requestedCategory }"
+    }
+  },
+  "competitive": {
+    "vs": [
+      { "name": "Google News API", "price": "Deprecated", "limitation": "Shut down in 2011 — no official replacement" },
+      { "name": "GNews API", "price": "$0.001/article", "limitation": "Google News only, not Discover feed — different content" },
+      { "name": "Apify Google Scraper", "price": "$49+/mo", "limitation": "Search results only, no Discover feed access" },
+      { "name": "SerpAPI", "price": "$50-250/mo", "limitation": "SERP results only, no Discover feed" }
+    ],
+    "ourAdvantage": "Only API providing Google Discover feed data. No alternative exists — Google has no official API for Discover. Mobile proxy access is the only method."
+  },
+  "limitations": [
+    "Discover feed content varies by region and is influenced by trending topics",
+    "Not all categories available in all countries",
+    "Rate limited to 20 proxy requests/minute per client IP",
+    "Feed content is ephemeral — articles may disappear from feed within hours",
+    "Engagement metrics are estimates based on feed positioning"
+  ],
+  "endpoints": {
+    "/api/run": {
+      "method": "GET",
+      "price": "$0.02",
+      "description": "Get Google Discover feed by country and optional category filter",
+      "params": {
+        "country": "string (default: US) — ISO country code",
+        "category": "string (optional) — technology, business, sports, entertainment, science, health"
+      }
+    }
+  }
+}
