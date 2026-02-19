@@ -61,13 +61,51 @@ setInterval(() => {
 
 // ─── ROUTES ─────────────────────────────────────────
 
-app.get('/health', (c) => c.json({
-  status: 'healthy',
-  service: process.env.SERVICE_NAME || 'marketplace-service',
-  version: '1.0.0',
-  timestamp: new Date().toISOString(),
-  endpoints: ['/api/jobs', '/api/reviews/search', '/api/reviews/:place_id', '/api/reviews/summary/:place_id', '/api/business/:place_id', '/api/amazon/product/:asin', '/api/amazon/search', '/api/amazon/bestsellers', '/api/amazon/reviews/:asin'],
-}));
+app.get('/health', async (c) => {
+  const startTime = Date.now();
+
+  let proxyStatus = 'unknown';
+  try {
+    const { getProxy } = await import('./proxy');
+    const proxy = getProxy();
+    proxyStatus = proxy?.host ? 'configured' : 'not_configured';
+  } catch {
+    proxyStatus = 'error';
+  }
+
+  let targetStatus = 'unknown';
+  try {
+    const resp = await fetch('https://www.amazon.com/robots.txt', {
+      headers: { 'User-Agent': 'HealthCheck/1.0' },
+      signal: AbortSignal.timeout(5000),
+    });
+    targetStatus = resp.ok ? 'ok' : `error_${resp.status}`;
+  } catch {
+    targetStatus = 'unreachable';
+  }
+
+  const walletAddress = process.env.WALLET_ADDRESS;
+
+  return c.json({
+    status: proxyStatus === 'error' ? 'degraded' : 'healthy',
+    service: 'amazon-product-bsr-tracker',
+    version: '2.0.0',
+    uptime: `${Math.floor(process.uptime())}s`,
+    timestamp: new Date().toISOString(),
+    checks: {
+      proxy: proxyStatus,
+      target: targetStatus,
+      payment: walletAddress ? 'configured' : 'not_configured',
+    },
+    endpoints: [
+      '/api/amazon/product/:asin',
+      '/api/amazon/search',
+      '/api/amazon/bestsellers',
+      '/api/amazon/reviews/:asin',
+    ],
+    responseTimeMs: Date.now() - startTime,
+  });
+});
 
 app.get('/', (c) => c.json({
   name: process.env.SERVICE_NAME || 'job-market-intelligence',
