@@ -16,7 +16,7 @@ import { searchTweets, getTrending, getUserProfile, getUserTweets, getThread } f
 
 export const serviceRouter = new Hono();
 
-const WALLET_ADDRESS = '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+const WALLET_ADDRESS = process.env.WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
 
 async function getProxyExitIp(): Promise<string | null> {
   try {
