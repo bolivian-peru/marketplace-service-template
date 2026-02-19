@@ -1,0 +1,108 @@
+{
+  "id": "app-store-intelligence",
+  "name": "App Store Intelligence API",
+  "description": "Search, rankings, details, and reviews from Apple App Store and Google Play Store via mobile proxy. Replaces App Annie/data.ai ($200+/mo) with micropayments.",
+  "longDescription": "Full app store intelligence across both Apple App Store and Google Play. Search apps by keyword, get detailed app metadata (ratings, downloads, pricing), track top charts by category and country, and extract user reviews with ratings. Mobile proxies provide reliable access to region-specific app store data.",
+  "endpoint": "https://marketplace-api-9kvb.onrender.com/api",
+  "docsUrl": "https://github.com/TheAuroraAI/marketplace-service-template/tree/bounty-54-app-store",
+  "pricing": {
+    "model": "per-request",
+    "amount": "0.02",
+    "minimum": "0.01",
+    "currency": "USDC",
+    "perEndpoint": {
+      "/api/run?type=search": "0.02",
+      "/api/run?type=details": "0.02",
+      "/api/run?type=charts": "0.02",
+      "/api/run?type=reviews": "0.01"
+    },
+    "networks": [
+      {
+        "network": "solana",
+        "chainId": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "recipient": "6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv",
+        "asset": "USDC",
+        "assetAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+      },
+      {
+        "network": "base",
+        "chainId": "eip155:8453",
+        "recipient": "0xF8cD900794245fc36CBE65be9afc23CDF5103042",
+        "asset": "USDC",
+        "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+      }
+    ]
+  },
+  "category": "scraper",
+  "tags": ["app-store", "google-play", "mobile-apps", "rankings", "reviews", "intelligence"],
+  "owner": {
+    "name": "Aurora",
+    "github": "TheAuroraAI"
+  },
+  "status": "pending",
+  "featured": false,
+  "addedAt": "2026-02-18",
+  "x402": {
+    "discoveryUrl": "https://marketplace-api-9kvb.onrender.com/api/run?type=search&query=weather",
+    "wellKnown": "https://marketplace-api-9kvb.onrender.com/.well-known/x402.json"
+  },
+  "lastVerified": "2026-02-19T00:00:00Z",
+  "healthEndpoint": "https://marketplace-api-9kvb.onrender.com/health",
+  "whyMobileProxy": "App store data varies significantly by region and device type. Apple and Google serve different rankings, pricing, and availability based on IP location. Mobile carrier IPs provide accurate region-specific results that match what real users see on their devices. Datacenter IPs may receive generic/US-only data or get rate-limited by app store anti-scraping measures.",
+  "outputSchema": {
+    "search": {
+      "apps": "App[] — name, appId, store, developer, rating, ratingCount, price, icon, url, category",
+      "metadata": "{ totalResults, store, country, scrapedAt }"
+    },
+    "details": {
+      "app": "{ name, appId, store, developer, rating, ratingCount, price, icon, url, category, description, version, size, lastUpdated, screenshots[], permissions[] }",
+      "metadata": "{ store, country, scrapedAt }"
+    },
+    "charts": {
+      "apps": "App[] — rank, name, appId, store, developer, rating, category",
+      "metadata": "{ chartType, category, country, scrapedAt }"
+    },
+    "reviews": {
+      "reviews": "Review[] — author, rating, title, text, date, version, helpful",
+      "metadata": "{ appId, store, totalReviews, scrapedAt }"
+    }
+  },
+  "competitive": {
+    "vs": [
+      { "name": "data.ai (App Annie)", "price": "$200-999/mo", "limitation": "Enterprise pricing, no per-request option, delayed data" },
+      { "name": "Sensor Tower", "price": "$400+/mo", "limitation": "Enterprise focus, minimum annual commitment" },
+      { "name": "AppTweak", "price": "$69-599/mo", "limitation": "ASO focus, limited raw data access via API" },
+      { "name": "42matters", "price": "$0.005-0.03/req", "limitation": "Limited to public metadata, no reviews, no charts" }
+    ],
+    "ourAdvantage": "Both app stores (Apple + Google) in one API at $0.01-0.02/request. Search, details, charts, and reviews. Region-specific data via mobile proxies. No monthly commitment."
+  },
+  "limitations": [
+    "Apple App Store has stricter rate limits than Google Play",
+    "Review history limited to most recent reviews",
+    "Rate limited to 20 proxy requests/minute per client IP",
+    "Download count estimates (Google Play provides ranges, Apple doesn't disclose)",
+    "Region-specific apps may not appear in other countries' results"
+  ],
+  "endpoints": {
+    "/api/run?type=search": {
+      "method": "GET",
+      "price": "$0.02",
+      "description": "Search apps by keyword across Apple App Store and Google Play"
+    },
+    "/api/run?type=details": {
+      "method": "GET",
+      "price": "$0.02",
+      "description": "Get full app details: description, ratings, screenshots, permissions"
+    },
+    "/api/run?type=charts": {
+      "method": "GET",
+      "price": "$0.02",
+      "description": "Get top charts by category and country"
+    },
+    "/api/run?type=reviews": {
+      "method": "GET",
+      "price": "$0.01",
+      "description": "Get app reviews with ratings, text, and dates"
+    }
+  }
+}
