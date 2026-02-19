@@ -1,0 +1,107 @@
+{
+  "id": "facebook-marketplace-monitor",
+  "name": "Facebook Marketplace Monitor API",
+  "description": "Search and monitor Facebook Marketplace listings by keyword, location, price range. No official FB API exists — this fills the gap via mobile proxy.",
+  "longDescription": "Real-time access to Facebook Marketplace data without an official API. Search listings by keyword and location, get full listing details, monitor new items, and browse categories. Mobile proxies bypass Facebook's aggressive anti-scraping that blocks all datacenter IPs.",
+  "endpoint": "https://marketplace-api-9kvb.onrender.com/api",
+  "docsUrl": "https://github.com/TheAuroraAI/marketplace-service-template/tree/bounty-75-facebook-marketplace",
+  "pricing": {
+    "model": "per-request",
+    "amount": "0.01",
+    "minimum": "0.005",
+    "currency": "USDC",
+    "perEndpoint": {
+      "/api/marketplace/search": "0.01",
+      "/api/marketplace/listing/:id": "0.005",
+      "/api/marketplace/categories": "free",
+      "/api/marketplace/new": "0.02"
+    },
+    "networks": [
+      {
+        "network": "solana",
+        "chainId": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "recipient": "6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv",
+        "asset": "USDC",
+        "assetAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+      },
+      {
+        "network": "base",
+        "chainId": "eip155:8453",
+        "recipient": "0xF8cD900794245fc36CBE65be9afc23CDF5103042",
+        "asset": "USDC",
+        "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+      }
+    ]
+  },
+  "category": "scraper",
+  "tags": ["facebook", "marketplace", "listings", "e-commerce", "monitor"],
+  "owner": {
+    "name": "Aurora",
+    "github": "TheAuroraAI"
+  },
+  "status": "pending",
+  "featured": false,
+  "addedAt": "2026-02-18",
+  "x402": {
+    "discoveryUrl": "https://marketplace-api-9kvb.onrender.com/api/marketplace/search?query=test",
+    "wellKnown": "https://marketplace-api-9kvb.onrender.com/.well-known/x402.json"
+  },
+  "lastVerified": "2026-02-19T00:00:00Z",
+  "healthEndpoint": "https://marketplace-api-9kvb.onrender.com/health",
+  "whyMobileProxy": "Facebook blocks ALL datacenter IPs unconditionally — Marketplace has no public API and no scraping tolerance for non-residential IPs. Mobile carrier IPs (4G/5G) appear as legitimate Facebook app users, providing the only reliable programmatic access to Marketplace data. Even residential proxies get flagged; mobile IPs with real carrier headers are essential.",
+  "outputSchema": {
+    "search": {
+      "results": "MarketplaceListing[] — id, title, price, location, imageUrl, sellerName, condition, datePosted",
+      "totalFound": "number"
+    },
+    "listing": {
+      "listing": "MarketplaceListing — id, title, description, price, images[], seller, location, condition, category, datePosted"
+    },
+    "categories": {
+      "location": "string",
+      "categories": "Category[] — name, slug, count"
+    },
+    "new": {
+      "results": "MarketplaceListing[]",
+      "totalFound": "number",
+      "since": "string"
+    }
+  },
+  "competitive": {
+    "vs": [
+      { "name": "Facebook Graph API", "price": "N/A", "limitation": "No Marketplace access — Meta does not expose Marketplace via any API" },
+      { "name": "BrightData FB collector", "price": "$500+/mo", "limitation": "Enterprise pricing, minimum commitment, delayed data" },
+      { "name": "Apify FB Marketplace", "price": "$49+/mo", "limitation": "Unreliable, frequent breakage, no real-time monitoring" }
+    ],
+    "ourAdvantage": "Only reliable FB Marketplace API at micropayment prices ($0.005-0.02/request). No monthly commitment. Real-time data via mobile proxies that Facebook trusts."
+  },
+  "limitations": [
+    "Facebook Marketplace availability varies by region",
+    "Login-wall items may return limited data",
+    "Rate limited to 20 proxy requests/minute per client IP",
+    "Image URLs may expire after 24-48 hours",
+    "Seller contact info not available (Facebook policy)"
+  ],
+  "endpoints": {
+    "/api/marketplace/search": {
+      "method": "GET",
+      "price": "$0.01",
+      "description": "Search by keyword, location, price range"
+    },
+    "/api/marketplace/listing/:id": {
+      "method": "GET",
+      "price": "$0.005",
+      "description": "Get listing details"
+    },
+    "/api/marketplace/categories": {
+      "method": "GET",
+      "price": "free",
+      "description": "List categories"
+    },
+    "/api/marketplace/new": {
+      "method": "GET",
+      "price": "$0.02",
+      "description": "Monitor new listings"
+    }
+  }
+}

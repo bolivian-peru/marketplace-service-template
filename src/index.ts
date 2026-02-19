@@ -61,13 +61,51 @@ setInterval(() => {
 
 // ─── ROUTES ─────────────────────────────────────────
 
-app.get('/health', (c) => c.json({
-  status: 'healthy',
-  service: process.env.SERVICE_NAME || 'marketplace-service',
-  version: '1.0.0',
-  timestamp: new Date().toISOString(),
-  endpoints: ['/api/jobs', '/api/reviews/search', '/api/reviews/:place_id', '/api/reviews/summary/:place_id', '/api/business/:place_id'],
-}));
+app.get('/health', async (c) => {
+  const startTime = Date.now();
+
+  let proxyStatus = 'unknown';
+  try {
+    const { getProxy } = await import('./proxy');
+    const proxy = getProxy();
+    proxyStatus = proxy?.host ? 'configured' : 'not_configured';
+  } catch {
+    proxyStatus = 'error';
+  }
+
+  let targetStatus = 'unknown';
+  try {
+    const resp = await fetch('https://www.facebook.com/robots.txt', {
+      headers: { 'User-Agent': 'HealthCheck/1.0' },
+      signal: AbortSignal.timeout(5000),
+    });
+    targetStatus = resp.ok ? 'ok' : `error_${resp.status}`;
+  } catch {
+    targetStatus = 'unreachable';
+  }
+
+  const walletAddress = process.env.WALLET_ADDRESS;
+
+  return c.json({
+    status: proxyStatus === 'error' ? 'degraded' : 'healthy',
+    service: 'facebook-marketplace-monitor',
+    version: '2.0.0',
+    uptime: `${Math.floor(process.uptime())}s`,
+    timestamp: new Date().toISOString(),
+    checks: {
+      proxy: proxyStatus,
+      target: targetStatus,
+      payment: walletAddress ? 'configured' : 'not_configured',
+    },
+    endpoints: [
+      '/api/marketplace/search',
+      '/api/marketplace/listing/:id',
+      '/api/marketplace/categories',
+      '/api/marketplace/new',
+    ],
+    responseTimeMs: Date.now() - startTime,
+  });
+});
 
 app.get('/', (c) => c.json({
   name: process.env.SERVICE_NAME || 'job-market-intelligence',
@@ -79,6 +117,10 @@ app.get('/', (c) => c.json({
     { method: 'GET', path: '/api/reviews/:place_id', description: 'Fetch Google reviews by Place ID', price: '0.02 USDC' },
     { method: 'GET', path: '/api/business/:place_id', description: 'Get business details + review summary', price: '0.01 USDC' },
     { method: 'GET', path: '/api/reviews/summary/:place_id', description: 'Get review summary stats', price: '0.005 USDC' },
+    { method: 'GET', path: '/api/airbnb/search', description: 'Search Airbnb listings by location, dates, guests, price range', price: '0.02 USDC' },
+    { method: 'GET', path: '/api/airbnb/listing/:id', description: 'Full listing detail: host, amenities, rules, description', price: '0.01 USDC' },
+    { method: 'GET', path: '/api/airbnb/reviews/:listing_id', description: 'Listing reviews with author, rating, text, host response', price: '0.01 USDC' },
+    { method: 'GET', path: '/api/airbnb/market-stats', description: 'Market statistics: ADR, price distribution, property types', price: '0.05 USDC' },
   ],
   pricing: {
     amount: process.env.PRICE_USDC || '0.005',
@@ -112,7 +154,7 @@ app.get('/', (c) => c.json({
 
 app.route('/api', serviceRouter);
 
-app.notFound((c) => c.json({ error: 'Not found', endpoints: ['/', '/health', '/api/jobs', '/api/reviews/search', '/api/reviews/:place_id', '/api/business/:place_id', '/api/reviews/summary/:place_id'] }, 404));
+app.notFound((c) => c.json({ error: 'Not found', endpoints: ['/', '/health', '/api/jobs', '/api/reviews/search', '/api/reviews/:place_id', '/api/business/:place_id', '/api/reviews/summary/:place_id', '/api/airbnb/search', '/api/airbnb/listing/:id', '/api/airbnb/reviews/:listing_id', '/api/airbnb/market-stats'] }, 404));
 
 app.onError((err, c) => {
   console.error(`[ERROR] ${err.message}`);
