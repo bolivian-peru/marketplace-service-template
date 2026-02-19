@@ -1,97 +1,128 @@
 {
-  "name": "instagram-intelligence",
-  "title": "Instagram Intelligence + AI Vision Analysis API",
+  "id": "instagram-intelligence",
+  "name": "Instagram Intelligence + AI Vision Analysis API",
   "description": "Scrape Instagram profiles and posts via mobile proxy, with AI-powered vision analysis for account type detection, content themes, sentiment, authenticity scoring, and brand safety recommendations.",
-  "version": "1.0.0",
+  "longDescription": "Full Instagram intelligence pipeline: scrape profiles and posts through mobile proxies, then analyze with AI vision (GPT-4o/Claude). Detect account types, content themes, sentiment, authenticity scores, and brand safety. Essential for influencer marketing, competitive analysis, and brand monitoring.",
+  "endpoint": "https://marketplace-api-9kvb.onrender.com/api",
+  "docsUrl": "https://github.com/TheAuroraAI/marketplace-service-template/tree/bounty-71-instagram-intelligence",
   "pricing": {
+    "model": "per-request",
+    "amount": "0.01",
+    "minimum": "0.01",
+    "currency": "USDC",
+    "perEndpoint": {
+      "/api/instagram/profile/:username": "0.01",
+      "/api/instagram/posts/:username": "0.02",
+      "/api/instagram/analyze/:username": "0.15",
+      "/api/instagram/analyze/:username/images": "0.08",
+      "/api/instagram/audit/:username": "0.05"
+    },
+    "networks": [
+      {
+        "network": "solana",
+        "chainId": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "recipient": "6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv",
+        "asset": "USDC",
+        "assetAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+      },
+      {
+        "network": "base",
+        "chainId": "eip155:8453",
+        "recipient": "0xF8cD900794245fc36CBE65be9afc23CDF5103042",
+        "asset": "USDC",
+        "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+      }
+    ]
+  },
+  "category": "scraper",
+  "tags": ["instagram", "social-media", "influencer", "ai-vision", "sentiment", "authenticity", "brand-safety", "scraper"],
+  "owner": {
+    "name": "Aurora",
+    "github": "TheAuroraAI"
+  },
+  "status": "pending",
+  "featured": false,
+  "addedAt": "2026-02-18",
+  "x402": {
+    "discoveryUrl": "https://marketplace-api-9kvb.onrender.com/api/instagram/profile/instagram",
+    "wellKnown": "https://marketplace-api-9kvb.onrender.com/.well-known/x402.json"
+  },
+  "lastVerified": "2026-02-19T00:00:00Z",
+  "healthEndpoint": "https://marketplace-api-9kvb.onrender.com/health",
+  "whyMobileProxy": "Instagram aggressively blocks non-residential IPs and requires authenticated sessions for most data. Mobile carrier IPs (4G/5G) mimic real Instagram app traffic, bypassing rate limits and login walls that block datacenter and residential proxies. This is the only reliable method for programmatic Instagram data extraction at scale.",
+  "outputSchema": {
     "profile": {
-      "amount": "0.01",
-      "currency": "USDC",
-      "description": "Per profile lookup (followers, bio, engagement rate, posting frequency)"
+      "username": "string",
+      "fullName": "string",
+      "bio": "string",
+      "followers": "number",
+      "following": "number",
+      "posts": "number",
+      "engagementRate": "number",
+      "isVerified": "boolean",
+      "isPrivate": "boolean",
+      "profilePicUrl": "string"
     },
     "posts": {
-      "amount": "0.02",
-      "currency": "USDC",
-      "description": "Per posts fetch (up to 12 recent posts with captions, likes, hashtags)"
+      "posts": "Post[] — id, caption, likes, comments, hashtags, timestamp, imageUrl, isVideo, isSponsored",
+      "totalFetched": "number"
     },
     "analyze": {
-      "amount": "0.15",
-      "currency": "USDC",
-      "description": "Full analysis: profile + posts + AI vision (account type, themes, sentiment, authenticity)"
-    },
-    "images": {
-      "amount": "0.08",
-      "currency": "USDC",
-      "description": "AI vision analysis of post images only (content themes, style, brand safety)"
+      "accountType": "influencer | business | personal | bot/fake | meme_page | news_media",
+      "contentThemes": "string[]",
+      "sentiment": "{ positive, neutral, negative }",
+      "authenticityScore": "number (0-100)",
+      "brandSafety": "{ score, concerns[], recommendations[] }",
+      "estimatedPostValue": "number"
     },
     "audit": {
-      "amount": "0.05",
-      "currency": "USDC",
-      "description": "Authenticity audit: fake follower detection, engagement patterns, bot signals"
+      "authenticityScore": "number (0-100)",
+      "fakeFollowerPercent": "number",
+      "engagementPatterns": "{ suspicious, normal }",
+      "botSignals": "string[]"
     }
   },
-  "endpoints": [
-    {
-      "method": "GET",
-      "path": "/api/instagram/profile/:username",
-      "description": "Get Instagram profile data with engagement metrics",
-      "params": {
-        "username": "Instagram username (required, in URL path)"
-      }
-    },
-    {
-      "method": "GET",
-      "path": "/api/instagram/posts/:username",
-      "description": "Get recent Instagram posts with captions, likes, comments, hashtags",
-      "params": {
-        "username": "Instagram username (required, in URL path)",
-        "limit": "1-50 (default: 12)"
-      }
-    },
-    {
-      "method": "GET",
-      "path": "/api/instagram/analyze/:username",
-      "description": "Full AI-powered profile analysis: account type, content themes, sentiment, authenticity, brand recommendations",
-      "params": {
-        "username": "Instagram username (required, in URL path)"
-      }
-    },
-    {
-      "method": "GET",
-      "path": "/api/instagram/analyze/:username/images",
-      "description": "AI vision analysis of post images: content themes, style, aesthetic consistency, brand safety score",
-      "params": {
-        "username": "Instagram username (required, in URL path)"
-      }
-    },
-    {
-      "method": "GET",
-      "path": "/api/instagram/audit/:username",
-      "description": "Authenticity audit: fake follower detection, engagement pattern analysis, bot signal detection",
-      "params": {
-        "username": "Instagram username (required, in URL path)"
-      }
-    }
-  ],
-  "features": [
-    "Instagram profile scraping (followers, bio, engagement rate, posting frequency)",
-    "Recent posts extraction (captions, likes, comments, hashtags, timestamps)",
-    "AI vision analysis via GPT-4o or Claude (with heuristic fallback)",
-    "Account type classification (influencer, business, personal, bot/fake, meme page, news media)",
-    "Content theme detection (travel, food, fashion, fitness, tech, beauty, etc.)",
-    "Sentiment analysis (positive/neutral/negative breakdown)",
-    "Authenticity scoring (0-100) with fake follower detection",
-    "Brand safety scoring and brand alignment recommendations",
-    "Estimated post value calculation",
-    "Sponsored content detection (#ad, #sponsored)",
-    "Mobile proxy for authentic Instagram data (avoids blocks)"
-  ],
-  "infrastructure": "Proxies.sx mobile proxies (real 4G/5G IPs) + OpenAI GPT-4o / Anthropic Claude vision",
-  "networks": ["solana", "base"],
-  "wallets": {
-    "solana": "6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv",
-    "base": "0xF8cD900794245fc36CBE65be9afc23CDF5103042"
+  "competitive": {
+    "vs": [
+      { "name": "HypeAuditor", "price": "$299-999/mo", "limitation": "No raw data access, limited API, pre-computed reports only" },
+      { "name": "Social Blade", "price": "$3.99-99/mo", "limitation": "Historical stats only, no AI analysis, no post content" },
+      { "name": "Modash", "price": "$120-800/mo", "limitation": "Influencer discovery focus, no authenticity audit" },
+      { "name": "PhantomBuster IG", "price": "$56-399/mo", "limitation": "Rate limited, no AI vision, frequent breakage" }
+    ],
+    "ourAdvantage": "Real-time Instagram data + AI vision analysis at $0.01-0.15/request. Includes authenticity auditing, brand safety scoring, and content theme detection. No monthly commitment."
   },
-  "category": "data",
-  "tags": ["instagram", "social-media", "influencer", "ai-vision", "sentiment", "authenticity", "brand-safety", "scraper"]
+  "limitations": [
+    "Private accounts return limited public data only",
+    "AI vision analysis requires API key (OpenAI or Anthropic) — falls back to heuristic analysis",
+    "Rate limited to 20 proxy requests/minute per client IP",
+    "Story/Reel data not yet supported (post images + captions only)",
+    "Instagram may serve different data based on region"
+  ],
+  "endpoints": {
+    "/api/instagram/profile/:username": {
+      "method": "GET",
+      "price": "$0.01",
+      "description": "Get Instagram profile data with engagement metrics"
+    },
+    "/api/instagram/posts/:username": {
+      "method": "GET",
+      "price": "$0.02",
+      "description": "Get recent posts with captions, likes, comments, hashtags"
+    },
+    "/api/instagram/analyze/:username": {
+      "method": "GET",
+      "price": "$0.15",
+      "description": "Full AI-powered profile analysis: account type, themes, sentiment, authenticity"
+    },
+    "/api/instagram/analyze/:username/images": {
+      "method": "GET",
+      "price": "$0.08",
+      "description": "AI vision analysis of post images: themes, style, brand safety"
+    },
+    "/api/instagram/audit/:username": {
+      "method": "GET",
+      "price": "$0.05",
+      "description": "Authenticity audit: fake follower detection, bot signals"
+    }
+  }
 }
