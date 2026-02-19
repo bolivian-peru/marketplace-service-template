@@ -1,0 +1,128 @@
+{
+  "id": "x-twitter-search",
+  "name": "X/Twitter Real-Time Search API",
+  "description": "Real-time X/Twitter search, trending topics, user profiles, tweet timelines, and thread extraction via mobile proxy. Replaces X API ($100-5000/mo) with micropayments.",
+  "longDescription": "Full X/Twitter intelligence without the expensive API tier. Search tweets in real-time, track trending topics, extract user profiles with engagement metrics, fetch tweet timelines, and reconstruct full threads. All via mobile proxies that bypass X's aggressive rate limiting on non-authenticated requests.",
+  "endpoint": "https://marketplace-api-9kvb.onrender.com/api",
+  "docsUrl": "https://github.com/TheAuroraAI/marketplace-service-template/tree/bounty-73-x-twitter-search",
+  "pricing": {
+    "model": "per-request",
+    "amount": "0.01",
+    "minimum": "0.01",
+    "currency": "USDC",
+    "perEndpoint": {
+      "/api/x/search": "0.01",
+      "/api/x/trending": "0.005",
+      "/api/x/user/:handle": "0.01",
+      "/api/x/user/:handle/tweets": "0.02",
+      "/api/x/thread/:tweet_id": "0.01"
+    },
+    "networks": [
+      {
+        "network": "solana",
+        "chainId": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "recipient": "6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv",
+        "asset": "USDC",
+        "assetAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+      },
+      {
+        "network": "base",
+        "chainId": "eip155:8453",
+        "recipient": "0xF8cD900794245fc36CBE65be9afc23CDF5103042",
+        "asset": "USDC",
+        "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+      }
+    ]
+  },
+  "category": "scraper",
+  "tags": ["twitter", "x", "social-media", "search", "trending", "real-time"],
+  "owner": {
+    "name": "Aurora",
+    "github": "TheAuroraAI"
+  },
+  "status": "pending",
+  "featured": false,
+  "addedAt": "2026-02-18",
+  "x402": {
+    "discoveryUrl": "https://marketplace-api-9kvb.onrender.com/api/x/search?q=test",
+    "wellKnown": "https://marketplace-api-9kvb.onrender.com/.well-known/x402.json"
+  },
+  "lastVerified": "2026-02-19T00:00:00Z",
+  "healthEndpoint": "https://marketplace-api-9kvb.onrender.com/health",
+  "whyMobileProxy": "X/Twitter imposes extreme rate limits on unauthenticated requests and blocks datacenter IPs entirely. The official API starts at $100/mo (Basic) with strict quotas, and the Pro tier ($5000/mo) is required for search. Mobile carrier IPs bypass these restrictions by appearing as legitimate X app users on cellular networks, providing reliable access without API key quotas.",
+  "outputSchema": {
+    "search": {
+      "tweets": "Tweet[] — id, text, author, likes, retweets, replies, timestamp, media[], hashtags[]",
+      "query": "string",
+      "totalResults": "number"
+    },
+    "trending": {
+      "trends": "Trend[] — name, tweetCount, category, url",
+      "location": "string"
+    },
+    "user": {
+      "handle": "string",
+      "displayName": "string",
+      "bio": "string",
+      "followers": "number",
+      "following": "number",
+      "tweets": "number",
+      "isVerified": "boolean",
+      "joinedDate": "string",
+      "profileImageUrl": "string"
+    },
+    "tweets": {
+      "tweets": "Tweet[]",
+      "user": "string",
+      "totalFetched": "number"
+    },
+    "thread": {
+      "tweets": "Tweet[] (ordered by reply chain)",
+      "rootTweet": "Tweet",
+      "totalReplies": "number"
+    }
+  },
+  "competitive": {
+    "vs": [
+      { "name": "X API Basic", "price": "$100/mo", "limitation": "10K tweets/mo read, no search, rate-limited" },
+      { "name": "X API Pro", "price": "$5,000/mo", "limitation": "1M tweets/mo, expensive for small workloads" },
+      { "name": "X API Enterprise", "price": "$42,000+/mo", "limitation": "Full access but enterprise pricing" },
+      { "name": "SocialData.tools", "price": "$0.003-0.01/req", "limitation": "No trending, limited search operators" }
+    ],
+    "ourAdvantage": "Real-time X data at $0.005-0.02/request with no monthly minimum. Full search, trending, profiles, timelines, and threads. Pay only for what you use via x402 micropayments."
+  },
+  "limitations": [
+    "Protected/private accounts return limited public data",
+    "Search results limited by X's non-authenticated view (recent tweets, not full history)",
+    "Rate limited to 20 proxy requests/minute per client IP",
+    "Trending topics are location-dependent (defaults to US/global)",
+    "Media URLs in tweets may expire"
+  ],
+  "endpoints": {
+    "/api/x/search": {
+      "method": "GET",
+      "price": "$0.01",
+      "description": "Search tweets by keyword, hashtag, or advanced query"
+    },
+    "/api/x/trending": {
+      "method": "GET",
+      "price": "$0.005",
+      "description": "Get trending topics by location"
+    },
+    "/api/x/user/:handle": {
+      "method": "GET",
+      "price": "$0.01",
+      "description": "Get user profile with follower/following counts"
+    },
+    "/api/x/user/:handle/tweets": {
+      "method": "GET",
+      "price": "$0.02",
+      "description": "Get user's recent tweets with engagement metrics"
+    },
+    "/api/x/thread/:tweet_id": {
+      "method": "GET",
+      "price": "$0.01",
+      "description": "Reconstruct full tweet thread/conversation"
+    }
+  }
+}
