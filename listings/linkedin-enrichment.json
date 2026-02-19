@@ -1,0 +1,123 @@
+{
+  "id": "linkedin-enrichment",
+  "name": "LinkedIn People & Company Enrichment API",
+  "description": "Extract LinkedIn profiles, company data, employee lists, and people search via mobile proxy. Replaces LinkedIn Sales Navigator ($80-150/mo) with micropayments.",
+  "longDescription": "Full LinkedIn data enrichment: extract person profiles (experience, education, skills), company pages (size, industry, funding), search people by keywords/title/company, and list company employees. Mobile proxies bypass LinkedIn's aggressive anti-scraping that blocks all datacenter IPs within seconds.",
+  "endpoint": "https://marketplace-api-9kvb.onrender.com/api",
+  "docsUrl": "https://github.com/TheAuroraAI/marketplace-service-template/tree/bounty-77-linkedin-enrichment",
+  "pricing": {
+    "model": "per-request",
+    "amount": "0.03",
+    "minimum": "0.03",
+    "currency": "USDC",
+    "perEndpoint": {
+      "/api/linkedin/person": "0.03",
+      "/api/linkedin/company": "0.03",
+      "/api/linkedin/search/people": "0.05",
+      "/api/linkedin/company/:id/employees": "0.10"
+    },
+    "networks": [
+      {
+        "network": "solana",
+        "chainId": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "recipient": "6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv",
+        "asset": "USDC",
+        "assetAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+      },
+      {
+        "network": "base",
+        "chainId": "eip155:8453",
+        "recipient": "0xF8cD900794245fc36CBE65be9afc23CDF5103042",
+        "asset": "USDC",
+        "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+      }
+    ]
+  },
+  "category": "scraper",
+  "tags": ["linkedin", "people", "company", "enrichment", "recruitment", "sales"],
+  "owner": {
+    "name": "Aurora",
+    "github": "TheAuroraAI"
+  },
+  "status": "pending",
+  "featured": false,
+  "addedAt": "2026-02-18",
+  "x402": {
+    "discoveryUrl": "https://marketplace-api-9kvb.onrender.com/api/linkedin/person?url=linkedin.com/in/test",
+    "wellKnown": "https://marketplace-api-9kvb.onrender.com/.well-known/x402.json"
+  },
+  "lastVerified": "2026-02-19T00:00:00Z",
+  "healthEndpoint": "https://marketplace-api-9kvb.onrender.com/health",
+  "whyMobileProxy": "LinkedIn is one of the most aggressively protected platforms. It blocks all datacenter IPs, fingerprints browser sessions, and rate-limits even residential proxies to ~100 requests/day. Mobile carrier IPs appear as legitimate LinkedIn app users (iOS/Android), bypassing these protections. This is the gold standard for LinkedIn scraping — even competitors like ProxyCurl use mobile proxy infrastructure internally.",
+  "outputSchema": {
+    "person": {
+      "name": "string",
+      "headline": "string",
+      "location": "string",
+      "connections": "number",
+      "experience": "Experience[] — title, company, duration, description",
+      "education": "Education[] — school, degree, field, years",
+      "skills": "string[]",
+      "certifications": "Certification[]",
+      "profileUrl": "string"
+    },
+    "company": {
+      "name": "string",
+      "industry": "string",
+      "size": "string (e.g. '1001-5000')",
+      "founded": "number",
+      "headquarters": "string",
+      "website": "string",
+      "description": "string",
+      "specialties": "string[]",
+      "employeeCount": "number"
+    },
+    "searchPeople": {
+      "results": "PersonResult[] — name, headline, location, profileUrl",
+      "totalResults": "number"
+    },
+    "employees": {
+      "employees": "Employee[] — name, title, profileUrl",
+      "companyId": "string",
+      "totalEmployees": "number"
+    }
+  },
+  "competitive": {
+    "vs": [
+      { "name": "ProxyCurl", "price": "$0.01-0.05/profile", "limitation": "Person profiles only, no employee lists, no search" },
+      { "name": "LinkedIn Sales Navigator", "price": "$80-150/mo", "limitation": "Manual use only, no API, 2500 searches/mo" },
+      { "name": "Apollo.io", "price": "$49-119/mo", "limitation": "Email-focused, limited profile data, 10K credits/mo" },
+      { "name": "PhantomBuster LinkedIn", "price": "$56-399/mo", "limitation": "Requires your LinkedIn session cookie, risk of ban" }
+    ],
+    "ourAdvantage": "Full LinkedIn data (profiles, companies, search, employees) at $0.03-0.10/request. No LinkedIn login required. No monthly commitment. No risk to your LinkedIn account."
+  },
+  "limitations": [
+    "Private profiles return limited public data only",
+    "Employee lists limited to publicly visible employees",
+    "Rate limited to 20 proxy requests/minute per client IP",
+    "LinkedIn may vary data shown by region/language",
+    "Search results limited to LinkedIn's non-authenticated view depth"
+  ],
+  "endpoints": {
+    "/api/linkedin/person": {
+      "method": "GET",
+      "price": "$0.03",
+      "description": "Get person profile: experience, education, skills, certifications"
+    },
+    "/api/linkedin/company": {
+      "method": "GET",
+      "price": "$0.03",
+      "description": "Get company profile: size, industry, specialties, description"
+    },
+    "/api/linkedin/search/people": {
+      "method": "GET",
+      "price": "$0.05",
+      "description": "Search people by keywords, title, company, location"
+    },
+    "/api/linkedin/company/:id/employees": {
+      "method": "GET",
+      "price": "$0.10",
+      "description": "List employees of a company with titles"
+    }
+  }
+}
