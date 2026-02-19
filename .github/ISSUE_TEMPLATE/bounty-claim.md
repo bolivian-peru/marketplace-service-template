@@ -17,6 +17,8 @@ assignees: ''
 
 ### Wave 2 — $50 bounties
 - [ ] Mobile SERP Tracker ($50)
+- [ ] Google Maps Lead Generator ($50)
+- [ ] Google Reviews & Business Data API ($50)
 - [ ] E-Commerce Price & Stock Monitor ($50)
 - [ ] Social Profile Intelligence API ($50)
 - [ ] Ad Spy & Creative Intelligence ($50)
@@ -28,7 +30,8 @@ assignees: ''
 
 ## Your Service
 
-**Endpoint URL:** `https://your-service.example.com`
+**Endpoint URL(s):**
+- `https://your-service.example.com`
 
 **Demo / Proof of work:**
 <!-- Show that it works. A curl command, a screenshot, or a video. -->
@@ -38,6 +41,10 @@ curl https://your-service.example.com/api/run?param=value
 ```
 
 **Source code:** <!-- Link to your fork or repo -->
+
+## Merged PRs Link
+
+- [ ] Service Name: `https://github.com/bolivian-peru/marketplace-service-template/pull/<pr_number>`
 
 ## Checklist
 
