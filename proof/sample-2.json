@@ -1,0 +1,21 @@
+{
+  "_query": "GET /api/reddit/subreddit/cryptocurrency/top?time=week&limit=5",
+  "_note": "Replace with real output from live deployment with mobile proxy configured",
+  "subreddit": "r/cryptocurrency",
+  "results": [],
+  "meta": {
+    "time_filter": "week",
+    "total_results": 0,
+    "proxy": {
+      "ip": null,
+      "country": "US",
+      "carrier": null
+    },
+    "scraped_at": "2026-02-20T00:00:00.000Z",
+    "response_time_ms": 0
+  },
+  "pagination": {
+    "after": null,
+    "has_more": false
+  }
+}
