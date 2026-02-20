@@ -4,6 +4,134 @@
  * All interfaces used across the service.
  */
 
+// ─── TREND INTELLIGENCE TYPES (Bounty #70) ──────────
+
+export type Platform = 'reddit' | 'web' | 'x' | 'youtube' | 'twitter';
+export type SignalStrength = 'established' | 'reinforced' | 'emerging';
+export type SentimentLabel = 'positive' | 'neutral' | 'negative';
+
+export interface PatternEvidence {
+  platform: string;
+  title: string;
+  url: string;
+  engagement: number;
+  // Reddit-specific
+  subreddit?: string;
+  score?: number;
+  numComments?: number;
+  created?: number;
+  // Web-specific
+  source?: string;
+}
+
+export interface TrendPattern {
+  pattern: string;
+  strength: SignalStrength;
+  sources: ('reddit' | 'web' | 'youtube' | 'twitter')[];
+  totalEngagement: number;
+  evidence: PatternEvidence[];
+}
+
+// ─── YOUTUBE TYPES ───────────────────────────────────
+
+export interface YouTubeResult {
+  videoId: string;
+  title: string;
+  url: string;
+  channelName: string | null;
+  viewCount: number | null;
+  description: string;
+  publishedAt: string | null;
+  engagementScore: number;
+  platform: 'youtube';
+}
+
+// ─── TWITTER TYPES ───────────────────────────────────
+
+export interface TwitterResult {
+  tweetId: string | null;
+  author: string | null;
+  text: string;
+  url: string;
+  likes: number | null;
+  retweets: number | null;
+  engagementScore: number;
+  publishedAt: string | null;
+  platform: 'twitter';
+}
+
+export interface PlatformSentimentBreakdown {
+  overall: SentimentLabel;
+  positive: number;   // percentage 0-100
+  neutral: number;
+  negative: number;
+}
+
+export interface ResearchRequest {
+  topic: string;
+  platforms: Platform[];
+  days: number;
+  country: string;
+}
+
+export interface TopDiscussion {
+  platform: string;
+  title: string;
+  url: string;
+  engagement: number;
+  subreddit?: string;
+  score?: number;
+  numComments?: number;
+}
+
+export interface ResearchResponse {
+  topic: string;
+  timeframe: string;
+  patterns: TrendPattern[];
+  sentiment: {
+    overall: SentimentLabel;
+    by_platform: Record<string, PlatformSentimentBreakdown>;
+  };
+  top_discussions: TopDiscussion[];
+  emerging_topics: string[];
+  meta: {
+    sources_checked: number;
+    platforms_used: string[];
+    proxy: { ip: string | null; country: string; type: string };
+    generated_at: string;
+  };
+  payment: {
+    txHash: string;
+    network: string;
+    amount: number;
+    settled: boolean;
+  };
+}
+
+export interface TrendingItem {
+  topic: string;
+  platform: string;
+  engagement: number | null;
+  traffic?: string | null;
+  url?: string;
+}
+
+export interface TrendingResponse {
+  country: string;
+  platforms: string[];
+  trending: TrendingItem[];
+  generated_at: string;
+  meta: {
+    proxy: { ip: string | null; country: string; type: string };
+  };
+  payment: {
+    txHash: string;
+    network: string;
+    amount: number;
+    settled: boolean;
+  };
+}
+
 // ─── GOOGLE MAPS TYPES ──────────────────────────────
 
 export interface BusinessData {

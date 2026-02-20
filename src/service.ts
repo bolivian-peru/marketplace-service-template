@@ -16,8 +16,14 @@ import { scrapeIndeed, scrapeLinkedIn, type JobListing } from './scrapers/job-sc
 import { fetchReviews, fetchBusinessDetails, fetchReviewSummary, searchBusinesses } from './scrapers/reviews';
 import { searchReddit, getTrending, getSubredditTop, getThreadComments, RedditError } from './scrapers/reddit';
 import { scrapeGoogleMaps, extractDetailedBusiness } from './scrapers/maps-scraper';
+import { researchRouter } from './routes/research';
+import { trendingRouter } from './routes/trending';
 
 export const serviceRouter = new Hono();
+
+// ─── TREND INTELLIGENCE ROUTES (Bounty #70) ─────────
+serviceRouter.route('/research', researchRouter);
+serviceRouter.route('/trending', trendingRouter);
 
 const SERVICE_NAME = 'job-market-intelligence';
 const PRICE_USDC = 0.005;

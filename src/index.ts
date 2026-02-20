@@ -82,7 +82,9 @@ app.get('/health', (c) => {
       payment: walletConfigured ? 'configured' : 'not_configured',
     },
     endpoints: [
+      '/api/run', '/api/details',
       '/api/jobs',
+      '/api/research', '/api/trending',
       '/api/reviews/search', '/api/reviews/:place_id', '/api/reviews/summary/:place_id', '/api/business/:place_id',
       '/api/reddit/search', '/api/reddit/trending', '/api/reddit/subreddit/:name/top', '/api/reddit/thread/:id/comments',
     ],
