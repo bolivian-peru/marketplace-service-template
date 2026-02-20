@@ -1,5 +1,7 @@
 {
+  "id": "google-reviews-business-data",
   "name": "google-reviews-business-data",
+  "endpoint": "https://api.proxies.sx/v1/x402/predictions",
   "title": "Google Reviews & Business Data API",
   "description": "Extract Google Business reviews, ratings, response rates, photos, and business details for any location. Supports review sorting, rating distribution, owner response tracking, and business search by category + location.",
   "version": "1.0.0",
@@ -69,11 +71,21 @@
     "Mobile proxy for authentic Google data"
   ],
   "infrastructure": "Proxies.sx mobile proxies (real 4G/5G IPs)",
-  "networks": ["solana", "base"],
+  "networks": [
+    "solana",
+    "base"
+  ],
   "wallets": {
     "solana": "6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv",
     "base": "0xF8cD900794245fc36CBE65be9afc23CDF5103042"
   },
   "category": "data",
-  "tags": ["google", "reviews", "business", "ratings", "maps", "local"]
+  "tags": [
+    "google",
+    "reviews",
+    "business",
+    "ratings",
+    "maps",
+    "local"
+  ]
 }

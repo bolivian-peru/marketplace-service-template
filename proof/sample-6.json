@@ -1,0 +1,25 @@
+{
+  "placeId": "ChIJ...abc",
+  "business": {
+    "name": "Radiant Plumbing & Air",
+    "rating": 4.8,
+    "totalReviews": 3240
+  },
+  "reviews": [
+    {
+      "author": "John Doe",
+      "rating": 5,
+      "text": "Best plumbing service in Austin. Very professional and fast.",
+      "timestamp": "2026-02-15T10:00:00Z",
+      "language": "en"
+    },
+    {
+      "author": "Jane Smith",
+      "rating": 4,
+      "text": "A bit expensive but the quality is top-notch.",
+      "timestamp": "2026-02-14T14:30:00Z",
+      "language": "en"
+    }
+  ],
+  "timestamp": "2026-02-20T06:00:00.352Z"
+}

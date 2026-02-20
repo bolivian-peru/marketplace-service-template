@@ -1,0 +1,43 @@
+{
+  "kalshi_ticker": "KXPRESNOMD-28",
+  "metaculus_id": "40281",
+  "kalshi": {
+    "yes": 0.42,
+    "no": 0.58,
+    "volume24h": 8900.5,
+    "lastTradePrice": 0.42,
+    "orderbook": {
+      "bids": [
+        {
+          "price": 0.41,
+          "size": 1200
+        },
+        {
+          "price": 0.4,
+          "size": 5000
+        }
+      ],
+      "asks": [
+        {
+          "price": 0.43,
+          "size": 850
+        },
+        {
+          "price": 0.44,
+          "size": 2100
+        }
+      ]
+    }
+  },
+  "metaculus": {
+    "median": 0.38,
+    "forecasters": 1250,
+    "recency_weighted": 0.375,
+    "num_predictions": 4230,
+    "latest_prediction": {
+      "date": "2026-02-18",
+      "value": 0.38
+    }
+  },
+  "timestamp": "2026-02-20T06:00:00.352Z"
+}
