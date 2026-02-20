@@ -14,6 +14,8 @@ import { extractPayment, verifyPayment, build402Response } from './payment';
 import { scrapeIndeed, scrapeLinkedIn, type JobListing } from './scrapers/job-scraper';
 import { fetchReviews, fetchBusinessDetails, fetchReviewSummary, searchBusinesses } from './scrapers/reviews';
 import { scrapeGoogleMaps, extractDetailedBusiness } from './scrapers/maps-scraper';
+import { researchRouter } from './routes/research';
+import { trendingRouter } from './routes/trending';
 
 export const serviceRouter = new Hono();
 
