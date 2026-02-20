@@ -125,7 +125,7 @@
       "id": "job-market-intelligence",
       "name": "Job Market Intelligence",
       "description": "Real-time job market data from major job boards. Salary ranges, skills demand, location analysis. $0.005/query via x402.",
-      "endpoint": "https://bounty16-job-market-intelligence.onrender.com",
+      "endpoint": "https://api.proxies.sx/v1/x402/predictions",
       "docsUrl": "https://agents.proxies.sx/marketplace/skill.md",
       "pricing": {
         "model": "per-request",
@@ -150,9 +150,9 @@
     },
     {
       "id": "prediction-market-aggregator",
-      "name": "Prediction Market Aggregator",
-      "description": "Aggregated prediction market data from Polymarket, Kalshi, and more. Real-time odds, volume, and market signals. $0.05/query via x402.",
-      "endpoint": "https://marketplace-service-template.onrender.com",
+      "name": "Prediction Market Signal Aggregator",
+      "description": "Real-time prediction market aggregator (Polymarket, Kalshi, Metaculus) with social sentiment signals using mobile proxies.",
+      "endpoint": "https://api.proxies.sx/v1/x402/predictions",
       "docsUrl": "https://agents.proxies.sx/marketplace/skill.md",
       "pricing": {
         "model": "per-request",
@@ -160,16 +160,23 @@
         "minimum": "0.05",
         "currency": "USDC"
       },
-      "category": "data",
+      "category": "trading",
       "tags": [
         "prediction-market",
         "polymarket",
         "kalshi",
-        "forecasting"
+        "forecasting",
+        "arbitrage",
+        "sentiment",
+        "trading",
+        "crypto",
+        "mobile-proxy",
+        "social-scraping"
       ],
       "owner": {
-        "name": "rakesh0x",
-        "github": "rakesh0x"
+        "name": "Rakesh",
+        "github": "rakesh0x",
+        "twitter": "rakesh0x"
       },
       "status": "active",
       "featured": false,

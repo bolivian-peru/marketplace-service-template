@@ -1,6 +1,6 @@
 /**
- * Marketplace Service — Server Entry Point
- * ─────────────────────────────────────────
+ * Marketplace Service — Server Entry Point (Multi-Service)
+ * ────────────────────────────────────────────────────────
  * Mounts: /api/*
  */
 
@@ -61,29 +61,91 @@ setInterval(() => {
 
 // ─── ROUTES ─────────────────────────────────────────
 
-app.get('/health', (c) => c.json({
-  status: 'healthy',
-  service: process.env.SERVICE_NAME || 'marketplace-service',
-  version: '1.0.0',
-  timestamp: new Date().toISOString(),
-  endpoints: ['/api/run', '/api/details', '/api/jobs', '/api/research', '/api/trending', '/api/reviews/search', '/api/reviews/:place_id', '/api/reviews/summary/:place_id', '/api/business/:place_id'],
-}));
+app.get('/health', async (c) => {
+  const diagnostics: Record<string, any> = {
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    proxy: { status: 'unknown' },
+    targets: { polymarket: 'unknown', kalshi: 'unknown' }
+  };
+
+  try {
+    const proxyRes = await fetch('https://api.ipify.org?format=json', {
+      // @ts-ignore
+      proxy: `http://${process.env.PROXY_USER}:${process.env.PROXY_PASS}@${process.env.PROXY_HOST}:${process.env.PROXY_HTTP_PORT}`
+    });
+    diagnostics.proxy.status = proxyRes.ok ? 'connected' : 'failed';
+  } catch {
+    diagnostics.proxy.status = 'error';
+    diagnostics.status = 'degraded';
+  }
+
+  try {
+    const polyRes = await fetch('https://gamma-api.polymarket.com/health');
+    diagnostics.targets.polymarket = polyRes.ok ? 'up' : 'down';
+  } catch { diagnostics.targets.polymarket = 'error'; }
+
+  return c.json({
+    ...diagnostics,
+    version: '1.2.1',
+    services: ['job-market-intelligence', 'google-reviews', 'prediction-market-aggregator', 'google-maps-leads', 'trend-intelligence'],
+    endpoints: [
+      '/api/jobs',
+      '/api/reviews/search',
+      '/api/reviews/:place_id',
+      '/api/reviews/summary/:place_id',
+      '/api/business/:place_id',
+      '/api/predictions',
+      '/api/research',
+      '/api/trending',
+      '/api/run',
+      '/api/details'
+    ],
+  });
+});
 
 app.get('/', (c) => c.json({
-  name: process.env.SERVICE_NAME || 'marketplace-service-hub',
-  description: process.env.SERVICE_DESCRIPTION || 'AI agent intelligence services powered by real 4G/5G mobile proxies.',
-  version: '1.0.0',
+  name: 'Multi-Service Hub (Proxies.sx Marketplace)',
+  description: 'Aggregated intelligence services powered by mobile proxies.',
+  version: '1.2.1',
   endpoints: [
-    { method: 'GET', path: '/api/run', description: 'Google Maps Lead Generator — search businesses by category + location', price: '0.005 USDC' },
-    { method: 'GET', path: '/api/details', description: 'Google Maps Place Details — detailed business info by Place ID', price: '0.005 USDC' },
-    { method: 'GET', path: '/api/jobs', description: 'Get job listings (Indeed/LinkedIn) with salary + date + proxy metadata' },
-    { method: 'GET', path: '/api/reviews/search', description: 'Search businesses by query + location', price: '0.01 USDC' },
-    { method: 'GET', path: '/api/reviews/:place_id', description: 'Fetch Google reviews by Place ID', price: '0.02 USDC' },
-    { method: 'GET', path: '/api/business/:place_id', description: 'Get business details + review summary', price: '0.01 USDC' },
-    { method: 'GET', path: '/api/reviews/summary/:place_id', description: 'Get review summary stats', price: '0.005 USDC' },
+    {
+      path: '/api/run',
+      description: 'Google Maps Lead Generator — search businesses by category + location',
+      schema: { input: 'query (req), location (req), limit (opt)', output: 'BusinessInfo[]' }
+    },
+    {
+      path: '/api/details',
+      description: 'Google Maps Place Details — detailed business info by Place ID'
+    },
+    {
+      path: '/api/jobs',
+      description: 'Job results from Indeed/LinkedIn',
+      schema: {
+        input: 'query (req), location (opt), limit (opt)',
+        output: 'JobListing[]: { title, company, location, salary, date, link, remote, platform }'
+      }
+    },
+    {
+      path: '/api/predictions',
+      description: 'Prediction market odds + social sentiment',
+      schema: {
+        input: 'type: signal|arbitrage|sentiment, market: slug, topic: string',
+        output: 'PredictionData: { odds: { polymarket, kalshi, metaculus }, sentiment: { reddit, twitter }, signals: { arbitrage, divergence } }'
+      }
+    },
+    { path: '/api/research', description: 'Trend Intelligence Research' },
+    { path: '/api/trending', description: 'Cross-platform trending topics' },
+    { path: '/api/reviews/search', description: 'Search businesses by query + location' },
+    { path: '/api/reviews/:place_id', description: 'Fetch Google reviews by Place ID' },
+    { path: '/api/business/:place_id', description: 'Get business details + review summary' },
   ],
   pricing: {
-    amount: process.env.PRICE_USDC || '0.005',
+    jobs: '0.005 USDC',
+    reviews: '0.01-0.02 USDC',
+    prediction: '0.05 USDC',
+    maps: '0.005 USDC',
+    trends: '0.01 USDC',
     currency: 'USDC',
     networks: [
       {
@@ -104,17 +166,16 @@ app.get('/', (c) => c.json({
       },
     ],
   },
-  infrastructure: 'Proxies.sx mobile proxies (real 4G/5G IPs)',
+  infrastructure: 'Proxies.sx mobile proxies',
   links: {
     marketplace: 'https://agents.proxies.sx/marketplace/',
-    skillFile: 'https://agents.proxies.sx/marketplace/skill.md',
     github: 'https://github.com/bolivian-peru/marketplace-service-template',
   },
 }));
 
 app.route('/api', serviceRouter);
 
-app.notFound((c) => c.json({ error: 'Not found', endpoints: ['/', '/health', '/api/run', '/api/details', '/api/jobs', '/api/reviews/search', '/api/reviews/:place_id', '/api/business/:place_id', '/api/reviews/summary/:place_id'] }, 404));
+app.notFound((c) => c.json({ error: 'Not found', endpoints: ['/', '/health', '/api/jobs', '/api/predictions', '/api/run', '/api/details', '/api/research', '/api/trending', '/api/reviews/search'] }, 404));
 
 app.onError((err, c) => {
   console.error(`[ERROR] ${err.message}`);
@@ -124,5 +185,6 @@ app.onError((err, c) => {
 export default {
   port: parseInt(process.env.PORT || '3000'),
   hostname: '0.0.0.0',
+  idleTimeout: 30, // Increase timeout to 30s for slow mobile proxies
   fetch: app.fetch,
 };

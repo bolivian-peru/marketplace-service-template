@@ -3,7 +3,7 @@
   "name": "Job Market Intelligence",
   "description": "Real-time job market data from major job boards. Salary ranges, skills demand, location analysis. $0.005/query via x402.",
   "longDescription": "Aggregate and analyze job market data from major job boards in real-time. Get salary ranges, skills demand trends, hiring velocity, and location-based analysis. Query by job title, skills, location, or company. Returns structured JSON with compensation data, required qualifications, market trends, and competitive insights. Perfect for HR tech, recruitment automation, market research, and career planning agents.",
-  "endpoint": "https://bounty16-job-market-intelligence.onrender.com",
+  "endpoint": "https://api.proxies.sx/v1/x402/predictions",
   "docsUrl": "https://agents.proxies.sx/marketplace/skill.md",
   "pricing": {
     "model": "per-request",
@@ -13,7 +13,7 @@
     "networks": [
       {
         "network": "solana",
-        "chainId": "solana:5eykt4UsFv8P8NJdTRepY1vzqKqZKvdp",
+        "chainId": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
         "recipient": "6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv",
         "asset": "USDC",
         "assetAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
@@ -43,11 +43,11 @@
   "status": "active",
   "featured": false,
   "addedAt": "2026-02-15",
-  "updatedAt": "2026-02-15",
+  "updatedAt": "2026-02-16",
   "x402": {
-    "discoveryUrl": "https://bounty16-job-market-intelligence.onrender.com/api/jobs",
-    "wellKnown": "https://bounty16-job-market-intelligence.onrender.com"
+    "discoveryUrl": "https://api.proxies.sx/v1/x402/predictions/api/jobs",
+    "wellKnown": "https://api.proxies.sx/v1/x402/predictions"
   },
-  "lastVerified": "2026-02-15T00:00:00Z",
-  "healthEndpoint": "https://bounty16-job-market-intelligence.onrender.com/health"
+  "lastVerified": "2026-02-16T00:00:00Z",
+  "healthEndpoint": "https://api.proxies.sx/v1/x402/predictions/health"
 }

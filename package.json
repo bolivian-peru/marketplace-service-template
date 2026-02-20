@@ -10,6 +10,7 @@
     "proof:indeed": "bun run scripts/proof-indeed.ts"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.26.0",
     "hono": "^4.6.0"
   },
   "devDependencies": {

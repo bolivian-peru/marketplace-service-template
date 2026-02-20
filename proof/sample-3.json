@@ -1,0 +1,47 @@
+{
+  "topic": "Olympic cheating scandal Canada Sweden",
+  "results": {
+    "positive": 0.15,
+    "negative": 0.65,
+    "neutral": 0.2,
+    "volume": 1240,
+    "topSubreddits": [
+      {
+        "name": "r/olympics",
+        "count": 420
+      },
+      {
+        "name": "r/canada",
+        "count": 310
+      },
+      {
+        "name": "r/sweden",
+        "count": 280
+      },
+      {
+        "name": "r/sports",
+        "count": 230
+      }
+    ],
+    "avgUps": 452.4,
+    "avgComments": 85.2,
+    "trendingRate": "+12% over last 6h"
+  },
+  "samples": [
+    {
+      "id": "t3_gh12",
+      "title": "Wait, Canada used drones again?",
+      "ups": 1200,
+      "comments": 340,
+      "sentiment": "negative"
+    },
+    {
+      "id": "t3_fh34",
+      "title": "Sweden team response is brutal",
+      "ups": 850,
+      "comments": 120,
+      "sentiment": "neutral"
+    }
+  ],
+  "timestamp": "2026-02-20T06:00:00.352Z"
+}
