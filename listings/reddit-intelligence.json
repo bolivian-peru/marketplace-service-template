@@ -1,0 +1,82 @@
+{
+  "name": "reddit-intelligence",
+  "title": "Reddit Intelligence API",
+  "description": "Search Reddit posts and comments by keyword/subreddit, track trending topics, extract engagement metrics, and monitor brand mentions — all routed through mobile proxies that bypass Reddit's API restrictions.",
+  "version": "1.0.0",
+  "pricing": {
+    "endpoints": [
+      { "path": "/api/reddit/search", "price": "$0.005", "unit": "per request" },
+      { "path": "/api/reddit/trending", "price": "$0.005", "unit": "per request" },
+      { "path": "/api/reddit/subreddit/:name/top", "price": "$0.005", "unit": "per request" },
+      { "path": "/api/reddit/thread/:id/comments", "price": "$0.01", "unit": "per request" }
+    ],
+    "comparison": "Reddit API: $0.10/1000 requests ($100/mo minimum, requires OAuth). SociaVault: $47/mo. EnsembleData: $99/mo. Bright Data: $500/mo. Our service: $0.005/query via x402 micropayment — zero signup friction, undercuts everyone."
+  },
+  "whyMobileProxy": "Reddit instantly returns 429 errors from datacenter IPs. Their anti-bot system fingerprints TLS connections and blocks non-browser traffic. Mobile carrier IPs pass Reddit's trust checks because Reddit's mobile app (50M+ downloads) generates massive mobile traffic on the same IP pools. Mobile IPs get significantly more headroom on rate limits.",
+  "endpoints": [
+    {
+      "method": "GET",
+      "path": "/api/reddit/search",
+      "description": "Search Reddit posts by keyword, optionally within a subreddit",
+      "params": {
+        "query": "Search keyword (required)",
+        "subreddit": "Subreddit name without r/ (optional, default: all)",
+        "sort": "relevance | hot | top | new | comments (default: relevance)",
+        "time": "hour | day | week | month | year | all (default: week)",
+        "limit": "1-100 (default: 25)"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/reddit/trending",
+      "description": "Get trending/popular posts from Reddit front page",
+      "params": {
+        "country": "Country code (optional, default: US)",
+        "limit": "1-100 (default: 25)"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/reddit/subreddit/:name/top",
+      "description": "Get top posts from a specific subreddit",
+      "params": {
+        "name": "Subreddit name without r/ prefix (required, in URL path)",
+        "time": "hour | day | week | month | year | all (default: day)",
+        "limit": "1-100 (default: 25)"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/reddit/thread/:id/comments",
+      "description": "Get a full Reddit thread with comments",
+      "params": {
+        "id": "Reddit thread ID (required, in URL path)",
+        "limit": "1-500 (default: 200)"
+      }
+    }
+  ],
+  "features": [
+    "Search posts by keyword across all of Reddit or within specific subreddits",
+    "Track trending/popular posts by country",
+    "Extract engagement metrics (score, comments, awards, upvote ratio)",
+    "Full thread extraction with nested comment trees",
+    "Brand mention monitoring via keyword search",
+    "Sentiment analysis via engagement metrics",
+    "Mobile proxy bypass of Reddit's anti-bot measures"
+  ],
+  "sampleOutput": "See proof/sample-1.json",
+  "limitations": [
+    "Max 100 results per search query",
+    "Comments limited to 500 per thread",
+    "Comment depth limited to 5 levels",
+    "Rate limited to 20 proxy requests/min per IP"
+  ],
+  "infrastructure": "Proxies.sx mobile proxies (real 4G/5G IPs)",
+  "networks": ["solana", "base"],
+  "wallets": {
+    "solana": "6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv",
+    "base": "0xF8cD900794245fc36CBE65be9afc23CDF5103042"
+  },
+  "category": "data",
+  "tags": ["reddit", "social-media", "search", "trending", "comments", "brand-monitoring", "sentiment"]
+}

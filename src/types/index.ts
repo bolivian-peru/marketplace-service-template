@@ -198,3 +198,100 @@ export interface ReviewSearchResponse {
   businesses: BusinessInfo[];
   totalFound: number;
 }
+
+// ─── REDDIT INTELLIGENCE API TYPES ─────────────────
+
+export interface RedditPost {
+  id: string;
+  title: string;
+  subreddit: string;
+  author: string;
+  score: number;
+  num_comments: number;
+  url: string;
+  permalink: string;
+  created_utc: number;
+  body_preview: string;
+  selftext: string;
+  thumbnail: string | null;
+  is_video: boolean;
+  over_18: boolean;
+  link_flair_text: string | null;
+  upvote_ratio: number;
+  awards: number;
+}
+
+export interface RedditComment {
+  id: string;
+  author: string;
+  body: string;
+  score: number;
+  created_utc: number;
+  replies_count: number;
+  is_op: boolean;
+  depth: number;
+  permalink: string;
+}
+
+export interface RedditProxyMeta {
+  ip: string | null;
+  country: string;
+  carrier: string | null;
+}
+
+export interface RedditSearchResponse {
+  results: RedditPost[];
+  meta: {
+    query: string;
+    subreddit: string;
+    sort: string;
+    time_filter: string;
+    total_results: number;
+    proxy: RedditProxyMeta;
+    scraped_at: string;
+    response_time_ms: number;
+  };
+  pagination: {
+    after: string | null;
+    has_more: boolean;
+  };
+}
+
+export interface RedditTrendingResponse {
+  results: RedditPost[];
+  meta: {
+    country: string;
+    total_results: number;
+    proxy: RedditProxyMeta;
+    scraped_at: string;
+    response_time_ms: number;
+  };
+}
+
+export interface RedditSubredditResponse {
+  subreddit: string;
+  results: RedditPost[];
+  meta: {
+    time_filter: string;
+    total_results: number;
+    proxy: RedditProxyMeta;
+    scraped_at: string;
+    response_time_ms: number;
+  };
+  pagination: {
+    after: string | null;
+    has_more: boolean;
+  };
+}
+
+export interface RedditThreadResponse {
+  post: RedditPost;
+  comments: RedditComment[];
+  meta: {
+    thread_id: string;
+    total_comments: number;
+    proxy: RedditProxyMeta;
+    scraped_at: string;
+    response_time_ms: number;
+  };
+}

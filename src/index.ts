@@ -10,6 +10,7 @@ import { logger } from 'hono/logger';
 import { serviceRouter } from './service';
 
 const app = new Hono();
+const SERVER_START = Date.now();
 
 // ─── MIDDLEWARE ──────────────────────────────────────
 
@@ -61,13 +62,32 @@ setInterval(() => {
 
 // ─── ROUTES ─────────────────────────────────────────
 
-app.get('/health', (c) => c.json({
-  status: 'healthy',
-  service: process.env.SERVICE_NAME || 'marketplace-service',
-  version: '1.0.0',
-  timestamp: new Date().toISOString(),
-  endpoints: ['/api/run', '/api/details', '/api/jobs', '/api/reviews/search', '/api/reviews/:place_id', '/api/reviews/summary/:place_id', '/api/business/:place_id'],
-}));
+app.get('/health', (c) => {
+  const uptimeMs = Date.now() - SERVER_START;
+  const hours = Math.floor(uptimeMs / 3_600_000);
+  const minutes = Math.floor((uptimeMs % 3_600_000) / 60_000);
+
+  const proxyConfigured = !!(process.env.PROXY_HOST && process.env.PROXY_HTTP_PORT && process.env.PROXY_USER && process.env.PROXY_PASS);
+  const walletConfigured = !!process.env.WALLET_ADDRESS;
+
+  return c.json({
+    status: 'healthy',
+    service: process.env.SERVICE_NAME || 'marketplace-service',
+    version: '1.0.0',
+    uptime: `${hours}h ${minutes}m`,
+    timestamp: new Date().toISOString(),
+    checks: {
+      proxy: proxyConfigured ? 'ok' : 'not_configured',
+      target: 'ok',
+      payment: walletConfigured ? 'configured' : 'not_configured',
+    },
+    endpoints: [
+      '/api/jobs',
+      '/api/reviews/search', '/api/reviews/:place_id', '/api/reviews/summary/:place_id', '/api/business/:place_id',
+      '/api/reddit/search', '/api/reddit/trending', '/api/reddit/subreddit/:name/top', '/api/reddit/thread/:id/comments',
+    ],
+  });
+});
 
 app.get('/', (c) => c.json({
   name: process.env.SERVICE_NAME || 'marketplace-service-hub',
@@ -81,6 +101,10 @@ app.get('/', (c) => c.json({
     { method: 'GET', path: '/api/reviews/:place_id', description: 'Fetch Google reviews by Place ID', price: '0.02 USDC' },
     { method: 'GET', path: '/api/business/:place_id', description: 'Get business details + review summary', price: '0.01 USDC' },
     { method: 'GET', path: '/api/reviews/summary/:place_id', description: 'Get review summary stats', price: '0.005 USDC' },
+    { method: 'GET', path: '/api/reddit/search', description: 'Search Reddit posts by keyword/subreddit', price: '0.005 USDC' },
+    { method: 'GET', path: '/api/reddit/trending', description: 'Get trending Reddit posts', price: '0.005 USDC' },
+    { method: 'GET', path: '/api/reddit/subreddit/:name/top', description: 'Get top posts from a subreddit', price: '0.005 USDC' },
+    { method: 'GET', path: '/api/reddit/thread/:id/comments', description: 'Get full thread with comments', price: '0.01 USDC' },
   ],
   pricing: {
     amount: process.env.PRICE_USDC || '0.005',
@@ -114,7 +138,12 @@ app.get('/', (c) => c.json({
 
 app.route('/api', serviceRouter);
 
-app.notFound((c) => c.json({ error: 'Not found', endpoints: ['/', '/health', '/api/run', '/api/details', '/api/jobs', '/api/reviews/search', '/api/reviews/:place_id', '/api/business/:place_id', '/api/reviews/summary/:place_id'] }, 404));
+app.notFound((c) => c.json({ error: 'Not found', endpoints: [
+  '/', '/health',
+  '/api/jobs',
+  '/api/reviews/search', '/api/reviews/:place_id', '/api/business/:place_id', '/api/reviews/summary/:place_id',
+  '/api/reddit/search', '/api/reddit/trending', '/api/reddit/subreddit/:name/top', '/api/reddit/thread/:id/comments',
+] }, 404));
 
 app.onError((err, c) => {
   console.error(`[ERROR] ${err.message}`);
