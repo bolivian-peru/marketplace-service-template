@@ -1,0 +1,45 @@
+{
+  "id": "appstore-intelligence",
+  "name": "App Store Intelligence API",
+  "description": "Apple App Store search, app lookup, top charts, and similar apps discovery via iTunes API. $0.005/query via x402.",
+  "longDescription": "Comprehensive App Store intelligence using Apple's iTunes Search API. Search apps across all categories, lookup detailed app info by Track ID or Bundle ID, get top apps by genre (20 categories), and discover similar apps. Returns structured JSON with ratings, reviews, price, developer info, screenshots, release notes, and size. Ideal for competitive analysis, market research, and app discovery automation.",
+  "endpoint": "https://marketplace-service-template.onrender.com",
+  "docsUrl": "https://agents.proxies.sx/marketplace/skill.md",
+  "pricing": {
+    "model": "per-request",
+    "amount": "0.005",
+    "minimum": "0.005",
+    "currency": "USDC",
+    "networks": [
+      {
+        "network": "solana",
+        "chainId": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "recipient": "6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv",
+        "asset": "USDC",
+        "assetAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+      },
+      {
+        "network": "base",
+        "chainId": "eip155:8453",
+        "recipient": "0xF8cD900794245fc36CBE65be9afc23CDF5103042",
+        "asset": "USDC",
+        "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+      }
+    ]
+  },
+  "category": "data",
+  "tags": ["app-store", "apple", "ios", "mobile-apps", "market-research", "competitive-analysis"],
+  "owner": {
+    "name": "oxgeneral",
+    "github": "oxgeneral",
+    "twitter": "ooogeneral"
+  },
+  "status": "pending",
+  "featured": false,
+  "addedAt": "2026-02-21",
+  "x402": {
+    "discoveryUrl": "https://marketplace-service-template.onrender.com/api/appstore/search",
+    "wellKnown": "https://marketplace-service-template.onrender.com"
+  },
+  "healthEndpoint": "https://marketplace-service-template.onrender.com/health"
+}
