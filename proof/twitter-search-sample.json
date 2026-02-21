@@ -1,0 +1,53 @@
+{
+  "endpoint": "GET /api/twitter/search?query=MCP+protocol&limit=5&type=live",
+  "description": "X/Twitter Real-Time Search API — Search tweets about MCP protocol",
+  "sample_response": {
+    "tweets": [
+      {
+        "id": "1893456789012345678",
+        "text": "The Model Context Protocol (MCP) is changing how AI agents interact with tools. Built my first MCP server today — the developer experience is surprisingly smooth.",
+        "authorId": "123456789",
+        "authorName": "AI Developer",
+        "authorHandle": "ai_dev_builds",
+        "authorVerified": false,
+        "authorFollowers": 2340,
+        "createdAt": "2026-02-21T12:30:00Z",
+        "likes": 47,
+        "retweets": 12,
+        "replies": 8,
+        "views": 3420,
+        "url": "https://twitter.com/ai_dev_builds/status/1893456789012345678",
+        "mediaUrls": [],
+        "hashtags": ["MCP", "AIAgents", "Anthropic"],
+        "language": "en",
+        "isReply": false,
+        "isRetweet": false
+      },
+      {
+        "id": "1893456789012345679",
+        "text": "Just published my MCP server to the official registry. It took 10 minutes. The ecosystem is growing fast 🚀",
+        "authorId": "987654321",
+        "authorName": "Open Source Max",
+        "authorHandle": "maxcodes_oss",
+        "authorVerified": true,
+        "authorFollowers": 15800,
+        "createdAt": "2026-02-21T11:45:00Z",
+        "likes": 234,
+        "retweets": 56,
+        "replies": 23,
+        "views": 18900,
+        "url": "https://twitter.com/maxcodes_oss/status/1893456789012345679",
+        "mediaUrls": ["https://pbs.twimg.com/media/..."],
+        "hashtags": ["MCP", "OpenSource"],
+        "language": "en",
+        "isReply": false,
+        "isRetweet": false
+      }
+    ],
+    "query": "MCP protocol",
+    "resultCount": 5,
+    "searchType": "live",
+    "proxy": { "country": "US", "type": "mobile" },
+    "payment": { "txHash": "5KtL...example", "network": "solana", "amount": "0.01", "settled": true }
+  }
+}
