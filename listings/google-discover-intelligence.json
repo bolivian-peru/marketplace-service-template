@@ -1,0 +1,45 @@
+{
+  "id": "google-discover-intelligence",
+  "name": "Google Discover Feed Intelligence",
+  "description": "Google trending topics, news search, daily trends with traffic data, and category news from Google Trends + News RSS. $0.005/query via x402.",
+  "longDescription": "Real-time Google Discover feed intelligence aggregating data from Google Trends RSS, Google News RSS, and Google Trends Daily API. Get trending topics with approximate search volume, search news articles by keyword, explore daily trends with traffic numbers and related queries, and browse news by category (technology, business, entertainment, sports, science, health, world). Returns structured JSON with article titles, sources, publish dates, snippets, images, and traffic estimates. Supports geo-targeting (US, GB, DE, etc.).",
+  "endpoint": "https://marketplace-service-template.onrender.com",
+  "docsUrl": "https://agents.proxies.sx/marketplace/skill.md",
+  "pricing": {
+    "model": "per-request",
+    "amount": "0.005",
+    "minimum": "0.005",
+    "currency": "USDC",
+    "networks": [
+      {
+        "network": "solana",
+        "chainId": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "recipient": "F6LSaYFuwaJM1f6ZkRfHvd8ZpoW3S7p1Vab8wpy25tJt",
+        "asset": "USDC",
+        "assetAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+      },
+      {
+        "network": "base",
+        "chainId": "eip155:8453",
+        "recipient": "0x82faF11399609a00DB01101ea627a0cd28bc48C2",
+        "asset": "USDC",
+        "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+      }
+    ]
+  },
+  "category": "data",
+  "tags": ["google-trends", "google-news", "trending", "news", "discover", "seo", "content-intelligence"],
+  "owner": {
+    "name": "oxgeneral",
+    "github": "oxgeneral",
+    "twitter": "ooogeneral"
+  },
+  "status": "pending",
+  "featured": false,
+  "addedAt": "2026-02-21",
+  "x402": {
+    "discoveryUrl": "https://marketplace-service-template.onrender.com/api/discover/search",
+    "wellKnown": "https://marketplace-service-template.onrender.com"
+  },
+  "healthEndpoint": "https://marketplace-service-template.onrender.com/health"
+}
