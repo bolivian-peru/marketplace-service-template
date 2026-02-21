@@ -1,0 +1,45 @@
+{
+  "id": "twitter-search-intelligence",
+  "name": "X/Twitter Real-Time Search API",
+  "description": "Real-time Twitter/X search, trending topics, user profiles, and hashtag analysis via mobile proxy scraping. $0.01/query via x402.",
+  "longDescription": "Real-time X/Twitter intelligence using multi-fallback scraping strategy (guest token API → Nitter → syndication). Search tweets with engagement metrics (likes, retweets, replies, views), get trending topics by location (WOEID), lookup user profiles with follower counts, fetch recent tweets from any user, and analyze hashtags. Returns structured JSON with tweet text, author info, verification status, media URLs, hashtags, and language. Higher price ($0.01) reflects the difficulty of reliable Twitter data extraction.",
+  "endpoint": "https://marketplace-service-template.onrender.com",
+  "docsUrl": "https://agents.proxies.sx/marketplace/skill.md",
+  "pricing": {
+    "model": "per-request",
+    "amount": "0.01",
+    "minimum": "0.01",
+    "currency": "USDC",
+    "networks": [
+      {
+        "network": "solana",
+        "chainId": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "recipient": "F6LSaYFuwaJM1f6ZkRfHvd8ZpoW3S7p1Vab8wpy25tJt",
+        "asset": "USDC",
+        "assetAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+      },
+      {
+        "network": "base",
+        "chainId": "eip155:8453",
+        "recipient": "0x82faF11399609a00DB01101ea627a0cd28bc48C2",
+        "asset": "USDC",
+        "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+      }
+    ]
+  },
+  "category": "scraper",
+  "tags": ["twitter", "x", "social-media", "real-time", "trending", "sentiment", "brand-monitoring"],
+  "owner": {
+    "name": "oxgeneral",
+    "github": "oxgeneral",
+    "twitter": "ooogeneral"
+  },
+  "status": "pending",
+  "featured": false,
+  "addedAt": "2026-02-21",
+  "x402": {
+    "discoveryUrl": "https://marketplace-service-template.onrender.com/api/twitter/search",
+    "wellKnown": "https://marketplace-service-template.onrender.com"
+  },
+  "healthEndpoint": "https://marketplace-service-template.onrender.com/health"
+}
