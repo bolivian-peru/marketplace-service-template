@@ -1,0 +1,45 @@
+{
+  "id": "reddit-intelligence",
+  "name": "Reddit Intelligence API",
+  "description": "Search Reddit posts, trending content, subreddit analysis, and full thread comments with sentiment data. $0.005-0.01/query via x402.",
+  "longDescription": "Deep Reddit intelligence API powered by mobile proxies. Search posts across all subreddits, get trending content with engagement metrics, analyze top posts in specific subreddits, and extract full thread comments with nested replies (up to depth 3). Returns structured JSON with upvotes, comments, awards, author karma, and post metadata. Ideal for market research, brand monitoring, competitor analysis, and trend detection.",
+  "endpoint": "https://marketplace-service-template.onrender.com",
+  "docsUrl": "https://agents.proxies.sx/marketplace/skill.md",
+  "pricing": {
+    "model": "per-request",
+    "amount": "0.005",
+    "minimum": "0.005",
+    "currency": "USDC",
+    "networks": [
+      {
+        "network": "solana",
+        "chainId": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "recipient": "6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv",
+        "asset": "USDC",
+        "assetAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+      },
+      {
+        "network": "base",
+        "chainId": "eip155:8453",
+        "recipient": "0xF8cD900794245fc36CBE65be9afc23CDF5103042",
+        "asset": "USDC",
+        "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+      }
+    ]
+  },
+  "category": "scraper",
+  "tags": ["reddit", "social-media", "sentiment", "market-research", "brand-monitoring", "trend-detection"],
+  "owner": {
+    "name": "oxgeneral",
+    "github": "oxgeneral",
+    "twitter": "ooogeneral"
+  },
+  "status": "pending",
+  "featured": false,
+  "addedAt": "2026-02-21",
+  "x402": {
+    "discoveryUrl": "https://marketplace-service-template.onrender.com/api/reddit/search",
+    "wellKnown": "https://marketplace-service-template.onrender.com"
+  },
+  "healthEndpoint": "https://marketplace-service-template.onrender.com/health"
+}
