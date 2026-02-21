@@ -1,0 +1,43 @@
+{
+  "endpoint": "GET /api/prediction/search?query=AI+regulation&limit=5",
+  "description": "Prediction Market Signal Aggregator — Search markets about AI regulation",
+  "sample_response": {
+    "markets": [
+      {
+        "id": "0x1234abcd",
+        "title": "Will the EU AI Act be fully enforced by end of 2026?",
+        "description": "This market resolves YES if all provisions of the EU AI Act are actively enforced...",
+        "probability": 62.5,
+        "volume": 1847293,
+        "liquidity": 234567,
+        "endDate": "2026-12-31T23:59:59Z",
+        "category": "Politics",
+        "url": "https://polymarket.com/event/eu-ai-act-enforcement",
+        "source": "polymarket",
+        "createdAt": "2025-08-15T10:00:00Z",
+        "commentCount": 47,
+        "active": true
+      },
+      {
+        "id": "28431",
+        "title": "Will the US pass comprehensive AI regulation before 2027?",
+        "description": "Resolves YES if the US Congress passes a comprehensive federal AI regulation bill...",
+        "probability": 18.3,
+        "volume": 892,
+        "liquidity": 0,
+        "endDate": "2027-01-01T00:00:00Z",
+        "category": "Technology",
+        "url": "https://www.metaculus.com/questions/28431/",
+        "source": "metaculus",
+        "createdAt": "2024-12-01T00:00:00Z",
+        "commentCount": 23,
+        "active": true
+      }
+    ],
+    "query": "AI regulation",
+    "source": "polymarket+metaculus",
+    "resultCount": 5,
+    "proxy": { "country": "US", "type": "mobile" },
+    "payment": { "txHash": "5KtL...example", "network": "solana", "amount": "0.005", "settled": true }
+  }
+}
