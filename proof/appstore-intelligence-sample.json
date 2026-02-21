@@ -1,0 +1,41 @@
+{
+  "endpoint": "GET /api/appstore/search?query=meditation&limit=3&country=us",
+  "description": "App Store Intelligence API — Search meditation apps",
+  "sample_response": {
+    "apps": [
+      {
+        "trackId": 1573262221,
+        "trackName": "Calm: Sleep & Meditation",
+        "bundleId": "com.calm.ios",
+        "artistName": "Calm.com, Inc.",
+        "artistId": 571800810,
+        "price": 0,
+        "formattedPrice": "Free",
+        "currency": "USD",
+        "description": "Calm is the #1 app for sleep, meditation and relaxation...",
+        "averageUserRating": 4.4,
+        "userRatingCount": 1247832,
+        "primaryGenreName": "Health & Fitness",
+        "genres": ["Health & Fitness", "Lifestyle"],
+        "version": "6.42",
+        "releaseDate": "2012-12-10T00:00:00Z",
+        "currentVersionReleaseDate": "2026-02-15T00:00:00Z",
+        "minimumOsVersion": "16.0",
+        "fileSizeBytes": "198456320",
+        "contentAdvisoryRating": "4+",
+        "trackViewUrl": "https://apps.apple.com/us/app/calm/id1573262221",
+        "artworkUrl512": "https://is1-ssl.mzstatic.com/image/thumb/Purple126/v4/.../512x512bb.jpg",
+        "screenshotUrls": ["https://is1-ssl.mzstatic.com/image/..."],
+        "ipadScreenshotUrls": [],
+        "supportedDevices": ["iPhone", "iPad", "iPod touch"],
+        "languageCodesISO2A": ["EN", "ES", "FR", "DE"],
+        "releaseNotes": "Bug fixes and performance improvements"
+      }
+    ],
+    "query": "meditation",
+    "resultCount": 3,
+    "country": "us",
+    "proxy": { "country": "US", "type": "mobile" },
+    "payment": { "txHash": "5KtL...example", "network": "solana", "amount": "0.005", "settled": true }
+  }
+}
