@@ -1,0 +1,54 @@
+{
+  "endpoint": "GET /api/food/prices?location=New+York+City&cuisine=pizza&limit=5",
+  "description": "Food Delivery Price Intelligence — Pizza price analysis in NYC",
+  "sample_response": {
+    "query": "pizza",
+    "location": "New York City",
+    "avgDeliveryFee": 3.49,
+    "avgRating": 4.2,
+    "priceDistribution": { "$": 2, "$$": 5, "$$$": 3, "$$$$": 0 },
+    "restaurants": [
+      {
+        "id": "yelp-abc123",
+        "name": "Joe's Pizza",
+        "address": "7 Carmine St, New York, NY 10014",
+        "city": "New York",
+        "rating": 4.5,
+        "reviewCount": 8934,
+        "priceLevel": "$",
+        "cuisine": ["Pizza", "Italian"],
+        "deliveryFee": 2.99,
+        "deliveryTime": "20-30 min",
+        "minimumOrder": 10,
+        "isOpen": true,
+        "imageUrl": "https://s3-media0.fl.yelpcdn.com/bphoto/...",
+        "url": "https://www.yelp.com/biz/joes-pizza-new-york",
+        "source": "yelp",
+        "lat": 40.7308,
+        "lng": -74.0020
+      },
+      {
+        "id": "dd-456789",
+        "name": "Lucali",
+        "address": "575 Henry St, Brooklyn, NY 11231",
+        "city": "Brooklyn",
+        "rating": 4.8,
+        "reviewCount": 3456,
+        "priceLevel": "$$$",
+        "cuisine": ["Pizza", "Italian"],
+        "deliveryFee": 4.99,
+        "deliveryTime": "35-45 min",
+        "minimumOrder": 15,
+        "isOpen": true,
+        "imageUrl": "https://img.doordash.com/...",
+        "url": "https://www.doordash.com/store/lucali-brooklyn/",
+        "source": "doordash",
+        "lat": 40.6840,
+        "lng": -73.9935
+      }
+    ],
+    "resultCount": 5,
+    "proxy": { "country": "US", "type": "mobile" },
+    "payment": { "txHash": "5KtL...example", "network": "solana", "amount": "0.005", "settled": true }
+  }
+}

@@ -16,12 +16,14 @@ import { fetchReviews, fetchBusinessDetails, fetchReviewSummary, searchBusinesse
 import { scrapeGoogleMaps, extractDetailedBusiness } from './scrapers/maps-scraper';
 import { researchRouter } from './routes/research';
 import { trendingRouter } from './routes/trending';
+import { foodDeliveryRouter } from './routes/food-delivery';
 
 export const serviceRouter = new Hono();
 
 // ─── TREND INTELLIGENCE ROUTES (Bounty #70) ─────────
 serviceRouter.route('/research', researchRouter);
 serviceRouter.route('/trending', trendingRouter);
+serviceRouter.route('/food', foodDeliveryRouter); // Bounty #76 — Food Delivery Prices
 
 const SERVICE_NAME = 'job-market-intelligence';
 const PRICE_USDC = 0.005;
