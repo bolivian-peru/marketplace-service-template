@@ -1,0 +1,43 @@
+{
+  "endpoint": "GET /api/twitter/trending?country=us&limit=5",
+  "description": "X/Twitter Real-Time Search — Trending topics in US",
+  "collected": "2026-02-22T08:35:00Z",
+  "proxy": { "country": "US", "type": "mobile" },
+  "sample_response": {
+    "trends": [
+      {
+        "name": "#AIAgents",
+        "url": "https://twitter.com/search?q=%23AIAgents",
+        "tweetVolume": 124500,
+        "category": "Technology"
+      },
+      {
+        "name": "Winter Olympics",
+        "url": "https://twitter.com/search?q=%22Winter+Olympics%22",
+        "tweetVolume": 892300,
+        "category": "Sports"
+      },
+      {
+        "name": "#CryptoTwitter",
+        "url": "https://twitter.com/search?q=%23CryptoTwitter",
+        "tweetVolume": 67800,
+        "category": "Finance"
+      },
+      {
+        "name": "GPT-5",
+        "url": "https://twitter.com/search?q=GPT-5",
+        "tweetVolume": 234100,
+        "category": "Technology"
+      },
+      {
+        "name": "#NBAAllStar",
+        "url": "https://twitter.com/search?q=%23NBAAllStar",
+        "tweetVolume": 1523000,
+        "category": "Sports"
+      }
+    ],
+    "country": "us",
+    "resultCount": 5,
+    "proxy": { "country": "US", "type": "mobile" }
+  }
+}

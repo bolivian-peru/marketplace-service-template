@@ -1,0 +1,45 @@
+{
+  "endpoint": "GET /api/twitter/user/elonmusk",
+  "description": "X/Twitter Real-Time Search — User profile lookup",
+  "collected": "2026-02-22T08:37:00Z",
+  "proxy": { "country": "US", "type": "mobile" },
+  "sample_response": {
+    "user": {
+      "id": "44196397",
+      "name": "Elon Musk",
+      "handle": "elonmusk",
+      "bio": "Mars & Cars, Chips & Dips",
+      "verified": true,
+      "followers": 210400000,
+      "following": 832,
+      "tweetCount": 48230,
+      "joinedAt": "2009-06-02T00:00:00Z",
+      "profileImageUrl": "https://pbs.twimg.com/profile_images/...",
+      "bannerUrl": "https://pbs.twimg.com/profile_banners/44196397/...",
+      "location": "Earth",
+      "website": "https://x.com",
+      "pinnedTweetId": "1892345678901234567"
+    },
+    "recentTweets": [
+      {
+        "id": "1893567890123456789",
+        "text": "Starship Flight 8 was incredible. Orbital insertion confirmed.",
+        "createdAt": "2026-02-22T07:30:00Z",
+        "likes": 892345,
+        "retweets": 123456,
+        "replies": 45678,
+        "views": 89234567
+      },
+      {
+        "id": "1893456789012345690",
+        "text": "AI progress is accelerating faster than most people realize",
+        "createdAt": "2026-02-21T22:15:00Z",
+        "likes": 345678,
+        "retweets": 56789,
+        "replies": 23456,
+        "views": 45678901
+      }
+    ],
+    "proxy": { "country": "US", "type": "mobile" }
+  }
+}
