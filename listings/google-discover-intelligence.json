@@ -14,18 +14,27 @@
       {
         "network": "solana",
         "chainId": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
-        "recipient": "F6LSaYFuwaJM1f6ZkRfHvd8ZpoW3S7p1Vab8wpy25tJt",
+        "recipient": "6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv",
         "asset": "USDC",
         "assetAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
       },
       {
         "network": "base",
         "chainId": "eip155:8453",
-        "recipient": "0x82faF11399609a00DB01101ea627a0cd28bc48C2",
+        "recipient": "0xF8cD900794245fc36CBE65be9afc23CDF5103042",
         "asset": "USDC",
         "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
       }
     ]
+  },
+  "whyMobileProxy": "Google aggressively rate-limits and blocks datacenter IPs for Trends and News feeds. Mobile proxies provide residential IPs that appear as real users, enabling reliable access to Google Trends API, News RSS feeds, and daily trends data without CAPTCHA challenges or geo-restrictions.",
+  "competitiveContext": {
+    "competitors": [
+      {"name": "SerpAPI Google Trends", "price": "$0.01/search", "notes": "$75+/mo subscription required"},
+      {"name": "Google Trends API (direct)", "price": "Free", "notes": "Rate limited, CAPTCHA blocks, no structured output"},
+      {"name": "NewsAPI.org", "price": "Free (100/day)", "notes": "No trends data, API key required, 1 month history only"}
+    ],
+    "ourAdvantage": "Combined Google Trends + News in one x402 query. No API key, no subscription. $0.005/query with geo-targeting across 50+ countries."
   },
   "category": "data",
   "tags": ["google-trends", "google-news", "trending", "news", "discover", "seo", "content-intelligence"],
@@ -41,5 +50,5 @@
     "discoveryUrl": "https://marketplace-service-template.onrender.com/api/discover/search",
     "wellKnown": "https://marketplace-service-template.onrender.com"
   },
-  "healthEndpoint": "https://marketplace-service-template.onrender.com/health"
+  "healthEndpoint": "https://marketplace-service-template.onrender.com/api/discover/health"
 }

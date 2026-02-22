@@ -15,6 +15,7 @@ import {
   getTrendingTopics,
   getDailyTrends,
   getCategoryNews,
+  ScraperError,
 } from '../scrapers/google-discover';
 
 export const googleDiscoverRouter = new Hono();
@@ -24,6 +25,14 @@ const PRICE = 0.005;
 function proxyInfo() {
   try { const p = getProxy(); return { country: p.country, type: 'mobile' as const }; }
   catch { return { country: 'US', type: 'mobile' as const }; }
+}
+
+function handleScraperError(c: any, err: unknown, fallbackMsg: string) {
+  if (err instanceof ScraperError) {
+    if (err.retryable) c.header('Retry-After', '30');
+    return c.json({ error: err.message, retryable: err.retryable }, err.statusCode);
+  }
+  return c.json({ error: fallbackMsg, message: (err as Error).message }, 500);
 }
 
 // ─── SEARCH GOOGLE NEWS ─────────────────────
@@ -66,8 +75,8 @@ googleDiscoverRouter.get('/search', async (c) => {
     c.header('X-Payment-TxHash', payment.txHash);
 
     return c.json({ ...result, proxy: proxyInfo(), payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
-  } catch (err: any) {
-    return c.json({ error: 'Google News search failed', message: err.message }, 502);
+  } catch (err) {
+    return handleScraperError(c, err, 'Google News search failed');
   }
 });
 
@@ -106,8 +115,8 @@ googleDiscoverRouter.get('/trending', async (c) => {
     c.header('X-Payment-TxHash', payment.txHash);
 
     return c.json({ ...result, proxy: proxyInfo(), payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
-  } catch (err: any) {
-    return c.json({ error: 'Trending topics fetch failed', message: err.message }, 502);
+  } catch (err) {
+    return handleScraperError(c, err, 'Trending topics fetch failed');
   }
 });
 
@@ -142,8 +151,8 @@ googleDiscoverRouter.get('/daily', async (c) => {
     c.header('X-Payment-TxHash', payment.txHash);
 
     return c.json({ ...result, proxy: proxyInfo(), payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
-  } catch (err: any) {
-    return c.json({ error: 'Daily trends fetch failed', message: err.message }, 502);
+  } catch (err) {
+    return handleScraperError(c, err, 'Daily trends fetch failed');
   }
 });
 
@@ -196,7 +205,44 @@ googleDiscoverRouter.get('/category/:category', async (c) => {
     c.header('X-Payment-TxHash', payment.txHash);
 
     return c.json({ ...result, category, proxy: proxyInfo(), payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
-  } catch (err: any) {
-    return c.json({ error: 'Category news fetch failed', message: err.message }, 502);
+  } catch (err) {
+    return handleScraperError(c, err, 'Category news fetch failed');
   }
+});
+
+// ─── HEALTH ENDPOINT ────────────────────────
+
+googleDiscoverRouter.get('/health', async (c) => {
+  const checks: Record<string, any> = {
+    service: 'google-discover-intelligence',
+    version: '1.0.0',
+    timestamp: new Date().toISOString(),
+    checks: {} as Record<string, any>,
+  };
+
+  try {
+    const proxy = getProxy();
+    checks.checks.proxy = { status: 'configured', country: proxy.country };
+  } catch {
+    checks.checks.proxy = { status: 'not_configured', fallback: 'direct' };
+  }
+
+  try {
+    const r = await fetch('https://trends.google.com/trending/rss', { method: 'HEAD', signal: AbortSignal.timeout(5000) });
+    checks.checks.googleTrends = { status: r.ok ? 'reachable' : 'blocked', statusCode: r.status };
+  } catch {
+    checks.checks.googleTrends = { status: 'unreachable' };
+  }
+
+  const wallet = process.env.WALLET_ADDRESS;
+  checks.checks.payment = { configured: !!wallet, network: ['solana', 'base'] };
+  checks.checks.endpoints = {
+    search: '/api/discover/search',
+    trending: '/api/discover/trending',
+    daily: '/api/discover/daily',
+    category: '/api/discover/category/:category',
+  };
+
+  checks.status = 'healthy';
+  return c.json(checks);
 });

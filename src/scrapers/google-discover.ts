@@ -14,6 +14,13 @@
 
 import { proxyFetch } from '../proxy';
 
+export class ScraperError extends Error {
+  constructor(message: string, public statusCode: number, public retryable: boolean) {
+    super(message);
+    this.name = 'ScraperError';
+  }
+}
+
 // ─── TYPES ──────────────────────────────────────────
 
 export interface DiscoverArticle {
