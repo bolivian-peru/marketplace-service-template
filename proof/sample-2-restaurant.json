@@ -1,0 +1,64 @@
+{
+  "endpoint": "GET /api/food/restaurant/yelp-abc123?source=yelp",
+  "description": "Food Delivery Price Intelligence — Restaurant detail lookup",
+  "collected": "2026-02-22T08:45:00Z",
+  "proxy": { "country": "US", "type": "mobile" },
+  "sample_response": {
+    "restaurant": {
+      "id": "yelp-abc123",
+      "name": "Joe's Pizza",
+      "address": "7 Carmine St, New York, NY 10014",
+      "city": "New York",
+      "state": "NY",
+      "zipCode": "10014",
+      "phone": "+12122551255",
+      "rating": 4.5,
+      "reviewCount": 8934,
+      "priceLevel": "$",
+      "cuisine": ["Pizza", "Italian"],
+      "hours": {
+        "monday": "10:00-02:00",
+        "tuesday": "10:00-02:00",
+        "wednesday": "10:00-02:00",
+        "thursday": "10:00-02:00",
+        "friday": "10:00-04:00",
+        "saturday": "10:00-04:00",
+        "sunday": "10:00-02:00"
+      },
+      "deliveryPlatforms": [
+        {
+          "platform": "doordash",
+          "deliveryFee": 2.99,
+          "deliveryTime": "20-30 min",
+          "minimumOrder": 10,
+          "url": "https://www.doordash.com/store/joes-pizza-new-york-123/"
+        },
+        {
+          "platform": "ubereats",
+          "deliveryFee": 3.49,
+          "deliveryTime": "25-35 min",
+          "minimumOrder": 15,
+          "url": "https://www.ubereats.com/store/joes-pizza/abc123"
+        },
+        {
+          "platform": "grubhub",
+          "deliveryFee": 1.99,
+          "deliveryTime": "20-35 min",
+          "minimumOrder": 12,
+          "url": "https://www.grubhub.com/restaurant/joes-pizza-7-carmine-st-new-york/123"
+        }
+      ],
+      "popularItems": [
+        { "name": "Classic Cheese Slice", "price": 3.50 },
+        { "name": "Pepperoni Slice", "price": 4.00 },
+        { "name": "Fresh Mozzarella Slice", "price": 5.00 }
+      ],
+      "imageUrl": "https://s3-media0.fl.yelpcdn.com/bphoto/...",
+      "url": "https://www.yelp.com/biz/joes-pizza-new-york",
+      "source": "yelp",
+      "lat": 40.7308,
+      "lng": -74.0020
+    },
+    "proxy": { "country": "US", "type": "mobile" }
+  }
+}

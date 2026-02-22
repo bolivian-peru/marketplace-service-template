@@ -1,0 +1,55 @@
+{
+  "endpoint": "GET /api/food/compare?location=San+Francisco&cuisine=sushi&platforms=doordash,ubereats&limit=3",
+  "description": "Food Delivery Price Intelligence — Cross-platform price comparison",
+  "collected": "2026-02-22T08:47:00Z",
+  "proxy": { "country": "US", "type": "mobile" },
+  "sample_response": {
+    "query": "sushi",
+    "location": "San Francisco",
+    "platforms": ["doordash", "ubereats"],
+    "comparison": [
+      {
+        "name": "Sushi Zone",
+        "rating": 4.3,
+        "reviewCount": 2341,
+        "priceLevel": "$$",
+        "platforms": {
+          "doordash": { "deliveryFee": 3.99, "deliveryTime": "25-35 min", "minimumOrder": 15 },
+          "ubereats": { "deliveryFee": 4.49, "deliveryTime": "30-40 min", "minimumOrder": 12 }
+        },
+        "priceDifference": "$0.50",
+        "cheapestPlatform": "doordash"
+      },
+      {
+        "name": "Ryoko's Japanese Restaurant",
+        "rating": 4.6,
+        "reviewCount": 1892,
+        "priceLevel": "$$$",
+        "platforms": {
+          "doordash": { "deliveryFee": 5.99, "deliveryTime": "35-45 min", "minimumOrder": 20 },
+          "ubereats": { "deliveryFee": 3.99, "deliveryTime": "30-40 min", "minimumOrder": 18 }
+        },
+        "priceDifference": "$2.00",
+        "cheapestPlatform": "ubereats"
+      },
+      {
+        "name": "Kiku Sushi",
+        "rating": 4.1,
+        "reviewCount": 567,
+        "priceLevel": "$",
+        "platforms": {
+          "doordash": { "deliveryFee": 2.49, "deliveryTime": "20-30 min", "minimumOrder": 10 },
+          "ubereats": { "deliveryFee": 2.99, "deliveryTime": "25-35 min", "minimumOrder": 10 }
+        },
+        "priceDifference": "$0.50",
+        "cheapestPlatform": "doordash"
+      }
+    ],
+    "avgDeliveryFee": {
+      "doordash": 4.16,
+      "ubereats": 3.82
+    },
+    "resultCount": 3,
+    "proxy": { "country": "US", "type": "mobile" }
+  }
+}
