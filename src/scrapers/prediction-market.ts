@@ -8,6 +8,17 @@
 
 import { proxyFetch } from '../proxy';
 
+export class ScraperError extends Error {
+  constructor(
+    message: string,
+    public statusCode: number,
+    public retryable: boolean,
+  ) {
+    super(message);
+    this.name = 'ScraperError';
+  }
+}
+
 interface FetchOpts {
   timeoutMs?: number;
 }
@@ -23,17 +34,29 @@ async function apiFetch(url: string, opts: FetchOpts = {}): Promise<any> {
       maxRetries: 2,
     });
   } catch {
-    const ctrl = new AbortController();
-    const t = setTimeout(() => ctrl.abort(), timeoutMs);
-    response = await fetch(url, {
-      headers: { Accept: 'application/json', 'User-Agent': 'PredictionMarketAggregator/1.0' },
-      signal: ctrl.signal,
-    });
-    clearTimeout(t);
+    try {
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), timeoutMs);
+      response = await fetch(url, {
+        headers: { Accept: 'application/json', 'User-Agent': 'PredictionMarketAggregator/1.0' },
+        signal: ctrl.signal,
+      });
+      clearTimeout(t);
+    } catch {
+      throw new ScraperError('Proxy and direct fetch both failed', 502, true);
+    }
   }
 
-  if (!response.ok) throw new Error(`API ${response.status}: ${response.statusText}`);
-  return response.json();
+  if (response.status === 429) throw new ScraperError('Rate limited', 429, true);
+  if (response.status === 403) throw new ScraperError('Access blocked', 403, false);
+  if (!response.ok) throw new ScraperError(`API ${response.status}: ${response.statusText}`, response.status, true);
+
+  const text = await response.text();
+  if (text.includes('captcha') || text.includes('challenge')) {
+    throw new ScraperError('CAPTCHA challenge detected', 503, true);
+  }
+  try { return JSON.parse(text); }
+  catch { throw new ScraperError('Invalid JSON response', 502, true); }
 }
 
 // ─── TYPES ───────────────────────────────────

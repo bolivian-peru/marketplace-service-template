@@ -27,27 +27,34 @@
       }
     ]
   },
+  "whyMobileProxy": "Prediction market platforms (especially Polymarket) rate-limit and geo-block datacenter IPs. Metaculus requires residential-looking traffic for reliable API access. Mobile proxies ensure consistent data retrieval across regions and bypass anti-bot measures that block automated trading signal aggregation.",
+  "competitiveContext": {
+    "competitors": [
+      {"name": "Polymarket API (direct)", "price": "Free", "notes": "Single platform only, no aggregation, rate limited"},
+      {"name": "Metaculus API (direct)", "price": "Free", "notes": "Single platform, limited fields, pagination required"},
+      {"name": "Manifold Markets API", "price": "Free", "notes": "Play money markets, limited real volume data"}
+    ],
+    "ourAdvantage": "Cross-platform aggregation (Polymarket + Metaculus) in a single x402 query. No API keys, no signup, normalized schema across platforms. $0.005/query via micropayment."
+  },
   "category": "data",
   "tags": [
     "prediction-market",
     "polymarket",
-    "kalshi",
+    "metaculus",
     "odds",
     "forecasting",
     "market-signals"
   ],
   "owner": {
-    "name": "rakesh0x",
-    "github": "rakesh0x"
+    "name": "oxgeneral",
+    "github": "oxgeneral"
   },
-  "status": "active",
+  "status": "pending",
   "featured": false,
-  "addedAt": "2026-02-15",
-  "updatedAt": "2026-02-15",
+  "addedAt": "2026-02-21",
   "x402": {
-    "discoveryUrl": "https://marketplace-service-template.onrender.com/api/run",
+    "discoveryUrl": "https://marketplace-service-template.onrender.com/api/prediction/search",
     "wellKnown": "https://marketplace-service-template.onrender.com"
   },
-  "lastVerified": "2026-02-15T00:00:00Z",
-  "healthEndpoint": "https://marketplace-service-template.onrender.com/health"
+  "healthEndpoint": "https://marketplace-service-template.onrender.com/api/prediction/health"
 }
