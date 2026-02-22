@@ -16,6 +16,19 @@
 
 import { proxyFetch } from '../proxy';
 
+// ─── SCRAPER ERROR ──────────────────────────
+
+export class ScraperError extends Error {
+  constructor(
+    message: string,
+    public statusCode: number,
+    public retryable: boolean,
+  ) {
+    super(message);
+    this.name = 'ScraperError';
+  }
+}
+
 // ─── TYPES ───────────────────────────────────
 
 export interface Tweet {
@@ -114,16 +127,20 @@ async function twitterFetch(url: string, opts: FetchOpts = {}): Promise<Response
       timeoutMs,
       maxRetries: 1,
     });
-  } catch {
+  } catch (proxyErr) {
     // Fallback to direct fetch
-    const ctrl = new AbortController();
-    const t = setTimeout(() => ctrl.abort(), timeoutMs);
-    const response = await fetch(url, {
-      headers: { 'User-Agent': TWITTER_UA, ...headers },
-      signal: ctrl.signal,
-    });
-    clearTimeout(t);
-    return response;
+    try {
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), timeoutMs);
+      const response = await fetch(url, {
+        headers: { 'User-Agent': TWITTER_UA, ...headers },
+        signal: ctrl.signal,
+      });
+      clearTimeout(t);
+      return response;
+    } catch {
+      throw new ScraperError('Proxy connection failed and direct fallback also failed', 502, true);
+    }
   }
 }
 
@@ -212,12 +229,27 @@ async function guestApiFetch(url: string): Promise<any> {
       },
     });
 
-    if (!retryRes.ok) throw new Error(`Twitter API ${retryRes.status}: ${retryRes.statusText}`);
+    if (!retryRes.ok) {
+      if (retryRes.status === 403) throw new ScraperError('Authentication required — Twitter blocked guest access', 403, false);
+      if (retryRes.status === 429) throw new ScraperError('Twitter rate limited', 429, true);
+      throw new ScraperError(`Twitter API ${retryRes.status}: ${retryRes.statusText}`, retryRes.status, true);
+    }
     return retryRes.json();
   }
 
-  if (!response.ok) throw new Error(`Twitter API ${response.status}: ${response.statusText}`);
-  return response.json();
+  if (response.status === 429) throw new ScraperError('Twitter rate limited', 429, true);
+  if (!response.ok) throw new ScraperError(`Twitter API ${response.status}: ${response.statusText}`, response.status, true);
+
+  const text = await response.text();
+  // Detect CAPTCHA/challenge pages
+  if (text.includes('captcha') || text.includes('challenge') || text.includes('arkose')) {
+    throw new ScraperError('CAPTCHA challenge detected', 503, true);
+  }
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new ScraperError('Invalid JSON response from Twitter', 502, true);
+  }
 }
 
 // ─── GUEST API MAPPERS ──────────────────────

@@ -27,6 +27,16 @@
       }
     ]
   },
+  "whyMobileProxy": "Twitter/X aggressively blocks datacenter IPs and requires authenticated sessions. Mobile proxies rotate residential IPs that appear as real users, bypassing rate limits and IP bans. Guest token API returns 403 from datacenter IPs. Without mobile proxy, only degraded Nitter/syndication fallback is available with limited data fields.",
+  "competitiveContext": {
+    "competitors": [
+      {"name": "SerpAPI Twitter", "price": "$0.01/search", "notes": "Requires API key + monthly subscription ($75+)"},
+      {"name": "Bright Data Twitter", "price": "$0.015/req", "notes": "Enterprise pricing, $500 minimum"},
+      {"name": "SocialData API", "price": "$0.008/req", "notes": "Monthly subscription required"},
+      {"name": "Apify Twitter Scraper", "price": "$0.005/result", "notes": "Per-result pricing, $49/mo platform fee"}
+    ],
+    "ourAdvantage": "Pay-per-query via x402, no subscription, no API key, no signup. 50-80% cheaper than competitors with zero onboarding friction for AI agents."
+  },
   "category": "scraper",
   "tags": ["twitter", "x", "social-media", "real-time", "trending", "sentiment", "brand-monitoring"],
   "owner": {
@@ -41,5 +51,5 @@
     "discoveryUrl": "https://marketplace-service-template.onrender.com/api/twitter/search",
     "wellKnown": "https://marketplace-service-template.onrender.com"
   },
-  "healthEndpoint": "https://marketplace-service-template.onrender.com/health"
+  "healthEndpoint": "https://marketplace-service-template.onrender.com/api/twitter/health"
 }

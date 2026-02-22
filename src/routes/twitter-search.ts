@@ -1,11 +1,12 @@
 /**
  * Twitter/X Real-Time Search API Routes (Bounty #73)
  *
- * GET /api/twitter-search/search?query=keyword&limit=25&type=live
- * GET /api/twitter-search/trending?woeid=1
- * GET /api/twitter-search/user/:handle
- * GET /api/twitter-search/user/:handle/tweets?limit=25
- * GET /api/twitter-search/hashtag/:tag?limit=25
+ * GET /api/twitter/search?query=keyword&limit=25&type=live
+ * GET /api/twitter/trending?woeid=1
+ * GET /api/twitter/user/:handle
+ * GET /api/twitter/user/:handle/tweets?limit=25
+ * GET /api/twitter/hashtag/:tag?limit=25
+ * GET /api/twitter/health
  */
 
 import { Hono } from 'hono';
@@ -17,6 +18,7 @@ import {
   getUserProfile,
   getUserTweets,
   searchHashtag,
+  ScraperError,
 } from '../scrapers/twitter-search';
 
 export const twitterSearchRouter = new Hono();
@@ -28,6 +30,128 @@ function proxyInfo() {
   catch { return { country: 'US', type: 'mobile' as const }; }
 }
 
+function handleScraperError(c: any, err: unknown, fallbackMsg: string) {
+  if (err instanceof ScraperError) {
+    if (err.retryable) c.header('Retry-After', '30');
+    return c.json({ error: err.message, retryable: err.retryable }, err.statusCode);
+  }
+  return c.json({ error: fallbackMsg, message: (err as Error).message }, 500);
+}
+
+// ─── OUTPUT SCHEMAS ─────────────────────────
+
+const TWEET_SCHEMA = {
+  type: 'object',
+  properties: {
+    id: { type: 'string' },
+    text: { type: 'string' },
+    authorId: { type: 'string' },
+    authorName: { type: 'string' },
+    authorHandle: { type: 'string' },
+    authorVerified: { type: 'boolean' },
+    authorFollowers: { type: 'number' },
+    createdAt: { type: 'string', format: 'date-time' },
+    likes: { type: 'number' },
+    retweets: { type: 'number' },
+    replies: { type: 'number' },
+    views: { type: 'number' },
+    url: { type: 'string' },
+    mediaUrls: { type: 'array', items: { type: 'string' } },
+    hashtags: { type: 'array', items: { type: 'string' } },
+    language: { type: 'string' },
+    isReply: { type: 'boolean' },
+    isRetweet: { type: 'boolean' },
+  },
+};
+
+const SEARCH_OUTPUT_SCHEMA = {
+  input: {
+    query: 'string (required) — search keywords, supports Twitter operators (from:user, #hashtag, etc.)',
+    limit: 'number (optional, default: 25, max: 100)',
+    type: '"live" | "top" (optional, default: "live") — live for chronological, top for popular',
+  },
+  output: {
+    tweets: { type: 'array', items: TWEET_SCHEMA, description: 'Array of matching tweets' },
+    query: { type: 'string' },
+    resultCount: { type: 'number' },
+    searchType: { type: 'string', enum: ['live', 'top'] },
+    proxy: { type: 'object', properties: { country: { type: 'string' }, type: { type: 'string' } } },
+  },
+};
+
+const TRENDING_OUTPUT_SCHEMA = {
+  input: {
+    woeid: 'number (optional, default: 1) — Where On Earth ID. 1=Worldwide, 23424977=US, 23424975=UK, 23424856=Japan',
+  },
+  output: {
+    trends: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          name: { type: 'string' },
+          tweetCount: { type: 'number' },
+          url: { type: 'string' },
+          category: { type: 'string' },
+        },
+      },
+    },
+    location: { type: 'string' },
+    resultCount: { type: 'number' },
+  },
+};
+
+const USER_PROFILE_OUTPUT_SCHEMA = {
+  input: {
+    handle: 'string (required, in URL) — Twitter handle without @ (e.g., "elonmusk")',
+  },
+  output: {
+    profile: {
+      type: 'object',
+      nullable: true,
+      properties: {
+        id: { type: 'string' },
+        name: { type: 'string' },
+        handle: { type: 'string' },
+        bio: { type: 'string' },
+        followers: { type: 'number' },
+        following: { type: 'number' },
+        tweetCount: { type: 'number' },
+        verified: { type: 'boolean' },
+        joinedAt: { type: 'string', format: 'date-time' },
+        profileImageUrl: { type: 'string' },
+        bannerUrl: { type: 'string' },
+        url: { type: 'string' },
+        location: { type: 'string' },
+      },
+    },
+  },
+};
+
+const USER_TWEETS_OUTPUT_SCHEMA = {
+  input: {
+    handle: 'string (required, in URL) — Twitter handle without @ (e.g., "elonmusk")',
+    limit: 'number (optional, default: 25, max: 100)',
+  },
+  output: {
+    tweets: { type: 'array', items: TWEET_SCHEMA },
+    query: { type: 'string', description: '"from:{handle}"' },
+    resultCount: { type: 'number' },
+  },
+};
+
+const HASHTAG_OUTPUT_SCHEMA = {
+  input: {
+    tag: 'string (required, in URL) — hashtag without # (e.g., "AI")',
+    limit: 'number (optional, default: 25, max: 100)',
+  },
+  output: {
+    tweets: { type: 'array', items: TWEET_SCHEMA },
+    query: { type: 'string', description: '"#{tag}"' },
+    resultCount: { type: 'number' },
+  },
+};
+
 // ─── SEARCH TWEETS ──────────────────────────
 
 twitterSearchRouter.get('/search', async (c) => {
@@ -36,26 +160,18 @@ twitterSearchRouter.get('/search', async (c) => {
 
   const payment = extractPayment(c);
   if (!payment) {
-    return c.json(build402Response('/api/twitter-search/search', 'Real-time Twitter/X search — returns tweets with full metadata: text, author, stats (likes, retweets, replies, views), media, hashtags', PRICE, walletAddress, {
-      input: {
-        query: 'string (required) — search keywords, supports Twitter operators (from:user, #hashtag, etc.)',
-        limit: 'number (optional, default: 25, max: 100)',
-        type: '"live" | "top" (optional, default: "live") — live for chronological, top for popular',
-      },
-      output: {
-        tweets: 'Tweet[] — id, text, authorId, authorName, authorHandle, authorVerified, authorFollowers, createdAt, likes, retweets, replies, views, url, mediaUrls, hashtags, language, isReply, isRetweet',
-        query: 'string',
-        resultCount: 'number',
-        searchType: 'string',
-      },
-    }), 402);
+    return c.json(build402Response(
+      '/api/twitter/search',
+      'Real-time Twitter/X search — returns tweets with full metadata: text, author, stats (likes, retweets, replies, views), media, hashtags',
+      PRICE, walletAddress, SEARCH_OUTPUT_SCHEMA,
+    ), 402);
   }
 
   const verification = await verifyPayment(payment, walletAddress, PRICE);
   if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
 
   const query = c.req.query('query');
-  if (!query) return c.json({ error: 'Missing required parameter: query', example: '/api/twitter-search/search?query=AI+agents&type=live' }, 400);
+  if (!query) return c.json({ error: 'Missing required parameter: query', example: '/api/twitter/search?query=AI+agents&type=live' }, 400);
 
   const searchType = (c.req.query('type') || 'live') as 'live' | 'top';
   if (!['live', 'top'].includes(searchType)) {
@@ -77,8 +193,8 @@ twitterSearchRouter.get('/search', async (c) => {
       proxy: proxyInfo(),
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
-  } catch (err: any) {
-    return c.json({ error: 'Twitter search failed', message: err.message }, 502);
+  } catch (err) {
+    return handleScraperError(c, err, 'Twitter search failed');
   }
 });
 
@@ -90,16 +206,11 @@ twitterSearchRouter.get('/trending', async (c) => {
 
   const payment = extractPayment(c);
   if (!payment) {
-    return c.json(build402Response('/api/twitter-search/trending', 'Get Twitter/X trending topics by location (WOEID). Default: worldwide', PRICE, walletAddress, {
-      input: {
-        woeid: 'number (optional, default: 1) — Where On Earth ID. 1=Worldwide, 23424977=US, 23424975=UK, 23424856=Japan',
-      },
-      output: {
-        trends: 'Trend[] — name, tweetCount, url, category',
-        location: 'string',
-        resultCount: 'number',
-      },
-    }), 402);
+    return c.json(build402Response(
+      '/api/twitter/trending',
+      'Get Twitter/X trending topics by location (WOEID). Default: worldwide',
+      PRICE, walletAddress, TRENDING_OUTPUT_SCHEMA,
+    ), 402);
   }
 
   const verification = await verifyPayment(payment, walletAddress, PRICE);
@@ -117,8 +228,8 @@ twitterSearchRouter.get('/trending', async (c) => {
       proxy: proxyInfo(),
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
-  } catch (err: any) {
-    return c.json({ error: 'Trending fetch failed', message: err.message }, 502);
+  } catch (err) {
+    return handleScraperError(c, err, 'Trending fetch failed');
   }
 });
 
@@ -128,19 +239,15 @@ twitterSearchRouter.get('/user/:handle', async (c) => {
   const walletAddress = process.env.WALLET_ADDRESS;
   if (!walletAddress) return c.json({ error: 'WALLET_ADDRESS not configured' }, 500);
 
-  // Check if it's the /tweets sub-route (Hono matches greedily)
   const handle = c.req.param('handle');
 
   const payment = extractPayment(c);
   if (!payment) {
-    return c.json(build402Response('/api/twitter-search/user/:handle', 'Get Twitter/X user profile — name, bio, followers, following, tweet count, verified status', PRICE, walletAddress, {
-      input: {
-        handle: 'string (required, in URL) — Twitter handle without @ (e.g., "elonmusk")',
-      },
-      output: {
-        profile: 'UserProfile | null — id, name, handle, bio, followers, following, tweetCount, verified, joinedAt, profileImageUrl, bannerUrl, url, location',
-      },
-    }), 402);
+    return c.json(build402Response(
+      '/api/twitter/user/:handle',
+      'Get Twitter/X user profile — name, bio, followers, following, tweet count, verified status',
+      PRICE, walletAddress, USER_PROFILE_OUTPUT_SCHEMA,
+    ), 402);
   }
 
   const verification = await verifyPayment(payment, walletAddress, PRICE);
@@ -162,8 +269,8 @@ twitterSearchRouter.get('/user/:handle', async (c) => {
       proxy: proxyInfo(),
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
-  } catch (err: any) {
-    return c.json({ error: 'User profile fetch failed', message: err.message }, 502);
+  } catch (err) {
+    return handleScraperError(c, err, 'User profile fetch failed');
   }
 });
 
@@ -175,17 +282,11 @@ twitterSearchRouter.get('/user/:handle/tweets', async (c) => {
 
   const payment = extractPayment(c);
   if (!payment) {
-    return c.json(build402Response('/api/twitter-search/user/:handle/tweets', 'Get recent tweets from a Twitter/X user', PRICE, walletAddress, {
-      input: {
-        handle: 'string (required, in URL) — Twitter handle without @ (e.g., "elonmusk")',
-        limit: 'number (optional, default: 25, max: 100)',
-      },
-      output: {
-        tweets: 'Tweet[] — id, text, authorName, authorHandle, createdAt, likes, retweets, replies, views, url, mediaUrls, hashtags',
-        query: 'string — "from:{handle}"',
-        resultCount: 'number',
-      },
-    }), 402);
+    return c.json(build402Response(
+      '/api/twitter/user/:handle/tweets',
+      'Get recent tweets from a Twitter/X user',
+      PRICE, walletAddress, USER_TWEETS_OUTPUT_SCHEMA,
+    ), 402);
   }
 
   const verification = await verifyPayment(payment, walletAddress, PRICE);
@@ -210,8 +311,8 @@ twitterSearchRouter.get('/user/:handle/tweets', async (c) => {
       proxy: proxyInfo(),
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
-  } catch (err: any) {
-    return c.json({ error: 'User tweets fetch failed', message: err.message }, 502);
+  } catch (err) {
+    return handleScraperError(c, err, 'User tweets fetch failed');
   }
 });
 
@@ -223,17 +324,11 @@ twitterSearchRouter.get('/hashtag/:tag', async (c) => {
 
   const payment = extractPayment(c);
   if (!payment) {
-    return c.json(build402Response('/api/twitter-search/hashtag/:tag', 'Search Twitter/X tweets by hashtag', PRICE, walletAddress, {
-      input: {
-        tag: 'string (required, in URL) — hashtag without # (e.g., "AI")',
-        limit: 'number (optional, default: 25, max: 100)',
-      },
-      output: {
-        tweets: 'Tweet[] — id, text, authorName, authorHandle, createdAt, likes, retweets, replies, views, url, mediaUrls, hashtags',
-        query: 'string — "#hashtag"',
-        resultCount: 'number',
-      },
-    }), 402);
+    return c.json(build402Response(
+      '/api/twitter/hashtag/:tag',
+      'Search Twitter/X tweets by hashtag',
+      PRICE, walletAddress, HASHTAG_OUTPUT_SCHEMA,
+    ), 402);
   }
 
   const verification = await verifyPayment(payment, walletAddress, PRICE);
@@ -258,7 +353,51 @@ twitterSearchRouter.get('/hashtag/:tag', async (c) => {
       proxy: proxyInfo(),
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
-  } catch (err: any) {
-    return c.json({ error: 'Hashtag search failed', message: err.message }, 502);
+  } catch (err) {
+    return handleScraperError(c, err, 'Hashtag search failed');
   }
+});
+
+// ─── HEALTH ENDPOINT ────────────────────────
+
+twitterSearchRouter.get('/health', async (c) => {
+  const checks: Record<string, any> = {
+    service: 'twitter-search-intelligence',
+    version: '1.0.0',
+    timestamp: new Date().toISOString(),
+    checks: {} as Record<string, any>,
+  };
+
+  // Check 1: Proxy connectivity
+  try {
+    const proxy = getProxy();
+    checks.checks.proxy = { status: 'configured', country: proxy.country };
+  } catch {
+    checks.checks.proxy = { status: 'not_configured', fallback: 'direct' };
+  }
+
+  // Check 2: Twitter reachability (lightweight HEAD)
+  try {
+    const r = await fetch('https://twitter.com', { method: 'HEAD', signal: AbortSignal.timeout(5000) });
+    checks.checks.twitter = { status: r.ok ? 'reachable' : 'blocked', statusCode: r.status };
+  } catch {
+    checks.checks.twitter = { status: 'unreachable' };
+  }
+
+  // Check 3: Payment config
+  const wallet = process.env.WALLET_ADDRESS;
+  checks.checks.payment = { configured: !!wallet, network: ['solana', 'base'] };
+
+  // Check 4: Endpoints available
+  checks.checks.endpoints = {
+    search: '/api/twitter/search',
+    trending: '/api/twitter/trending',
+    userProfile: '/api/twitter/user/:handle',
+    userTweets: '/api/twitter/user/:handle/tweets',
+    hashtag: '/api/twitter/hashtag/:tag',
+  };
+
+  const allChecks = checks.checks as Record<string, any>;
+  checks.status = Object.values(allChecks).every((ch: any) => ch.status !== 'error') ? 'healthy' : 'degraded';
+  return c.json(checks);
 });
