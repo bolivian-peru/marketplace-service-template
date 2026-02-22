@@ -1,0 +1,48 @@
+{
+  "query": "ai photo editor",
+  "entity": "software",
+  "country": "US",
+  "results": [
+    {
+      "trackId": 6477489729,
+      "trackName": "Google Gemini",
+      "price": 0.0,
+      "averageUserRating": 4.72187,
+      "userRatingCount": 1306900,
+      "primaryGenreName": "Productivity",
+      "version": "1.2026.0662300",
+      "sellerName": "Google LLC"
+    },
+    {
+      "trackId": 1455009060,
+      "trackName": "Photoroom: AI Photo Editor",
+      "price": 0.0,
+      "averageUserRating": 4.83195,
+      "userRatingCount": 214116,
+      "primaryGenreName": "Photo & Video",
+      "version": "2026.07.02",
+      "sellerName": "Photoroom"
+    },
+    {
+      "trackId": 587366035,
+      "trackName": "Picsart AI Photo Editor, Video",
+      "price": 0.0,
+      "averageUserRating": 4.66898,
+      "userRatingCount": 1187215,
+      "primaryGenreName": "Photo & Video",
+      "version": "29.4.1",
+      "sellerName": "PicsArt, Inc."
+    },
+    {
+      "trackId": 1436732536,
+      "trackName": "Lensa AI: Photo Editor",
+      "price": 0.0,
+      "averageUserRating": 4.6959,
+      "userRatingCount": 414108,
+      "primaryGenreName": "Photo & Video",
+      "version": "8.3.0",
+      "sellerName": "Prisma labs, inc."
+    }
+  ],
+  "count": 4
+}

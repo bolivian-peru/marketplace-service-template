@@ -1,0 +1,31 @@
+{
+  "trackId": 686449807,
+  "trackName": "Telegram Messenger",
+  "bundleId": "ph.telegra.Telegraph",
+  "sellerName": "Telegram FZ-LLC",
+  "price": 0.0,
+  "averageUserRating": 4.01779,
+  "userRatingCount": 258667,
+  "primaryGenreName": "Social Networking",
+  "genres": [
+    "Social Networking",
+    "Productivity"
+  ],
+  "fileSizeBytes": "159797248",
+  "version": "12.4.1",
+  "releaseDate": "2013-08-14T07:00:00Z",
+  "currentVersionReleaseDate": "2026-02-13T21:07:56Z",
+  "releaseNotes": "Bug fixes, minor improvements, and more.",
+  "screenshotUrls": [
+    "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/e6/b1/b9/e6b1b943-d7ea-73cc-69e7-9d9e22a27a5b/0_APP_IPHONE_55_0.png/392x696bb.png",
+    "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/61/06/a9/6106a923-72e2-29f9-2a9e-2356912d9995/1_APP_IPHONE_55_1.png/392x696bb.png",
+    "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/86/4f/15/864f15d3-5b7a-71d5-0c46-98ed7d9e656b/2_APP_IPHONE_55_2.png/392x696bb.png"
+  ],
+  "supportedDevices": [
+    "iPhone5s-iPhone5s",
+    "iPadAir-iPadAir",
+    "iPadAirCellular-iPadAirCellular",
+    "iPadMiniRetina-iPadMiniRetina",
+    "iPadMiniRetinaCellular-iPadMiniRetinaCellular"
+  ]
+}
