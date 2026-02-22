@@ -18,6 +18,7 @@ import {
   getTopApps,
   getSimilarApps,
   GENRE_IDS,
+  ScraperError,
 } from '../scrapers/appstore-intel';
 
 export const appstoreRouter = new Hono();
@@ -27,6 +28,14 @@ const PRICE = 0.005;
 function proxyInfo() {
   try { const p = getProxy(); return { country: p.country, type: 'mobile' as const }; }
   catch { return { country: 'US', type: 'mobile' as const }; }
+}
+
+function handleScraperError(c: any, err: unknown, fallbackMsg: string) {
+  if (err instanceof ScraperError) {
+    if (err.retryable) c.header('Retry-After', '30');
+    return c.json({ error: err.message, retryable: err.retryable }, err.statusCode);
+  }
+  return c.json({ error: fallbackMsg, message: (err as Error).message }, 500);
 }
 
 // ─── SEARCH ──────────────────────────────────
@@ -69,8 +78,8 @@ appstoreRouter.get('/search', async (c) => {
     c.header('X-Payment-TxHash', payment.txHash);
 
     return c.json({ ...result, proxy: proxyInfo(), payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
-  } catch (err: any) {
-    return c.json({ error: 'App Store search failed', message: err.message }, 502);
+  } catch (err) {
+    return handleScraperError(c, err, 'App Store search failed');
   }
 });
 
@@ -102,8 +111,8 @@ appstoreRouter.get('/lookup/:trackId', async (c) => {
     c.header('X-Payment-TxHash', payment.txHash);
 
     return c.json({ ...result, proxy: proxyInfo(), payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
-  } catch (err: any) {
-    return c.json({ error: 'App lookup failed', message: err.message }, 502);
+  } catch (err) {
+    return handleScraperError(c, err, 'App lookup failed');
   }
 });
 
@@ -135,8 +144,8 @@ appstoreRouter.get('/bundle/:bundleId', async (c) => {
     c.header('X-Payment-TxHash', payment.txHash);
 
     return c.json({ ...result, proxy: proxyInfo(), payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
-  } catch (err: any) {
-    return c.json({ error: 'Bundle lookup failed', message: err.message }, 502);
+  } catch (err) {
+    return handleScraperError(c, err, 'Bundle lookup failed');
   }
 });
 
@@ -172,8 +181,8 @@ appstoreRouter.get('/top', async (c) => {
     c.header('X-Payment-TxHash', payment.txHash);
 
     return c.json({ ...result, proxy: proxyInfo(), payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
-  } catch (err: any) {
-    return c.json({ error: 'Top apps fetch failed', message: err.message }, 502);
+  } catch (err) {
+    return handleScraperError(c, err, 'Top apps fetch failed');
   }
 });
 
@@ -208,7 +217,45 @@ appstoreRouter.get('/similar/:trackId', async (c) => {
     c.header('X-Payment-TxHash', payment.txHash);
 
     return c.json({ ...result, proxy: proxyInfo(), payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
-  } catch (err: any) {
-    return c.json({ error: 'Similar apps search failed', message: err.message }, 502);
+  } catch (err) {
+    return handleScraperError(c, err, 'Similar apps search failed');
   }
+});
+
+// ─── HEALTH ENDPOINT ────────────────────────
+
+appstoreRouter.get('/health', async (c) => {
+  const checks: Record<string, any> = {
+    service: 'appstore-intelligence',
+    version: '1.0.0',
+    timestamp: new Date().toISOString(),
+    checks: {} as Record<string, any>,
+  };
+
+  try {
+    const proxy = getProxy();
+    checks.checks.proxy = { status: 'configured', country: proxy.country };
+  } catch {
+    checks.checks.proxy = { status: 'not_configured', fallback: 'direct' };
+  }
+
+  try {
+    const r = await fetch('https://itunes.apple.com/search?term=test&limit=1&entity=software', { signal: AbortSignal.timeout(5000) });
+    checks.checks.itunesApi = { status: r.ok ? 'reachable' : 'blocked', statusCode: r.status };
+  } catch {
+    checks.checks.itunesApi = { status: 'unreachable' };
+  }
+
+  const wallet = process.env.WALLET_ADDRESS;
+  checks.checks.payment = { configured: !!wallet, network: ['solana', 'base'] };
+  checks.checks.endpoints = {
+    search: '/api/appstore/search',
+    lookup: '/api/appstore/lookup/:trackId',
+    bundle: '/api/appstore/bundle/:bundleId',
+    top: '/api/appstore/top',
+    similar: '/api/appstore/similar/:trackId',
+  };
+
+  checks.status = 'healthy';
+  return c.json(checks);
 });

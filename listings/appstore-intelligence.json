@@ -27,6 +27,16 @@
       }
     ]
   },
+  "whyMobileProxy": "Apple rate-limits iTunes API calls from datacenter IPs and blocks automated scraping of App Store pages. Mobile proxies provide residential IPs that bypass rate limits and geo-restrictions, enabling reliable access to country-specific app data, top charts, and ratings that vary by region.",
+  "competitiveContext": {
+    "competitors": [
+      {"name": "iTunes Search API (direct)", "price": "Free", "notes": "Rate limited (20/min), no top charts, no similar apps"},
+      {"name": "AppFollow", "price": "$0.10+/query", "notes": "$79/mo subscription minimum"},
+      {"name": "SensorTower", "price": "Enterprise", "notes": "$5000+/mo, enterprise sales process"},
+      {"name": "data.ai (App Annie)", "price": "Enterprise", "notes": "$10000+/year, enterprise only"}
+    ],
+    "ourAdvantage": "App Store intelligence via x402 micropayments. No API key, no subscription, $0.005/query. Includes search, lookup, top charts, and similar apps in one API."
+  },
   "category": "data",
   "tags": ["app-store", "apple", "ios", "mobile-apps", "market-research", "competitive-analysis"],
   "owner": {
@@ -41,5 +51,5 @@
     "discoveryUrl": "https://marketplace-service-template.onrender.com/api/appstore/search",
     "wellKnown": "https://marketplace-service-template.onrender.com"
   },
-  "healthEndpoint": "https://marketplace-service-template.onrender.com/health"
+  "healthEndpoint": "https://marketplace-service-template.onrender.com/api/appstore/health"
 }
