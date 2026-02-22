@@ -1,0 +1,43 @@
+{
+  "endpoint": "GET /api/prediction/market/0xfe29ac?country=us",
+  "description": "Prediction Market Signal Aggregator — Detailed market lookup by ID",
+  "collected": "2026-02-22T08:42:00Z",
+  "proxy": { "country": "US", "type": "mobile" },
+  "sample_response": {
+    "market": {
+      "id": "0xfe29ac",
+      "title": "Will Bitcoin reach $200K before July 2026?",
+      "description": "This market resolves YES if Bitcoin (BTC) trades at or above $200,000 USD on any major exchange (Binance, Coinbase, Kraken) at any point before July 1, 2026 00:00 UTC.",
+      "probability": 23.1,
+      "volume": 14872934,
+      "liquidity": 3241567,
+      "endDate": "2026-07-01T00:00:00Z",
+      "category": "Crypto",
+      "url": "https://polymarket.com/event/bitcoin-200k-july-2026",
+      "source": "polymarket",
+      "createdAt": "2025-11-03T14:00:00Z",
+      "active": true,
+      "commentCount": 312,
+      "outcomes": [
+        { "name": "Yes", "price": 0.231 },
+        { "name": "No", "price": 0.769 }
+      ],
+      "priceHistory": [
+        { "date": "2025-11-03", "probability": 45.2 },
+        { "date": "2025-12-01", "probability": 38.7 },
+        { "date": "2026-01-01", "probability": 29.3 },
+        { "date": "2026-02-01", "probability": 24.8 },
+        { "date": "2026-02-22", "probability": 23.1 }
+      ],
+      "relatedMarkets": [
+        {
+          "id": "0xdc4521",
+          "title": "Bitcoin price at end of 2026",
+          "probability": null,
+          "source": "polymarket"
+        }
+      ]
+    },
+    "proxy": { "country": "US", "type": "mobile" }
+  }
+}

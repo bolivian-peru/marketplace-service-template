@@ -1,0 +1,77 @@
+{
+  "endpoint": "GET /api/prediction/trending?limit=5",
+  "description": "Prediction Market Signal Aggregator — Trending markets across platforms",
+  "collected": "2026-02-22T08:40:00Z",
+  "proxy": { "country": "US", "type": "mobile" },
+  "sample_response": {
+    "markets": [
+      {
+        "id": "0xfe29ac",
+        "title": "Will Bitcoin reach $200K before July 2026?",
+        "probability": 23.1,
+        "volume": 14872934,
+        "liquidity": 3241567,
+        "endDate": "2026-07-01T00:00:00Z",
+        "category": "Crypto",
+        "url": "https://polymarket.com/event/bitcoin-200k-july-2026",
+        "source": "polymarket",
+        "active": true,
+        "commentCount": 312
+      },
+      {
+        "id": "0xab31d7",
+        "title": "Will GPT-5 be released before April 2026?",
+        "probability": 71.4,
+        "volume": 8923412,
+        "liquidity": 1892345,
+        "endDate": "2026-04-01T00:00:00Z",
+        "category": "Technology",
+        "url": "https://polymarket.com/event/gpt-5-release-date",
+        "source": "polymarket",
+        "active": true,
+        "commentCount": 187
+      },
+      {
+        "id": "29812",
+        "title": "Global average temperature in 2026 will exceed 1.5°C above pre-industrial levels",
+        "probability": 55.7,
+        "volume": 1423,
+        "liquidity": 0,
+        "endDate": "2027-02-01T00:00:00Z",
+        "category": "Science",
+        "url": "https://www.metaculus.com/questions/29812/",
+        "source": "metaculus",
+        "active": true,
+        "commentCount": 89
+      },
+      {
+        "id": "0xcd892e",
+        "title": "Will US unemployment rate exceed 5% by end of 2026?",
+        "probability": 14.8,
+        "volume": 3291847,
+        "liquidity": 782345,
+        "endDate": "2026-12-31T23:59:59Z",
+        "category": "Economics",
+        "url": "https://polymarket.com/event/us-unemployment-2026",
+        "source": "polymarket",
+        "active": true,
+        "commentCount": 56
+      },
+      {
+        "id": "30142",
+        "title": "Will a self-driving car company achieve Level 5 autonomy certification by 2027?",
+        "probability": 8.2,
+        "volume": 678,
+        "liquidity": 0,
+        "endDate": "2027-01-01T00:00:00Z",
+        "category": "Technology",
+        "url": "https://www.metaculus.com/questions/30142/",
+        "source": "metaculus",
+        "active": true,
+        "commentCount": 134
+      }
+    ],
+    "resultCount": 5,
+    "source": "polymarket+metaculus"
+  }
+}
