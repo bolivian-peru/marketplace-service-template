@@ -310,6 +310,12 @@ serviceRouter.get('/jobs', async (c) => {
   const verification = await verifyPayment(payment, walletAddress, price);
   if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
 
+  const clientIp = c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  if (!checkProxyRateLimit(clientIp)) {
+    c.header('Retry-After', '60');
+    return c.json({ error: 'Proxy rate limit exceeded', retryAfter: 60 }, 429);
+  }
+
   const query = c.req.query('query') || 'Software Engineer';
   const location = c.req.query('location') || 'Remote';
   const platform = (c.req.query('platform') || 'indeed').toLowerCase();
@@ -418,6 +424,12 @@ serviceRouter.get('/reviews/summary/:place_id', async (c) => {
   const verification = await verifyPayment(payment, walletAddress, SUMMARY_PRICE_USDC);
   if (!verification.valid) return c.json({ error: 'Payment verification failed' }, 402);
 
+  const clientIp = c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  if (!checkProxyRateLimit(clientIp)) {
+    c.header('Retry-After', '60');
+    return c.json({ error: 'Proxy rate limit exceeded', retryAfter: 60 }, 429);
+  }
+
   const placeId = c.req.param('place_id');
   try {
     const result = await fetchReviewSummary(placeId);
@@ -440,6 +452,12 @@ serviceRouter.get('/reviews/:place_id', async (c) => {
 
   const verification = await verifyPayment(payment, walletAddress, REVIEWS_PRICE_USDC);
   if (!verification.valid) return c.json({ error: 'Payment failed' }, 402);
+
+  const clientIp = c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  if (!checkProxyRateLimit(clientIp)) {
+    c.header('Retry-After', '60');
+    return c.json({ error: 'Proxy rate limit exceeded', retryAfter: 60 }, 429);
+  }
 
   const placeId = c.req.param('place_id');
   const sort = c.req.query('sort') || 'newest';
@@ -466,6 +484,12 @@ serviceRouter.get('/business/:place_id', async (c) => {
 
   const verification = await verifyPayment(payment, walletAddress, BUSINESS_PRICE_USDC);
   if (!verification.valid) return c.json({ error: 'Payment verification failed' }, 402);
+
+  const clientIp = c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  if (!checkProxyRateLimit(clientIp)) {
+    c.header('Retry-After', '60');
+    return c.json({ error: 'Proxy rate limit exceeded', retryAfter: 60 }, 429);
+  }
 
   const placeId = c.req.param('place_id');
   try {
@@ -500,8 +524,22 @@ export async function getPolymarketOdds(marketSlugOrQuery: string): Promise<Mark
 
 export async function getKalshiOdds(marketTicker: string): Promise<MarketOdds['kalshi']> {
   try {
-    const res = await proxyFetch(`https://trading-api.kalshi.com/trade-api/v2/markets/${marketTicker}`);
-    if (!res.ok) throw new Error(`Kalshi API error: ${res.status} ${res.statusText}`);
+    const headers: Record<string, string> = {};
+    if (process.env.KALSHI_API_KEY) {
+      // Placeholder for actual kalshi auth format
+      headers['Authorization'] = `Bearer ${process.env.KALSHI_API_KEY}`;
+    }
+
+    const res = await proxyFetch(`https://trading-api.kalshi.com/trade-api/v2/markets/${marketTicker}`, {
+      headers
+    });
+    if (!res.ok) {
+      if (res.status === 401 || res.status === 403) {
+        console.error(`Kalshi API auth error: ${res.status}. Missing or invalid KALSHI_API_KEY.`);
+        return null;
+      }
+      throw new Error(`Kalshi API error: ${res.status} ${res.statusText}`);
+    }
     const data = await res.json() as any;
     const market = data.market;
     if (!market) return null;
@@ -720,7 +758,13 @@ serviceRouter.get('/predictions', async (c) => {
   if (type === 'signal' || type === 'arbitrage' || type === 'trending') {
     fetchPromises.push((async () => { odds.polymarket = await getPolymarketOdds(market); })());
     fetchPromises.push((async () => { odds.kalshi = await getKalshiOdds(market); })());
-    const questionId = market.split('-').find(s => !isNaN(parseInt(s))) || '40281';
+
+    let questionId = c.req.query('metaculusId');
+    if (!questionId) {
+      // Fallback: strictly extract numbers if they exist, but don't crash if they don't
+      const matches = market.match(/\d+/g);
+      questionId = matches ? matches[matches.length - 1] : '40281';
+    }
     fetchPromises.push((async () => { odds.metaculus = await getMetaculusOdds(questionId); })());
   }
 
