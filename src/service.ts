@@ -14,7 +14,7 @@ import { proxyFetch, getProxy } from './proxy';
 import { extractPayment, verifyPayment, build402Response } from './payment';
 import { scrapeIndeed, scrapeLinkedIn, type JobListing } from './scrapers/job-scraper';
 import { fetchReviews, fetchBusinessDetails, fetchReviewSummary, searchBusinesses } from './scrapers/reviews';
-import { searchReddit, getTrending, getSubredditTop, getThreadComments, RedditError } from './scrapers/reddit';
+import { searchReddit, getTrending, getSubredditTop, getThreadComments, RedditError } from './scrapers/reddit-intel';
 import { scrapeGoogleMaps, extractDetailedBusiness } from './scrapers/maps-scraper';
 import { researchRouter } from './routes/research';
 import { trendingRouter } from './routes/trending';

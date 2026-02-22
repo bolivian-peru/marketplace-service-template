@@ -3,7 +3,7 @@
  * Run: bun run scripts/generate-proof.ts
  */
 
-import { parsePost, parseListing, flattenComments } from '../src/scrapers/reddit/parse';
+import { parsePost, parseListing, flattenComments } from '../src/scrapers/reddit-intel/parse';
 
 const UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.3 Mobile/15E148 Safari/604.1';
 
