@@ -1,0 +1,47 @@
+{
+  "source": "google_trends_rss",
+  "geo": "GB",
+  "trends": [
+    {
+      "title": "new york weather",
+      "approx_traffic": "100+"
+    },
+    {
+      "title": "jessie buckley",
+      "approx_traffic": "100+"
+    },
+    {
+      "title": "samsung galaxy s26 bixby",
+      "approx_traffic": "200+"
+    },
+    {
+      "title": "genesis invitational",
+      "approx_traffic": "500+"
+    },
+    {
+      "title": "south africa women vs pakistan women",
+      "approx_traffic": "200+"
+    },
+    {
+      "title": "wordle hint",
+      "approx_traffic": "2000+"
+    },
+    {
+      "title": "antifa",
+      "approx_traffic": "200+"
+    },
+    {
+      "title": "flights to boston",
+      "approx_traffic": "200+"
+    },
+    {
+      "title": "istanbul flights",
+      "approx_traffic": "100+"
+    },
+    {
+      "title": "microsoft xbox",
+      "approx_traffic": "100+"
+    }
+  ],
+  "count": 10
+}

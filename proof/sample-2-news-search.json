@@ -1,0 +1,67 @@
+{
+  "source": "google_news_rss",
+  "query": "artificial intelligence",
+  "articles": [
+    {
+      "title": "A.I. Isn’t Coming for Every White-Collar Job. At Least Not Yet. - The New York Times",
+      "link": "https://news.google.com/rss/articles/CBMif0FVX3lxTE5CUFpIVzhkWHFXVVJDRGhaWVlUTU0zaHBsbHIyRHpXUnZIT0hoUWhqNzR5dTVBUUZpbmpPVzY0cktGUGIyMnpVeDd0SFRMMHV1bldKdlJpZ2U2WU5NNEJqM0UyQW5ibmRveHc0ZWZ5dHNnbzRjazg1VFVUc1FIbGs?oc=5",
+      "pubDate": "Fri, 20 Feb 2026 10:01:01 GMT",
+      "source": "The New York Times"
+    },
+    {
+      "title": "Opinion | Artificial Intelligence Is an Efficiency Engine - The Wall Street Journal",
+      "link": "https://news.google.com/rss/articles/CBMikgNBVV95cUxQd1ZGVks2SkpUSG9UVGlzTjZOYUV6cEVfaHNQS3JtNmZ0cFJwbERrMHRPenBDMXFKYWwyei1PNlNxNnZuQ0dJaThHUHlEaEFCclhXbFlkVEhqUVVrc3ZmaW44b2FQVWlMcWxYNGllR1JDQ2h3elVqR19rLWpCdHVXQ2ZiYzNyT0tmaWpLaXBmb19Gb1g4eTZzUWxHRGxsdUhYN3p1Wm9yYkdrRjVWbzhlTWZsNkJrb05uZjE0Y3hrcy1qazlTRkktUmJhTnFyNndjcDVGVEhRWWVyMFUzWnVKV1lyS1J3SjJ2QjdQamdPak9wdkpwZGhRME94MUpES2M5ZWdWdG1mZ0V0WTVzSlh5LUZkd3BuM3RER2N3MWU2RVg0T2VHRHZ2VXgxNnNBUjdfMWFKbmhYVEZvYTJndy1NMksydXhTY0hNVmducnROUTduaE5OZVgyNk5Hb0ljMEJtczJPUFFJVDZna0xyWFkteEJfaXJlMXBQazNiT3hPQ245ZGRSZlg4RUx1SlY0bW9vUEE?oc=5",
+      "pubDate": "Fri, 20 Feb 2026 14:46:00 GMT",
+      "source": "The Wall Street Journal"
+    },
+    {
+      "title": "How Chinese AI put a new spin on Winter Olympics action - South China Morning Post",
+      "link": "https://news.google.com/rss/articles/CBMivwFBVV95cUxPNG1GOVFiVnEweWdVRjk4OVdGY1BtejlOQmRYYkpISS1pS2VHcTZpTkg0dWM1YlIzRHV1Q2wxUFgzSU1aRXVkZy1vNDIxWGZiT0FGRFd6bU5JMkJQTHRyYzFBVEY3T0pEcXF0LVd5OTM3anRjZ0hZb253WDJDdWQzbXYybC1Kc2ZObENHM1EzNVl6XzVJSXRVenp4Rkl2bE5aNjZsV0NGMG1ScWQwTk5hcFRCMncwaDBqY0RDaEJTVdIBvwFBVV95cUxQdF96X3ZNX0xySVYwMFRfdHlHMDByeUNDQ3dXWV91amZTQk9SeVo2aUY3YlNsWWpTdEdoOVRxS3hJcFMySWJRY2NNekx0WTM3LUdPTm11ZUNoblNZM3hXelU2SlJoUzA5WlIxeThHWWlSX0lOWUo1RDdONmtldTVaSE9UeTVoS1FDZ3kwT3dXSmdzZFcxSWdDaHlzTHg3ekFuRnM3WG9yXzlGZDEwYXdPRDZHOUozRTZVWUZhRHNOZw?oc=5",
+      "pubDate": "Fri, 20 Feb 2026 11:00:09 GMT",
+      "source": "South China Morning Post"
+    },
+    {
+      "title": "Prediction: These 2 Artificial Intelligence (AI) Stocks Will Soar After Feb. 26 (Hint: Not Nvidia) - Nasdaq",
+      "link": "https://news.google.com/rss/articles/CBMitwFBVV95cUxOYXcwVk1KLWk3SXlEbWpZbDZSSFBheDB3Z3Q4SXk0RlRxSWFSWkU3a29YMTNCWmZqUXpkVVhpbDVIWG9TNF9DOGcyR20wbVV1MWZFQU9tclZZbWh4eDg4cFlqNlA2dGdVdFBsWGRlVDBYNHdCWUd5OU5fV0xFUFFBUU5OdEVyZmphZEZDalJ2ZXZPT2NDSDhNQkttV01ULVlKb3ZoUXNVZEIxYlpDVWRQa1lfckF6bGM?oc=5",
+      "pubDate": "Fri, 20 Feb 2026 19:20:00 GMT",
+      "source": "Nasdaq"
+    },
+    {
+      "title": "Opinion | Progressives for news media regulation - The Washington Post",
+      "link": "https://news.google.com/rss/articles/CBMieEFVX3lxTE91NjZmYktBMlZoRzJ5OGJVSXBZcXFwR1N0LXVkZXVNN2VTb2xmdG9zWXB3eE1Dc283NDEwUGthM2hoSldfVl9CZHpMLUYybW04UHhOU2d4MlNqQ1FvdVo4MDB2VlhXQXV3eUJSLTJDWmxJenpfRHY3dg?oc=5",
+      "pubDate": "Sat, 21 Feb 2026 21:00:37 GMT",
+      "source": "The Washington Post"
+    },
+    {
+      "title": "Chaos, confusion and $200 billion dreams: What I saw at India’s AI summit - CNBC",
+      "link": "https://news.google.com/rss/articles/CBMiaEFVX3lxTE5Hb2p3em1Pbmt6Rm1PN09hSW0yU3JaelU2UXE2bVFPazRnaGJ2MTlEYTUzdmVLRllRU0pMa2xiRlE3eEFfc1ZuQ3NBUFNZY01hVGRuZmxoOFZ0YWVWWmFkZ0JkRWpiSjdC0gFuQVVfeXFMTlJEcjViTXd4V1pCYmJ1ZXBvS2xLUHdWWW1Ld0JPSElLNVlBVnlVSG1WRXVkdUFZbklBQVUxUG1rMEdERE1BTElvZzZMRDhJUnN6aW0zVzFDU3NOZVhCb0JjTGxVRnkwZWlxQ1I5RHc?oc=5",
+      "pubDate": "Sat, 21 Feb 2026 08:50:57 GMT",
+      "source": "CNBC"
+    },
+    {
+      "title": "Dozens of countries steer clear of safety commitment in global AI pledge - Politico",
+      "link": "https://news.google.com/rss/articles/CBMivwFBVV95cUxPekdwSFRXSmQzejZpcEpfQ1NqWTd3ZHJvOU4xNWtRNndNb2JubWhoeHhCenBEMDBvYXM2eU13UWZWal9qTG00TnZqUUVsRUFQODQ0dWl4OFdQVmVRR1VUOFpGREJwR0RqRXIzSkozc0dzSHdRNmdmU2h6RFB4MmxBTGV4RnhtMHVSVUs1NjNkVjNHTXplbVZtWFAyc0VraUw2Z1dmWjd6MnpELW9oSEUyb0NERWVyRUlVeDlYeGc1dw?oc=5",
+      "pubDate": "Sat, 21 Feb 2026 18:27:09 GMT",
+      "source": "Politico"
+    },
+    {
+      "title": "Anthropic Launches Claude Code Security for AI-Powered Vulnerability Scanning - The Hacker News",
+      "link": "https://news.google.com/rss/articles/CBMihAFBVV95cUxNNmJUTThkb1BXTUFZOVRNOVVMeklvRGJURnRDZ2xmLWRqYjExWEJKYmdvNEZMeTJzSmxVZXhFUUFrNGItLS1XMVctM3kwbFFXTGYtT0xtNXB2aWVMT0V3S2hnS1NpQzJIbTByYTYzeDN5QnRkTzhPWXFndFFVRzZSeHc3V2M?oc=5",
+      "pubDate": "Sat, 21 Feb 2026 07:58:00 GMT",
+      "source": "The Hacker News"
+    },
+    {
+      "title": "AI (artificial intelligence) - The Guardian",
+      "link": "https://news.google.com/rss/articles/CBMihgFBVV95cUxOMWczNUltV2F4Qmt3TmNEdnVMcTJia3pYUGFUeHVRUk0zMVd5bF8tUVRBSUwtTlhLdDUwUkFsOFJETTNKQVlNNG82TDF0VkIxX1AtVnU2eVZFdjhQYW9GbWx6ekg1NXcwTTE3RGhnT1pqOXI5cGRUeF8za0czZkNIWUlNTEgzUQ?oc=5",
+      "pubDate": "Sun, 22 Feb 2026 06:10:17 GMT",
+      "source": "The Guardian"
+    },
+    {
+      "title": "Federal AI minister raises concerns over OpenAI safety protocols after Tumbler Ridge mass shooting - CBC",
+      "link": "https://news.google.com/rss/articles/CBMixwFBVV95cUxNa040cG40WXBNNW1FdFpJcW1JNk9COF9EYkZDd2RVbnlOQWxVUW9xdldPUTBIV0hwdERYTk9wZ0VrblZhVHBaUzlYeTN5NFBTSURMbW9sNXFhWGhtd1ZkbndPSFJsVGJOUVM4aVpOQTFWTUlSZ0tEVW13MmJDV1Z2dVVVOXJrUnRWTmhWY0VUdjNOeGZlcUlSLUtQX1pGWVhFN0pmUUNfSlh4UGdEMUU0WGlvLWVEVGNxMEtiTjRacXU5eFZRbXF3?oc=5",
+      "pubDate": "Sat, 21 Feb 2026 23:06:00 GMT",
+      "source": "CBC"
+    }
+  ],
+  "count": 10
+}
