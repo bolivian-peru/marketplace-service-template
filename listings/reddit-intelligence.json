@@ -27,6 +27,16 @@
       }
     ]
   },
+  "whyMobileProxy": "Reddit aggressively rate-limits and blocks datacenter IPs (403 Forbidden). Their API requires OAuth2 app registration with strict rate limits (100 req/min). Mobile proxies bypass IP-based blocking, enabling reliable scraping of search results, trending content, and full thread data without API registration or rate limit concerns.",
+  "competitiveContext": {
+    "competitors": [
+      {"name": "Reddit Official API", "price": "Free (100 req/min)", "notes": "Requires OAuth2 app, rate limited, no commercial use without agreement"},
+      {"name": "SerpAPI Reddit", "price": "$0.01/search", "notes": "$75+/mo subscription required"},
+      {"name": "Bright Data Reddit", "price": "$0.01/req", "notes": "Enterprise pricing, $500 minimum"},
+      {"name": "PullPush/Pushshift", "price": "Free", "notes": "Historical only, no real-time, frequently down"}
+    ],
+    "ourAdvantage": "Real-time Reddit data via x402 micropayments. No OAuth app, no subscription, no API key. Sub-cent pricing ($0.005/query) with zero signup friction for AI agents."
+  },
   "category": "scraper",
   "tags": ["reddit", "social-media", "sentiment", "market-research", "brand-monitoring", "trend-detection"],
   "owner": {
@@ -41,5 +51,5 @@
     "discoveryUrl": "https://marketplace-service-template.onrender.com/api/reddit/search",
     "wellKnown": "https://marketplace-service-template.onrender.com"
   },
-  "healthEndpoint": "https://marketplace-service-template.onrender.com/health"
+  "healthEndpoint": "https://marketplace-service-template.onrender.com/api/reddit/health"
 }

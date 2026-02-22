@@ -10,6 +10,19 @@
 
 import { proxyFetch } from '../proxy';
 
+// ─── SCRAPER ERROR ──────────────────────────
+
+export class ScraperError extends Error {
+  constructor(
+    message: string,
+    public statusCode: number,
+    public retryable: boolean,
+  ) {
+    super(message);
+    this.name = 'ScraperError';
+  }
+}
+
 const BASE_URL = 'https://www.reddit.com';
 const REDDIT_UA = 'RedditIntelligenceBot/1.0 (marketplace-service)';
 
@@ -33,32 +46,51 @@ async function redditFetch(url: string, opts: FetchOpts = {}): Promise<any> {
         });
       } catch {
         // Fallback to direct fetch if proxy not configured
-        const ctrl = new AbortController();
-        const t = setTimeout(() => ctrl.abort(), timeoutMs);
-        response = await fetch(url, {
-          headers: { 'User-Agent': REDDIT_UA, Accept: 'application/json' },
-          signal: ctrl.signal,
-        });
-        clearTimeout(t);
+        try {
+          const ctrl = new AbortController();
+          const t = setTimeout(() => ctrl.abort(), timeoutMs);
+          response = await fetch(url, {
+            headers: { 'User-Agent': REDDIT_UA, Accept: 'application/json' },
+            signal: ctrl.signal,
+          });
+          clearTimeout(t);
+        } catch {
+          throw new ScraperError('Proxy connection failed and direct fallback also failed', 502, true);
+        }
       }
 
       if (response.status === 429) {
+        if (i === maxRetries) throw new ScraperError('Reddit rate limited', 429, true);
         const retryAfter = parseInt(response.headers.get('retry-after') || '5');
         await new Promise(r => setTimeout(r, retryAfter * 1000));
         continue;
       }
 
-      if (!response.ok) {
-        throw new Error(`Reddit API ${response.status}: ${response.statusText}`);
+      if (response.status === 403) {
+        throw new ScraperError('Reddit blocked access (403 Forbidden)', 403, false);
       }
 
-      return await response.json();
+      if (!response.ok) {
+        throw new ScraperError(`Reddit API ${response.status}: ${response.statusText}`, response.status, true);
+      }
+
+      const text = await response.text();
+      if (text.includes('captcha') || text.includes('challenge')) {
+        throw new ScraperError('CAPTCHA challenge detected', 503, true);
+      }
+
+      try {
+        return JSON.parse(text);
+      } catch {
+        throw new ScraperError('Invalid JSON response from Reddit', 502, true);
+      }
     } catch (e: any) {
       lastErr = e;
+      if (e instanceof ScraperError) throw e; // Don't retry typed errors
       if (i < maxRetries) await new Promise(r => setTimeout(r, 1000 * (i + 1)));
     }
   }
-  throw lastErr ?? new Error('Reddit fetch failed');
+  throw lastErr ?? new ScraperError('Reddit fetch failed after retries', 502, true);
 }
 
 export interface RedditSearchResult {
