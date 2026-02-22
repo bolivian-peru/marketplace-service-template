@@ -15,6 +15,7 @@ import {
   getPopularRestaurants,
   searchByCuisine,
   getPriceIntelligence,
+  ScraperError,
 } from '../scrapers/food-delivery';
 
 export const foodDeliveryRouter = new Hono();
@@ -24,6 +25,14 @@ const PRICE = 0.005;
 function proxyInfo() {
   try { const p = getProxy(); return { country: p.country, type: 'mobile' as const }; }
   catch { return { country: 'US', type: 'mobile' as const }; }
+}
+
+function handleScraperError(c: any, err: unknown, fallbackMsg: string) {
+  if (err instanceof ScraperError) {
+    if (err.retryable) c.header('Retry-After', '30');
+    return c.json({ error: err.message, retryable: err.retryable }, err.statusCode);
+  }
+  return c.json({ error: fallbackMsg, message: (err as Error).message }, 500);
 }
 
 // ─── SEARCH RESTAURANTS ─────────────────────
@@ -69,8 +78,8 @@ foodDeliveryRouter.get('/search', async (c) => {
       proxy: proxyInfo(),
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
-  } catch (err: any) {
-    return c.json({ error: 'Restaurant search failed', message: err.message }, 502);
+  } catch (err) {
+    return handleScraperError(c, err, 'Restaurant search failed');
   }
 });
 
@@ -112,8 +121,8 @@ foodDeliveryRouter.get('/popular', async (c) => {
       proxy: proxyInfo(),
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
-  } catch (err: any) {
-    return c.json({ error: 'Popular restaurants fetch failed', message: err.message }, 502);
+  } catch (err) {
+    return handleScraperError(c, err, 'Popular restaurants fetch failed');
   }
 });
 
@@ -161,8 +170,8 @@ foodDeliveryRouter.get('/cuisine/:type', async (c) => {
       proxy: proxyInfo(),
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
-  } catch (err: any) {
-    return c.json({ error: 'Cuisine search failed', message: err.message }, 502);
+  } catch (err) {
+    return handleScraperError(c, err, 'Cuisine search failed');
   }
 });
 
@@ -210,7 +219,44 @@ foodDeliveryRouter.get('/prices', async (c) => {
       proxy: proxyInfo(),
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
-  } catch (err: any) {
-    return c.json({ error: 'Price intelligence failed', message: err.message }, 502);
+  } catch (err) {
+    return handleScraperError(c, err, 'Price intelligence failed');
   }
+});
+
+// ─── HEALTH ENDPOINT ────────────────────────
+
+foodDeliveryRouter.get('/health', async (c) => {
+  const checks: Record<string, any> = {
+    service: 'food-delivery-intelligence',
+    version: '1.0.0',
+    timestamp: new Date().toISOString(),
+    checks: {} as Record<string, any>,
+  };
+
+  try {
+    const proxy = getProxy();
+    checks.checks.proxy = { status: 'configured', country: proxy.country };
+  } catch {
+    checks.checks.proxy = { status: 'not_configured', fallback: 'direct' };
+  }
+
+  try {
+    const r = await fetch('https://www.yelp.com', { method: 'HEAD', signal: AbortSignal.timeout(5000) });
+    checks.checks.yelp = { status: r.ok ? 'reachable' : 'blocked', statusCode: r.status };
+  } catch {
+    checks.checks.yelp = { status: 'unreachable' };
+  }
+
+  const wallet = process.env.WALLET_ADDRESS;
+  checks.checks.payment = { configured: !!wallet, network: ['solana', 'base'] };
+  checks.checks.endpoints = {
+    search: '/api/food/search',
+    popular: '/api/food/popular',
+    cuisine: '/api/food/cuisine/:type',
+    prices: '/api/food/prices',
+  };
+
+  checks.status = 'healthy';
+  return c.json(checks);
 });

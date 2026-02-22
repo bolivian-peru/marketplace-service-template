@@ -14,6 +14,17 @@
 
 import { proxyFetch } from '../proxy';
 
+export class ScraperError extends Error {
+  constructor(
+    message: string,
+    public statusCode: number,
+    public retryable: boolean,
+  ) {
+    super(message);
+    this.name = 'ScraperError';
+  }
+}
+
 // ─── FETCH HELPER ────────────────────────────
 
 const MOBILE_UA =
@@ -58,22 +69,28 @@ async function deliveryFetch(url: string, opts: FetchOpts = {}): Promise<any> {
       }
 
       if (response.status === 429) {
+        if (i === maxRetries) throw new ScraperError('Rate limited', 429, true);
         const retryAfter = parseInt(response.headers.get('retry-after') || '5');
         await new Promise((r) => setTimeout(r, retryAfter * 1000));
         continue;
       }
 
-      if (!response.ok) {
-        throw new Error(`API ${response.status}: ${response.statusText}`);
-      }
+      if (response.status === 403) throw new ScraperError('Access blocked (403)', 403, false);
+      if (!response.ok) throw new ScraperError(`API ${response.status}: ${response.statusText}`, response.status, true);
 
-      return await response.json();
+      const text = await response.text();
+      if (text.includes('captcha') || text.includes('challenge')) {
+        throw new ScraperError('CAPTCHA challenge detected', 503, true);
+      }
+      try { return JSON.parse(text); }
+      catch { throw new ScraperError('Invalid JSON response', 502, true); }
     } catch (e: any) {
       lastErr = e;
+      if (e instanceof ScraperError) throw e;
       if (i < maxRetries) await new Promise((r) => setTimeout(r, 1000 * (i + 1)));
     }
   }
-  throw lastErr ?? new Error('Delivery fetch failed');
+  throw lastErr ?? new ScraperError('Delivery fetch failed after retries', 502, true);
 }
 
 async function deliveryFetchPost(

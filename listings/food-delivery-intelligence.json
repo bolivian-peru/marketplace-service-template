@@ -27,6 +27,15 @@
       }
     ]
   },
+  "whyMobileProxy": "Food delivery platforms (Yelp, DoorDash, Grubhub) aggressively block datacenter IPs and require location-specific residential IPs to return accurate delivery data. DoorDash uses Cloudflare bot protection; Yelp returns empty results from non-residential IPs. Mobile proxies simulate real user requests from target locations for accurate delivery fee and availability data.",
+  "competitiveContext": {
+    "competitors": [
+      {"name": "Yelp Fusion API", "price": "Free (500/day)", "notes": "Requires API key, no delivery fees, no DoorDash/Grubhub data"},
+      {"name": "SerpAPI Yelp", "price": "$0.01/search", "notes": "$75+/mo subscription, Yelp only"},
+      {"name": "Bright Data", "price": "$0.01/req", "notes": "Enterprise, $500 minimum, raw HTML only"}
+    ],
+    "ourAdvantage": "Multi-platform aggregation (Yelp + DoorDash + Grubhub) with delivery fees, delivery times, and price analytics in one x402 query. No API key, no subscription, $0.005/query."
+  },
   "category": "scraper",
   "tags": ["food-delivery", "restaurants", "yelp", "doordash", "grubhub", "price-intelligence", "location-data"],
   "owner": {
@@ -41,5 +50,5 @@
     "discoveryUrl": "https://marketplace-service-template.onrender.com/api/food/search",
     "wellKnown": "https://marketplace-service-template.onrender.com"
   },
-  "healthEndpoint": "https://marketplace-service-template.onrender.com/health"
+  "healthEndpoint": "https://marketplace-service-template.onrender.com/api/food/health"
 }
