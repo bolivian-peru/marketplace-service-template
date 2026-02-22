@@ -1,0 +1,47 @@
+{
+  "query": "machine learning",
+  "type": "comments",
+  "results": [
+    {
+      "body": "Basically. I work in cyber security, I've yet to see generic machine learning detections be of any value. For a case like this I would use the details / behavior tab in VT for behavioral indicators, rather what the AV flags are.\n\nThere's literally enterprise EDRs out there flagging stuff as malware ",
+      "subreddit": "Piracy",
+      "author": "Tesnatic",
+      "score": 48,
+      "permalink": "https://reddit.com/r/Piracy/comments/1klaayb/checked_virus_total_on_an_app_i_had_for_around_a/ms1y1nr/",
+      "created_utc": 1747121125.0
+    },
+    {
+      "body": "I was honestly kinda nodding along to Federighi being skeptical of AI until he then went full bore into it. \n\nI’m not going to pretend that AI doesn’t have applications in other places. I think it can be a great accessibility tool, and the work done on machine learning has practical use. But the AI ",
+      "subreddit": "apple",
+      "author": "Satanicube",
+      "score": 15,
+      "permalink": "https://reddit.com/r/apple/comments/1kpuh0s/why_apple_still_hasnt_cracked_ai/mt1802v/",
+      "created_utc": 1747609754.0
+    },
+    {
+      "body": "They’re not *very* different. Current LLMs are a subset of machine learning models, which are just algorithms that have been tuned for certain problems over past solutions. If that’s how you believe you can fairly define and approximate intelligence, then calling it AI also makes sense. \n\nThe real p",
+      "subreddit": "technology",
+      "author": "Prior_Coyote_4376",
+      "score": 8,
+      "permalink": "https://reddit.com/r/technology/comments/1kpufkp/why_apple_still_hasnt_cracked_ai/mt0ysoh/",
+      "created_utc": 1747606441.0
+    },
+    {
+      "body": "LLM is machine learning, the same way dogs are animals.\n\nThe fact that your comment has any upvote tells everything one needs to know about the crowd in [r/technology](https://www.reddit.com/r/technology/). The willful ignorance is terrifying but also makes me glad (one's ignorance is another person",
+      "subreddit": "technology",
+      "author": "Tandittor",
+      "score": 6,
+      "permalink": "https://reddit.com/r/technology/comments/1kpufkp/why_apple_still_hasnt_cracked_ai/mt15hw6/",
+      "created_utc": 1747608838.0
+    },
+    {
+      "body": "The first step would be looking into making a multiplayer server based game into a single player game that hosts its own server. After that it would be a lot of time dedication and learning to code (if you don't already know how).\n\nOnce you make it single player hosted off of your machine then you c",
+      "subreddit": "MaraudersGame",
+      "author": "DillyDilly1231",
+      "score": 3,
+      "permalink": "https://reddit.com/r/MaraudersGame/comments/1kput4c/spt_like_mod/mt0sir6/",
+      "created_utc": 1747604321.0
+    }
+  ],
+  "count": 5
+}
