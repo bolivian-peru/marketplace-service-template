@@ -14,14 +14,14 @@
       {
         "network": "solana",
         "chainId": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
-        "recipient": "F6LSaYFuwaJM1f6ZkRfHvd8ZpoW3S7p1Vab8wpy25tJt",
+        "recipient": "6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv",
         "asset": "USDC",
         "assetAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
       },
       {
         "network": "base",
         "chainId": "eip155:8453",
-        "recipient": "0x82faF11399609a00DB01101ea627a0cd28bc48C2",
+        "recipient": "0xF8cD900794245fc36CBE65be9afc23CDF5103042",
         "asset": "USDC",
         "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
       }
