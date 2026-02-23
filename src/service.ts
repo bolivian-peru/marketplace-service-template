@@ -16,6 +16,7 @@ import { fetchReviews, fetchBusinessDetails, fetchReviewSummary, searchBusinesse
 import { scrapeGoogleMaps, extractDetailedBusiness } from './scrapers/maps-scraper';
 import { researchRouter } from './routes/research';
 import { trendingRouter } from './routes/trending';
+import { handleSignalRequest } from './routes/signal';
 
 export const serviceRouter = new Hono();
 
@@ -77,6 +78,16 @@ async function getProxyExitIp(): Promise<string | null> {
 }
 
 serviceRouter.get('/run', async (c) => {
+  // If a type=... query parameter is present, delegate to the
+  // Prediction Market Signal Aggregator endpoint defined in
+  // src/routes/signal.ts. This preserves backward compatibility
+  // for existing /api/run users (Google Maps lead generator)
+  // while supporting the new bounty contract.
+  const typeParam = c.req.query('type');
+  if (typeParam) {
+    return handleSignalRequest(c);
+  }
+
   const walletAddress = process.env.WALLET_ADDRESS;
   if (!walletAddress) {
     return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
