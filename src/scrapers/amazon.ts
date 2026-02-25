@@ -1,4 +1,4 @@
-import { proxyFetch } from './proxy';
+import { proxyFetch } from '../proxy';
 
 // ─── Amazon Product & BSR Tracker Scraper ───
 
