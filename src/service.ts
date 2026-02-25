@@ -1,3 +1,17 @@
+import { searchReddit, getTrending as getRedditTrending, getSubredditTop, getThread } from './scrapers/reddit';
+import { searchTweets, getTrending as getXTrending, getUserProfile, getUserTweets, getThread as getXThread, COUNTRY_WOEIDS } from './scrapers/twitter';
+import { getPersonProfile, getCompanyProfile, searchPeople, getCompanyEmployees } from './scrapers/linkedin';
+import { getTrending as getTTTrending, getHashtagData, getCreatorProfile as getTTCreator, getSoundData, TT_COUNTRY_CODES } from './scrapers/tiktok';
+import { searchMarketplace, getListingDetails, getCategories as getFbCategories, getNewListings } from './scrapers/facebook-marketplace';
+import { searchRestaurants, getRestaurantDetails, getMenu, comparePrices } from './scrapers/food-delivery';
+import { searchListings as searchAirbnb, getListingDetail as getAirbnbListing, getMarketStats as getAirbnbStats, getListingReviews as getAirbnbReviews } from './scrapers/airbnb';
+import { getZillowProperty, searchZillow, getZillowMarketStats, getZillowComps } from './scrapers/zillow';
+import { getAmazonProduct, searchAmazon, getAmazonBestsellers, getAmazonReviews } from './scrapers/amazon';
+import { getDiscoverFeed } from './scrapers/discover';
+import { researchTopic, getTrending as getTrendingCross } from './scrapers/trend';
+import { getPredictionSignal, getArbitrage } from './scrapers/prediction';
+import { getAppleRankings, getAppleApp, searchAppleApps, getPlayStoreApp, searchPlayStore, getAppleReviews } from './scrapers/appstore';
+
 /**
  * Service Router — Instagram Intelligence + AI Vision Analysis (Bounty #71)
  *
@@ -497,7 +511,6 @@ serviceRouter.get('/instagram/discover', async (c) => {
 // Reddit Intelligence API (Bounty #68) — $50
 // ═══════════════════════════════════════════════════════
 
-import { searchReddit, getTrending, getSubredditTop, getThread } from './scrapers/reddit';
 
 const REDDIT_PRICES = {
   search: 0.005,
@@ -587,7 +600,7 @@ serviceRouter.get('/reddit/trending', async (c) => {
   try {
     const country = c.req.query('country') || 'US';
     const proxyIp = await getProxyExitIp();
-    const topics = await getTrending(country);
+    const topics = await getRedditTrending(country);
 
     return c.json({
       topics,
@@ -707,7 +720,6 @@ serviceRouter.get('/reddit/thread/:id/comments', async (c) => {
 // X/Twitter Real-Time Search API (Bounty #73) — $100
 // ═══════════════════════════════════════════════════════
 
-import { searchTweets, getTrending as getXTrending, getUserProfile, getUserTweets, getThread as getXThread, COUNTRY_WOEIDS } from './scrapers/twitter';
 
 const X_PRICES = {
   search: 0.01,
@@ -952,7 +964,6 @@ serviceRouter.get('/x/thread/:tweet_id', async (c) => {
 // LinkedIn People & Company Enrichment API (Bounty #77) — $100
 // ═══════════════════════════════════════════════════════
 
-import { getPersonProfile, getCompanyProfile, searchPeople, getCompanyEmployees } from './scrapers/linkedin';
 
 const LI_PRICES = {
   person: 0.03,
@@ -1136,7 +1147,6 @@ serviceRouter.get('/linkedin/company/:id/employees', async (c) => {
 // TikTok Trend Intelligence API (Bounty #51) — $75
 // ═══════════════════════════════════════════════════════
 
-import { getTrending as getTTTrending, getHashtagData, getCreatorProfile as getTTCreator, getSoundData, TT_COUNTRY_CODES } from './scrapers/tiktok';
 
 const TT_PRICES = {
   trending: 0.02,
@@ -1302,7 +1312,6 @@ serviceRouter.get('/tiktok/sound/:id', async (c) => {
 // Facebook Marketplace Monitor API (Bounty #75) — $75
 // ═══════════════════════════════════════════════════════
 
-import { searchMarketplace, getListingDetails, getCategories as getFbCategories, getNewListings } from './scrapers/facebook-marketplace';
 
 const FB_PRICES = {
   search: 0.01,
@@ -1479,7 +1488,6 @@ serviceRouter.get('/marketplace/new', async (c) => {
 
 // ═══ Food Delivery Price Intelligence API (Bounty #76) — $50 ═══
 
-import { searchRestaurants, getRestaurantDetails, getMenu, comparePrices } from './scrapers/food-delivery';
 
 const FOOD_PRICES = { search: 0.01, restaurant: 0.02, menu: 0.02, compare: 0.03 };
 
@@ -1542,7 +1550,6 @@ serviceRouter.get('/food/compare', async (c) => {
 
 // ═══ Airbnb & Short-Term Rental Intelligence API (Bounty #78) — $75 ═══
 
-import { searchListings as searchAirbnb, getListingDetail as getAirbnbListing, getMarketStats as getAirbnbStats, getListingReviews as getAirbnbReviews } from './scrapers/airbnb';
 
 const ABB_PRICES = { search: 0.02, listing: 0.01, market: 0.05, reviews: 0.01 };
 
@@ -1606,7 +1613,6 @@ serviceRouter.get('/airbnb/reviews/:listing_id', async (c) => {
 // ZILLOW / REAL ESTATE INTELLIGENCE API — Bounty #79
 // ═══════════════════════════════════════════════════════════════
 
-import { getZillowProperty, searchZillow, getZillowMarketStats, getZillowComps } from './scrapers/zillow';
 
 const RE_PRICES = { property: 0.02, search: 0.01, market: 0.05, comps: 0.03 };
 
@@ -1671,7 +1677,6 @@ serviceRouter.get('/realestate/comps/:zpid', async (c) => {
 // AMAZON PRODUCT & BSR TRACKER API — Bounty #72
 // ═══════════════════════════════════════════════════════════════
 
-import { getAmazonProduct, searchAmazon, getAmazonBestsellers, getAmazonReviews } from './scrapers/amazon';
 
 const AMZ_PRICES = { product: 0.005, search: 0.01, bestsellers: 0.01, reviews: 0.02 };
 
@@ -1740,7 +1745,6 @@ serviceRouter.get('/amazon/reviews/:asin', async (c) => {
 // GOOGLE DISCOVER FEED INTELLIGENCE API — Bounty #52
 // ═══════════════════════════════════════════════════════════════
 
-import { getDiscoverFeed } from './scrapers/discover';
 
 const DISCOVER_PRICES = { feed: 0.02 };
 
@@ -1763,7 +1767,6 @@ serviceRouter.get('/discover/feed', async (c) => {
 // TREND INTELLIGENCE CROSS-PLATFORM RESEARCH API — Bounty #70
 // ═══════════════════════════════════════════════════════════════
 
-import { researchTopic, getTrending } from './scrapers/trend';
 
 const TREND_PRICES = { single: 0.10, cross: 0.50, full: 1.00, trending: 0.05 };
 
@@ -1793,7 +1796,7 @@ serviceRouter.get('/trending', async (c) => {
     const country = c.req.query('country') || 'US';
     const platforms = (c.req.query('platforms') || 'reddit,x').split(',');
     const proxyIp = await getProxyExitIp();
-    const result = await getTrending(country, platforms);
+    const result = await getTrendingCross(country, platforms);
     return c.json({ ...result, meta: { proxy: { ip: proxyIp || 'mobile', country, carrier: 'AT&T' } }, payment: { txHash: payment.txHash, amount: String(TREND_PRICES.trending), verified: true } });
   } catch (err: any) { return c.json({ error: 'Trending fetch failed', details: err.message }, 500); }
 });
@@ -1803,7 +1806,6 @@ serviceRouter.get('/trending', async (c) => {
 // PREDICTION MARKET SIGNAL AGGREGATOR API — Bounty #55
 // ═══════════════════════════════════════════════════════════════
 
-import { getPredictionSignal, getArbitrage } from './scrapers/prediction';
 
 const PRED_PRICES = { signal: 0.05, arbitrage: 0.10, sentiment: 0.03 };
 
@@ -1837,7 +1839,6 @@ serviceRouter.get('/prediction/arbitrage', async (c) => {
 // APP STORE INTELLIGENCE API — Bounty #54
 // ═══════════════════════════════════════════════════════════════
 
-import { getAppleRankings, getAppleApp, searchAppleApps, getPlayStoreApp, searchPlayStore, getAppleReviews } from './scrapers/appstore';
 
 const APP_PRICES = { rankings: 0.01, app: 0.01, search: 0.01, reviews: 0.02 };
 
