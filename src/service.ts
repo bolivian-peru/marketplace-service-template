@@ -719,9 +719,8 @@ const X_PRICES = {
 
 // ─── GET /api/x/search ──────────────────────────────
 serviceRouter.get('/x/search', async (c) => {
-  const testMode = process.env.TEST_MODE === 'true';
-  const payment = testMode ? { txHash: 'test-mode', network: 'solana' as const } : extractPayment(c);
-  if (!testMode && !payment) {
+  const payment = extractPayment(c);
+  if (!payment) {
     return c.json(
       build402Response('/api/x/search', 'Search tweets by keyword or hashtag', X_PRICES.search, WALLET_ADDRESS, {
         input: {
@@ -735,11 +734,9 @@ serviceRouter.get('/x/search', async (c) => {
     );
   }
 
-  if (!testMode) {
-    const verified = await verifyPayment(payment!.txHash, payment!.network, X_PRICES.search, WALLET_ADDRESS);
-    if (!verified.valid) {
-      return c.json({ error: 'Payment verification failed', details: verified.error }, 402);
-    }
+  const verified = await verifyPayment(payment.txHash, payment.network, X_PRICES.search, WALLET_ADDRESS);
+  if (!verified.valid) {
+    return c.json({ error: 'Payment verification failed', details: verified.error }, 402);
   }
 
   const clientIp = getClientIp(c);
@@ -764,7 +761,7 @@ serviceRouter.get('/x/search', async (c) => {
         total_results: data.total_results,
         proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'T-Mobile' },
       },
-      payment: { txHash: testMode ? 'test-mode' : payment!.txHash, amount: String(X_PRICES.search), verified: true },
+      payment: { txHash: payment.txHash, amount: String(X_PRICES.search), verified: true },
     });
   } catch (err: any) {
     return c.json({ error: 'X search failed', details: err.message }, 500);
@@ -773,9 +770,8 @@ serviceRouter.get('/x/search', async (c) => {
 
 // ─── GET /api/x/trending ────────────────────────────
 serviceRouter.get('/x/trending', async (c) => {
-  const testMode = process.env.TEST_MODE === 'true';
-  const payment = testMode ? { txHash: 'test-mode', network: 'solana' as const } : extractPayment(c);
-  if (!testMode && !payment) {
+  const payment = extractPayment(c);
+  if (!payment) {
     return c.json(
       build402Response('/api/x/trending', 'Trending topics on X by country', X_PRICES.trending, WALLET_ADDRESS, {
         input: { country: 'string (optional: US|UK|CA|AU|IN|BR|JP|DE|FR|MX|WORLDWIDE, default: US)' },
@@ -785,11 +781,9 @@ serviceRouter.get('/x/trending', async (c) => {
     );
   }
 
-  if (!testMode) {
-    const verified = await verifyPayment(payment!.txHash, payment!.network, X_PRICES.trending, WALLET_ADDRESS);
-    if (!verified.valid) {
-      return c.json({ error: 'Payment verification failed', details: verified.error }, 402);
-    }
+  const verified = await verifyPayment(payment.txHash, payment.network, X_PRICES.trending, WALLET_ADDRESS);
+  if (!verified.valid) {
+    return c.json({ error: 'Payment verification failed', details: verified.error }, 402);
   }
 
   const clientIp = getClientIp(c);
@@ -811,7 +805,7 @@ serviceRouter.get('/x/trending', async (c) => {
         total_trends: trends.length,
         proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'T-Mobile' },
       },
-      payment: { txHash: testMode ? 'test-mode' : payment!.txHash, amount: String(X_PRICES.trending), verified: true },
+      payment: { txHash: payment.txHash, amount: String(X_PRICES.trending), verified: true },
     });
   } catch (err: any) {
     return c.json({ error: 'X trending failed', details: err.message }, 500);
@@ -820,9 +814,8 @@ serviceRouter.get('/x/trending', async (c) => {
 
 // ─── GET /api/x/user/:handle ────────────────────────
 serviceRouter.get('/x/user/:handle', async (c) => {
-  const testMode = process.env.TEST_MODE === 'true';
-  const payment = testMode ? { txHash: 'test-mode', network: 'solana' as const } : extractPayment(c);
-  if (!testMode && !payment) {
+  const payment = extractPayment(c);
+  if (!payment) {
     return c.json(
       build402Response('/api/x/user/:handle', 'X user profile with metrics', X_PRICES.profile, WALLET_ADDRESS, {
         input: { handle: 'string (required) — X handle without @' },
@@ -832,11 +825,9 @@ serviceRouter.get('/x/user/:handle', async (c) => {
     );
   }
 
-  if (!testMode) {
-    const verified = await verifyPayment(payment!.txHash, payment!.network, X_PRICES.profile, WALLET_ADDRESS);
-    if (!verified.valid) {
-      return c.json({ error: 'Payment verification failed', details: verified.error }, 402);
-    }
+  const verified = await verifyPayment(payment.txHash, payment.network, X_PRICES.profile, WALLET_ADDRESS);
+  if (!verified.valid) {
+    return c.json({ error: 'Payment verification failed', details: verified.error }, 402);
   }
 
   const clientIp = getClientIp(c);
@@ -857,7 +848,7 @@ serviceRouter.get('/x/user/:handle', async (c) => {
         handle,
         proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'T-Mobile' },
       },
-      payment: { txHash: testMode ? 'test-mode' : payment!.txHash, amount: String(X_PRICES.profile), verified: true },
+      payment: { txHash: payment.txHash, amount: String(X_PRICES.profile), verified: true },
     });
   } catch (err: any) {
     return c.json({ error: 'X user profile failed', details: err.message }, 500);
@@ -866,9 +857,8 @@ serviceRouter.get('/x/user/:handle', async (c) => {
 
 // ─── GET /api/x/user/:handle/tweets ─────────────────
 serviceRouter.get('/x/user/:handle/tweets', async (c) => {
-  const testMode = process.env.TEST_MODE === 'true';
-  const payment = testMode ? { txHash: 'test-mode', network: 'solana' as const } : extractPayment(c);
-  if (!testMode && !payment) {
+  const payment = extractPayment(c);
+  if (!payment) {
     return c.json(
       build402Response('/api/x/user/:handle/tweets', 'Recent tweets from a user', X_PRICES.tweets, WALLET_ADDRESS, {
         input: {
@@ -881,11 +871,9 @@ serviceRouter.get('/x/user/:handle/tweets', async (c) => {
     );
   }
 
-  if (!testMode) {
-    const verified = await verifyPayment(payment!.txHash, payment!.network, X_PRICES.tweets, WALLET_ADDRESS);
-    if (!verified.valid) {
-      return c.json({ error: 'Payment verification failed', details: verified.error }, 402);
-    }
+  const verified = await verifyPayment(payment.txHash, payment.network, X_PRICES.tweets, WALLET_ADDRESS);
+  if (!verified.valid) {
+    return c.json({ error: 'Payment verification failed', details: verified.error }, 402);
   }
 
   const clientIp = getClientIp(c);
@@ -908,7 +896,7 @@ serviceRouter.get('/x/user/:handle/tweets', async (c) => {
         total_tweets: tweets.length,
         proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'T-Mobile' },
       },
-      payment: { txHash: testMode ? 'test-mode' : payment!.txHash, amount: String(X_PRICES.tweets), verified: true },
+      payment: { txHash: payment.txHash, amount: String(X_PRICES.tweets), verified: true },
     });
   } catch (err: any) {
     return c.json({ error: 'X user tweets failed', details: err.message }, 500);
@@ -917,9 +905,8 @@ serviceRouter.get('/x/user/:handle/tweets', async (c) => {
 
 // ─── GET /api/x/thread/:tweet_id ────────────────────
 serviceRouter.get('/x/thread/:tweet_id', async (c) => {
-  const testMode = process.env.TEST_MODE === 'true';
-  const payment = testMode ? { txHash: 'test-mode', network: 'solana' as const } : extractPayment(c);
-  if (!testMode && !payment) {
+  const payment = extractPayment(c);
+  if (!payment) {
     return c.json(
       build402Response('/api/x/thread/:tweet_id', 'Full conversation thread from a tweet', X_PRICES.thread, WALLET_ADDRESS, {
         input: { tweet_id: 'string (required) — Tweet ID' },
@@ -929,11 +916,9 @@ serviceRouter.get('/x/thread/:tweet_id', async (c) => {
     );
   }
 
-  if (!testMode) {
-    const verified = await verifyPayment(payment!.txHash, payment!.network, X_PRICES.thread, WALLET_ADDRESS);
-    if (!verified.valid) {
-      return c.json({ error: 'Payment verification failed', details: verified.error }, 402);
-    }
+  const verified = await verifyPayment(payment.txHash, payment.network, X_PRICES.thread, WALLET_ADDRESS);
+  if (!verified.valid) {
+    return c.json({ error: 'Payment verification failed', details: verified.error }, 402);
   }
 
   const clientIp = getClientIp(c);
@@ -955,7 +940,7 @@ serviceRouter.get('/x/thread/:tweet_id', async (c) => {
         conversation_size: thread.total,
         proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'T-Mobile' },
       },
-      payment: { txHash: testMode ? 'test-mode' : payment!.txHash, amount: String(X_PRICES.thread), verified: true },
+      payment: { txHash: payment.txHash, amount: String(X_PRICES.thread), verified: true },
     });
   } catch (err: any) {
     return c.json({ error: 'X thread fetch failed', details: err.message }, 500);
@@ -1311,7 +1296,7 @@ serviceRouter.get('/tiktok/sound/:id', async (c) => {
   } catch (err: any) {
     return c.json({ error: 'TikTok sound data failed', details: err.message }, 500);
   }
-});
+});\n
 
 // ═══════════════════════════════════════════════════════
 // Facebook Marketplace Monitor API (Bounty #75) — $75
