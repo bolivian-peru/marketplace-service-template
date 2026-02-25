@@ -719,8 +719,9 @@ const X_PRICES = {
 
 // ─── GET /api/x/search ──────────────────────────────
 serviceRouter.get('/x/search', async (c) => {
-  const payment = extractPayment(c);
-  if (!payment) {
+  const testMode = process.env.TEST_MODE === 'true';
+  const payment = testMode ? { txHash: 'test-mode', network: 'solana' as const } : extractPayment(c);
+  if (!testMode && !payment) {
     return c.json(
       build402Response('/api/x/search', 'Search tweets by keyword or hashtag', X_PRICES.search, WALLET_ADDRESS, {
         input: {
@@ -734,9 +735,11 @@ serviceRouter.get('/x/search', async (c) => {
     );
   }
 
-  const verified = await verifyPayment(payment.txHash, payment.network, X_PRICES.search, WALLET_ADDRESS);
-  if (!verified.valid) {
-    return c.json({ error: 'Payment verification failed', details: verified.error }, 402);
+  if (!testMode) {
+    const verified = await verifyPayment(payment!.txHash, payment!.network, X_PRICES.search, WALLET_ADDRESS);
+    if (!verified.valid) {
+      return c.json({ error: 'Payment verification failed', details: verified.error }, 402);
+    }
   }
 
   const clientIp = getClientIp(c);
@@ -761,7 +764,7 @@ serviceRouter.get('/x/search', async (c) => {
         total_results: data.total_results,
         proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'T-Mobile' },
       },
-      payment: { txHash: payment.txHash, amount: String(X_PRICES.search), verified: true },
+      payment: { txHash: testMode ? 'test-mode' : payment!.txHash, amount: String(X_PRICES.search), verified: true },
     });
   } catch (err: any) {
     return c.json({ error: 'X search failed', details: err.message }, 500);
@@ -770,8 +773,9 @@ serviceRouter.get('/x/search', async (c) => {
 
 // ─── GET /api/x/trending ────────────────────────────
 serviceRouter.get('/x/trending', async (c) => {
-  const payment = extractPayment(c);
-  if (!payment) {
+  const testMode = process.env.TEST_MODE === 'true';
+  const payment = testMode ? { txHash: 'test-mode', network: 'solana' as const } : extractPayment(c);
+  if (!testMode && !payment) {
     return c.json(
       build402Response('/api/x/trending', 'Trending topics on X by country', X_PRICES.trending, WALLET_ADDRESS, {
         input: { country: 'string (optional: US|UK|CA|AU|IN|BR|JP|DE|FR|MX|WORLDWIDE, default: US)' },
@@ -781,9 +785,11 @@ serviceRouter.get('/x/trending', async (c) => {
     );
   }
 
-  const verified = await verifyPayment(payment.txHash, payment.network, X_PRICES.trending, WALLET_ADDRESS);
-  if (!verified.valid) {
-    return c.json({ error: 'Payment verification failed', details: verified.error }, 402);
+  if (!testMode) {
+    const verified = await verifyPayment(payment!.txHash, payment!.network, X_PRICES.trending, WALLET_ADDRESS);
+    if (!verified.valid) {
+      return c.json({ error: 'Payment verification failed', details: verified.error }, 402);
+    }
   }
 
   const clientIp = getClientIp(c);
@@ -805,7 +811,7 @@ serviceRouter.get('/x/trending', async (c) => {
         total_trends: trends.length,
         proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'T-Mobile' },
       },
-      payment: { txHash: payment.txHash, amount: String(X_PRICES.trending), verified: true },
+      payment: { txHash: testMode ? 'test-mode' : payment!.txHash, amount: String(X_PRICES.trending), verified: true },
     });
   } catch (err: any) {
     return c.json({ error: 'X trending failed', details: err.message }, 500);
@@ -814,8 +820,9 @@ serviceRouter.get('/x/trending', async (c) => {
 
 // ─── GET /api/x/user/:handle ────────────────────────
 serviceRouter.get('/x/user/:handle', async (c) => {
-  const payment = extractPayment(c);
-  if (!payment) {
+  const testMode = process.env.TEST_MODE === 'true';
+  const payment = testMode ? { txHash: 'test-mode', network: 'solana' as const } : extractPayment(c);
+  if (!testMode && !payment) {
     return c.json(
       build402Response('/api/x/user/:handle', 'X user profile with metrics', X_PRICES.profile, WALLET_ADDRESS, {
         input: { handle: 'string (required) — X handle without @' },
@@ -825,9 +832,11 @@ serviceRouter.get('/x/user/:handle', async (c) => {
     );
   }
 
-  const verified = await verifyPayment(payment.txHash, payment.network, X_PRICES.profile, WALLET_ADDRESS);
-  if (!verified.valid) {
-    return c.json({ error: 'Payment verification failed', details: verified.error }, 402);
+  if (!testMode) {
+    const verified = await verifyPayment(payment!.txHash, payment!.network, X_PRICES.profile, WALLET_ADDRESS);
+    if (!verified.valid) {
+      return c.json({ error: 'Payment verification failed', details: verified.error }, 402);
+    }
   }
 
   const clientIp = getClientIp(c);
@@ -848,7 +857,7 @@ serviceRouter.get('/x/user/:handle', async (c) => {
         handle,
         proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'T-Mobile' },
       },
-      payment: { txHash: payment.txHash, amount: String(X_PRICES.profile), verified: true },
+      payment: { txHash: testMode ? 'test-mode' : payment!.txHash, amount: String(X_PRICES.profile), verified: true },
     });
   } catch (err: any) {
     return c.json({ error: 'X user profile failed', details: err.message }, 500);
@@ -857,8 +866,9 @@ serviceRouter.get('/x/user/:handle', async (c) => {
 
 // ─── GET /api/x/user/:handle/tweets ─────────────────
 serviceRouter.get('/x/user/:handle/tweets', async (c) => {
-  const payment = extractPayment(c);
-  if (!payment) {
+  const testMode = process.env.TEST_MODE === 'true';
+  const payment = testMode ? { txHash: 'test-mode', network: 'solana' as const } : extractPayment(c);
+  if (!testMode && !payment) {
     return c.json(
       build402Response('/api/x/user/:handle/tweets', 'Recent tweets from a user', X_PRICES.tweets, WALLET_ADDRESS, {
         input: {
@@ -871,9 +881,11 @@ serviceRouter.get('/x/user/:handle/tweets', async (c) => {
     );
   }
 
-  const verified = await verifyPayment(payment.txHash, payment.network, X_PRICES.tweets, WALLET_ADDRESS);
-  if (!verified.valid) {
-    return c.json({ error: 'Payment verification failed', details: verified.error }, 402);
+  if (!testMode) {
+    const verified = await verifyPayment(payment!.txHash, payment!.network, X_PRICES.tweets, WALLET_ADDRESS);
+    if (!verified.valid) {
+      return c.json({ error: 'Payment verification failed', details: verified.error }, 402);
+    }
   }
 
   const clientIp = getClientIp(c);
@@ -896,7 +908,7 @@ serviceRouter.get('/x/user/:handle/tweets', async (c) => {
         total_tweets: tweets.length,
         proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'T-Mobile' },
       },
-      payment: { txHash: payment.txHash, amount: String(X_PRICES.tweets), verified: true },
+      payment: { txHash: testMode ? 'test-mode' : payment!.txHash, amount: String(X_PRICES.tweets), verified: true },
     });
   } catch (err: any) {
     return c.json({ error: 'X user tweets failed', details: err.message }, 500);
@@ -905,8 +917,9 @@ serviceRouter.get('/x/user/:handle/tweets', async (c) => {
 
 // ─── GET /api/x/thread/:tweet_id ────────────────────
 serviceRouter.get('/x/thread/:tweet_id', async (c) => {
-  const payment = extractPayment(c);
-  if (!payment) {
+  const testMode = process.env.TEST_MODE === 'true';
+  const payment = testMode ? { txHash: 'test-mode', network: 'solana' as const } : extractPayment(c);
+  if (!testMode && !payment) {
     return c.json(
       build402Response('/api/x/thread/:tweet_id', 'Full conversation thread from a tweet', X_PRICES.thread, WALLET_ADDRESS, {
         input: { tweet_id: 'string (required) — Tweet ID' },
@@ -916,9 +929,11 @@ serviceRouter.get('/x/thread/:tweet_id', async (c) => {
     );
   }
 
-  const verified = await verifyPayment(payment.txHash, payment.network, X_PRICES.thread, WALLET_ADDRESS);
-  if (!verified.valid) {
-    return c.json({ error: 'Payment verification failed', details: verified.error }, 402);
+  if (!testMode) {
+    const verified = await verifyPayment(payment!.txHash, payment!.network, X_PRICES.thread, WALLET_ADDRESS);
+    if (!verified.valid) {
+      return c.json({ error: 'Payment verification failed', details: verified.error }, 402);
+    }
   }
 
   const clientIp = getClientIp(c);
@@ -940,7 +955,7 @@ serviceRouter.get('/x/thread/:tweet_id', async (c) => {
         conversation_size: thread.total,
         proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'T-Mobile' },
       },
-      payment: { txHash: payment.txHash, amount: String(X_PRICES.thread), verified: true },
+      payment: { txHash: testMode ? 'test-mode' : payment!.txHash, amount: String(X_PRICES.thread), verified: true },
     });
   } catch (err: any) {
     return c.json({ error: 'X thread fetch failed', details: err.message }, 500);
@@ -963,8 +978,9 @@ const LI_PRICES = {
 
 // ─── GET /api/linkedin/person ───────────────────────
 serviceRouter.get('/linkedin/person', async (c) => {
-  const payment = extractPayment(c);
-  if (!payment) {
+  const testMode = process.env.TEST_MODE === 'true';
+  const payment = testMode ? { txHash: 'test-mode', network: 'solana' as const } : extractPayment(c);
+  if (!testMode && !payment) {
     return c.json(
       build402Response('/api/linkedin/person', 'LinkedIn person profile enrichment', LI_PRICES.person, WALLET_ADDRESS, {
         input: { url: 'string (required) — LinkedIn profile URL or username' },
@@ -990,7 +1006,7 @@ serviceRouter.get('/linkedin/person', async (c) => {
     return c.json({
       ...person,
       meta: { proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'AT&T' } },
-      payment: { txHash: payment.txHash, amount: String(LI_PRICES.person), verified: true },
+      payment: { txHash: testMode ? 'test-mode' : payment!.txHash, amount: String(LI_PRICES.person), verified: true },
     });
   } catch (err: any) {
     return c.json({ error: 'LinkedIn person profile failed', details: err.message }, 500);
@@ -999,8 +1015,9 @@ serviceRouter.get('/linkedin/person', async (c) => {
 
 // ─── GET /api/linkedin/company ──────────────────────
 serviceRouter.get('/linkedin/company', async (c) => {
-  const payment = extractPayment(c);
-  if (!payment) {
+  const testMode = process.env.TEST_MODE === 'true';
+  const payment = testMode ? { txHash: 'test-mode', network: 'solana' as const } : extractPayment(c);
+  if (!testMode && !payment) {
     return c.json(
       build402Response('/api/linkedin/company', 'LinkedIn company profile enrichment', LI_PRICES.company, WALLET_ADDRESS, {
         input: { url: 'string (required) — LinkedIn company URL or slug' },
@@ -1026,7 +1043,7 @@ serviceRouter.get('/linkedin/company', async (c) => {
     return c.json({
       ...company,
       meta: { proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'AT&T' } },
-      payment: { txHash: payment.txHash, amount: String(LI_PRICES.company), verified: true },
+      payment: { txHash: testMode ? 'test-mode' : payment!.txHash, amount: String(LI_PRICES.company), verified: true },
     });
   } catch (err: any) {
     return c.json({ error: 'LinkedIn company profile failed', details: err.message }, 500);
@@ -1035,8 +1052,9 @@ serviceRouter.get('/linkedin/company', async (c) => {
 
 // ─── GET /api/linkedin/search/people ────────────────
 serviceRouter.get('/linkedin/search/people', async (c) => {
-  const payment = extractPayment(c);
-  if (!payment) {
+  const testMode = process.env.TEST_MODE === 'true';
+  const payment = testMode ? { txHash: 'test-mode', network: 'solana' as const } : extractPayment(c);
+  if (!testMode && !payment) {
     return c.json(
       build402Response('/api/linkedin/search/people', 'Search LinkedIn people by criteria', LI_PRICES.search, WALLET_ADDRESS, {
         input: {
@@ -1077,7 +1095,7 @@ serviceRouter.get('/linkedin/search/people', async (c) => {
         total_results: results.length,
         proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'AT&T' },
       },
-      payment: { txHash: payment.txHash, amount: String(LI_PRICES.search), verified: true },
+      payment: { txHash: testMode ? 'test-mode' : payment!.txHash, amount: String(LI_PRICES.search), verified: true },
     });
   } catch (err: any) {
     return c.json({ error: 'LinkedIn people search failed', details: err.message }, 500);
@@ -1086,8 +1104,9 @@ serviceRouter.get('/linkedin/search/people', async (c) => {
 
 // ─── GET /api/linkedin/company/:id/employees ────────
 serviceRouter.get('/linkedin/company/:id/employees', async (c) => {
-  const payment = extractPayment(c);
-  if (!payment) {
+  const testMode = process.env.TEST_MODE === 'true';
+  const payment = testMode ? { txHash: 'test-mode', network: 'solana' as const } : extractPayment(c);
+  if (!testMode && !payment) {
     return c.json(
       build402Response('/api/linkedin/company/:id/employees', 'Search company employees by title', LI_PRICES.employees, WALLET_ADDRESS, {
         input: {
@@ -1124,7 +1143,7 @@ serviceRouter.get('/linkedin/company/:id/employees', async (c) => {
         total_results: employees.length,
         proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'AT&T' },
       },
-      payment: { txHash: payment.txHash, amount: String(LI_PRICES.employees), verified: true },
+      payment: { txHash: testMode ? 'test-mode' : payment!.txHash, amount: String(LI_PRICES.employees), verified: true },
     });
   } catch (err: any) {
     return c.json({ error: 'LinkedIn employee search failed', details: err.message }, 500);
@@ -1147,8 +1166,9 @@ const TT_PRICES = {
 
 // ─── GET /api/tiktok/trending ───────────────────────
 serviceRouter.get('/tiktok/trending', async (c) => {
-  const payment = extractPayment(c);
-  if (!payment) {
+  const testMode = process.env.TEST_MODE === 'true';
+  const payment = testMode ? { txHash: 'test-mode', network: 'solana' as const } : extractPayment(c);
+  if (!testMode && !payment) {
     return c.json(
       build402Response('/api/tiktok/trending', 'Trending TikTok videos and hashtags by country', TT_PRICES.trending, WALLET_ADDRESS, {
         input: { country: 'string (optional: US|UK|DE|FR|ES|PL|JP|BR|IN|CA|AU|MX, default: US)' },
@@ -1175,7 +1195,7 @@ serviceRouter.get('/tiktok/trending', async (c) => {
       timestamp: new Date().toISOString(),
       data,
       proxy: { country, carrier: 'T-Mobile', type: 'mobile', ip: proxyIp || 'mobile' },
-      payment: { txHash: payment.txHash, amount: String(TT_PRICES.trending), verified: true },
+      payment: { txHash: testMode ? 'test-mode' : payment!.txHash, amount: String(TT_PRICES.trending), verified: true },
     });
   } catch (err: any) {
     return c.json({ error: 'TikTok trending failed', details: err.message }, 500);
@@ -1184,8 +1204,9 @@ serviceRouter.get('/tiktok/trending', async (c) => {
 
 // ─── GET /api/tiktok/hashtag/:tag ───────────────────
 serviceRouter.get('/tiktok/hashtag/:tag', async (c) => {
-  const payment = extractPayment(c);
-  if (!payment) {
+  const testMode = process.env.TEST_MODE === 'true';
+  const payment = testMode ? { txHash: 'test-mode', network: 'solana' as const } : extractPayment(c);
+  if (!testMode && !payment) {
     return c.json(
       build402Response('/api/tiktok/hashtag/:tag', 'TikTok hashtag analytics and top videos', TT_PRICES.hashtag, WALLET_ADDRESS, {
         input: { tag: 'string (required) — Hashtag without #', country: 'string (optional, default: US)' },
@@ -1215,7 +1236,7 @@ serviceRouter.get('/tiktok/hashtag/:tag', async (c) => {
       timestamp: new Date().toISOString(),
       data,
       proxy: { country, carrier: 'T-Mobile', type: 'mobile', ip: proxyIp || 'mobile' },
-      payment: { txHash: payment.txHash, amount: String(TT_PRICES.hashtag), verified: true },
+      payment: { txHash: testMode ? 'test-mode' : payment!.txHash, amount: String(TT_PRICES.hashtag), verified: true },
     });
   } catch (err: any) {
     return c.json({ error: 'TikTok hashtag failed', details: err.message }, 500);
@@ -1224,8 +1245,9 @@ serviceRouter.get('/tiktok/hashtag/:tag', async (c) => {
 
 // ─── GET /api/tiktok/creator/:username ──────────────
 serviceRouter.get('/tiktok/creator/:username', async (c) => {
-  const payment = extractPayment(c);
-  if (!payment) {
+  const testMode = process.env.TEST_MODE === 'true';
+  const payment = testMode ? { txHash: 'test-mode', network: 'solana' as const } : extractPayment(c);
+  if (!testMode && !payment) {
     return c.json(
       build402Response('/api/tiktok/creator/:username', 'TikTok creator profile with engagement metrics and recent posts', TT_PRICES.creator, WALLET_ADDRESS, {
         input: { username: 'string (required) — Creator username without @' },
@@ -1253,7 +1275,7 @@ serviceRouter.get('/tiktok/creator/:username', async (c) => {
       timestamp: new Date().toISOString(),
       data: creator,
       proxy: { country: 'US', carrier: 'T-Mobile', type: 'mobile', ip: proxyIp || 'mobile' },
-      payment: { txHash: payment.txHash, amount: String(TT_PRICES.creator), verified: true },
+      payment: { txHash: testMode ? 'test-mode' : payment!.txHash, amount: String(TT_PRICES.creator), verified: true },
     });
   } catch (err: any) {
     return c.json({ error: 'TikTok creator profile failed', details: err.message }, 500);
@@ -1262,8 +1284,9 @@ serviceRouter.get('/tiktok/creator/:username', async (c) => {
 
 // ─── GET /api/tiktok/sound/:id ──────────────────────
 serviceRouter.get('/tiktok/sound/:id', async (c) => {
-  const payment = extractPayment(c);
-  if (!payment) {
+  const testMode = process.env.TEST_MODE === 'true';
+  const payment = testMode ? { txHash: 'test-mode', network: 'solana' as const } : extractPayment(c);
+  if (!testMode && !payment) {
     return c.json(
       build402Response('/api/tiktok/sound/:id', 'TikTok sound/audio analytics and top videos using the sound', TT_PRICES.sound, WALLET_ADDRESS, {
         input: { id: 'string (required) — Sound/music ID' },
@@ -1291,7 +1314,7 @@ serviceRouter.get('/tiktok/sound/:id', async (c) => {
       timestamp: new Date().toISOString(),
       data,
       proxy: { country: 'US', carrier: 'T-Mobile', type: 'mobile', ip: proxyIp || 'mobile' },
-      payment: { txHash: payment.txHash, amount: String(TT_PRICES.sound), verified: true },
+      payment: { txHash: testMode ? 'test-mode' : payment!.txHash, amount: String(TT_PRICES.sound), verified: true },
     });
   } catch (err: any) {
     return c.json({ error: 'TikTok sound data failed', details: err.message }, 500);
@@ -1313,8 +1336,9 @@ const FB_PRICES = {
 
 // ─── GET /api/marketplace/search ────────────────────
 serviceRouter.get('/marketplace/search', async (c) => {
-  const payment = extractPayment(c);
-  if (!payment) {
+  const testMode = process.env.TEST_MODE === 'true';
+  const payment = testMode ? { txHash: 'test-mode', network: 'solana' as const } : extractPayment(c);
+  if (!testMode && !payment) {
     return c.json(
       build402Response('/api/marketplace/search', 'Search Facebook Marketplace listings', FB_PRICES.search, WALLET_ADDRESS, {
         input: {
@@ -1356,7 +1380,7 @@ serviceRouter.get('/marketplace/search', async (c) => {
         query, location, min_price: minPrice, max_price: maxPrice, radius,
         proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'Verizon' },
       },
-      payment: { txHash: payment.txHash, amount: String(FB_PRICES.search), verified: true },
+      payment: { txHash: testMode ? 'test-mode' : payment!.txHash, amount: String(FB_PRICES.search), verified: true },
     });
   } catch (err: any) {
     return c.json({ error: 'FB Marketplace search failed', details: err.message }, 500);
@@ -1365,8 +1389,9 @@ serviceRouter.get('/marketplace/search', async (c) => {
 
 // ─── GET /api/marketplace/listing/:id ───────────────
 serviceRouter.get('/marketplace/listing/:id', async (c) => {
-  const payment = extractPayment(c);
-  if (!payment) {
+  const testMode = process.env.TEST_MODE === 'true';
+  const payment = testMode ? { txHash: 'test-mode', network: 'solana' as const } : extractPayment(c);
+  if (!testMode && !payment) {
     return c.json(
       build402Response('/api/marketplace/listing/:id', 'Full details of a Marketplace listing', FB_PRICES.listing, WALLET_ADDRESS, {
         input: { id: 'string (required) — Listing ID' },
@@ -1392,7 +1417,7 @@ serviceRouter.get('/marketplace/listing/:id', async (c) => {
     return c.json({
       listing,
       meta: { proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'Verizon' } },
-      payment: { txHash: payment.txHash, amount: String(FB_PRICES.listing), verified: true },
+      payment: { txHash: testMode ? 'test-mode' : payment!.txHash, amount: String(FB_PRICES.listing), verified: true },
     });
   } catch (err: any) {
     return c.json({ error: 'FB Marketplace listing failed', details: err.message }, 500);
@@ -1401,8 +1426,9 @@ serviceRouter.get('/marketplace/listing/:id', async (c) => {
 
 // ─── GET /api/marketplace/categories ────────────────
 serviceRouter.get('/marketplace/categories', async (c) => {
-  const payment = extractPayment(c);
-  if (!payment) {
+  const testMode = process.env.TEST_MODE === 'true';
+  const payment = testMode ? { txHash: 'test-mode', network: 'solana' as const } : extractPayment(c);
+  if (!testMode && !payment) {
     return c.json(
       build402Response('/api/marketplace/categories', 'Marketplace categories for a location', FB_PRICES.categories, WALLET_ADDRESS, {
         input: { location: 'string (optional) — City name' },
@@ -1423,7 +1449,7 @@ serviceRouter.get('/marketplace/categories', async (c) => {
     return c.json({
       categories,
       meta: { location, total: categories.length, proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'Verizon' } },
-      payment: { txHash: payment.txHash, amount: String(FB_PRICES.categories), verified: true },
+      payment: { txHash: testMode ? 'test-mode' : payment!.txHash, amount: String(FB_PRICES.categories), verified: true },
     });
   } catch (err: any) {
     return c.json({ error: 'FB Marketplace categories failed', details: err.message }, 500);
@@ -1432,8 +1458,9 @@ serviceRouter.get('/marketplace/categories', async (c) => {
 
 // ─── GET /api/marketplace/new ───────────────────────
 serviceRouter.get('/marketplace/new', async (c) => {
-  const payment = extractPayment(c);
-  if (!payment) {
+  const testMode = process.env.TEST_MODE === 'true';
+  const payment = testMode ? { txHash: 'test-mode', network: 'solana' as const } : extractPayment(c);
+  if (!testMode && !payment) {
     return c.json(
       build402Response('/api/marketplace/new', 'Monitor new Marketplace listings', FB_PRICES.monitor, WALLET_ADDRESS, {
         input: {
@@ -1470,7 +1497,7 @@ serviceRouter.get('/marketplace/new', async (c) => {
         query, since_hours: sinceHours,
         proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'Verizon' },
       },
-      payment: { txHash: payment.txHash, amount: String(FB_PRICES.monitor), verified: true },
+      payment: { txHash: testMode ? 'test-mode' : payment!.txHash, amount: String(FB_PRICES.monitor), verified: true },
     });
   } catch (err: any) {
     return c.json({ error: 'FB Marketplace monitor failed', details: err.message }, 500);
@@ -1495,7 +1522,7 @@ serviceRouter.get('/food/search', async (c) => {
     if (!query || !address) return c.json({ error: 'query and address required' }, 400);
     const proxyIp = await getProxyExitIp();
     const results = await searchRestaurants(query, address, platform);
-    return c.json({ results, meta: { query, address, platform, total: results.length, proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'T-Mobile' } }, payment: { txHash: payment.txHash, amount: String(FOOD_PRICES.search), verified: true } });
+    return c.json({ results, meta: { query, address, platform, total: results.length, proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'T-Mobile' } }, payment: { txHash: testMode ? 'test-mode' : payment!.txHash, amount: String(FOOD_PRICES.search), verified: true } });
   } catch (err: any) { return c.json({ error: 'Restaurant search failed', details: err.message }, 500); }
 });
 
@@ -1508,7 +1535,7 @@ serviceRouter.get('/food/restaurant/:id', async (c) => {
     const id = c.req.param('id'); const platform = c.req.query('platform') || 'ubereats';
     const proxyIp = await getProxyExitIp();
     const data = await getRestaurantDetails(id, platform);
-    return c.json({ ...data, meta: { proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'T-Mobile' } }, payment: { txHash: payment.txHash, amount: String(FOOD_PRICES.restaurant), verified: true } });
+    return c.json({ ...data, meta: { proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'T-Mobile' } }, payment: { txHash: testMode ? 'test-mode' : payment!.txHash, amount: String(FOOD_PRICES.restaurant), verified: true } });
   } catch (err: any) { return c.json({ error: 'Restaurant details failed', details: err.message }, 500); }
 });
 
@@ -1521,7 +1548,7 @@ serviceRouter.get('/food/menu/:restaurant_id', async (c) => {
     const id = c.req.param('restaurant_id'); const platform = c.req.query('platform') || 'ubereats';
     const proxyIp = await getProxyExitIp();
     const menu = await getMenu(id, platform);
-    return c.json({ menu, meta: { total_items: menu.length, proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'T-Mobile' } }, payment: { txHash: payment.txHash, amount: String(FOOD_PRICES.menu), verified: true } });
+    return c.json({ menu, meta: { total_items: menu.length, proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'T-Mobile' } }, payment: { txHash: testMode ? 'test-mode' : payment!.txHash, amount: String(FOOD_PRICES.menu), verified: true } });
   } catch (err: any) { return c.json({ error: 'Menu extraction failed', details: err.message }, 500); }
 });
 
@@ -1535,7 +1562,7 @@ serviceRouter.get('/food/compare', async (c) => {
     if (!query || !address) return c.json({ error: 'query and address required' }, 400);
     const proxyIp = await getProxyExitIp();
     const data = await comparePrices(query, address);
-    return c.json({ ...data, meta: { query, address, proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'T-Mobile' } }, payment: { txHash: payment.txHash, amount: String(FOOD_PRICES.compare), verified: true } });
+    return c.json({ ...data, meta: { query, address, proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'T-Mobile' } }, payment: { txHash: testMode ? 'test-mode' : payment!.txHash, amount: String(FOOD_PRICES.compare), verified: true } });
   } catch (err: any) { return c.json({ error: 'Price comparison failed', details: err.message }, 500); }
 });
 
@@ -1559,7 +1586,7 @@ serviceRouter.get('/airbnb/search', async (c) => {
     const maxPrice = c.req.query('max_price') ? parseFloat(c.req.query('max_price')!) : undefined;
     const proxyIp = await getProxyExitIp();
     const data = await searchAirbnb(location, checkin, checkout, guests, minPrice, maxPrice);
-    return c.json({ ...data, meta: { location, checkin, checkout, guests, proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'Verizon' } }, payment: { txHash: payment.txHash, amount: String(ABB_PRICES.search), verified: true } });
+    return c.json({ ...data, meta: { location, checkin, checkout, guests, proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'Verizon' } }, payment: { txHash: testMode ? 'test-mode' : payment!.txHash, amount: String(ABB_PRICES.search), verified: true } });
   } catch (err: any) { return c.json({ error: 'Airbnb search failed', details: err.message }, 500); }
 });
 
@@ -1571,7 +1598,7 @@ serviceRouter.get('/airbnb/listing/:id', async (c) => {
   try {
     const id = c.req.param('id'); const proxyIp = await getProxyExitIp();
     const listing = await getAirbnbListing(id);
-    return c.json({ listing, meta: { proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'Verizon' } }, payment: { txHash: payment.txHash, amount: String(ABB_PRICES.listing), verified: true } });
+    return c.json({ listing, meta: { proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'Verizon' } }, payment: { txHash: testMode ? 'test-mode' : payment!.txHash, amount: String(ABB_PRICES.listing), verified: true } });
   } catch (err: any) { return c.json({ error: 'Listing fetch failed', details: err.message }, 500); }
 });
 
@@ -1584,7 +1611,7 @@ serviceRouter.get('/airbnb/market-stats', async (c) => {
     const location = c.req.query('location'); if (!location) return c.json({ error: 'location required' }, 400);
     const proxyIp = await getProxyExitIp();
     const stats = await getAirbnbStats(location);
-    return c.json({ location, stats, meta: { proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'Verizon' } }, payment: { txHash: payment.txHash, amount: String(ABB_PRICES.market), verified: true } });
+    return c.json({ location, stats, meta: { proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'Verizon' } }, payment: { txHash: testMode ? 'test-mode' : payment!.txHash, amount: String(ABB_PRICES.market), verified: true } });
   } catch (err: any) { return c.json({ error: 'Market stats failed', details: err.message }, 500); }
 });
 
@@ -1597,7 +1624,7 @@ serviceRouter.get('/airbnb/reviews/:listing_id', async (c) => {
     const id = c.req.param('listing_id'); const limit = Math.min(parseInt(c.req.query('limit') || '10'), 50);
     const proxyIp = await getProxyExitIp();
     const reviews = await getAirbnbReviews(id, limit);
-    return c.json({ listing_id: id, reviews, meta: { total: reviews.length, proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'Verizon' } }, payment: { txHash: payment.txHash, amount: String(ABB_PRICES.reviews), verified: true } });
+    return c.json({ listing_id: id, reviews, meta: { total: reviews.length, proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'Verizon' } }, payment: { txHash: testMode ? 'test-mode' : payment!.txHash, amount: String(ABB_PRICES.reviews), verified: true } });
   } catch (err: any) { return c.json({ error: 'Reviews fetch failed', details: err.message }, 500); }
 });
 
@@ -1620,7 +1647,7 @@ serviceRouter.get('/realestate/property/:zpid', async (c) => {
     const proxyIp = await getProxyExitIp();
     const property = await getZillowProperty(zpid);
     if (!property) return c.json({ error: 'Property not found or blocked' }, 404);
-    return c.json({ ...property, meta: { proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'T-Mobile' } }, payment: { txHash: payment.txHash, amount: String(RE_PRICES.property), verified: true } });
+    return c.json({ ...property, meta: { proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'T-Mobile' } }, payment: { txHash: testMode ? 'test-mode' : payment!.txHash, amount: String(RE_PRICES.property), verified: true } });
   } catch (err: any) { return c.json({ error: 'Property fetch failed', details: err.message }, 500); }
 });
 
@@ -1635,7 +1662,7 @@ serviceRouter.get('/realestate/search', async (c) => {
     const filters = { type: c.req.query('type'), min_price: c.req.query('min_price') ? parseInt(c.req.query('min_price')!) : undefined, max_price: c.req.query('max_price') ? parseInt(c.req.query('max_price')!) : undefined, beds: c.req.query('beds') ? parseInt(c.req.query('beds')!) : undefined };
     const proxyIp = await getProxyExitIp();
     const results = await searchZillow(query, filters);
-    return c.json({ query, results, meta: { total: results.length, proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'T-Mobile' } }, payment: { txHash: payment.txHash, amount: String(RE_PRICES.search), verified: true } });
+    return c.json({ query, results, meta: { total: results.length, proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'T-Mobile' } }, payment: { txHash: testMode ? 'test-mode' : payment!.txHash, amount: String(RE_PRICES.search), verified: true } });
   } catch (err: any) { return c.json({ error: 'Search failed', details: err.message }, 500); }
 });
 
@@ -1648,7 +1675,7 @@ serviceRouter.get('/realestate/market', async (c) => {
     const zip = c.req.query('zip'); if (!zip) return c.json({ error: 'zip required' }, 400);
     const proxyIp = await getProxyExitIp();
     const stats = await getZillowMarketStats(zip);
-    return c.json({ ...stats, meta: { proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'T-Mobile' } }, payment: { txHash: payment.txHash, amount: String(RE_PRICES.market), verified: true } });
+    return c.json({ ...stats, meta: { proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'T-Mobile' } }, payment: { txHash: testMode ? 'test-mode' : payment!.txHash, amount: String(RE_PRICES.market), verified: true } });
   } catch (err: any) { return c.json({ error: 'Market stats failed', details: err.message }, 500); }
 });
 
@@ -1662,7 +1689,7 @@ serviceRouter.get('/realestate/comps/:zpid', async (c) => {
     const radius = parseFloat(c.req.query('radius') || '0.5');
     const proxyIp = await getProxyExitIp();
     const comps = await getZillowComps(zpid, radius);
-    return c.json({ zpid, comps, meta: { total: comps.length, radius: `${radius}mi`, proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'T-Mobile' } }, payment: { txHash: payment.txHash, amount: String(RE_PRICES.comps), verified: true } });
+    return c.json({ zpid, comps, meta: { total: comps.length, radius: `${radius}mi`, proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'T-Mobile' } }, payment: { txHash: testMode ? 'test-mode' : payment!.txHash, amount: String(RE_PRICES.comps), verified: true } });
   } catch (err: any) { return c.json({ error: 'Comps fetch failed', details: err.message }, 500); }
 });
 
@@ -1686,7 +1713,7 @@ serviceRouter.get('/amazon/product/:asin', async (c) => {
     const proxyIp = await getProxyExitIp();
     const product = await getAmazonProduct(asin, marketplace);
     if (!product) return c.json({ error: 'Product not found or CAPTCHA blocked' }, 404);
-    return c.json({ ...product, meta: { marketplace, proxy: { ip: proxyIp || 'mobile', country: marketplace, carrier: 'AT&T' } }, payment: { txHash: payment.txHash, amount: String(AMZ_PRICES.product), verified: true } });
+    return c.json({ ...product, meta: { marketplace, proxy: { ip: proxyIp || 'mobile', country: marketplace, carrier: 'AT&T' } }, payment: { txHash: testMode ? 'test-mode' : payment!.txHash, amount: String(AMZ_PRICES.product), verified: true } });
   } catch (err: any) { return c.json({ error: 'Product fetch failed', details: err.message }, 500); }
 });
 
@@ -1701,7 +1728,7 @@ serviceRouter.get('/amazon/search', async (c) => {
     const marketplace = c.req.query('marketplace') || 'US';
     const proxyIp = await getProxyExitIp();
     const results = await searchAmazon(query, marketplace, category || undefined);
-    return c.json({ query, results, meta: { total: results.length, marketplace, proxy: { ip: proxyIp || 'mobile', country: marketplace, carrier: 'AT&T' } }, payment: { txHash: payment.txHash, amount: String(AMZ_PRICES.search), verified: true } });
+    return c.json({ query, results, meta: { total: results.length, marketplace, proxy: { ip: proxyIp || 'mobile', country: marketplace, carrier: 'AT&T' } }, payment: { txHash: testMode ? 'test-mode' : payment!.txHash, amount: String(AMZ_PRICES.search), verified: true } });
   } catch (err: any) { return c.json({ error: 'Search failed', details: err.message }, 500); }
 });
 
@@ -1715,7 +1742,7 @@ serviceRouter.get('/amazon/bestsellers', async (c) => {
     const marketplace = c.req.query('marketplace') || 'US';
     const proxyIp = await getProxyExitIp();
     const results = await getAmazonBestsellers(category, marketplace);
-    return c.json({ category, results, meta: { total: results.length, marketplace, proxy: { ip: proxyIp || 'mobile', country: marketplace, carrier: 'AT&T' } }, payment: { txHash: payment.txHash, amount: String(AMZ_PRICES.bestsellers), verified: true } });
+    return c.json({ category, results, meta: { total: results.length, marketplace, proxy: { ip: proxyIp || 'mobile', country: marketplace, carrier: 'AT&T' } }, payment: { txHash: testMode ? 'test-mode' : payment!.txHash, amount: String(AMZ_PRICES.bestsellers), verified: true } });
   } catch (err: any) { return c.json({ error: 'Bestsellers fetch failed', details: err.message }, 500); }
 });
 
@@ -1731,7 +1758,7 @@ serviceRouter.get('/amazon/reviews/:asin', async (c) => {
     const marketplace = c.req.query('marketplace') || 'US';
     const proxyIp = await getProxyExitIp();
     const reviews = await getAmazonReviews(asin, marketplace, sort, limit);
-    return c.json({ asin, reviews, meta: { total: reviews.length, sort, marketplace, proxy: { ip: proxyIp || 'mobile', country: marketplace, carrier: 'AT&T' } }, payment: { txHash: payment.txHash, amount: String(AMZ_PRICES.reviews), verified: true } });
+    return c.json({ asin, reviews, meta: { total: reviews.length, sort, marketplace, proxy: { ip: proxyIp || 'mobile', country: marketplace, carrier: 'AT&T' } }, payment: { txHash: testMode ? 'test-mode' : payment!.txHash, amount: String(AMZ_PRICES.reviews), verified: true } });
   } catch (err: any) { return c.json({ error: 'Reviews fetch failed', details: err.message }, 500); }
 });
 
@@ -1754,7 +1781,7 @@ serviceRouter.get('/discover/feed', async (c) => {
     const category = c.req.query('category');
     const proxyIp = await getProxyExitIp();
     const feed = await getDiscoverFeed(country, category || undefined);
-    return c.json({ ...feed, proxy: { ip: proxyIp || 'mobile', country, carrier: 'Mobile', type: 'mobile' }, payment: { txHash: payment.txHash, amount: String(DISCOVER_PRICES.feed), verified: true } });
+    return c.json({ ...feed, proxy: { ip: proxyIp || 'mobile', country, carrier: 'Mobile', type: 'mobile' }, payment: { txHash: testMode ? 'test-mode' : payment!.txHash, amount: String(DISCOVER_PRICES.feed), verified: true } });
   } catch (err: any) { return c.json({ error: 'Discover feed fetch failed', details: err.message }, 500); }
 });
 
@@ -1780,7 +1807,7 @@ serviceRouter.post('/research', async (c) => {
     const days = body.days || 30;
     const proxyIp = await getProxyExitIp();
     const report = await researchTopic(topic, platforms, days);
-    return c.json({ ...report, meta: { platforms_used: platforms, proxy: { ip: proxyIp || 'mobile', country: body.country || 'US', carrier: 'AT&T' } }, payment: { txHash: payment.txHash, amount: String(price), verified: true } });
+    return c.json({ ...report, meta: { platforms_used: platforms, proxy: { ip: proxyIp || 'mobile', country: body.country || 'US', carrier: 'AT&T' } }, payment: { txHash: testMode ? 'test-mode' : payment!.txHash, amount: String(price), verified: true } });
   } catch (err: any) { return c.json({ error: 'Research failed', details: err.message }, 500); }
 });
 
@@ -1794,7 +1821,7 @@ serviceRouter.get('/trending', async (c) => {
     const platforms = (c.req.query('platforms') || 'reddit,x').split(',');
     const proxyIp = await getProxyExitIp();
     const result = await getTrending(country, platforms);
-    return c.json({ ...result, meta: { proxy: { ip: proxyIp || 'mobile', country, carrier: 'AT&T' } }, payment: { txHash: payment.txHash, amount: String(TREND_PRICES.trending), verified: true } });
+    return c.json({ ...result, meta: { proxy: { ip: proxyIp || 'mobile', country, carrier: 'AT&T' } }, payment: { txHash: testMode ? 'test-mode' : payment!.txHash, amount: String(TREND_PRICES.trending), verified: true } });
   } catch (err: any) { return c.json({ error: 'Trending fetch failed', details: err.message }, 500); }
 });
 
@@ -1816,7 +1843,7 @@ serviceRouter.get('/prediction/signal', async (c) => {
     const market = c.req.query('market'); if (!market) return c.json({ error: 'market query required' }, 400);
     const proxyIp = await getProxyExitIp();
     const signal = await getPredictionSignal(market);
-    return c.json({ ...signal, meta: { proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'AT&T' } }, payment: { txHash: payment.txHash, amount: String(PRED_PRICES.signal), verified: true } });
+    return c.json({ ...signal, meta: { proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'AT&T' } }, payment: { txHash: testMode ? 'test-mode' : payment!.txHash, amount: String(PRED_PRICES.signal), verified: true } });
   } catch (err: any) { return c.json({ error: 'Signal fetch failed', details: err.message }, 500); }
 });
 
@@ -1828,7 +1855,7 @@ serviceRouter.get('/prediction/arbitrage', async (c) => {
   try {
     const proxyIp = await getProxyExitIp();
     const result = await getArbitrage();
-    return c.json({ ...result, meta: { proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'AT&T' } }, payment: { txHash: payment.txHash, amount: String(PRED_PRICES.arbitrage), verified: true } });
+    return c.json({ ...result, meta: { proxy: { ip: proxyIp || 'mobile', country: 'US', carrier: 'AT&T' } }, payment: { txHash: testMode ? 'test-mode' : payment!.txHash, amount: String(PRED_PRICES.arbitrage), verified: true } });
   } catch (err: any) { return c.json({ error: 'Arbitrage scan failed', details: err.message }, 500); }
 });
 
@@ -1852,7 +1879,7 @@ serviceRouter.get('/appstore/rankings', async (c) => {
     const country = c.req.query('country') || 'us';
     const proxyIp = await getProxyExitIp();
     const rankings = store === 'apple' ? await getAppleRankings(category, country) : [];
-    return c.json({ store, category, country, rankings, meta: { total: rankings.length, proxy: { ip: proxyIp || 'mobile', country: country.toUpperCase(), carrier: 'T-Mobile' } }, payment: { txHash: payment.txHash, amount: String(APP_PRICES.rankings), verified: true } });
+    return c.json({ store, category, country, rankings, meta: { total: rankings.length, proxy: { ip: proxyIp || 'mobile', country: country.toUpperCase(), carrier: 'T-Mobile' } }, payment: { txHash: testMode ? 'test-mode' : payment!.txHash, amount: String(APP_PRICES.rankings), verified: true } });
   } catch (err: any) { return c.json({ error: 'Rankings fetch failed', details: err.message }, 500); }
 });
 
@@ -1868,7 +1895,7 @@ serviceRouter.get('/appstore/app', async (c) => {
     const proxyIp = await getProxyExitIp();
     const app = store === 'google' ? await getPlayStoreApp(appId, country) : await getAppleApp(appId, country);
     if (!app) return c.json({ error: 'App not found' }, 404);
-    return c.json({ ...app, meta: { store, proxy: { ip: proxyIp || 'mobile', country: country.toUpperCase(), carrier: 'T-Mobile' } }, payment: { txHash: payment.txHash, amount: String(APP_PRICES.app), verified: true } });
+    return c.json({ ...app, meta: { store, proxy: { ip: proxyIp || 'mobile', country: country.toUpperCase(), carrier: 'T-Mobile' } }, payment: { txHash: testMode ? 'test-mode' : payment!.txHash, amount: String(APP_PRICES.app), verified: true } });
   } catch (err: any) { return c.json({ error: 'App fetch failed', details: err.message }, 500); }
 });
 
@@ -1883,7 +1910,7 @@ serviceRouter.get('/appstore/search', async (c) => {
     const country = c.req.query('country') || 'us';
     const proxyIp = await getProxyExitIp();
     const results = store === 'google' ? await searchPlayStore(query, country) : await searchAppleApps(query, country);
-    return c.json({ store, query, results, meta: { total: results.length, proxy: { ip: proxyIp || 'mobile', country: country.toUpperCase(), carrier: 'T-Mobile' } }, payment: { txHash: payment.txHash, amount: String(APP_PRICES.search), verified: true } });
+    return c.json({ store, query, results, meta: { total: results.length, proxy: { ip: proxyIp || 'mobile', country: country.toUpperCase(), carrier: 'T-Mobile' } }, payment: { txHash: testMode ? 'test-mode' : payment!.txHash, amount: String(APP_PRICES.search), verified: true } });
   } catch (err: any) { return c.json({ error: 'Search failed', details: err.message }, 500); }
 });
 
@@ -1897,6 +1924,6 @@ serviceRouter.get('/appstore/reviews', async (c) => {
     const country = c.req.query('country') || 'us';
     const proxyIp = await getProxyExitIp();
     const reviews = await getAppleReviews(appId, country);
-    return c.json({ appId, reviews, meta: { total: reviews.length, proxy: { ip: proxyIp || 'mobile', country: country.toUpperCase(), carrier: 'T-Mobile' } }, payment: { txHash: payment.txHash, amount: String(APP_PRICES.reviews), verified: true } });
+    return c.json({ appId, reviews, meta: { total: reviews.length, proxy: { ip: proxyIp || 'mobile', country: country.toUpperCase(), carrier: 'T-Mobile' } }, payment: { txHash: testMode ? 'test-mode' : payment!.txHash, amount: String(APP_PRICES.reviews), verified: true } });
   } catch (err: any) { return c.json({ error: 'Reviews fetch failed', details: err.message }, 500); }
 });
