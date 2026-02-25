@@ -1,4 +1,4 @@
-import { proxyFetch } from './proxy';
+import { proxyFetch } from '../proxy';
 
 // ─── Google Discover Feed Intelligence Scraper ───
 // Google Discover is mobile-only, requires mobile UA + carrier IP
