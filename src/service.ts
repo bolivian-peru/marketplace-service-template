@@ -1319,7 +1319,7 @@ serviceRouter.get('/tiktok/sound/:id', async (c) => {
   } catch (err: any) {
     return c.json({ error: 'TikTok sound data failed', details: err.message }, 500);
   }
-});\n
+});
 
 // ═══════════════════════════════════════════════════════
 // Facebook Marketplace Monitor API (Bounty #75) — $75
