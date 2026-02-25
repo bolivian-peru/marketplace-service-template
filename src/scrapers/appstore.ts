@@ -1,4 +1,4 @@
-import { proxyFetch } from './proxy';
+import { proxyFetch } from '../proxy';
 
 // ─── App Store Intelligence Scraper ───
 // Apple App Store + Google Play Store
