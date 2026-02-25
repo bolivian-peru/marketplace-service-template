@@ -1,4 +1,4 @@
-import { proxyFetch } from './proxy';
+import { proxyFetch } from '../proxy';
 
 // ─── Trend Intelligence Cross-Platform Research ───
 // Aggregates Reddit + X/Twitter + YouTube and synthesizes patterns
