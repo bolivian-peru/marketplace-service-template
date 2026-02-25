@@ -16,6 +16,12 @@ import { fetchReviews, fetchBusinessDetails, fetchReviewSummary, searchBusinesse
 import { scrapeGoogleMaps, extractDetailedBusiness } from './scrapers/maps-scraper';
 import { researchRouter } from './routes/research';
 import { trendingRouter } from './routes/trending';
+import { 
+  scrapeLinkedInPerson, 
+  scrapeLinkedInCompany, 
+  searchLinkedInPeople, 
+  findCompanyEmployees 
+} from './scrapers/linkedin-enrichment';
 
 export const serviceRouter = new Hono();
 
@@ -534,5 +540,252 @@ serviceRouter.get('/business/:place_id', async (c) => {
     });
   } catch (err: any) {
     return c.json({ error: 'Business details fetch failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ═══════════════════════════════════════════════════════
+// ─── LINKEDIN PEOPLE & COMPANY ENRICHMENT API (Bounty #77) ─────────
+// ═══════════════════════════════════════════════════════
+
+const LINKEDIN_PERSON_PRICE_USDC = 0.03;    // $0.03 per person profile
+const LINKEDIN_COMPANY_PRICE_USDC = 0.05;   // $0.05 per company profile
+const LINKEDIN_SEARCH_PRICE_USDC = 0.10;    // $0.10 per search query
+
+// ─── GET /api/linkedin/person ────────────────────────
+serviceRouter.get('/linkedin/person', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) {
+    return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+  }
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(
+      build402Response('/api/linkedin/person', 'LinkedIn Person Profile Enrichment', LINKEDIN_PERSON_PRICE_USDC, walletAddress, {
+        input: { url: 'string — LinkedIn profile URL (required)' },
+        output: { person: 'LinkedInPerson — name, headline, company, education, skills', meta: 'proxy info' },
+      }),
+      402,
+    );
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, LINKEDIN_PERSON_PRICE_USDC);
+  if (!verification.valid) {
+    return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+  }
+
+  const url = c.req.query('url');
+  if (!url) {
+    return c.json({ error: 'Missing required parameter: url', example: '/api/linkedin/person?url=linkedin.com/in/username' }, 400);
+  }
+
+  // Extract public ID from URL
+  const publicIdMatch = url.match(/linkedin\.com\/in\/([^\/\?]+)/);
+  if (!publicIdMatch) {
+    return c.json({ error: 'Invalid LinkedIn profile URL', example: 'linkedin.com/in/username' }, 400);
+  }
+
+  try {
+    const proxy = getProxy();
+    const person = await scrapeLinkedInPerson(publicIdMatch[1]);
+
+    if (!person) {
+      return c.json({ error: 'Failed to scrape profile. Profile may be private or LinkedIn blocked the request.' }, 502);
+    }
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      person: {
+        ...person,
+        meta: { proxy: { country: proxy.country, type: 'mobile' } },
+      },
+      payment: {
+        txHash: payment.txHash,
+        network: payment.network,
+        amount: verification.amount,
+        settled: true,
+      },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Profile fetch failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/linkedin/company ────────────────────────
+serviceRouter.get('/linkedin/company', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) {
+    return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+  }
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(
+      build402Response('/api/linkedin/company', 'LinkedIn Company Profile Enrichment', LINKEDIN_COMPANY_PRICE_USDC, walletAddress, {
+        input: { url: 'string — LinkedIn company URL (required)' },
+        output: { company: 'LinkedInCompany — name, description, industry, employees', meta: 'proxy info' },
+      }),
+      402,
+    );
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, LINKEDIN_COMPANY_PRICE_USDC);
+  if (!verification.valid) {
+    return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+  }
+
+  const url = c.req.query('url');
+  if (!url) {
+    return c.json({ error: 'Missing required parameter: url', example: '/api/linkedin/company?url=linkedin.com/company/name' }, 400);
+  }
+
+  const companyIdMatch = url.match(/linkedin\.com\/company\/([^\/\?]+)/);
+  if (!companyIdMatch) {
+    return c.json({ error: 'Invalid LinkedIn company URL', example: 'linkedin.com/company/name' }, 400);
+  }
+
+  try {
+    const proxy = getProxy();
+    const company = await scrapeLinkedInCompany(companyIdMatch[1]);
+
+    if (!company) {
+      return c.json({ error: 'Failed to scrape company. Company may not exist or LinkedIn blocked the request.' }, 502);
+    }
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      company: {
+        ...company,
+        meta: { proxy: { country: proxy.country, type: 'mobile' } },
+      },
+      payment: {
+        txHash: payment.txHash,
+        network: payment.network,
+        amount: verification.amount,
+        settled: true,
+      },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Company fetch failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/linkedin/search/people ────────────────────────
+serviceRouter.get('/linkedin/search/people', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) {
+    return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+  }
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(
+      build402Response('/api/linkedin/search/people', 'LinkedIn People Search by Title + Location + Industry', LINKEDIN_SEARCH_PRICE_USDC, walletAddress, {
+        input: { 
+          title: 'string — Job title (required)',
+          location: 'string — Location (optional)',
+          industry: 'string — Industry (optional)',
+          limit: 'number — Max results (default: 10, max: 20)'
+        },
+        output: { results: 'LinkedInSearchResult[]', meta: 'proxy info' },
+      }),
+      402,
+    );
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, LINKEDIN_SEARCH_PRICE_USDC);
+  if (!verification.valid) {
+    return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+  }
+
+  const title = c.req.query('title');
+  if (!title) {
+    return c.json({ error: 'Missing required parameter: title', example: '/api/linkedin/search/people?title=CTO&location=San+Francisco' }, 400);
+  }
+
+  const location = c.req.query('location');
+  const industry = c.req.query('industry');
+  const limit = Math.min(Math.max(parseInt(c.req.query('limit') || '10') || 10, 1), 20);
+
+  try {
+    const proxy = getProxy();
+    const results = await searchLinkedInPeople(title, location || undefined, industry || undefined, limit);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      results,
+      meta: { proxy: { country: proxy.country, type: 'mobile' } },
+      payment: {
+        txHash: payment.txHash,
+        network: payment.network,
+        amount: verification.amount,
+        settled: true,
+      },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Search failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/linkedin/company/:id/employees ────────────────────────
+serviceRouter.get('/linkedin/company/:id/employees', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) {
+    return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+  }
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(
+      build402Response('/api/linkedin/company/:id/employees', 'Find Company Employees by Job Title', LINKEDIN_SEARCH_PRICE_USDC, walletAddress, {
+        input: { 
+          id: 'string — LinkedIn company ID (in URL path)',
+          title: 'string — Job title filter (optional)',
+          limit: 'number — Max results (default: 10, max: 20)'
+        },
+        output: { results: 'LinkedInSearchResult[]', meta: 'proxy info' },
+      }),
+      402,
+    );
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, LINKEDIN_SEARCH_PRICE_USDC);
+  if (!verification.valid) {
+    return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+  }
+
+  const companyId = c.req.param('id');
+  if (!companyId) {
+    return c.json({ error: 'Missing company ID in URL path', example: '/api/linkedin/company/google/employees?title=engineer' }, 400);
+  }
+
+  const title = c.req.query('title') || undefined;
+  const limit = Math.min(Math.max(parseInt(c.req.query('limit') || '10') || 10, 1), 20);
+
+  try {
+    const proxy = getProxy();
+    const results = await findCompanyEmployees(companyId, title, limit);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      results,
+      meta: { proxy: { country: proxy.country, type: 'mobile' } },
+      payment: {
+        txHash: payment.txHash,
+        network: payment.network,
+        amount: verification.amount,
+        settled: true,
+      },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Employee search failed', message: err?.message || String(err) }, 502);
   }
 });
