@@ -1,4 +1,4 @@
-import { proxyFetch } from './proxy';
+import { proxyFetch } from '../proxy';
 
 // ─── Prediction Market Signal Aggregator ───
 // Combines Polymarket + Kalshi odds with social sentiment
