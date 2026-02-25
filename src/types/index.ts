@@ -1,91 +1,328 @@
 /**
- * TypeScript interfaces for Instagram Intelligence API
+ * Shared Type Definitions
+ * ───────────────────────
+ * All interfaces used across the service.
  */
 
-export interface InstagramProfile {
-  username: string;
-  full_name: string;
-  bio: string;
-  followers: number;
-  following: number;
-  posts_count: number;
-  is_verified: boolean;
-  is_business: boolean;
-  profile_pic_url: string;
-  external_url: string | null;
-  category: string | null;
-  engagement_rate: number;
-  avg_likes: number;
-  avg_comments: number;
-  posting_frequency: string;
+// ─── TREND INTELLIGENCE TYPES (Bounty #70) ──────────
+
+export type Platform = 'reddit' | 'web' | 'x' | 'youtube' | 'twitter';
+export type SignalStrength = 'established' | 'reinforced' | 'emerging';
+export type SentimentLabel = 'positive' | 'neutral' | 'negative';
+
+export interface PatternEvidence {
+  platform: string;
+  title: string;
+  url: string;
+  engagement: number;
+  // Reddit-specific
+  subreddit?: string;
+  score?: number;
+  numComments?: number;
+  created?: number;
+  // Web-specific
+  source?: string;
 }
 
-export interface InstagramPost {
-  id: string;
-  shortcode: string;
-  caption: string;
-  likes: number;
-  comments: number;
-  timestamp: number;
-  is_video: boolean;
-  image_url: string;
-  thumbnail_url: string;
-  engagement_rate: number;
+export interface TrendPattern {
+  pattern: string;
+  strength: SignalStrength;
+  sources: ('reddit' | 'web' | 'youtube' | 'twitter')[];
+  totalEngagement: number;
+  evidence: PatternEvidence[];
 }
 
-export interface VisionAnalysisResult {
-  account_type: {
-    primary: string;
-    niche: string;
-    confidence: number;
-    sub_niches: string[];
-    signals: string[];
-  };
-  content_themes: {
-    content_themes: string[];
-    content_style: string;
-    brand_safety_score: number;
-    content_consistency: string;
-  };
+// ─── YOUTUBE TYPES ───────────────────────────────────
+
+export interface YouTubeResult {
+  videoId: string;
+  title: string;
+  url: string;
+  channelName: string | null;
+  viewCount: number | null;
+  description: string;
+  publishedAt: string | null;
+  engagementScore: number;
+  platform: 'youtube';
+}
+
+// ─── TWITTER TYPES ───────────────────────────────────
+
+export interface TwitterResult {
+  tweetId: string | null;
+  author: string | null;
+  text: string;
+  url: string;
+  likes: number | null;
+  retweets: number | null;
+  engagementScore: number;
+  publishedAt: string | null;
+  platform: 'twitter';
+}
+
+export interface PlatformSentimentBreakdown {
+  overall: SentimentLabel;
+  positive: number;   // percentage 0-100
+  neutral: number;
+  negative: number;
+}
+
+export interface ResearchRequest {
+  topic: string;
+  platforms: Platform[];
+  days: number;
+  country: string;
+}
+
+export interface TopDiscussion {
+  platform: string;
+  title: string;
+  url: string;
+  engagement: number;
+  subreddit?: string;
+  score?: number;
+  numComments?: number;
+}
+
+export interface ResearchResponse {
+  topic: string;
+  timeframe: string;
+  patterns: TrendPattern[];
   sentiment: {
-    overall: string;
-    breakdown: { positive: number; neutral: number; negative: number };
-    emotional_themes: string[];
-    brand_alignment: string[];
+    overall: SentimentLabel;
+    by_platform: Record<string, PlatformSentimentBreakdown>;
   };
-  authenticity: {
-    score: number;
-    verdict: string;
-    face_consistency: boolean | string;
-    engagement_pattern: string;
-    follower_quality: string;
-    comment_analysis: string;
-    fake_signals: {
-      stock_photo_detected: boolean;
-      engagement_vs_followers: string;
-      follower_growth_pattern: string;
-    };
+  top_discussions: TopDiscussion[];
+  emerging_topics: string[];
+  meta: {
+    sources_checked: number;
+    platforms_used: string[];
+    proxy: { ip: string | null; country: string; type: string };
+    generated_at: string;
   };
-  images_analyzed: number;
-  model_used: string;
-  recommendations: {
-    good_for_brands: string[];
-    estimated_post_value: string;
-    risk_level: string;
+  payment: {
+    txHash: string;
+    network: string;
+    amount: number;
+    settled: boolean;
   };
 }
 
-export interface FullAnalysisResponse {
-  profile: InstagramProfile;
-  ai_analysis: VisionAnalysisResult;
-  recent_posts: {
-    caption: string;
-    likes: number;
-    comments: number;
-    engagement_rate: number;
-  }[];
+export interface TrendingItem {
+  topic: string;
+  platform: string;
+  engagement: number | null;
+  traffic?: string | null;
+  url?: string;
+}
+
+export interface TrendingResponse {
+  country: string;
+  platforms: string[];
+  trending: TrendingItem[];
+  generated_at: string;
   meta: {
     proxy: { ip: string | null; country: string; type: string };
-    analysis_time_ms: number;
   };
+  payment: {
+    txHash: string;
+    network: string;
+    amount: number;
+    settled: boolean;
+  };
+}
+
+// ─── GOOGLE MAPS TYPES ──────────────────────────────
+
+export interface BusinessData {
+  name: string;
+  address: string | null;
+  phone: string | null;
+  website: string | null;
+  email: string | null;
+  hours: BusinessHours | null;
+  rating: number | null;
+  reviewCount: number | null;
+  categories: string[];
+  coordinates: {
+    latitude: number;
+    longitude: number;
+  } | null;
+  placeId: string | null;
+  priceLevel: string | null;
+  permanentlyClosed: boolean;
+}
+
+export interface BusinessHours {
+  [day: string]: string;
+}
+
+export interface SearchResult {
+  businesses: BusinessData[];
+  totalFound: number;
+  nextPageToken: string | null;
+  searchQuery: string;
+  location: string;
+}
+
+// ─── MOBILE SERP TRACKER TYPES ──────────────────────
+
+export interface OrganicResult {
+  position: number;
+  title: string;
+  url: string;
+  displayUrl: string;
+  snippet: string;
+  sitelinks: Sitelink[];
+  date: string | null;
+  cached: boolean;
+}
+
+export interface Sitelink {
+  title: string;
+  url: string;
+}
+
+export interface AdResult {
+  position: number;
+  title: string;
+  url: string;
+  displayUrl: string;
+  description: string;
+  isTop: boolean;
+}
+
+export interface PeopleAlsoAsk {
+  question: string;
+  snippet: string | null;
+  url: string | null;
+}
+
+export interface FeaturedSnippet {
+  text: string;
+  url: string;
+  title: string;
+  type: 'paragraph' | 'list' | 'table' | 'unknown';
+}
+
+export interface AiOverview {
+  text: string;
+  sources: { title: string; url: string }[];
+}
+
+export interface MapPackResult {
+  name: string;
+  address: string | null;
+  rating: number | null;
+  reviewCount: number | null;
+  category: string | null;
+  phone: string | null;
+}
+
+export interface KnowledgePanel {
+  title: string;
+  type: string | null;
+  description: string | null;
+  url: string | null;
+  attributes: Record<string, string>;
+}
+
+export interface SerpResponse {
+  query: string;
+  country: string;
+  language: string;
+  location: string | null;
+  totalResults: string | null;
+  organic: OrganicResult[];
+  ads: AdResult[];
+  peopleAlsoAsk: PeopleAlsoAsk[];
+  featuredSnippet: FeaturedSnippet | null;
+  aiOverview: AiOverview | null;
+  mapPack: MapPackResult[];
+  knowledgePanel: KnowledgePanel | null;
+  relatedSearches: string[];
+}
+
+// ─── GOOGLE REVIEWS & BUSINESS DATA TYPES ───────────
+
+export interface ReviewData {
+  author: string;
+  rating: number;
+  text: string;
+  date: string;
+  relativeDate: string | null;
+  likes: number;
+  ownerResponse: string | null;
+  ownerResponseDate: string | null;
+  photos: string[];
+}
+
+export interface BusinessInfo {
+  name: string;
+  placeId: string;
+  rating: number | null;
+  totalReviews: number | null;
+  address: string | null;
+  phone: string | null;
+  website: string | null;
+  hours: BusinessHours | null;
+  category: string | null;
+  categories: string[];
+  priceLevel: string | null;
+  photos: string[];
+  coordinates: { latitude: number; longitude: number } | null;
+  permanentlyClosed: boolean;
+}
+
+export interface RatingDistribution {
+  '5': number;
+  '4': number;
+  '3': number;
+  '2': number;
+  '1': number;
+}
+
+export interface ReviewSummary {
+  avgRating: number | null;
+  totalReviews: number | null;
+  ratingDistribution: RatingDistribution;
+  responseRate: number;
+  avgResponseTimeDays: number | null;
+  sentimentBreakdown: {
+    positive: number;
+    neutral: number;
+    negative: number;
+  };
+}
+
+export interface ReviewsResponse {
+  business: BusinessInfo;
+  reviews: ReviewData[];
+  pagination: {
+    total: number;
+    returned: number;
+    sort: string;
+  };
+}
+
+export interface BusinessResponse {
+  business: BusinessInfo;
+  summary: ReviewSummary;
+}
+
+export interface ReviewSummaryResponse {
+  business: {
+    name: string;
+    placeId: string;
+    rating: number | null;
+    totalReviews: number | null;
+  };
+  summary: ReviewSummary;
+}
+
+export interface ReviewSearchResponse {
+  query: string;
+  location: string;
+  businesses: BusinessInfo[];
+  totalFound: number;
 }
