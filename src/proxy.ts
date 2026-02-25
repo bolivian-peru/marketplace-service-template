@@ -1,23 +1,25 @@
 /**
  * Mobile Proxy Helper
- * ───────────────────
+ * ─────────────────────────────────────────
  * DON'T EDIT THIS FILE. It manages proxy credentials from .env.
  *
  * Features:
  * - Reads credentials from environment variables
  * - Proxy-aware fetch() wrapper with retry logic
  * - Handles proxy failures gracefully
+ * - Falls back to direct fetch if no proxy configured
  */
 
-// ─── TYPES ──────────────────────────────────────────
+// ─── TYPES ───────────────────────────────────────────────────────────────────
 
 export interface ProxyConfig {
-  url: string;         // http://user:pass@host:port
+  url: string;          // http://user:pass@host:port
   host: string;
   port: number;
   user: string;
   pass: string;
   country: string;
+  configured: boolean;  // false = no proxy, direct fetch
 }
 
 export interface ProxyFetchOptions extends RequestInit {
@@ -25,10 +27,11 @@ export interface ProxyFetchOptions extends RequestInit {
   timeoutMs?: number;
 }
 
-// ─── GET PROXY CREDENTIALS ──────────────────────────
+// ─── GET PROXY CREDENTIALS ──────────────────────────────────────────────────
 
 /**
  * Read proxy credentials from .env
+ * Returns a config with configured=false if no proxy vars are set (service runs direct).
  * Get credentials from https://client.proxies.sx or via x402 API:
  *   curl https://api.proxies.sx/v1/x402/proxy?country=US&traffic=1
  */
@@ -39,10 +42,16 @@ export function getProxy(): ProxyConfig {
   const pass = process.env.PROXY_PASS;
 
   if (!host || !port || !user || !pass) {
-    throw new Error(
-      'Proxy not configured. Set PROXY_HOST, PROXY_HTTP_PORT, PROXY_USER, PROXY_PASS in .env. ' +
-      'Get credentials: https://client.proxies.sx or via x402 API'
-    );
+    // No proxy configured — service runs in direct mode
+    return {
+      url: '',
+      host: '',
+      port: 0,
+      user: '',
+      pass: '',
+      country: process.env.PROXY_COUNTRY || 'US',
+      configured: false,
+    };
   }
 
   return {
@@ -52,13 +61,15 @@ export function getProxy(): ProxyConfig {
     user,
     pass,
     country: process.env.PROXY_COUNTRY || 'US',
+    configured: true,
   };
 }
 
-// ─── FETCH THROUGH PROXY ────────────────────────────
+// ─── FETCH THROUGH PROXY ────────────────────────────────────────────────────
 
 /**
  * Fetch a URL through the configured mobile proxy.
+ * Falls back to direct fetch if no proxy is configured.
  * Includes retry logic for transient proxy failures.
  *
  * @example
@@ -85,13 +96,19 @@ export async function proxyFetch(
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
-      const response = await fetch(url, {
+      const fetchInit: any = {
         ...fetchOptions,
         headers: { ...defaultHeaders, ...fetchOptions.headers as Record<string, string> },
         signal: controller.signal,
+      };
+
+      // Only set proxy option if credentials are configured
+      if (proxy.configured) {
         // @ts-ignore — Bun supports the proxy option natively
-        proxy: proxy.url,
-      });
+        fetchInit.proxy = proxy.url;
+      }
+
+      const response = await fetch(url, fetchInit);
 
       clearTimeout(timeout);
       return response;
@@ -104,5 +121,5 @@ export async function proxyFetch(
     }
   }
 
-  throw new Error(`Proxy fetch failed after ${maxRetries + 1} attempts: ${lastError?.message}`);
+  throw new Error(`Fetch failed after ${maxRetries + 1} attempts: ${lastError?.message}`);
 }
