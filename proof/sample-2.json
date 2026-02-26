@@ -1,0 +1,78 @@
+{
+  "type": "subreddit",
+  "subreddit": "technology",
+  "sort": "hot",
+  "posts": [
+    {
+      "id": "1rf4e4d",
+      "title": "Firefox 148 introduces the promised AI kill switch for people who aren't into LLMs",
+      "author": "gdelacalle",
+      "subreddit": "technology",
+      "score": 4477,
+      "commentCount": 248,
+      "url": "https://reddit.com/r/technology/comments/1rf4e4d/firefox_148_introduces_the_promised_ai_kill/",
+      "selftext": "",
+      "createdUtc": 1772093033,
+      "thumbnail": "https://external-preview.redd.it/UiBohv6ImzTrq2amVRILcRulZSPhiXbKrRVJ6jfIA3s.jpeg?width=140&amp;height=78&amp;auto=webp&amp;s=d16d4c27980541e542bb869698f5188679484e28"
+    },
+    {
+      "id": "1revbhn",
+      "title": "Scoop: Pentagon takes first step toward blacklisting Anthropic",
+      "author": "Brilliant_Version344",
+      "subreddit": "technology",
+      "score": 8400,
+      "commentCount": 573,
+      "url": "https://reddit.com/r/technology/comments/1revbhn/scoop_pentagon_takes_first_step_toward/",
+      "selftext": "",
+      "createdUtc": 1772066061,
+      "thumbnail": "https://external-preview.redd.it/RODqeWadu9G-akAXq_ZdBZfmrMwWbkWmbksRB13hn8M.jpeg?width=140&amp;height=78&amp;auto=webp&amp;s=fdea5b01c23601284c2be071ee908d4a6799776b"
+    },
+    {
+      "id": "1res2ck",
+      "title": "John Oliver gives a brutal summary of the current state of X",
+      "author": "StraightedgexLiberal",
+      "subreddit": "technology",
+      "score": 4919,
+      "commentCount": 246,
+      "url": "https://reddit.com/r/technology/comments/1res2ck/john_oliver_gives_a_brutal_summary_of_the_current/",
+      "selftext": "",
+      "createdUtc": 1772058439,
+      "thumbnail": "https://external-preview.redd.it/J5Z3UR3REw9RXQrM1YGkxcdbj-mexPd-jmn8lm78cuQ.png?width=140&amp;height=78&amp;auto=webp&amp;s=317714bb4a4dda6de9a343bc108a476b1b0ae740"
+    },
+    {
+      "id": "1rermsi",
+      "title": "Amazon Wishlist change doxxes users and shares your delivery address",
+      "author": "IndicaOatmeal",
+      "subreddit": "technology",
+      "score": 4522,
+      "commentCount": 203,
+      "url": "https://reddit.com/r/technology/comments/1rermsi/amazon_wishlist_change_doxxes_users_and_shares/",
+      "selftext": "",
+      "createdUtc": 1772057463,
+      "thumbnail": "https://external-preview.redd.it/FjnysPuI2JDC2Owf5tf61XSWR5A6Wn0xLOWYvyRYIdE.jpeg?width=140&amp;height=78&amp;auto=webp&amp;s=f2da649a3a9eea6c3be2325be5fcc7f99d1c71a9"
+    },
+    {
+      "id": "1repq9e",
+      "title": "A White House Staffer Appears to Run Massive Pro-Trump X Account",
+      "author": "mowotlarx",
+      "subreddit": "technology",
+      "score": 4911,
+      "commentCount": 96,
+      "url": "https://reddit.com/r/technology/comments/1repq9e/a_white_house_staffer_appears_to_run_massive/",
+      "selftext": "",
+      "createdUtc": 1772053240,
+      "thumbnail": "https://external-preview.redd.it/q4l5_zzJ_49Ty3kLbFoFK_6px0Q_54Rc7qHc4P1ZDhY.jpeg?width=140&amp;height=73&amp;auto=webp&amp;s=215df6650a84f1d4329abb66c40cc7ad192e1a0e"
+    }
+  ],
+  "pagination": {
+    "after": "t3_1repq9e",
+    "hasMore": true
+  },
+  "meta": {
+    "subreddit": "technology",
+    "proxyCountry": "United States",
+    "proxyIp": "172.56.168.66",
+    "scrapedAt": "2026-02-26T13:40:28.829412+00:00",
+    "responseTimeMs": 950
+  }
+}
