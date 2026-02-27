@@ -1,0 +1,38 @@
+{
+  "markets": [
+    {
+      "title": "Will Trump nominate Judy Shelton as the next Fed chair?",
+      "platform": "Polymarket",
+      "probability": 0.043,
+      "volumeUsdc": 97561286.24,
+      "url": "https://polymarket.com/event/will-trump-nominate-judy-shelton-as-the-next-fed-chair",
+      "endDate": "2026-12-31T00:00:00Z",
+      "liquidity": 1279969.36
+    },
+    {
+      "title": "Will the Fed decrease interest rates by 50+ bps after the March 2026 meeting?",
+      "platform": "Polymarket",
+      "probability": 0.005,
+      "volumeUsdc": 73110955.92,
+      "url": "https://polymarket.com/event/will-the-fed-decrease-interest-rates-by-50-bps-after-the-march-2026-meeting",
+      "endDate": "2026-03-18T00:00:00Z",
+      "liquidity": 2210978.8
+    },
+    {
+      "title": "Will the Fed increase interest rates by 25+ bps after the March 2026 meeting?",
+      "platform": "Polymarket",
+      "probability": 0.004,
+      "volumeUsdc": 63644985.38,
+      "url": "https://polymarket.com/event/will-the-fed-increase-interest-rates-by-25-bps-after-the-march-2026-meeting",
+      "endDate": "2026-03-18T00:00:00Z",
+      "liquidity": 1500837.32
+    }
+  ],
+  "metadata": {
+    "totalMarkets": 3,
+    "platforms": [
+      "Polymarket"
+    ],
+    "scrapedAt": "2026-02-27T14:52:00Z"
+  }
+}

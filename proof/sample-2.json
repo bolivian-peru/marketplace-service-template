@@ -1,0 +1,33 @@
+{
+  "query": "crypto",
+  "markets": [
+    {
+      "title": "Will Trump nominate Judy Shelton as the next Fed chair?",
+      "platform": "Polymarket",
+      "probability": 0.043,
+      "volumeUsdc": 97561286.24,
+      "url": "https://polymarket.com/event/will-trump-nominate-judy-shelton-as-the-next-fed-chair"
+    },
+    {
+      "title": "Will the Fed decrease interest rates by 50+ bps after the March 2026 meeting?",
+      "platform": "Polymarket",
+      "probability": 0.005,
+      "volumeUsdc": 73112622.58,
+      "url": "https://polymarket.com/event/will-the-fed-decrease-interest-rates-by-50-bps-after-the-march-2026-meeting"
+    },
+    {
+      "title": "Will the Fed increase interest rates by 25+ bps after the March 2026 meeting?",
+      "platform": "Polymarket",
+      "probability": 0.004,
+      "volumeUsdc": 63644985.38,
+      "url": "https://polymarket.com/event/will-the-fed-increase-interest-rates-by-25-bps-after-the-march-2026-meeting"
+    }
+  ],
+  "count": 3,
+  "metadata": {
+    "platforms": [
+      "Polymarket"
+    ],
+    "scrapedAt": "2026-02-27T14:52:00Z"
+  }
+}

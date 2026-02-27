@@ -66,7 +66,7 @@ app.get('/health', (c) => c.json({
   service: process.env.SERVICE_NAME || 'marketplace-service',
   version: '1.0.0',
   timestamp: new Date().toISOString(),
-  endpoints: ['/api/run', '/api/details', '/api/jobs', '/api/research', '/api/trending', '/api/reviews/search', '/api/reviews/:place_id', '/api/reviews/summary/:place_id', '/api/business/:place_id'],
+  endpoints: ['/api/run', '/api/details', '/api/jobs', '/api/research', '/api/trending', '/api/reviews/search', '/api/reviews/:place_id', '/api/reviews/summary/:place_id', '/api/business/:place_id', '/api/predictions/trending', '/api/predictions/search', '/api/predictions/details'],
 }));
 
 app.get('/', (c) => c.json({
@@ -81,6 +81,9 @@ app.get('/', (c) => c.json({
     { method: 'GET', path: '/api/reviews/:place_id', description: 'Fetch Google reviews by Place ID', price: '0.02 USDC' },
     { method: 'GET', path: '/api/business/:place_id', description: 'Get business details + review summary', price: '0.01 USDC' },
     { method: 'GET', path: '/api/reviews/summary/:place_id', description: 'Get review summary stats', price: '0.005 USDC' },
+    { method: 'GET', path: '/api/predictions/trending', description: 'Trending prediction markets from Polymarket, Metaculus, PredictIt', price: '0.02 USDC' },
+    { method: 'GET', path: '/api/predictions/search', description: 'Search prediction markets by keyword across platforms', price: '0.02 USDC' },
+    { method: 'GET', path: '/api/predictions/details', description: 'Full market details: order book, resolution criteria', price: '0.01 USDC' },
   ],
   pricing: {
     amount: process.env.PRICE_USDC || '0.005',
@@ -114,7 +117,7 @@ app.get('/', (c) => c.json({
 
 app.route('/api', serviceRouter);
 
-app.notFound((c) => c.json({ error: 'Not found', endpoints: ['/', '/health', '/api/run', '/api/details', '/api/jobs', '/api/reviews/search', '/api/reviews/:place_id', '/api/business/:place_id', '/api/reviews/summary/:place_id'] }, 404));
+app.notFound((c) => c.json({ error: 'Not found', endpoints: ['/', '/health', '/api/run', '/api/details', '/api/jobs', '/api/reviews/search', '/api/reviews/:place_id', '/api/business/:place_id', '/api/reviews/summary/:place_id', '/api/predictions/trending', '/api/predictions/search', '/api/predictions/details'] }, 404));
 
 app.onError((err, c) => {
   console.error(`[ERROR] ${err.message}`);
