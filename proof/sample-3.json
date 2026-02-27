@@ -1,49 +1,83 @@
 {
-  "_note": "Structural sample — Nitter instances returned browser-challenge pages during collection (2026-02-27). Data reflects the TrendingTopic schema from src/scrapers/x-twitter-scraper.ts.",
-  "endpoint": "GET /api/x/trending?country=US",
-  "collected_at": "2026-02-27T12:00:00Z",
-  "strategy": "SearXNG site:x.com trending US query (primary path)",
-  "trending": [
+  "query": "python developer programming -is:retweet lang:en",
+  "collected_at": "2026-02-27T20:16:59.008302+00:00",
+  "method": "Twitter API v2 search_recent_tweets (Bearer token auth)",
+  "count": 9,
+  "results": [
     {
-      "name": "#GrammyAwards",
-      "tweet_count": 284000,
-      "category": "Music",
-      "url": "https://x.com/search?q=%23GrammyAwards&src=trend_click"
+      "id": "2027420601032331537",
+      "text": "Good day \u2600\ufe0f\n\nLearn \ud83d\udcda\n\nTry \ud83d\udd04\n\nYou will find a way\ud83d\udca1\ud83d\udd0d\n\nThere are loopholes in everything \ud83d\udd13\n\nBut be careful .. \u26a0\ufe0f\ndont hurt anyone because there are laws \u2696\ufe0f\n\n#Cybersecurity \n#Python\n#JavaScript\n#EthicalHacking \n#Programming \n#Coding\n#Developer https://t.co/c1CoqrXcXv",
+      "created_at": "2026-02-27 16:28:33+00:00",
+      "author": "INFJ_100",
+      "followers": 192,
+      "metrics": {
+        "retweet_count": 0,
+        "reply_count": 0,
+        "like_count": 0,
+        "quote_count": 0,
+        "bookmark_count": 0,
+        "impression_count": 24
+      }
     },
     {
-      "name": "#SuperTuesday",
-      "tweet_count": 195000,
-      "category": "Politics",
-      "url": "https://x.com/search?q=%23SuperTuesday&src=trend_click"
+      "id": "2027383229678801309",
+      "text": "#java #coding #programming #application #python#learning #android #developer #development#hacking #pro #Black #white #blackhat #whitehat#cybercrime #cybersecurity #instagram #viral #reel#trending #songs https://t.co/Ce01HZ2jsG",
+      "created_at": "2026-02-27 14:00:03+00:00",
+      "author": "androidcyb3242",
+      "followers": 1,
+      "metrics": {
+        "retweet_count": 0,
+        "reply_count": 0,
+        "like_count": 1,
+        "quote_count": 0,
+        "bookmark_count": 0,
+        "impression_count": 3
+      }
     },
     {
-      "name": "AI Agents",
-      "tweet_count": 87400,
-      "category": "Technology",
-      "url": "https://x.com/search?q=AI+Agents&src=trend_click"
+      "id": "2027302151371063676",
+      "text": "Follow @examsdigest for more!\n\n#comptia #programming #programmer #python #developer #javascript #code #coder #technology #html #computerscience #codinglife #java #webdeveloper #tech #webdevelopment #css #software #softwaredeveloper #webdesign #linux #programmers #codingisfun https://t.co/rPRYPOyk0r",
+      "created_at": "2026-02-27 08:37:52+00:00",
+      "author": "ExamsDigest",
+      "followers": 221,
+      "metrics": {
+        "retweet_count": 0,
+        "reply_count": 1,
+        "like_count": 4,
+        "quote_count": 0,
+        "bookmark_count": 0,
+        "impression_count": 10
+      }
     },
     {
-      "name": "#NBATradeDeadline",
-      "tweet_count": 156000,
-      "category": "Sports",
-      "url": "https://x.com/search?q=%23NBATradeDeadline&src=trend_click"
+      "id": "2027085103491375572",
+      "text": "Buy GitHub Accounts\nhttps://t.co/gTNpiMffbT\nContact us now for details 24/7-hours contact\nEmail: seogeniushub@gmail.com\nTelegram: @seogeniushub\nWhatsApp: +1 (217) 806-5490\n#github #javascript #programming #coding #python #html #programmer #developer #linux #java",
+      "created_at": "2026-02-26 18:15:24+00:00",
+      "author": "YealMall",
+      "followers": 0,
+      "metrics": {
+        "retweet_count": 0,
+        "reply_count": 0,
+        "like_count": 0,
+        "quote_count": 0,
+        "bookmark_count": 0,
+        "impression_count": 16
+      }
     },
     {
-      "name": "Claude 3",
-      "tweet_count": 42300,
-      "category": "Technology",
-      "url": "https://x.com/search?q=Claude+3&src=trend_click"
+      "id": "2027028241295245526",
+      "text": "For help with:\n\u274d  JavaScript\n\u274d  React\n\u274d  HTML\n\u274d  CSS\n\u274d  SQL\n\u274d  NoSQL\n\u274d  Data Structures\n\u274d  Algorithms\n\u274d  Python\n\u274d  Git\n\u274d  OOPs\n\u274d  General Programming\n\u274dmatlab\n\u274d projects\n\u274d swift\n\u274d Cpp\n\u274d developer\n\u274d coding\n\u274d C#\n\u274d C++\n\u274d WebDev\n\u274d AI\n\nWhatsApp +1 (985) 251-1522 https://t.co/4oGDAx12EM",
+      "created_at": "2026-02-26 14:29:27+00:00",
+      "author": "hwhelp999",
+      "followers": 819,
+      "metrics": {
+        "retweet_count": 0,
+        "reply_count": 0,
+        "like_count": 0,
+        "quote_count": 0,
+        "bookmark_count": 0,
+        "impression_count": 19
+      }
     }
-  ],
-  "meta": {
-    "country": "US",
-    "returned": 5,
-    "proxy": { "country": "US", "type": "mobile" },
-    "payment": {
-      "txHash": "5xSampleTxHash333333333333333333333333333333333333333333333333333333333333333333333",
-      "network": "solana",
-      "amount": 0.005,
-      "settled": true
-    }
-  }
+  ]
 }

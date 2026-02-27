@@ -1,29 +1,83 @@
 {
-  "_note": "Structural sample — Nitter instances returned browser-challenge pages during collection (2026-02-27). Data reflects the XUserProfile schema from src/scrapers/x-twitter-scraper.ts.",
-  "endpoint": "GET /api/x/user/vitalikbuterin",
-  "collected_at": "2026-02-27T12:00:00Z",
-  "strategy": "Nitter /username page scrape (primary path)",
-  "profile": {
-    "handle": "vitalikbuterin",
-    "name": "vitalik.eth",
-    "bio": "Ethereum co-founder. Working on scalability, privacy, and the intersection of crypto and mechanism design.",
-    "location": "Planet Earth",
-    "followers": 5190000,
-    "following": 610,
-    "tweets_count": 16820,
-    "verified": false,
-    "joined": "November 2011",
-    "profile_image": "https://pbs.twimg.com/profile_images/977496875887558661/L86xyLF4_400x400.jpg",
-    "banner_image": "https://pbs.twimg.com/profile_banners/295218901/1628556967/1500x500"
-  },
-  "meta": {
-    "handle": "vitalikbuterin",
-    "proxy": { "country": "US", "type": "mobile" },
-    "payment": {
-      "txHash": "4xSampleTxHash222222222222222222222222222222222222222222222222222222222222222222222",
-      "network": "solana",
-      "amount": 0.01,
-      "settled": true
+  "query": "solana blockchain crypto -is:retweet lang:en",
+  "collected_at": "2026-02-27T20:16:56.745669+00:00",
+  "method": "Twitter API v2 search_recent_tweets (Bearer token auth)",
+  "count": 10,
+  "results": [
+    {
+      "id": "2027474548505923968",
+      "text": "The Agentic Economy is taking over Solana. \ud83d\ude80\n\nPIPPIN just hit \\$730M market cap.\n\nAI agents are now trading crypto autonomously, connecting directly to blockchain nodes, Dune, and analytics services.\n\nWe're watching the trillion-dollar agent economy build itself in (1/2)",
+      "created_at": "2026-02-27 20:02:55+00:00",
+      "author": "AirOboticsAgent",
+      "followers": 3,
+      "metrics": {
+        "retweet_count": 0,
+        "reply_count": 1,
+        "like_count": 0,
+        "quote_count": 0,
+        "bookmark_count": 0,
+        "impression_count": 0
+      }
+    },
+    {
+      "id": "2027464331181637873",
+      "text": "@JR5_Crypto If activity + loyal holders matter to you,\nkeep \u261d\ufe0f $Community on your radar.\n\nJoin now and lets build real community on solana blockchain @community_ccyl\n\nYd8w2KJQ7BXe6JJTxqae9eRfSXzK15poXAvRwcYpump https://t.co/irSr3MJFIS",
+      "created_at": "2026-02-27 19:22:19+00:00",
+      "author": "m_existryan",
+      "followers": 209,
+      "metrics": {
+        "retweet_count": 0,
+        "reply_count": 0,
+        "like_count": 3,
+        "quote_count": 0,
+        "bookmark_count": 0,
+        "impression_count": 21
+      }
+    },
+    {
+      "id": "2027460290095243426",
+      "text": "XRP is the most undervalued cryptocurrency in the entire market. The manipulation won\u2019t last forever\u2026\n\n#XRP #XRPArmy #XRPCommunity #Crypto #Altcoins #XLM #Blockchain #Investing #CryptoNews #bitcoin #trading  #BullRun #HODL #solana #Ethereum #gold #Finance #cryptocurrency",
+      "created_at": "2026-02-27 19:06:16+00:00",
+      "author": "henkeking98",
+      "followers": 76,
+      "metrics": {
+        "retweet_count": 0,
+        "reply_count": 0,
+        "like_count": 2,
+        "quote_count": 0,
+        "bookmark_count": 0,
+        "impression_count": 38
+      }
+    },
+    {
+      "id": "2027459896774402315",
+      "text": "600K MARKET CAP INCOMING - https://t.co/ZHuNTrRyKZ\n\n#Dexscreener #pump #crypto #blockchain #sol #solana #TFC #meta #metaverse https://t.co/xKDyc7JKZI",
+      "created_at": "2026-02-27 19:04:42+00:00",
+      "author": "TFCarcade",
+      "followers": 248,
+      "metrics": {
+        "retweet_count": 1,
+        "reply_count": 6,
+        "like_count": 7,
+        "quote_count": 0,
+        "bookmark_count": 0,
+        "impression_count": 66
+      }
+    },
+    {
+      "id": "2027459360629072321",
+      "text": "Adoption doesn\u2019t shout \u2014 it integrates \n\nSofi \n\nSolana\n\n$BTC $ETH $SOL $XRP $ADA $DOGE $BNB $DOGE $SHIB $AVAX $TON #Crypto #Blockchain #Web3 #DeFi #NFT\n\n#Pump #ChartAnalysis #BearMarket #CryptoTrading #ToTheMoon #HODL #BullRun #Altseason #Altcoins #Bitcoin https://t.co/Fbg1xZFlfa",
+      "created_at": "2026-02-27 19:02:34+00:00",
+      "author": "yurmather",
+      "followers": 443,
+      "metrics": {
+        "retweet_count": 0,
+        "reply_count": 0,
+        "like_count": 3,
+        "quote_count": 0,
+        "bookmark_count": 0,
+        "impression_count": 32
+      }
     }
-  }
+  ]
 }
