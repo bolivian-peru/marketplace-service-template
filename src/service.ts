@@ -61,6 +61,243 @@ const MAPS_OUTPUT_SCHEMA = {
   },
 };
 
+type AppStoreType = 'apple' | 'google';
+type RunType = 'rankings' | 'app' | 'search' | 'trending';
+
+const SUPPORTED_COUNTRIES = new Set(['US', 'DE', 'FR', 'ES', 'GB', 'PL']);
+
+function ensureCountry(countryRaw: string | undefined): string {
+  const country = (countryRaw || 'US').toUpperCase();
+  if (!SUPPORTED_COUNTRIES.has(country)) {
+    throw new Error(`Unsupported country: ${country}. Use one of US, DE, FR, ES, GB, PL.`);
+  }
+  return country;
+}
+
+function parsePrice(raw: string | null | undefined): string {
+  if (!raw) return 'Unknown';
+  const trimmed = raw.trim();
+  return trimmed.length > 0 ? trimmed : 'Unknown';
+}
+
+function parseNumber(raw: string | null | undefined): number | null {
+  if (!raw) return null;
+  const cleaned = raw.replace(/[^0-9.]/g, '');
+  if (!cleaned) return null;
+  const n = Number(cleaned);
+  return Number.isFinite(n) ? n : null;
+}
+
+async function scrapeAppleRankings(category: string, country: string, limit: number) {
+  const rssUrl = `https://rss.applemarketingtools.com/api/v2/${country.toLowerCase()}/apps/top-free/${Math.min(limit, 200)}/apps.json`;
+  const res = await proxyFetch(rssUrl, { headers: { Accept: 'application/json' }, timeoutMs: 30_000 });
+  if (!res.ok) throw new Error(`Apple rankings fetch failed: ${res.status}`);
+  const json: any = await res.json();
+  const feeds: any[] = Array.isArray(json?.feed?.results) ? json.feed.results : [];
+
+  const rankings = feeds.slice(0, limit).map((item, idx) => ({
+    rank: idx + 1,
+    appName: item?.name || null,
+    developer: item?.artistName || null,
+    appId: item?.id || null,
+    rating: null,
+    ratingCount: null,
+    price: item?.kind === 'iosSoftware' ? 'Free' : 'Unknown',
+    inAppPurchases: null,
+    category: item?.genres?.[0]?.name || category,
+    lastUpdated: item?.releaseDate || null,
+    size: null,
+    icon: item?.artworkUrl100 || null,
+  }));
+
+  return { rankings };
+}
+
+async function scrapeAppleSearch(query: string, country: string, limit: number) {
+  const url = `https://itunes.apple.com/search?term=${encodeURIComponent(query)}&country=${country}&entity=software&limit=${Math.min(limit, 50)}`;
+  const res = await proxyFetch(url, { headers: { Accept: 'application/json' }, timeoutMs: 30_000 });
+  if (!res.ok) throw new Error(`Apple search fetch failed: ${res.status}`);
+  const json: any = await res.json();
+  const results = Array.isArray(json?.results) ? json.results : [];
+  return results.slice(0, limit).map((app: any) => ({
+    appName: app?.trackName || null,
+    developer: app?.sellerName || app?.artistName || null,
+    appId: app?.trackId ? String(app.trackId) : null,
+    rating: typeof app?.averageUserRating === 'number' ? app.averageUserRating : null,
+    ratingCount: typeof app?.userRatingCount === 'number' ? app.userRatingCount : null,
+    price: app?.formattedPrice || 'Unknown',
+    category: app?.primaryGenreName || null,
+    icon: app?.artworkUrl100 || null,
+  }));
+}
+
+async function scrapeAppleApp(appId: string, country: string) {
+  const url = `https://itunes.apple.com/lookup?id=${encodeURIComponent(appId)}&country=${country}`;
+  const res = await proxyFetch(url, { headers: { Accept: 'application/json' }, timeoutMs: 30_000 });
+  if (!res.ok) throw new Error(`Apple app lookup failed: ${res.status}`);
+  const json: any = await res.json();
+  const app = Array.isArray(json?.results) ? json.results[0] : null;
+  if (!app) throw new Error('App not found in Apple App Store');
+  return {
+    appName: app?.trackName || null,
+    developer: app?.sellerName || app?.artistName || null,
+    appId: app?.bundleId || String(app?.trackId || appId),
+    rating: typeof app?.averageUserRating === 'number' ? app.averageUserRating : null,
+    ratingCount: typeof app?.userRatingCount === 'number' ? app.userRatingCount : null,
+    price: app?.formattedPrice || 'Unknown',
+    inAppPurchases: Array.isArray(app?.features) ? app.features.includes('iosIap') : null,
+    category: app?.primaryGenreName || null,
+    lastUpdated: app?.currentVersionReleaseDate?.slice(0, 10) || null,
+    size: app?.fileSizeBytes ? `${Math.round(Number(app.fileSizeBytes) / (1024 * 1024))} MB` : null,
+    icon: app?.artworkUrl512 || app?.artworkUrl100 || null,
+    reviews: [],
+  };
+}
+
+function parseGoogleAppIdsFromHtml(html: string): string[] {
+  const found = new Set<string>();
+  const regex = /\/store\/apps\/details\?id=([a-zA-Z0-9._-]+)/g;
+  let m: RegExpExecArray | null;
+  while ((m = regex.exec(html)) !== null) {
+    found.add(m[1]);
+    if (found.size >= 200) break;
+  }
+  return [...found];
+}
+
+async function fetchGoogleAppDetails(appId: string, country: string) {
+  const url = `https://play.google.com/store/apps/details?id=${encodeURIComponent(appId)}&hl=en&gl=${country}`;
+  const res = await proxyFetch(url, { timeoutMs: 35_000 });
+  if (!res.ok) throw new Error(`Google app fetch failed: ${res.status}`);
+  const html = await res.text();
+
+  const nameMatch = html.match(/<meta property="og:title" content="([^"]+)"\s*\/?>/i);
+  const iconMatch = html.match(/<meta property="og:image" content="([^"]+)"\s*\/?>/i);
+  const devMatch = html.match(/"author":\s*\[\s*\{\s*"@type":"Organization","name":"([^"]+)"/i);
+  const ratingMatch = html.match(/"ratingValue":\s*"([0-9.]+)"/i);
+  const ratingCountMatch = html.match(/"ratingCount":\s*"([0-9.,]+)"/i);
+  const categoryMatch = html.match(/"applicationCategory":\s*"([^"]+)"/i);
+
+  return {
+    appName: nameMatch?.[1]?.replace(' - Apps on Google Play', '') || appId,
+    developer: devMatch?.[1] || null,
+    appId,
+    rating: ratingMatch?.[1] ? Number(ratingMatch[1]) : null,
+    ratingCount: ratingCountMatch?.[1] ? Number(ratingCountMatch[1].replace(/,/g, '')) : null,
+    price: 'Free',
+    inAppPurchases: /In-app purchases/i.test(html),
+    category: categoryMatch?.[1] || null,
+    lastUpdated: null,
+    size: null,
+    icon: iconMatch?.[1] || null,
+    reviews: [],
+  };
+}
+
+async function scrapeGoogleRankings(category: string, country: string, limit: number) {
+  const url = `https://play.google.com/store/apps/category/${encodeURIComponent(category.toUpperCase())}/collection/topselling_free?hl=en&gl=${country}`;
+  const res = await proxyFetch(url, { timeoutMs: 35_000 });
+  if (!res.ok) throw new Error(`Google rankings fetch failed: ${res.status}`);
+  const html = await res.text();
+  const appIds = parseGoogleAppIdsFromHtml(html).slice(0, limit);
+  const rankings = [] as any[];
+  for (let i = 0; i < appIds.length; i++) {
+    try {
+      const app = await fetchGoogleAppDetails(appIds[i], country);
+      rankings.push({ rank: i + 1, ...app });
+    } catch {
+      rankings.push({ rank: i + 1, appName: appIds[i], developer: null, appId: appIds[i], rating: null, ratingCount: null, price: 'Unknown', inAppPurchases: null, category, lastUpdated: null, size: null, icon: null });
+    }
+  }
+  return { rankings };
+}
+
+async function scrapeGoogleSearch(query: string, country: string, limit: number) {
+  const url = `https://play.google.com/store/search?q=${encodeURIComponent(query)}&c=apps&hl=en&gl=${country}`;
+  const res = await proxyFetch(url, { timeoutMs: 35_000 });
+  if (!res.ok) throw new Error(`Google search fetch failed: ${res.status}`);
+  const html = await res.text();
+  const appIds = parseGoogleAppIdsFromHtml(html).slice(0, limit);
+  const out = [] as any[];
+  for (const appId of appIds) {
+    try {
+      out.push(await fetchGoogleAppDetails(appId, country));
+    } catch {
+      out.push({ appName: appId, developer: null, appId, rating: null, ratingCount: null, price: 'Unknown', category: null, icon: null });
+    }
+  }
+  return out;
+}
+
+async function runAppStoreIntelligence(params: { type: RunType; store: AppStoreType; country: string; category?: string; appId?: string; query?: string; limit: number; txHash: string; amount: number; network: string; }) {
+  const { type, store, country, category, appId, query, limit, txHash, amount, network } = params;
+  const now = new Date().toISOString();
+  const proxy = getProxy();
+
+  if (type === 'rankings') {
+    if (!category) throw new Error('Missing category for rankings');
+    const data = store === 'apple' ? await scrapeAppleRankings(category, country, limit) : await scrapeGoogleRankings(category, country, limit);
+    return {
+      type,
+      store,
+      category,
+      country,
+      timestamp: now,
+      rankings: data.rankings,
+      metadata: { totalRanked: data.rankings.length, scrapedAt: new Date().toISOString() },
+      proxy: { country: proxy.country, carrier: process.env.PROXY_CARRIER || 'unknown', type: 'mobile' },
+      payment: { txHash, amount, verified: true, network },
+    };
+  }
+
+  if (type === 'search') {
+    if (!query) throw new Error('Missing query for search');
+    const results = store === 'apple' ? await scrapeAppleSearch(query, country, limit) : await scrapeGoogleSearch(query, country, limit);
+    return {
+      type,
+      store,
+      query,
+      country,
+      timestamp: now,
+      results,
+      metadata: { totalFound: results.length, scrapedAt: new Date().toISOString() },
+      proxy: { country: proxy.country, carrier: process.env.PROXY_CARRIER || 'unknown', type: 'mobile' },
+      payment: { txHash, amount, verified: true, network },
+    };
+  }
+
+  if (type === 'app') {
+    if (!appId) throw new Error('Missing appId for app type');
+    const app = store === 'apple' ? await scrapeAppleApp(appId, country) : await fetchGoogleAppDetails(appId, country);
+    return {
+      type,
+      store,
+      appId,
+      country,
+      timestamp: now,
+      app,
+      metadata: { scrapedAt: new Date().toISOString() },
+      proxy: { country: proxy.country, carrier: process.env.PROXY_CARRIER || 'unknown', type: 'mobile' },
+      payment: { txHash, amount, verified: true, network },
+    };
+  }
+
+  const trending = store === 'apple'
+    ? await scrapeAppleRankings('apps', country, Math.min(limit, 50))
+    : await scrapeGoogleRankings('GAME', country, Math.min(limit, 50));
+
+  return {
+    type,
+    store,
+    country,
+    timestamp: now,
+    trending: trending.rankings,
+    metadata: { totalFound: trending.rankings.length, scrapedAt: new Date().toISOString() },
+    proxy: { country: proxy.country, carrier: process.env.PROXY_CARRIER || 'unknown', type: 'mobile' },
+    payment: { txHash, amount, verified: true, network },
+  };
+}
+
 async function getProxyExitIp(): Promise<string | null> {
   try {
     const r = await proxyFetch('https://api.ipify.org?format=json', {
@@ -105,10 +342,55 @@ serviceRouter.get('/run', async (c) => {
     return c.json({ error: 'Proxy rate limit exceeded. Max 20 requests/min to protect proxy quota.', retryAfter: 60 }, 429);
   }
 
+  const typeRaw = c.req.query('type');
+  const storeRaw = c.req.query('store');
   const query = c.req.query('query');
   const location = c.req.query('location');
+  const category = c.req.query('category');
+  const appId = c.req.query('appId');
+  const countryRaw = c.req.query('country');
   const limitParam = c.req.query('limit');
   const pageToken = c.req.query('pageToken');
+
+  let limit = 20;
+  if (limitParam) {
+    const parsed = parseInt(limitParam);
+    if (isNaN(parsed) || parsed < 1) {
+      return c.json({ error: 'Invalid limit parameter: must be a positive integer' }, 400);
+    }
+    limit = Math.min(parsed, 100);
+  }
+
+  if (typeRaw || storeRaw) {
+    if (!typeRaw || !['rankings', 'app', 'search', 'trending'].includes(typeRaw)) {
+      return c.json({ error: 'Invalid type. Use one of: rankings, app, search, trending' }, 400);
+    }
+    if (!storeRaw || !['apple', 'google'].includes(storeRaw)) {
+      return c.json({ error: 'Invalid store. Use one of: apple, google' }, 400);
+    }
+
+    try {
+      const country = ensureCountry(countryRaw);
+      const payload = await runAppStoreIntelligence({
+        type: typeRaw as RunType,
+        store: storeRaw as AppStoreType,
+        country,
+        category: category || undefined,
+        appId: appId || undefined,
+        query: query || undefined,
+        limit,
+        txHash: payment.txHash,
+        amount: verification.amount ?? MAPS_PRICE_USDC,
+        network: payment.network,
+      });
+
+      c.header('X-Payment-Settled', 'true');
+      c.header('X-Payment-TxHash', payment.txHash);
+      return c.json(payload);
+    } catch (err: any) {
+      return c.json({ error: 'App store intelligence fetch failed', message: err?.message || String(err) }, 502);
+    }
+  }
 
   if (!query) {
     return c.json({
@@ -124,15 +406,6 @@ serviceRouter.get('/run', async (c) => {
       hint: 'Provide a location like ?query=plumbers&location=Austin+TX',
       example: '/api/run?query=restaurants&location=New+York+City&limit=20',
     }, 400);
-  }
-
-  let limit = 20;
-  if (limitParam) {
-    const parsed = parseInt(limitParam);
-    if (isNaN(parsed) || parsed < 1) {
-      return c.json({ error: 'Invalid limit parameter: must be a positive integer' }, 400);
-    }
-    limit = Math.min(parsed, 100);
   }
 
   const startIndex = pageToken ? parseInt(pageToken) || 0 : 0;
