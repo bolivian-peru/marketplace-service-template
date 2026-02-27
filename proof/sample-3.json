@@ -1,0 +1,51 @@
+{
+  "_note": "Structural sample — LinkedIn people search uses Google dorking (site:linkedin.com/in/) as primary strategy. Data reflects PeopleSearchResult schema from src/scrapers/linkedin-scraper.ts.",
+  "endpoint": "GET /api/linkedin/search/people?title=VP+Engineering&location=San+Francisco&limit=5",
+  "collected_at": "2026-02-27T12:00:00Z",
+  "strategy": "Google dorking: site:linkedin.com/in/ 'VP Engineering' 'San Francisco'",
+  "search_result": {
+    "results": [
+      {
+        "name": "Jessica Chen",
+        "headline": "VP of Engineering at Stripe | Ex-Google",
+        "location": "San Francisco Bay Area",
+        "profile_url": "https://www.linkedin.com/in/jessica-chen-eng/"
+      },
+      {
+        "name": "Marcus Williams",
+        "headline": "VP Engineering @ Databricks | Building distributed systems at scale",
+        "location": "San Francisco, California, United States",
+        "profile_url": "https://www.linkedin.com/in/marcus-williams-db/"
+      },
+      {
+        "name": "Priya Sharma",
+        "headline": "VP Engineering at Figma | Previously Airbnb",
+        "location": "San Francisco Bay Area",
+        "profile_url": "https://www.linkedin.com/in/priya-sharma-figma/"
+      },
+      {
+        "name": "David Kowalski",
+        "headline": "VP of Engineering, Platform at OpenAI",
+        "location": "San Francisco, California, United States",
+        "profile_url": "https://www.linkedin.com/in/david-kowalski-oai/"
+      },
+      {
+        "name": "Ana Martinez",
+        "headline": "VP Engineering at Rippling | Scaling teams from 0→1",
+        "location": "San Francisco Bay Area",
+        "profile_url": "https://www.linkedin.com/in/ana-martinez-rippling/"
+      }
+    ],
+    "total_results": 5
+  },
+  "meta": {
+    "query": { "title": "VP Engineering", "location": "San Francisco" },
+    "proxy": { "country": "US", "type": "mobile" },
+    "payment": {
+      "txHash": "8xSampleTxHash333333333333333333333333333333333333333333333333333333333333333333333",
+      "network": "solana",
+      "amount": 0.10,
+      "settled": true
+    }
+  }
+}

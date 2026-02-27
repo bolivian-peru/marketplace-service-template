@@ -1,0 +1,25 @@
+{
+  "_note": "Structural sample — LinkedIn company pages require login for full data. Data reflects the LinkedInCompany schema from src/scrapers/linkedin-scraper.ts.",
+  "endpoint": "GET /api/linkedin/company?url=https://linkedin.com/company/anthropic",
+  "collected_at": "2026-02-27T12:00:00Z",
+  "strategy": "HTML meta tags + og:* extraction (primary path for company pages)",
+  "company": {
+    "name": "Anthropic",
+    "description": "Anthropic is an AI safety company working to build reliable, interpretable, and steerable AI systems. We research and develop AI systems with a focus on safety, and deploy them via Claude.",
+    "industry": "Software Development",
+    "employee_count": "501-1,000 employees",
+    "headquarters": "San Francisco, California, US",
+    "website": "https://www.anthropic.com",
+    "specialties": ["AI Safety", "Large Language Models", "Constitutional AI", "AI Research", "Machine Learning"],
+    "founded": "2021"
+  },
+  "meta": {
+    "proxy": { "country": "US", "type": "mobile" },
+    "payment": {
+      "txHash": "7xSampleTxHash222222222222222222222222222222222222222222222222222222222222222222222",
+      "network": "base",
+      "amount": 0.05,
+      "settled": true
+    }
+  }
+}

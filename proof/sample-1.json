@@ -1,0 +1,50 @@
+{
+  "_note": "Structural sample — LinkedIn returns login walls for unauthenticated scraping in most cases (2026-02-27). Data reflects the LinkedInPerson schema from src/scrapers/linkedin-scraper.ts.",
+  "endpoint": "GET /api/linkedin/person?url=https://linkedin.com/in/satyanadella",
+  "collected_at": "2026-02-27T12:00:00Z",
+  "strategy": "JSON-LD structured data extraction (primary path)",
+  "person": {
+    "name": "Satya Nadella",
+    "headline": "Chairman and CEO at Microsoft",
+    "location": "Redmond, Washington, United States",
+    "current_company": {
+      "name": "Microsoft",
+      "title": "Chairman and CEO",
+      "started": "2014"
+    },
+    "previous_companies": [
+      {
+        "name": "Microsoft",
+        "title": "Executive Vice President, Cloud and Enterprise",
+        "period": "2011 – 2014"
+      },
+      {
+        "name": "Microsoft",
+        "title": "President, Server and Tools Business",
+        "period": "2008 – 2011"
+      }
+    ],
+    "education": [
+      {
+        "school": "University of Wisconsin–Milwaukee",
+        "degree": "Master of Science, Computer Science"
+      },
+      {
+        "school": "Manipal Institute of Technology",
+        "degree": "Bachelor of Engineering, Electrical Engineering"
+      }
+    ],
+    "skills": ["Cloud Computing", "AI Strategy", "Digital Transformation", "Enterprise Software", "Leadership"],
+    "connections": "500+",
+    "profile_url": "https://www.linkedin.com/in/satyanadella"
+  },
+  "meta": {
+    "proxy": { "country": "US", "type": "mobile" },
+    "payment": {
+      "txHash": "6xSampleTxHash111111111111111111111111111111111111111111111111111111111111111111111",
+      "network": "solana",
+      "amount": 0.03,
+      "settled": true
+    }
+  }
+}
