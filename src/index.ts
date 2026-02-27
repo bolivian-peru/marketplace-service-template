@@ -121,6 +121,11 @@ app.get('/', (c) => c.json({
     { method: 'GET', path: '/api/reviews/:place_id', description: 'Fetch Google reviews by Place ID', price: '0.02 USDC' },
     { method: 'GET', path: '/api/business/:place_id', description: 'Get business details + review summary', price: '0.01 USDC' },
     { method: 'GET', path: '/api/reviews/summary/:place_id', description: 'Get review summary stats', price: '0.005 USDC' },
+    { method: 'GET', path: '/api/instagram/profile/:username', description: 'Full Instagram profile: followers, bio, posts, engagement rate', price: '0.02 USDC' },
+    { method: 'GET', path: '/api/instagram/posts/:username', description: 'Recent posts with likes, comments, captions, hashtags', price: '0.015 USDC' },
+    { method: 'GET', path: '/api/instagram/analyze/:username', description: 'Engagement analytics: rate, peak times, hashtag performance', price: '0.03 USDC' },
+    { method: 'GET', path: '/api/instagram/analyze/:username/images', description: 'AI vision analysis of recent posts (requires ANTHROPIC_API_KEY)', price: '0.05 USDC' },
+    { method: 'GET', path: '/api/instagram/audit/:username', description: 'Influencer audit: authenticity score, fake follower detection', price: '0.04 USDC' },
   ],
   pricing: {
     amount: process.env.PRICE_USDC || '0.005',
@@ -154,7 +159,7 @@ app.get('/', (c) => c.json({
 
 app.route('/api', serviceRouter);
 
-app.notFound((c) => c.json({ error: 'Not found', endpoints: ['/', '/health', '/api/run', '/api/details', '/api/jobs', '/api/reviews/search', '/api/reviews/:place_id', '/api/business/:place_id', '/api/reviews/summary/:place_id'] }, 404));
+app.notFound((c) => c.json({ error: 'Not found', endpoints: ['/', '/health', '/api/run', '/api/details', '/api/jobs', '/api/reviews/search', '/api/reviews/:place_id', '/api/business/:place_id', '/api/reviews/summary/:place_id', '/api/instagram/profile/:username', '/api/instagram/posts/:username', '/api/instagram/analyze/:username', '/api/instagram/analyze/:username/images', '/api/instagram/audit/:username'] }, 404));
 
 app.onError((err, c) => {
   console.error(`[ERROR] ${err.message}`);

@@ -91,9 +91,29 @@
     ],
     "ourAdvantage": "Real-time Instagram data + AI vision analysis at $0.01-0.15/request. Includes authenticity auditing, brand safety scoring, and content theme detection. No monthly commitment."
   },
+  "requiredEnvVars": {
+    "optional": [
+      {
+        "name": "ANTHROPIC_API_KEY",
+        "description": "Required for AI vision analysis (/analyze/:username/images). Falls back to heuristic analysis without this.",
+        "example": "sk-ant-..."
+      },
+      {
+        "name": "OPENAI_API_KEY",
+        "description": "Alternative to ANTHROPIC_API_KEY for GPT-4o vision analysis. Anthropic is preferred.",
+        "example": "sk-..."
+      },
+      {
+        "name": "PROXY_HOST",
+        "description": "Mobile proxy host for high-volume scraping. Not required for basic usage.",
+        "example": "gate.smartproxy.com"
+      }
+    ],
+    "note": "All env vars are optional — the API works without any keys using heuristic analysis and direct requests. AI vision features degrade gracefully."
+  },
   "limitations": [
     "Private accounts return limited public data only",
-    "AI vision analysis requires API key (OpenAI or Anthropic) — falls back to heuristic analysis",
+    "AI vision analysis requires ANTHROPIC_API_KEY or OPENAI_API_KEY — falls back to heuristic analysis without them",
     "Rate limited to 20 proxy requests/minute per client IP",
     "Story/Reel data not yet supported (post images + captions only)",
     "Instagram may serve different data based on region"
