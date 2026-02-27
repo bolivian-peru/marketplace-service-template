@@ -19,7 +19,7 @@
       {
         "network": "solana",
         "chainId": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
-        "recipient": "6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEeDRpxydnv",
+        "recipient": "6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv",
         "asset": "USDC",
         "assetAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
       },
