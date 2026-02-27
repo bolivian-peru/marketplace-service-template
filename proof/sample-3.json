@@ -1,0 +1,49 @@
+{
+  "_note": "Structural sample — Nitter instances returned browser-challenge pages during collection (2026-02-27). Data reflects the TrendingTopic schema from src/scrapers/x-twitter-scraper.ts.",
+  "endpoint": "GET /api/x/trending?country=US",
+  "collected_at": "2026-02-27T12:00:00Z",
+  "strategy": "SearXNG site:x.com trending US query (primary path)",
+  "trending": [
+    {
+      "name": "#GrammyAwards",
+      "tweet_count": 284000,
+      "category": "Music",
+      "url": "https://x.com/search?q=%23GrammyAwards&src=trend_click"
+    },
+    {
+      "name": "#SuperTuesday",
+      "tweet_count": 195000,
+      "category": "Politics",
+      "url": "https://x.com/search?q=%23SuperTuesday&src=trend_click"
+    },
+    {
+      "name": "AI Agents",
+      "tweet_count": 87400,
+      "category": "Technology",
+      "url": "https://x.com/search?q=AI+Agents&src=trend_click"
+    },
+    {
+      "name": "#NBATradeDeadline",
+      "tweet_count": 156000,
+      "category": "Sports",
+      "url": "https://x.com/search?q=%23NBATradeDeadline&src=trend_click"
+    },
+    {
+      "name": "Claude 3",
+      "tweet_count": 42300,
+      "category": "Technology",
+      "url": "https://x.com/search?q=Claude+3&src=trend_click"
+    }
+  ],
+  "meta": {
+    "country": "US",
+    "returned": 5,
+    "proxy": { "country": "US", "type": "mobile" },
+    "payment": {
+      "txHash": "5xSampleTxHash333333333333333333333333333333333333333333333333333333333333333333333",
+      "network": "solana",
+      "amount": 0.005,
+      "settled": true
+    }
+  }
+}

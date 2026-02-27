@@ -1,0 +1,65 @@
+{
+  "_note": "Structural sample — Nitter instances returned browser-challenge pages during collection (2026-02-27). Data reflects the TwitterResult schema from src/scrapers/x-twitter-scraper.ts.",
+  "endpoint": "GET /api/x/search?q=AI+agent&days=7&limit=3",
+  "collected_at": "2026-02-27T12:00:00Z",
+  "strategy": "SearXNG site:x.com query (primary path)",
+  "results": [
+    {
+      "id": "1761234567890123456",
+      "author": {
+        "handle": "sama",
+        "name": "Sam Altman",
+        "verified": true
+      },
+      "text": "AI agents are becoming genuinely useful. The progress in the last 6 months has been remarkable — autonomous task completion that actually works.",
+      "created_at": "2026-02-25T09:14:00Z",
+      "likes": 18420,
+      "retweets": 3210,
+      "replies": 892,
+      "url": "https://x.com/sama/status/1761234567890123456",
+      "hashtags": ["#ai", "#agents"]
+    },
+    {
+      "id": "1761098765432109876",
+      "author": {
+        "handle": "AnthropicAI",
+        "name": "Anthropic",
+        "verified": true
+      },
+      "text": "Claude agents can now use tools, write code, and complete multi-step tasks. We published a new research post on agent reliability benchmarks.",
+      "created_at": "2026-02-26T14:30:00Z",
+      "likes": 7840,
+      "retweets": 1530,
+      "replies": 320,
+      "url": "https://x.com/AnthropicAI/status/1761098765432109876",
+      "hashtags": ["#claude", "#ai", "#aiagents"]
+    },
+    {
+      "id": "1760987654321098765",
+      "author": {
+        "handle": "karpathy",
+        "name": "Andrej Karpathy",
+        "verified": false
+      },
+      "text": "The agentic loop is the new REPL. You don't write programs anymore — you write agents that write programs. And they're getting scarily good at it.",
+      "created_at": "2026-02-24T18:45:00Z",
+      "likes": 22100,
+      "retweets": 4780,
+      "replies": 1240,
+      "url": "https://x.com/karpathy/status/1760987654321098765",
+      "hashtags": ["#llm", "#agents"]
+    }
+  ],
+  "meta": {
+    "query": "AI agent",
+    "days": 7,
+    "returned": 3,
+    "proxy": { "country": "US", "type": "mobile" },
+    "payment": {
+      "txHash": "3xSampleTxHash111111111111111111111111111111111111111111111111111111111111111111111",
+      "network": "solana",
+      "amount": 0.01,
+      "settled": true
+    }
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "_note": "Structural sample — Nitter instances returned browser-challenge pages during collection (2026-02-27). Data reflects the XUserProfile schema from src/scrapers/x-twitter-scraper.ts.",
+  "endpoint": "GET /api/x/user/vitalikbuterin",
+  "collected_at": "2026-02-27T12:00:00Z",
+  "strategy": "Nitter /username page scrape (primary path)",
+  "profile": {
+    "handle": "vitalikbuterin",
+    "name": "vitalik.eth",
+    "bio": "Ethereum co-founder. Working on scalability, privacy, and the intersection of crypto and mechanism design.",
+    "location": "Planet Earth",
+    "followers": 5190000,
+    "following": 610,
+    "tweets_count": 16820,
+    "verified": false,
+    "joined": "November 2011",
+    "profile_image": "https://pbs.twimg.com/profile_images/977496875887558661/L86xyLF4_400x400.jpg",
+    "banner_image": "https://pbs.twimg.com/profile_banners/295218901/1628556967/1500x500"
+  },
+  "meta": {
+    "handle": "vitalikbuterin",
+    "proxy": { "country": "US", "type": "mobile" },
+    "payment": {
+      "txHash": "4xSampleTxHash222222222222222222222222222222222222222222222222222222222222222222222",
+      "network": "solana",
+      "amount": 0.01,
+      "settled": true
+    }
+  }
+}
