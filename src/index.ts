@@ -61,13 +61,55 @@ setInterval(() => {
 
 // ─── ROUTES ─────────────────────────────────────────
 
-app.get('/health', (c) => c.json({
-  status: 'healthy',
-  service: process.env.SERVICE_NAME || 'marketplace-service',
-  version: '1.0.0',
-  timestamp: new Date().toISOString(),
-  endpoints: ['/api/run', '/api/details', '/api/jobs', '/api/research', '/api/trending', '/api/reviews/search', '/api/reviews/:place_id', '/api/reviews/summary/:place_id', '/api/business/:place_id'],
-}));
+app.get('/health', async (c) => {
+  const startTime = Date.now();
+
+  // Check proxy connectivity
+  let proxyStatus = 'unknown';
+  try {
+    const { getProxy } = await import('./proxy');
+    const proxy = getProxy();
+    proxyStatus = proxy?.host ? 'configured' : 'not_configured';
+  } catch {
+    proxyStatus = 'error';
+  }
+
+  // Check Reddit reachability
+  let targetStatus = 'unknown';
+  try {
+    const resp = await fetch('https://www.reddit.com/r/all.json?limit=1', {
+      headers: { 'User-Agent': 'HealthCheck/1.0' },
+      signal: AbortSignal.timeout(5000),
+    });
+    targetStatus = resp.ok ? 'ok' : `error_${resp.status}`;
+  } catch {
+    targetStatus = 'unreachable';
+  }
+
+  // Check wallet configuration
+  const walletAddress = process.env.WALLET_ADDRESS;
+  const paymentStatus = walletAddress ? 'configured' : 'not_configured';
+
+  return c.json({
+    status: proxyStatus === 'error' ? 'degraded' : 'healthy',
+    service: process.env.SERVICE_NAME || 'marketplace-service-hub',
+    version: '2.0.0',
+    uptime: `${Math.floor(process.uptime())}s`,
+    timestamp: new Date().toISOString(),
+    checks: {
+      proxy: proxyStatus,
+      target: targetStatus,
+      payment: paymentStatus,
+    },
+    endpoints: [
+      '/api/reddit/search',
+      '/api/reddit/trending',
+      '/api/reddit/subreddit/:name',
+      '/api/reddit/thread/:permalink',
+    ],
+    responseTimeMs: Date.now() - startTime,
+  });
+});
 
 app.get('/', (c) => c.json({
   name: process.env.SERVICE_NAME || 'marketplace-service-hub',
@@ -77,6 +119,10 @@ app.get('/', (c) => c.json({
     { method: 'GET', path: '/api/run', description: 'Google Maps Lead Generator — search businesses by category + location', price: '0.005 USDC' },
     { method: 'GET', path: '/api/details', description: 'Google Maps Place Details — detailed business info by Place ID', price: '0.005 USDC' },
     { method: 'GET', path: '/api/jobs', description: 'Get job listings (Indeed/LinkedIn) with salary + date + proxy metadata' },
+    { method: 'GET', path: '/api/reddit/search', description: 'Search Reddit posts by keyword', price: '0.005 USDC' },
+    { method: 'GET', path: '/api/reddit/trending', description: 'Get trending/popular Reddit posts', price: '0.005 USDC' },
+    { method: 'GET', path: '/api/reddit/subreddit/:name', description: 'Browse a subreddit', price: '0.005 USDC' },
+    { method: 'GET', path: '/api/reddit/thread/:permalink', description: 'Fetch post comments', price: '0.01 USDC' },
     { method: 'GET', path: '/api/reviews/search', description: 'Search businesses by query + location', price: '0.01 USDC' },
     { method: 'GET', path: '/api/reviews/:place_id', description: 'Fetch Google reviews by Place ID', price: '0.02 USDC' },
     { method: 'GET', path: '/api/business/:place_id', description: 'Get business details + review summary', price: '0.01 USDC' },
@@ -114,7 +160,7 @@ app.get('/', (c) => c.json({
 
 app.route('/api', serviceRouter);
 
-app.notFound((c) => c.json({ error: 'Not found', endpoints: ['/', '/health', '/api/run', '/api/details', '/api/jobs', '/api/reviews/search', '/api/reviews/:place_id', '/api/business/:place_id', '/api/reviews/summary/:place_id'] }, 404));
+app.notFound((c) => c.json({ error: 'Not found', endpoints: ['/', '/health', '/api/run', '/api/details', '/api/jobs', '/api/reviews/search', '/api/reviews/:place_id', '/api/business/:place_id', '/api/reviews/summary/:place_id', '/api/reddit/search', '/api/reddit/trending', '/api/reddit/subreddit/:name', '/api/reddit/thread/:permalink'] }, 404));
 
 app.onError((err, c) => {
   console.error(`[ERROR] ${err.message}`);
