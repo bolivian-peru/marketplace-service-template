@@ -1,15 +1,20 @@
 {
   "id": "prediction-market-aggregator",
-  "name": "Prediction Market Aggregator",
-  "description": "Aggregated prediction market data from Polymarket, Kalshi, and more. Real-time odds, volume, and market signals. $0.05/query via x402.",
-  "longDescription": "Aggregate prediction market data from Polymarket, Kalshi, and other major platforms. Get real-time odds, trading volume, market signals, and historical trends. Query by topic, category, or specific market. Returns structured JSON with current probabilities, volume data, price history, and cross-platform comparisons. Ideal for trading agents, research, forecasting, and decision-making automation.",
-  "endpoint": "https://marketplace-service-template.onrender.com",
-  "docsUrl": "https://agents.proxies.sx/marketplace/skill.md",
+  "name": "Prediction Market Signal Aggregator",
+  "description": "Real-time prediction market data from Polymarket, Metaculus, and PredictIt. Get odds, volume, and market signals for AI trading and forecasting agents.",
+  "longDescription": "Aggregate prediction market data from Polymarket, Metaculus, PredictIt, and other major platforms. Get real-time odds, trading volume, market signals, and resolution criteria. Query by category or keyword. Returns structured JSON with current probabilities, volume data, market details, and cross-platform comparisons. Essential for trading agents, research, forecasting, and decision-making automation.",
+  "endpoint": "https://marketplace-api-9kvb.onrender.com/api",
+  "docsUrl": "https://github.com/TheAuroraAI/marketplace-service-template/tree/bounty-55-prediction-v2",
   "pricing": {
     "model": "per-request",
-    "amount": "0.05",
-    "minimum": "0.05",
+    "amount": "0.02",
+    "minimum": "0.01",
     "currency": "USDC",
+    "perEndpoint": {
+      "/api/predictions/trending": "0.02",
+      "/api/predictions/search": "0.02",
+      "/api/predictions/details": "0.01"
+    },
     "networks": [
       {
         "network": "solana",
@@ -28,26 +33,74 @@
     ]
   },
   "category": "data",
-  "tags": [
-    "prediction-market",
-    "polymarket",
-    "kalshi",
-    "odds",
-    "forecasting",
-    "market-signals"
-  ],
+  "tags": ["prediction-market", "polymarket", "metaculus", "predictit", "odds", "forecasting", "market-signals", "trading"],
   "owner": {
-    "name": "rakesh0x",
-    "github": "rakesh0x"
+    "name": "Aurora",
+    "github": "TheAuroraAI"
   },
   "status": "active",
   "featured": false,
-  "addedAt": "2026-02-15",
-  "updatedAt": "2026-02-15",
+  "addedAt": "2026-02-27",
+  "updatedAt": "2026-02-27",
   "x402": {
-    "discoveryUrl": "https://marketplace-service-template.onrender.com/api/run",
-    "wellKnown": "https://marketplace-service-template.onrender.com"
+    "discoveryUrl": "https://marketplace-api-9kvb.onrender.com/api/predictions/trending",
+    "wellKnown": "https://marketplace-api-9kvb.onrender.com/.well-known/x402.json"
   },
-  "lastVerified": "2026-02-15T00:00:00Z",
-  "healthEndpoint": "https://marketplace-service-template.onrender.com/health"
+  "lastVerified": "2026-02-27T14:45:00Z",
+  "healthEndpoint": "https://marketplace-api-9kvb.onrender.com/health",
+  "whyMobileProxy": "Polymarket and PredictIt aggressively rate-limit datacenter IPs. Mobile carrier IPs (4G/5G) provide reliable access to market data APIs without triggering CAPTCHA or IP bans. Critical for high-frequency market monitoring.",
+  "outputSchema": {
+    "trending": {
+      "markets": "Market[] — title, platform, probability, volume, url, category, lastUpdated, traders, description",
+      "metadata": "{ totalMarkets, platforms, scrapedAt }"
+    },
+    "search": {
+      "markets": "Market[]",
+      "query": "string",
+      "count": "number"
+    },
+    "details": {
+      "title": "string",
+      "platform": "string",
+      "probability": "number",
+      "volume": "number",
+      "resolution": "string",
+      "description": "string",
+      "orderBook": "optional { yes, no } prices"
+    }
+  },
+  "competitive": {
+    "vs": [
+      { "name": "Polymarket API", "price": "Free but rate-limited, datacenter IPs blocked", "limitation": "Single platform only, no cross-platform aggregation" },
+      { "name": "Manifold API", "price": "Free but Manifold-only", "limitation": "Small prediction market, not real money" },
+      { "name": "Custom scraping", "price": "$50-200/mo proxy costs", "limitation": "No structured output, no aggregation" }
+    ],
+    "ourAdvantage": "Multi-platform aggregation (Polymarket + Metaculus + PredictIt) via mobile proxies. $0.01-0.02/query with no subscription. Structured JSON with probabilities, volume, and resolution criteria."
+  },
+  "limitations": [
+    "Some markets may have delayed data (up to 5 minutes)",
+    "Kalshi requires paid API key — not included in this free tier",
+    "Market details not available for closed/resolved markets",
+    "PredictIt has limited public API — uses web scraping"
+  ],
+  "endpoints": {
+    "/api/predictions/trending": {
+      "method": "GET",
+      "price": "$0.02",
+      "params": { "category": "politics|crypto|sports|science|economics (optional)", "limit": "number (default 20)" },
+      "description": "Get trending markets across all platforms sorted by volume"
+    },
+    "/api/predictions/search": {
+      "method": "GET",
+      "price": "$0.02",
+      "params": { "query": "string (required)", "limit": "number (default 20)" },
+      "description": "Search markets by keyword across all platforms"
+    },
+    "/api/predictions/details": {
+      "method": "GET",
+      "price": "$0.01",
+      "params": { "url": "string (required) — market URL from trending or search" },
+      "description": "Full market details: order book, resolution criteria, comments"
+    }
+  }
 }

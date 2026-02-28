@@ -16,6 +16,7 @@ import { fetchReviews, fetchBusinessDetails, fetchReviewSummary, searchBusinesse
 import { scrapeGoogleMaps, extractDetailedBusiness } from './scrapers/maps-scraper';
 import { researchRouter } from './routes/research';
 import { trendingRouter } from './routes/trending';
+import { getTrendingMarkets, searchMarkets, getMarketDetails } from './scrapers/prediction-market-scraper';
 
 export const serviceRouter = new Hono();
 
@@ -534,5 +535,101 @@ serviceRouter.get('/business/:place_id', async (c) => {
     });
   } catch (err: any) {
     return c.json({ error: 'Business details fetch failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── PREDICTION MARKET ROUTES (Bounty #55) ─────────
+
+const PREDICTION_WALLET = '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+const PREDICTION_BASE_WALLET = '0xF8cD900794245fc36CBE65be9afc23CDF5103042';
+
+function buildPrediction402(path: string, description: string, price: number, schema?: object) {
+  return build402Response(path, description, price, PREDICTION_WALLET, schema);
+}
+
+// GET /api/predictions/trending
+serviceRouter.get('/predictions/trending', async (c) => {
+  const price = 0.02;
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(buildPrediction402(
+      '/api/predictions/trending',
+      'Trending prediction markets from Polymarket, Metaculus, PredictIt',
+      price,
+      {
+        input: { category: 'string (optional) — politics|crypto|sports|science|economics', limit: 'number (default 20)' },
+        output: { markets: 'Market[]', metadata: '{ totalMarkets, platforms, scrapedAt }' },
+      },
+    ), 402);
+  }
+  const verification = await verifyPayment(payment, PREDICTION_WALLET, price);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  try {
+    const category = c.req.query('category') || '';
+    const limit = Math.min(parseInt(c.req.query('limit') || '20'), 100);
+    const result = await getTrendingMarkets(category, limit, proxyFetch);
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+    return c.json({ ...result, payment: { txHash: payment.txHash, network: payment.network, verified: true } });
+  } catch (err: any) {
+    return c.json({ error: 'Prediction market fetch failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// GET /api/predictions/search
+serviceRouter.get('/predictions/search', async (c) => {
+  const price = 0.02;
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(buildPrediction402(
+      '/api/predictions/search',
+      'Search prediction markets by keyword across Polymarket and Metaculus',
+      price,
+      { input: { query: 'string (required)', limit: 'number (default 20)' }, output: { markets: 'Market[]', query: 'string' } },
+    ), 402);
+  }
+  const verification = await verifyPayment(payment, PREDICTION_WALLET, price);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const query = c.req.query('query') || '';
+  if (!query) return c.json({ error: 'Missing query parameter' }, 400);
+
+  try {
+    const limit = Math.min(parseInt(c.req.query('limit') || '20'), 100);
+    const result = await searchMarkets(query, limit, proxyFetch);
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+    return c.json({ ...result, payment: { txHash: payment.txHash, network: payment.network, verified: true } });
+  } catch (err: any) {
+    return c.json({ error: 'Market search failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// GET /api/predictions/details
+serviceRouter.get('/predictions/details', async (c) => {
+  const price = 0.01;
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(buildPrediction402(
+      '/api/predictions/details',
+      'Full market details: order book, resolution criteria, comments',
+      price,
+      { input: { url: 'string (required) — market URL from Polymarket or Metaculus' }, output: { market: 'MarketDetails', orderBook: 'optional' } },
+    ), 402);
+  }
+  const verification = await verifyPayment(payment, PREDICTION_WALLET, price);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const url = c.req.query('url') || '';
+  if (!url) return c.json({ error: 'Missing url parameter' }, 400);
+
+  try {
+    const result = await getMarketDetails(url, proxyFetch);
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+    return c.json({ ...result, payment: { txHash: payment.txHash, network: payment.network, verified: true } });
+  } catch (err: any) {
+    return c.json({ error: 'Market details fetch failed', message: err?.message || String(err) }, 502);
   }
 });
