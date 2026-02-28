@@ -1,0 +1,39 @@
+{
+  "type": "details",
+  "app": {
+    "name": "Instagram",
+    "appId": "389801252",
+    "store": "apple",
+    "developer": "Instagram, Inc.",
+    "developerId": "389801255",
+    "rating": 4.69085,
+    "ratingCount": 28763493,
+    "price": "Free",
+    "free": true,
+    "icon": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/4a/37/c3/4a37c3f9-5f06-e885-2c3e-03e8dcd698aa/Prod-0-0-1x_U007epad-0-1-0-sRGB-85-220.png/512x512bb.jpg",
+    "url": "https://apps.apple.com/us/app/instagram/id389801252?uo=4",
+    "category": "Photo & Video",
+    "description": "Little moments lead to big friendships. Share yours on Instagram. \n\u2014 From Meta\n\nConnect with friends, find other fans, and see what people around you are up to and into. Explore your interests and post what's going on, from your daily moments to life's highlights.\n\nShare what you\u2019re up to and into:\n- Turn your life into a movie and discover short, entertaining videos on Instagram with Reels.\n- Keep up with friends on the fly with Stories and Notes that disappear after 24 hours.\n- Start group cha",
+    "version": "418.1",
+    "size": "523452416",
+    "lastUpdated": "2026-02-24T14:41:28Z",
+    "contentRating": "12+",
+    "installs": "",
+    "screenshots": [
+      "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/47/0c/29/470c29e9-fe22-7978-4795-14fb70f264f0/1_iOS_5.5.jpg/392x696bb.jpg",
+      "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/29/f7/22/29f722b6-f846-a8af-e4bf-cd497673889a/2_iOS_5.5.jpg/392x696bb.jpg",
+      "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/92/02/0b/92020bf1-8c88-9e3e-c740-7a2ad76996d9/3_iOS_5.5.jpg/392x696bb.jpg",
+      "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/e0/35/ad/e035adc7-a479-ccdf-85bf-5dd3d170c49e/4_iOS_5.5.jpg/392x696bb.jpg",
+      "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/b2/f4/3a/b2f43abb-d225-3e51-7c7d-6de76eaf04e2/5_iOS_5.5.jpg/392x696bb.jpg"
+    ],
+    "permissions": [],
+    "similarApps": []
+  },
+  "metadata": {
+    "store": "apple",
+    "country": "US",
+    "scrapedAt": "2026-02-26T13:38:10.107620+00:00",
+    "proxyIp": "172.56.168.66",
+    "proxyCountry": "United States"
+  }
+}
