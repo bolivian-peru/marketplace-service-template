@@ -1,0 +1,45 @@
+{
+  "name": "LinkedIn People \u0026 Company Enrichment API",
+  "description": "Extract B2B contact data from LinkedIn public profiles: job titles, companies, skills, education. Alternative to ZoomInfo ($15K+/year) at $0.03/profile via x402.",
+  "version": "1.0.0",
+  "price": {
+    "person": 0.03,
+    "company": 0.05,
+    "search": 0.10
+  },
+  "endpoints": [
+    {
+      "path": "/api/linkedin/person",
+      "method": "GET",
+      "price": 0.03,
+      "description": "Extract person profile: name, headline, location, company, experience, education, skills",
+      "params": ["url"]
+    },
+    {
+      "path": "/api/linkedin/company",
+      "method": "GET", 
+      "price": 0.05,
+      "description": "Extract company data: name, description, industry, headquarters, employee count",
+      "params": ["url"]
+    },
+    {
+      "path": "/api/linkedin/search/people",
+      "method": "GET",
+      "price": 0.10,
+      "description": "Search people by title + location + industry",
+      "params": ["title", "location?", "industry?", "limit?"]
+    },
+    {
+      "path": "/api/linkedin/company/:id/employees",
+      "method": "GET",
+      "price": 0.10,
+      "description": "Find employees of a company by title filter",
+      "params": ["id", "title?", "limit?"]
+    }
+  ],
+  "wallet": "6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv",
+  "bounty": {
+    "issue": "https://github.com/bolivian-peru/marketplace-service-template/issues/77",
+    "amount": "$100 in $SX token"
+  }
+}
