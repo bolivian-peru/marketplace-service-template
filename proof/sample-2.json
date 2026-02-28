@@ -1,0 +1,75 @@
+{
+  "type": "search",
+  "query": "coffee maker",
+  "marketplace": "US",
+  "results": [
+    {
+      "asin": "B0F1GMCQPB",
+      "title": "Product B0F1GMCQPB",
+      "price": null,
+      "currency": "USD",
+      "rating": null,
+      "ratingCount": null,
+      "bsr": null,
+      "url": "https://www.amazon.com/dp/B0F1GMCQPB",
+      "isSponsored": false,
+      "isPrime": null
+    },
+    {
+      "asin": "B0F1H1CBC9",
+      "title": "Product B0F1H1CBC9",
+      "price": null,
+      "currency": "USD",
+      "rating": null,
+      "ratingCount": null,
+      "bsr": null,
+      "url": "https://www.amazon.com/dp/B0F1H1CBC9",
+      "isSponsored": false,
+      "isPrime": null
+    },
+    {
+      "asin": "B0FBSP99LX",
+      "title": "Product B0FBSP99LX",
+      "price": null,
+      "currency": "USD",
+      "rating": null,
+      "ratingCount": null,
+      "bsr": null,
+      "url": "https://www.amazon.com/dp/B0FBSP99LX",
+      "isSponsored": false,
+      "isPrime": null
+    },
+    {
+      "asin": "B0D9QFRJMX",
+      "title": "Product B0D9QFRJMX",
+      "price": null,
+      "currency": "USD",
+      "rating": null,
+      "ratingCount": null,
+      "bsr": null,
+      "url": "https://www.amazon.com/dp/B0D9QFRJMX",
+      "isSponsored": false,
+      "isPrime": null
+    },
+    {
+      "asin": "B0D9QFRJMX",
+      "title": "Product B0D9QFRJMX",
+      "price": null,
+      "currency": "USD",
+      "rating": null,
+      "ratingCount": null,
+      "bsr": null,
+      "url": "https://www.amazon.com/dp/B0D9QFRJMX",
+      "isSponsored": false,
+      "isPrime": null
+    }
+  ],
+  "metadata": {
+    "totalResults": 5,
+    "marketplace": "US",
+    "scrapedAt": "2026-02-26T13:42:05.415835+00:00",
+    "proxyIp": "172.56.168.66",
+    "proxyCountry": "United States",
+    "httpStatus": 200
+  }
+}

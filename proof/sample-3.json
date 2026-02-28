@@ -1,0 +1,75 @@
+{
+  "type": "search",
+  "query": "yoga mat",
+  "marketplace": "US",
+  "results": [
+    {
+      "asin": "B0FJRKFC2R",
+      "title": "Product B0FJRKFC2R",
+      "price": null,
+      "currency": "USD",
+      "rating": null,
+      "ratingCount": null,
+      "bsr": null,
+      "url": "https://www.amazon.com/dp/B0FJRKFC2R",
+      "isSponsored": false,
+      "isPrime": null
+    },
+    {
+      "asin": "B0D3LM5KDD",
+      "title": "Product B0D3LM5KDD",
+      "price": null,
+      "currency": "USD",
+      "rating": null,
+      "ratingCount": null,
+      "bsr": null,
+      "url": "https://www.amazon.com/dp/B0D3LM5KDD",
+      "isSponsored": false,
+      "isPrime": null
+    },
+    {
+      "asin": "B07JQCVBBZ",
+      "title": "Product B07JQCVBBZ",
+      "price": null,
+      "currency": "USD",
+      "rating": null,
+      "ratingCount": null,
+      "bsr": null,
+      "url": "https://www.amazon.com/dp/B07JQCVBBZ",
+      "isSponsored": false,
+      "isPrime": null
+    },
+    {
+      "asin": "B0DN5SBPG3",
+      "title": "Product B0DN5SBPG3",
+      "price": null,
+      "currency": "USD",
+      "rating": null,
+      "ratingCount": null,
+      "bsr": null,
+      "url": "https://www.amazon.com/dp/B0DN5SBPG3",
+      "isSponsored": false,
+      "isPrime": null
+    },
+    {
+      "asin": "B0DN5SBPG3",
+      "title": "Product B0DN5SBPG3",
+      "price": null,
+      "currency": "USD",
+      "rating": null,
+      "ratingCount": null,
+      "bsr": null,
+      "url": "https://www.amazon.com/dp/B0DN5SBPG3",
+      "isSponsored": false,
+      "isPrime": null
+    }
+  ],
+  "metadata": {
+    "totalResults": 5,
+    "marketplace": "US",
+    "scrapedAt": "2026-02-26T13:42:05.415835+00:00",
+    "proxyIp": "172.56.168.66",
+    "proxyCountry": "United States",
+    "httpStatus": 200
+  }
+}

@@ -1,0 +1,75 @@
+{
+  "type": "search",
+  "query": "wireless headphones",
+  "marketplace": "US",
+  "results": [
+    {
+      "asin": "B0D2HKCMBP",
+      "title": "Product B0D2HKCMBP",
+      "price": null,
+      "currency": "USD",
+      "rating": null,
+      "ratingCount": null,
+      "bsr": null,
+      "url": "https://www.amazon.com/dp/B0D2HKCMBP",
+      "isSponsored": false,
+      "isPrime": null
+    },
+    {
+      "asin": "B0DWF69VGQ",
+      "title": "Product B0DWF69VGQ",
+      "price": null,
+      "currency": "USD",
+      "rating": null,
+      "ratingCount": null,
+      "bsr": null,
+      "url": "https://www.amazon.com/dp/B0DWF69VGQ",
+      "isSponsored": false,
+      "isPrime": null
+    },
+    {
+      "asin": "B0DN11MTZ6",
+      "title": "Product B0DN11MTZ6",
+      "price": null,
+      "currency": "USD",
+      "rating": null,
+      "ratingCount": null,
+      "bsr": null,
+      "url": "https://www.amazon.com/dp/B0DN11MTZ6",
+      "isSponsored": false,
+      "isPrime": null
+    },
+    {
+      "asin": "B09DT48V16",
+      "title": "Product B09DT48V16",
+      "price": null,
+      "currency": "USD",
+      "rating": null,
+      "ratingCount": null,
+      "bsr": null,
+      "url": "https://www.amazon.com/dp/B09DT48V16",
+      "isSponsored": false,
+      "isPrime": null
+    },
+    {
+      "asin": "B09DT48V16",
+      "title": "Product B09DT48V16",
+      "price": null,
+      "currency": "USD",
+      "rating": null,
+      "ratingCount": null,
+      "bsr": null,
+      "url": "https://www.amazon.com/dp/B09DT48V16",
+      "isSponsored": false,
+      "isPrime": null
+    }
+  ],
+  "metadata": {
+    "totalResults": 5,
+    "marketplace": "US",
+    "scrapedAt": "2026-02-26T13:42:05.415835+00:00",
+    "proxyIp": "172.56.168.66",
+    "proxyCountry": "United States",
+    "httpStatus": 200
+  }
+}
