@@ -1,0 +1,140 @@
+{
+  "country": "US",
+  "category": "ai_agents",
+  "discover_feed": [
+    {
+      "position": 1,
+      "title": "Autonomous AI Agents Provide New Class of Supply Chain Attack - SecurityWeek",
+      "source": "Google News",
+      "url": "https://news.google.com/rss/articles/CBMilgFBVV95cUxOTWhrRk4tUkJ4VWtnaTZCRl9QMUhqN2tLNmU1a0Nsb2RkY2xvNXlQMTZrbEw3M3VyQ0VMaThfVjlRamFiQ3lVWkFLRFNzVkdGOGxOOU5BeWxxU0JuTWdlWlJJSlUxZTZGbmNfcHUxcFNZSmlXaG0wMjg5MEk2NmJOQ0htek9WdXp0cVRqcko3YnhVYzZLWWfSAZsBQVVfeXFMUFk0dXJnZlZoT2NCZHBfYmhnUEcwVVJ2Y2d2SjVNa2lmeEtQY2N3V1RCU2ZwMmpiUkN6UHNhbVNCYW1ZbkZBU3VYVnVNUlk4dG9TYmZaR3h5RUVpNUNyZlJndjlDMXVUWW5UNERMc0VYRzFKV2tLQUIwMlhRVGwzUEF2TkxMS2xOOVZnQ1M5VGxfbUx5RlVHbURZbkU?oc=5",
+      "snippet": "<a href=\"https://news.google.com/rss/articles/CBMilgFBVV95cUxOTWhrRk4tUkJ4VWtnaTZCRl9QMUhqN2tLNmU1a0Nsb2RkY2xvNXlQMTZrbEw3M3VyQ0VMaThfVjlRamFiQ3lVWkFLRFNzVkdGOGxOOU5BeWxxU0JuTWdlWlJJSlUxZTZGbmNfcHUxcFNZSmlXaG0wMjg5MEk2NmJOQ0htek9WdXp0cVRqcko3YnhVYzZLWWfSAZsBQVVfeXFMUFk0dXJnZlZoT2NCZHBfYmhnUEcwVVJ2Y2",
+      "publishedAt": "Mon, 23 Feb 2026 12:30:00 GMT",
+      "category": "ai_agents",
+      "contentType": "article",
+      "imageUrl": "",
+      "engagement": {
+        "hasVideoPreview": false,
+        "format": "article"
+      }
+    },
+    {
+      "position": 2,
+      "title": "\u201cIt\u2019s like a toddler that needs to be overseen\u201d: Inside the limits of always-on AI agents - Fortune",
+      "source": "Google News",
+      "url": "https://news.google.com/rss/articles/CBMizgFBVV95cUxPUjZBYkZoWHpSQ1gxUTh1SnBGSlB2ci1yMk9VSGJGNWFzLU1RazBpTFZDem5ZbGtMclZhMDEyclNMa3hFenBWbmc4dmJtb3gxNHhQYWFTLWd5MTkzRlVWNE9zRmduc04wYktjWlkxRGw0aUF2RUNOOURaRUdfcTAzaXBmTlNNSjg5QWJqNEJYU2tNU1hQbGVuOEJkUk1FY0pyaFNZalAtbGhQSXBfS3BUWjZRcm5LdGFoWHNER0JlSExuWW5vTl9FcjJsOW1GZw?oc=5",
+      "snippet": "<a href=\"https://news.google.com/rss/articles/CBMizgFBVV95cUxPUjZBYkZoWHpSQ1gxUTh1SnBGSlB2ci1yMk9VSGJGNWFzLU1RazBpTFZDem5ZbGtMclZhMDEyclNMa3hFenBWbmc4dmJtb3gxNHhQYWFTLWd5MTkzRlVWNE9zRmduc04wYktjWlkxRGw0aUF2RUNOOURaRUdfcTAzaXBmTlNNSjg5QWJqNEJYU2tNU1hQbGVuOEJkUk1FY0pyaFNZalAtbGhQSXBfS3BUWjZRcm5LdGFoWH",
+      "publishedAt": "Mon, 23 Feb 2026 19:33:00 GMT",
+      "category": "ai_agents",
+      "contentType": "article",
+      "imageUrl": "",
+      "engagement": {
+        "hasVideoPreview": false,
+        "format": "article"
+      }
+    },
+    {
+      "position": 3,
+      "title": "Humans welcome to observe: This social network is for AI agents only - NBC News",
+      "source": "Google News",
+      "url": "https://news.google.com/rss/articles/CBMilAFBVV95cUxQMk83S0MtWFpST1oxdi1jOHBfQTlwTFJMdjBiY0RWcDA2ZmdYZDk5OWVBYkpUWmVvaVozM1JaZU5LcE5fdjZBVTF5VDRvT3p1UGkzM2JwQ2dBNTRQNFl2Q1RjOGFPaU00a1Nlbm1BaWdJSFY3cUxuWEpob2RvSXVCaC1VOC1XdkdYMFBkM2I5YTRxcExT?oc=5",
+      "snippet": "<a href=\"https://news.google.com/rss/articles/CBMilAFBVV95cUxQMk83S0MtWFpST1oxdi1jOHBfQTlwTFJMdjBiY0RWcDA2ZmdYZDk5OWVBYkpUWmVvaVozM1JaZU5LcE5fdjZBVTF5VDRvT3p1UGkzM2JwQ2dBNTRQNFl2Q1RjOGFPaU00a1Nlbm1BaWdJSFY3cUxuWEpob2RvSXVCaC1VOC1XdkdYMFBkM2I5YTRxcExT?oc=5\" target=\"_blank\">Humans welcome to observe: ",
+      "publishedAt": "Fri, 30 Jan 2026 08:00:00 GMT",
+      "category": "ai_agents",
+      "contentType": "article",
+      "imageUrl": "",
+      "engagement": {
+        "hasVideoPreview": false,
+        "format": "article"
+      }
+    },
+    {
+      "position": 4,
+      "title": "Measuring AI agent autonomy in practice - Anthropic",
+      "source": "Google News",
+      "url": "https://news.google.com/rss/articles/CBMia0FVX3lxTE1wWUdIaldIcHlJalJEdXQtVjBKUTlVYUo4dWtadTRreGhBNGlqdjN0QWxLSFFZZWpvTjJmalZsbUZEcnBFZHJHMzJLeUVyall1ZkdGb3ZQc1VqTXh1TkJyYWczM085QmMxUzZr?oc=5",
+      "snippet": "<a href=\"https://news.google.com/rss/articles/CBMia0FVX3lxTE1wWUdIaldIcHlJalJEdXQtVjBKUTlVYUo4dWtadTRreGhBNGlqdjN0QWxLSFFZZWpvTjJmalZsbUZEcnBFZHJHMzJLeUVyall1ZkdGb3ZQc1VqTXh1TkJyYWczM085QmMxUzZr?oc=5\" target=\"_blank\">Measuring AI agent autonomy in practice</a>&nbsp;&nbsp;<font color=\"#6f6f6f\">Anthro",
+      "publishedAt": "Wed, 18 Feb 2026 19:42:35 GMT",
+      "category": "ai_agents",
+      "contentType": "article",
+      "imageUrl": "",
+      "engagement": {
+        "hasVideoPreview": false,
+        "format": "article"
+      }
+    },
+    {
+      "position": 5,
+      "title": "These top 30 AI agents deliver a mix of functions and autonomy - ZDNET",
+      "source": "Google News",
+      "url": "https://news.google.com/rss/articles/CBMiigFBVV95cUxOdVRvRW12X3BKOWtqUDNNM0ZxMmtvTXh0eUo3NTZqYlpldTJiaC14ak5OZFFoQ0o1VXI5eXJnQnVMbmlhMTVHMUMydFBEOTltV1JaRUtyWFZDMXdIQ05XYmRHelktR3dQLWE4MldBajFGZ010Sl91UUJiNUJuQjlJNmRTcGVrU3IwUlE?oc=5",
+      "snippet": "<a href=\"https://news.google.com/rss/articles/CBMiigFBVV95cUxOdVRvRW12X3BKOWtqUDNNM0ZxMmtvTXh0eUo3NTZqYlpldTJiaC14ak5OZFFoQ0o1VXI5eXJnQnVMbmlhMTVHMUMydFBEOTltV1JaRUtyWFZDMXdIQ05XYmRHelktR3dQLWE4MldBajFGZ010Sl91UUJiNUJuQjlJNmRTcGVrU3IwUlE?oc=5\" target=\"_blank\">These top 30 AI agents deliver a mix of ",
+      "publishedAt": "Sat, 21 Feb 2026 02:00:00 GMT",
+      "category": "ai_agents",
+      "contentType": "article",
+      "imageUrl": "",
+      "engagement": {
+        "hasVideoPreview": false,
+        "format": "article"
+      }
+    },
+    {
+      "position": 6,
+      "title": "OpenClaw, Moltbook and the future of AI agents - IBM",
+      "source": "Google News",
+      "url": "https://news.google.com/rss/articles/CBMijAFBVV95cUxQNzZEdEZuTjBCbnpDTGxiZXROcHVHOFJiTjJXRXBBck5uanBaRWFFT3I0RVNjYWozWU5pXzhtLU1ZWC1XbXFhbzlrUmg0NHR2VUhmYTY4bDZmZXVIWlBsb2JDYnBsZjVybmU2OTdCUzNrZlFYRWhMZDVMdnBjZDc3ZG9sbDUyMXRaT2Y1NA?oc=5",
+      "snippet": "<a href=\"https://news.google.com/rss/articles/CBMijAFBVV95cUxQNzZEdEZuTjBCbnpDTGxiZXROcHVHOFJiTjJXRXBBck5uanBaRWFFT3I0RVNjYWozWU5pXzhtLU1ZWC1XbXFhbzlrUmg0NHR2VUhmYTY4bDZmZXVIWlBsb2JDYnBsZjVybmU2OTdCUzNrZlFYRWhMZDVMdnBjZDc3ZG9sbDUyMXRaT2Y1NA?oc=5\" target=\"_blank\">OpenClaw, Moltbook and the future of ",
+      "publishedAt": "Thu, 29 Jan 2026 08:00:00 GMT",
+      "category": "ai_agents",
+      "contentType": "article",
+      "imageUrl": "",
+      "engagement": {
+        "hasVideoPreview": false,
+        "format": "article"
+      }
+    },
+    {
+      "position": 7,
+      "title": "OpenClaw Scanner: Open-source tool detects autonomous AI agents - Help Net Security",
+      "source": "Google News",
+      "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxNWURaYVAwakpWTG02d1F2TmJNVmFrcWhiYVJvTk9yNjhqa0lVTlYzczUtZTZ0SlpORFFCbzRVWTlvRUlHZmFHUTBCcXQ4VFRfOHRNSWpwZWNmTGlEMUlFZDBOa2tPLVpnRTVTZlVZOGxTTHU5ei02dXJIdlVLMUUyY2N6NVJ1blIwZkk3Z2FtLVFfMmhfd2poZHFGeTFTR1I4NnJ4QnZCLWZqZw?oc=5",
+      "snippet": "<a href=\"https://news.google.com/rss/articles/CBMiqgFBVV95cUxNWURaYVAwakpWTG02d1F2TmJNVmFrcWhiYVJvTk9yNjhqa0lVTlYzczUtZTZ0SlpORFFCbzRVWTlvRUlHZmFHUTBCcXQ4VFRfOHRNSWpwZWNmTGlEMUlFZDBOa2tPLVpnRTVTZlVZOGxTTHU5ei02dXJIdlVLMUUyY2N6NVJ1blIwZkk3Z2FtLVFfMmhfd2poZHFGeTFTR1I4NnJ4QnZCLWZqZw?oc=5\" target=\"_blan",
+      "publishedAt": "Thu, 12 Feb 2026 08:00:00 GMT",
+      "category": "ai_agents",
+      "contentType": "article",
+      "imageUrl": "",
+      "engagement": {
+        "hasVideoPreview": false,
+        "format": "article"
+      }
+    },
+    {
+      "position": 8,
+      "title": "The Internet\u2019s Latest Lie: Moltbook Has No Autonomous AI Agents \u2013 Only Humans Using OpenClaw - Startup Fortune",
+      "source": "Google News",
+      "url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxOaFZLTHJSNlVzRmtRdXBoanRIckZUSkJuTkdyT1I5NnM4RjUxN0s3T3JLcHM3MzRaVFhETUxTZ0l2R0xVTTU1SUJ0aXZ4aUZLbkpnaUZ3bUZUT1Q0WFJMMXBnY3QzeGVPaVludWtrcllCOHR0RTJ0QVNwWXJBSVVXUEZCQlRsNEdyYlBUSWtCdWtGM2lKTGRuOVczaFhMZUJpY2hOUkZfWjRnTEJNcmEwUklTa3g3MGs?oc=5",
+      "snippet": "<a href=\"https://news.google.com/rss/articles/CBMitwFBVV95cUxOaFZLTHJSNlVzRmtRdXBoanRIckZUSkJuTkdyT1I5NnM4RjUxN0s3T3JLcHM3MzRaVFhETUxTZ0l2R0xVTTU1SUJ0aXZ4aUZLbkpnaUZ3bUZUT1Q0WFJMMXBnY3QzeGVPaVludWtrcllCOHR0RTJ0QVNwWXJBSVVXUEZCQlRsNEdyYlBUSWtCdWtGM2lKTGRuOVczaFhMZUJpY2hOUkZfWjRnTEJNcmEwUklTa3g3MGs?oc",
+      "publishedAt": "Sun, 01 Feb 2026 08:00:00 GMT",
+      "category": "ai_agents",
+      "contentType": "article",
+      "imageUrl": "",
+      "engagement": {
+        "hasVideoPreview": false,
+        "format": "article"
+      }
+    }
+  ],
+  "metadata": {
+    "feedLength": 8,
+    "scrapedAt": "2026-02-24T21:30:16.301426+00:00",
+    "proxyCountry": "US",
+    "proxyIp": "172.56.169.60"
+  },
+  "_proof_meta": {
+    "proxy_ip": "172.56.169.60",
+    "proxy_carrier": "T-Mobile USA (mobile residential)",
+    "proxy_tx_hash": "0xc655e656981acec60320149aaf98ecf8c2f03e52db36c0f1f5581054861f3c68",
+    "proxy_chain": "Base",
+    "proxy_cost_usd": "0.40",
+    "collected_at": "2026-02-24T21:30:16.301445+00:00"
+  }
+}
