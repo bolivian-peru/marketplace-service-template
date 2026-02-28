@@ -1,0 +1,83 @@
+{
+  "query": "artificial intelligence -is:retweet lang:en",
+  "collected_at": "2026-02-27T20:16:54.487412+00:00",
+  "method": "Twitter API v2 search_recent_tweets (Bearer token auth)",
+  "count": 10,
+  "results": [
+    {
+      "id": "2027477969543791016",
+      "text": "@profstonge It won't happen with Stochastic Token Sequence Guessing Software.  More commonly known by the total bullsh*t marketing term \"artificial intelligence\". Especially token guessing software given agency over a company or person's important data. The reckoning coming will be epic.",
+      "created_at": "2026-02-27 20:16:31+00:00",
+      "author": "TopAlliedAceWW1",
+      "followers": 861,
+      "metrics": {
+        "retweet_count": 0,
+        "reply_count": 0,
+        "like_count": 0,
+        "quote_count": 0,
+        "bookmark_count": 0,
+        "impression_count": 1
+      }
+    },
+    {
+      "id": "2027477951399530583",
+      "text": "Trying to get back into the swing of things\n#grokthis  #AIRevolution  #aiworld \nThe original o. G. To the artificial intelligence  movement https://t.co/HNAMJ4kU42",
+      "created_at": "2026-02-27 20:16:26+00:00",
+      "author": "TomReichertWA",
+      "followers": 4306,
+      "metrics": {
+        "retweet_count": 0,
+        "reply_count": 0,
+        "like_count": 0,
+        "quote_count": 0,
+        "bookmark_count": 0,
+        "impression_count": 0
+      }
+    },
+    {
+      "id": "2027477685199573374",
+      "text": "Humanity\u2019s Last Exam is a PhD-level benchmark designed to test the limits of AI reasoning. Although Google\u2019s Gemini 3 scored a staggering 48.4%, experts stress that this does not indicate the arrival of artificial general intelligence (AGI). https://t.co/nzWRCjDjrS",
+      "created_at": "2026-02-27 20:15:23+00:00",
+      "author": "LiveScience",
+      "followers": 427457,
+      "metrics": {
+        "retweet_count": 0,
+        "reply_count": 0,
+        "like_count": 0,
+        "quote_count": 0,
+        "bookmark_count": 0,
+        "impression_count": 33
+      }
+    },
+    {
+      "id": "2027477516064018596",
+      "text": "\ud83c\uddfa\ud83c\uddf8 OpenAI Targets $840B Valuation in Massive Funding Round\n\nOpenAI is reportedly raising $110 billion in a landmark funding round that would value the artificial intelligence firm at $840 billion, underscoring the rapid acceleration of global investment into the AI sector and the https://t.co/7xo7pNmP7x",
+      "created_at": "2026-02-27 20:14:43+00:00",
+      "author": "WestAsiaWatch",
+      "followers": 405,
+      "metrics": {
+        "retweet_count": 0,
+        "reply_count": 0,
+        "like_count": 0,
+        "quote_count": 0,
+        "bookmark_count": 0,
+        "impression_count": 3
+      }
+    },
+    {
+      "id": "2027477171460088098",
+      "text": "@Chinny2222222 @twin3_ai And that is when personalized Artificial Intelligence comes in.",
+      "created_at": "2026-02-27 20:13:21+00:00",
+      "author": "GoldieSlay72777",
+      "followers": 1947,
+      "metrics": {
+        "retweet_count": 0,
+        "reply_count": 0,
+        "like_count": 0,
+        "quote_count": 0,
+        "bookmark_count": 0,
+        "impression_count": 2
+      }
+    }
+  ]
+}
