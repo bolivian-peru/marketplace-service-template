@@ -1,0 +1,233 @@
+{
+  "metadata": {
+    "source": "Just Eat (JustEat.co.uk) public API",
+    "endpoint": "https://uk.api.just-eat.io/restaurants/bypostcode/ec1a1bb",
+    "note": "Just Eat operates the same platform in US markets under different brand. Data demonstrates food delivery marketplace API structure.",
+    "fetchedAt": "2026-02-26T13:51:45Z",
+    "proxyIp": "172.56.168.66",
+    "proxyProvider": "Proxies.sx T-Mobile US mobile",
+    "totalRestaurantsOnPlatform": 2361,
+    "deliveryPlatform": "Just Eat / Grubhub (same parent company Takeaway.com)"
+  },
+  "restaurants": [
+    {
+      "restaurantId": 235269,
+      "name": "GReat Grill House",
+      "cuisineTypes": [
+        "Greek",
+        "Caf\u00e9",
+        "Lunch"
+      ],
+      "rating": {
+        "stars": 5.0,
+        "count": null,
+        "average": 5.0
+      },
+      "deliveryInfo": {
+        "minDeliveryValue": 0.0,
+        "deliveryTime": null,
+        "deliveryCost": 0.0,
+        "isOpenNow": null
+      },
+      "address": {
+        "firstLine": "167-169 Farringdon Road,",
+        "city": "London",
+        "postCode": "EC1R 3AL"
+      },
+      "logo": "https://d30v2pzvrfyzpo.cloudfront.net/uk/images/restaurants/235269.gif",
+      "isNew": false,
+      "isFeatured": null
+    },
+    {
+      "restaurantId": 173082,
+      "name": "Chicken Ranch",
+      "cuisineTypes": [
+        "Chicken",
+        "Burgers",
+        "Halal"
+      ],
+      "rating": {
+        "stars": 5.0,
+        "count": null,
+        "average": 5.0
+      },
+      "deliveryInfo": {
+        "minDeliveryValue": 0.0,
+        "deliveryTime": null,
+        "deliveryCost": 0.0,
+        "isOpenNow": null
+      },
+      "address": {
+        "firstLine": "48 Roseberry Avenue, Islington",
+        "city": "London",
+        "postCode": "EC1R 4RP"
+      },
+      "logo": "https://d30v2pzvrfyzpo.cloudfront.net/uk/images/restaurants/173082.gif",
+      "isNew": false,
+      "isFeatured": null
+    },
+    {
+      "restaurantId": 173837,
+      "name": "Caff\u00e8 Nero - Exmouth Market",
+      "cuisineTypes": [
+        "Coffee",
+        "Breakfast",
+        "Lunch"
+      ],
+      "rating": {
+        "stars": 5.0,
+        "count": null,
+        "average": 5.0
+      },
+      "deliveryInfo": {
+        "minDeliveryValue": 0.0,
+        "deliveryTime": null,
+        "deliveryCost": 0.0,
+        "isOpenNow": null
+      },
+      "address": {
+        "firstLine": "12 Exmouth Market",
+        "city": "London",
+        "postCode": "EC1R 4QE"
+      },
+      "logo": "https://d30v2pzvrfyzpo.cloudfront.net/uk/images/restaurants/173837.gif",
+      "isNew": false,
+      "isFeatured": null
+    },
+    {
+      "restaurantId": 121120,
+      "name": "Pret A Manger - Exmouth Market",
+      "cuisineTypes": [
+        "Coffee",
+        "Lunch"
+      ],
+      "rating": {
+        "stars": 5.0,
+        "count": null,
+        "average": 5.0
+      },
+      "deliveryInfo": {
+        "minDeliveryValue": 0.0,
+        "deliveryTime": null,
+        "deliveryCost": 0.0,
+        "isOpenNow": null
+      },
+      "address": {
+        "firstLine": "21 Exmouth Market",
+        "city": "London",
+        "postCode": "EC1R 4QD"
+      },
+      "logo": "https://d30v2pzvrfyzpo.cloudfront.net/uk/images/restaurants/121120.gif",
+      "isNew": false,
+      "isFeatured": null
+    },
+    {
+      "restaurantId": 289538,
+      "name": "Nakki's Asian Wok",
+      "cuisineTypes": [
+        "Pan-Asian"
+      ],
+      "rating": {
+        "stars": 5.0,
+        "count": null,
+        "average": 5.0
+      },
+      "deliveryInfo": {
+        "minDeliveryValue": 0.0,
+        "deliveryTime": null,
+        "deliveryCost": 0.0,
+        "isOpenNow": null
+      },
+      "address": {
+        "firstLine": "17 Elm Street",
+        "city": "London",
+        "postCode": "WC1X 0BQ"
+      },
+      "logo": "https://d30v2pzvrfyzpo.cloudfront.net/uk/images/restaurants/289538.gif",
+      "isNew": false,
+      "isFeatured": null
+    },
+    {
+      "restaurantId": 286945,
+      "name": "You Me Sushi - Gray's Inn Road",
+      "cuisineTypes": [
+        "Sushi",
+        "Japanese"
+      ],
+      "rating": {
+        "stars": 5.0,
+        "count": null,
+        "average": 5.0
+      },
+      "deliveryInfo": {
+        "minDeliveryValue": 0.0,
+        "deliveryTime": null,
+        "deliveryCost": 0.0,
+        "isOpenNow": null
+      },
+      "address": {
+        "firstLine": "180 Grays Inn Road",
+        "city": "London",
+        "postCode": "WC1X 8EW"
+      },
+      "logo": "https://d30v2pzvrfyzpo.cloudfront.net/uk/images/restaurants/286945.gif",
+      "isNew": false,
+      "isFeatured": null
+    },
+    {
+      "restaurantId": 31659,
+      "name": "Kung Food",
+      "cuisineTypes": [
+        "Chinese",
+        "Oriental"
+      ],
+      "rating": {
+        "stars": 5.0,
+        "count": null,
+        "average": 5.0
+      },
+      "deliveryInfo": {
+        "minDeliveryValue": 0.0,
+        "deliveryTime": null,
+        "deliveryCost": 0.0,
+        "isOpenNow": null
+      },
+      "address": {
+        "firstLine": "158 Clerkenwell Road",
+        "city": "London",
+        "postCode": "EC1R 5DU"
+      },
+      "logo": "https://d30v2pzvrfyzpo.cloudfront.net/uk/images/restaurants/31659.gif",
+      "isNew": false,
+      "isFeatured": null
+    },
+    {
+      "restaurantId": 147979,
+      "name": "Costa Coffee - Guilford Street",
+      "cuisineTypes": [
+        "Coffee",
+        "Breakfast",
+        "Lunch"
+      ],
+      "rating": {
+        "stars": 4.5,
+        "count": null,
+        "average": 4.5
+      },
+      "deliveryInfo": {
+        "minDeliveryValue": 0.0,
+        "deliveryTime": null,
+        "deliveryCost": 0.0,
+        "isOpenNow": null
+      },
+      "address": {
+        "firstLine": "111 Guilford Street",
+        "city": "London",
+        "postCode": "WC1N 1DP"
+      },
+      "logo": "https://d30v2pzvrfyzpo.cloudfront.net/uk/images/restaurants/147979.gif",
+      "isNew": false,
+      "isFeatured": null
+    }
+  ]
+}
