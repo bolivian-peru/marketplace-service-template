@@ -1,0 +1,74 @@
+{
+  "type": "search",
+  "location": "New York, NY",
+  "statusType": "ForSale",
+  "listings": [
+    {
+      "zpid": "MDMC2217510",
+      "address": "18901 Bloomfield Rd, ",
+      "price": 774500,
+      "beds": 5,
+      "baths": 3.0,
+      "sqft": 3145,
+      "propertyType": 6,
+      "daysOnMarket": 1,
+      "url": "https://www.redfin.com/MD/Olney/18901-Bloomfield-Rd-20832/home/10707814",
+      "source": "redfin"
+    },
+    {
+      "zpid": "MDMC2218456",
+      "address": "5 Coatbridge Ct, ",
+      "price": 725000,
+      "beds": 4,
+      "baths": 3.0,
+      "sqft": 1722,
+      "propertyType": 6,
+      "daysOnMarket": 1,
+      "url": "https://www.redfin.com/MD/Olney/5-Coatbridge-Ct-20832/home/10712144",
+      "source": "redfin"
+    },
+    {
+      "zpid": "MDMC2218480",
+      "address": "2527 Little Vista Ter, ",
+      "price": 595000,
+      "beds": 3,
+      "baths": 2.5,
+      "sqft": 2260,
+      "propertyType": 13,
+      "daysOnMarket": 2,
+      "url": "https://www.redfin.com/MD/Olney/2527-Little-Vista-Ter-20832/home/10726877",
+      "source": "redfin"
+    },
+    {
+      "zpid": "MDMC2218358",
+      "address": "17800 Buehler Rd Unit 2-E-5, ",
+      "price": 240000,
+      "beds": 3,
+      "baths": 1.5,
+      "sqft": 996,
+      "propertyType": 3,
+      "daysOnMarket": 2,
+      "url": "https://www.redfin.com/MD/Olney/17800-Buehler-Rd-20832/unit-2-E-5/home/200617885",
+      "source": "redfin"
+    },
+    {
+      "zpid": "MDMC2213630",
+      "address": "3309 Tidewater Ct Unit C-16, ",
+      "price": 359000,
+      "beds": 3,
+      "baths": 2.5,
+      "sqft": 1788,
+      "propertyType": 13,
+      "daysOnMarket": 11,
+      "url": "https://www.redfin.com/MD/Olney/3309-Tidewater-Ct-20832/unit-C16/home/10703809",
+      "source": "redfin"
+    }
+  ],
+  "metadata": {
+    "totalResults": 5,
+    "location": "New York, NY",
+    "scrapedAt": "2026-02-26T13:45:53.151304+00:00",
+    "proxyIp": "172.56.168.66",
+    "proxyCountry": "United States"
+  }
+}

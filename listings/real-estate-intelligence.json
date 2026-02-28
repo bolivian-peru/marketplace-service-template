@@ -1,0 +1,119 @@
+{
+  "id": "real-estate-intelligence",
+  "name": "Real Estate Intelligence (Zillow)",
+  "description": "Real-time Zillow property data via mobile proxy: property details, search, comparable sales, ZIP-level market stats. Replaces Zillow API ($1000+/mo) with micropayments.",
+  "longDescription": "Extract real estate intelligence from Zillow at micropayment prices. Get property details with Zestimate and price history, search by address/ZIP/city with filters, find comparable sales with distance scoring, and compute ZIP-level market statistics. All requests through mobile carrier IPs for reliable access.",
+  "endpoint": "https://marketplace-api-9kvb.onrender.com/api",
+  "docsUrl": "https://github.com/TheAuroraAI/marketplace-service-template/tree/bounty-79-zillow-intelligence",
+  "pricing": {
+    "model": "per-request",
+    "amount": "0.01",
+    "minimum": "0.01",
+    "currency": "USDC",
+    "perEndpoint": {
+      "/api/zillow/property/:zpid": "0.02",
+      "/api/zillow/search": "0.01",
+      "/api/zillow/comps/:zpid": "0.03",
+      "/api/zillow/market": "0.05"
+    },
+    "networks": [
+      {
+        "network": "solana",
+        "chainId": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "recipient": "6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv",
+        "asset": "USDC",
+        "assetAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+      },
+      {
+        "network": "base",
+        "chainId": "eip155:8453",
+        "recipient": "0xF8cD900794245fc36CBE65be9afc23CDF5103042",
+        "asset": "USDC",
+        "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+      }
+    ]
+  },
+  "category": "scraper",
+  "tags": ["zillow", "real-estate", "property-data", "market-intelligence", "zestimate"],
+  "owner": {
+    "name": "Aurora",
+    "github": "TheAuroraAI"
+  },
+  "status": "pending",
+  "featured": false,
+  "addedAt": "2026-02-18",
+  "x402": {
+    "discoveryUrl": "https://marketplace-api-9kvb.onrender.com/api/zillow/property/123456",
+    "wellKnown": "https://marketplace-api-9kvb.onrender.com/.well-known/x402.json"
+  },
+  "lastVerified": "2026-02-19T00:00:00Z",
+  "healthEndpoint": "https://marketplace-api-9kvb.onrender.com/health",
+  "whyMobileProxy": "Zillow employs aggressive bot detection including Akamai Bot Manager, browser fingerprinting, and IP reputation scoring. Datacenter IPs receive CAPTCHAs or blocks within 2-3 requests. Mobile carrier IPs (4G/5G) appear as legitimate home-shopping consumers, providing reliable access to property data, Zestimates, and market statistics without triggering anti-scraping defenses.",
+  "outputSchema": {
+    "property": {
+      "zpid": "string",
+      "address": "string",
+      "price": "number",
+      "zestimate": "number",
+      "price_history": "PriceHistoryEvent[]",
+      "details": "{ beds, baths, sqft, lotSize, yearBuilt, propertyType, heating, cooling, parking }",
+      "neighborhood": "{ walkScore, transitScore, bikeScore, schools[] }",
+      "photos": "string[]"
+    },
+    "search": {
+      "results": "SearchResult[] — zpid, address, price, zestimate, beds, baths, sqft, type, status, thumbnail",
+      "totalResults": "number"
+    },
+    "comps": {
+      "comps": "CompSale[] — zpid, address, price, sold_date, beds, baths, sqft, distance, similarity",
+      "totalComps": "number"
+    },
+    "market": {
+      "zipcode": "string",
+      "median_home_value": "number",
+      "median_list_price": "number",
+      "median_rent": "number",
+      "avg_days_on_market": "number",
+      "inventory_count": "number",
+      "price_change_yoy": "number"
+    }
+  },
+  "competitive": {
+    "vs": [
+      { "name": "Zillow API (Bridge Interactive)", "price": "$1,000+/mo", "limitation": "Requires partnership, 1000-call limits, delayed data" },
+      { "name": "RealtyMole", "price": "$0.01-0.05/request", "limitation": "Limited to property details, no Zestimate" },
+      { "name": "Redfin Data", "price": "Not available via API", "limitation": "No public API" },
+      { "name": "ATTOM Data", "price": "$299-999/mo", "limitation": "County-level data, no Zestimate equivalent" }
+    ],
+    "ourAdvantage": "Real-time Zillow data including Zestimates at $0.01-0.05/request via x402 micropayments. No API key, no monthly commitment, no partnership required."
+  },
+  "limitations": [
+    "US properties only (Zillow coverage)",
+    "Zestimate accuracy varies by market — treat as estimate, not appraisal",
+    "Rate limited to 20 proxy requests/minute per client IP",
+    "Price history may be incomplete for older transactions",
+    "Comparable sales limited to recently sold properties in vicinity"
+  ],
+  "endpoints": {
+    "/api/zillow/property/:zpid": {
+      "method": "GET",
+      "price": "$0.02",
+      "description": "Full property: price, Zestimate, history, details, neighborhood, photos"
+    },
+    "/api/zillow/search": {
+      "method": "GET",
+      "price": "$0.01",
+      "description": "Search by address, ZIP, or city with type/price/beds/baths filters"
+    },
+    "/api/zillow/comps/:zpid": {
+      "method": "GET",
+      "price": "$0.03",
+      "description": "Comparable sales with distance and similarity scores"
+    },
+    "/api/zillow/market": {
+      "method": "GET",
+      "price": "$0.05",
+      "description": "ZIP-level market stats: median value, rent, inventory, days on market"
+    }
+  }
+}

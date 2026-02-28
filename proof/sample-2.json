@@ -1,0 +1,50 @@
+{
+  "type": "search",
+  "location": "Brooklyn, NY",
+  "statusType": "ForSale",
+  "listings": [
+    {
+      "zpid": "MDMC2217510",
+      "address": "18901 Bloomfield Rd, ",
+      "price": 774500,
+      "beds": 5,
+      "baths": 3.0,
+      "sqft": 3145,
+      "propertyType": 6,
+      "daysOnMarket": 1,
+      "url": "https://www.redfin.com/MD/Olney/18901-Bloomfield-Rd-20832/home/10707814",
+      "source": "redfin"
+    },
+    {
+      "zpid": "MDMC2218456",
+      "address": "5 Coatbridge Ct, ",
+      "price": 725000,
+      "beds": 4,
+      "baths": 3.0,
+      "sqft": 1722,
+      "propertyType": 6,
+      "daysOnMarket": 1,
+      "url": "https://www.redfin.com/MD/Olney/5-Coatbridge-Ct-20832/home/10712144",
+      "source": "redfin"
+    },
+    {
+      "zpid": "MDMC2218480",
+      "address": "2527 Little Vista Ter, ",
+      "price": 595000,
+      "beds": 3,
+      "baths": 2.5,
+      "sqft": 2260,
+      "propertyType": 13,
+      "daysOnMarket": 2,
+      "url": "https://www.redfin.com/MD/Olney/2527-Little-Vista-Ter-20832/home/10726877",
+      "source": "redfin"
+    }
+  ],
+  "metadata": {
+    "totalResults": 3,
+    "location": "Brooklyn, NY",
+    "scrapedAt": "2026-02-26T13:45:53.151304+00:00",
+    "proxyIp": "172.56.168.66",
+    "proxyCountry": "United States"
+  }
+}
