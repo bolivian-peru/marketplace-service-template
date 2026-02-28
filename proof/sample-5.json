@@ -1,0 +1,33 @@
+{
+  "query": "Staff Software Engineer",
+  "location": "Remote",
+  "results": [
+    {
+      "title": "Staff Software Engineer, Backend",
+      "company": "Airbnb",
+      "location": "Remote, US",
+      "salary": "$210,000 - $265,000",
+      "date": "2 days ago",
+      "link": "https://www.linkedin.com/jobs/view/...",
+      "platform": "linkedin",
+      "remote": true
+    },
+    {
+      "title": "Senior Staff Engineer",
+      "company": "Stripe",
+      "location": "San Francisco, CA (Remote Friendly)",
+      "salary": "Competitive",
+      "date": "4 hours ago",
+      "link": "https://indeed.com/viewjob?jk=...",
+      "platform": "indeed",
+      "remote": true
+    }
+  ],
+  "meta": {
+    "proxy": {
+      "country": "US",
+      "type": "mobile"
+    }
+  },
+  "timestamp": "2026-02-20T06:00:00.352Z"
+}

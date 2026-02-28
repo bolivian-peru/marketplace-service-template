@@ -1,14 +1,13 @@
 {
   "id": "prediction-market-aggregator",
-  "name": "Prediction Market Aggregator",
-  "description": "Aggregated prediction market data from Polymarket, Kalshi, and more. Real-time odds, volume, and market signals. $0.05/query via x402.",
-  "longDescription": "Aggregate prediction market data from Polymarket, Kalshi, and other major platforms. Get real-time odds, trading volume, market signals, and historical trends. Query by topic, category, or specific market. Returns structured JSON with current probabilities, volume data, price history, and cross-platform comparisons. Ideal for trading agents, research, forecasting, and decision-making automation.",
-  "endpoint": "https://marketplace-service-template.onrender.com",
+  "name": "Prediction Market Signal Aggregator",
+  "description": "Combine real-time prediction market odds with live social sentiment data to detect mispricings and arbitrage.",
+  "longDescription": "API that aggregates real-time odds from Polymarket, Kalshi, and Metaculus while scraping social sentiment from Twitter/X and Reddit using mobile proxies. Detects cross-platform arbitrage spreads and sentiment divergence signals to help traders find edge in prediction markets.",
+  "endpoint": "https://api.proxies.sx/v1/x402/predictions",
   "docsUrl": "https://agents.proxies.sx/marketplace/skill.md",
   "pricing": {
     "model": "per-request",
     "amount": "0.05",
-    "minimum": "0.05",
     "currency": "USDC",
     "networks": [
       {
@@ -27,27 +26,41 @@
       }
     ]
   },
-  "category": "data",
+  "category": "trading",
   "tags": [
     "prediction-market",
     "polymarket",
     "kalshi",
-    "odds",
-    "forecasting",
-    "market-signals"
+    "arbitrage",
+    "sentiment",
+    "trading",
+    "crypto",
+    "mobile-proxy",
+    "social-scraping"
+  ],
+  "features": [
+    "Real-time odds from Polymarket, Kalshi, Metaculus",
+    "Live Twitter/X sentiment scraping via mobile proxies",
+    "Reddit sentiment analysis",
+    "Cross-platform arbitrage detection (0.02 spread floor)",
+    "Sentiment-market divergence signals",
+    "x402 USDC payments (Solana & Base)",
+    "Mobile proxy infrastructure for reliable scraping"
   ],
   "owner": {
-    "name": "rakesh0x",
-    "github": "rakesh0x"
+    "name": "Rakesh",
+    "github": "rakesh0x",
+    "twitter": "rakesh0x",
+    "telegram": "sxproxies"
   },
   "status": "active",
   "featured": false,
-  "addedAt": "2026-02-15",
-  "updatedAt": "2026-02-15",
+  "addedAt": "2026-02-14",
+  "updatedAt": "2026-02-16",
   "x402": {
-    "discoveryUrl": "https://marketplace-service-template.onrender.com/api/run",
-    "wellKnown": "https://marketplace-service-template.onrender.com"
+    "discoveryUrl": "https://api.proxies.sx/v1/x402/predictions/api/predictions",
+    "wellKnown": "https://api.proxies.sx"
   },
-  "lastVerified": "2026-02-15T00:00:00Z",
-  "healthEndpoint": "https://marketplace-service-template.onrender.com/health"
+  "lastVerified": "2026-02-16T00:00:00Z",
+  "healthEndpoint": "https://api.proxies.sx/v1/x402/predictions/health"
 }

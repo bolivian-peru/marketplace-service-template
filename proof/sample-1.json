@@ -1,0 +1,31 @@
+{
+  "slug": "will-jesus-christ-return-before-2027",
+  "results": {
+    "yes": 0.0335,
+    "no": 0.9665,
+    "volume24h": 125430.22,
+    "liquidity": 450000,
+    "lastTradePrice": 0.033,
+    "bestBid": 0.033,
+    "bestAsk": 0.034,
+    "updatedAt": "2026-02-20T06:00:00.352Z"
+  },
+  "raw": {
+    "id": "90178",
+    "question": "Will Jesus Christ return before 2027?",
+    "markets": [
+      {
+        "id": "703258",
+        "outcomePrices": [
+          "0.0335",
+          "0.9665"
+        ],
+        "clobTokenIds": [
+          "234...123",
+          "345...234"
+        ]
+      }
+    ]
+  },
+  "timestamp": "2026-02-20T06:00:00.352Z"
+}

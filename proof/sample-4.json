@@ -1,0 +1,41 @@
+{
+  "query": "plumbers",
+  "location": "Austin, TX",
+  "businesses": [
+    {
+      "name": "Radiant Plumbing & Air",
+      "address": "2908 Industrial Blvd, Austin, TX 78704",
+      "phone": "(512) 648-5111",
+      "website": "https://radiantplumbing.com",
+      "rating": 4.8,
+      "reviewCount": 3240,
+      "categories": [
+        "Plumber",
+        "HVAC Contractor"
+      ],
+      "placeId": "ChIJ...abc",
+      "coordinates": {
+        "latitude": 30.234,
+        "longitude": -97.745
+      }
+    },
+    {
+      "name": "Clarke Kent Plumbing",
+      "address": "1008 E 6th St, Austin, TX 78702",
+      "phone": "(512) 472-1111",
+      "website": "https://clarkekentplumbing.com",
+      "rating": 4.5,
+      "reviewCount": 120,
+      "categories": [
+        "Plumber"
+      ],
+      "placeId": "ChIJ...def"
+    }
+  ],
+  "totalFound": 45,
+  "proxy": {
+    "country": "US",
+    "type": "mobile"
+  },
+  "timestamp": "2026-02-20T06:00:00.352Z"
+}

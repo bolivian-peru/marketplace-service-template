@@ -1,0 +1,53 @@
+{
+  "type": "signal",
+  "market": "will-jesus-christ-return-before-2027",
+  "timestamp": "2026-02-22T10:32:41.434Z",
+  "odds": {
+    "kalshi": null,
+    "polymarket": {
+      "yes": 0.0375,
+      "no": 0.9625,
+      "volume24h": 698426.3556759992,
+      "liquidity": 4762470.27742
+    },
+    "metaculus": null
+  },
+  "sentiment": {
+    "twitter": null,
+    "reddit": {
+      "positive": 0.04,
+      "negative": 0.2,
+      "neutral": 0.76,
+      "volume": 25,
+      "topSubreddits": [
+        "MarketVibe",
+        "polymarket_bets",
+        "exchristian",
+        "PredictionsArc",
+        "PredictionsMarkets"
+      ],
+      "avgUps": 203.48,
+      "avgComments": 31.36
+    }
+  },
+  "signals": {
+    "sentimentDivergence": {
+      "detected": false,
+      "description": "Sentiment aligned with market",
+      "magnitude": "low"
+    }
+  },
+  "meta": {
+    "proxy": {
+      "ip": "182.69.177.155",
+      "country": "US",
+      "type": "mobile"
+    }
+  },
+  "payment": {
+    "txHash": "0xmock_transaction_hash_for_proof_generation",
+    "network": "base",
+    "amount": 0.05,
+    "settled": true
+  }
+}

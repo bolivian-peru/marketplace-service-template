@@ -139,7 +139,25 @@ These services are live on the marketplace right now:
 | [Google Maps Lead Generator](https://agents.proxies.sx/marketplace/google-maps-lead-generator/) | $0.005/record | [@aliraza556](https://github.com/aliraza556) | Live |
 | [Mobile SERP Tracker](https://agents.proxies.sx/marketplace/serp-tracker/) | $0.003/query | [@aliraza556](https://github.com/aliraza556) | Live |
 | [Job Market Intelligence](https://bounty16-job-market-intelligence.onrender.com) | $0.005/query | [@Lutra23](https://github.com/Lutra23) | Live |
-| [Prediction Market Aggregator](https://marketplace-service-template.onrender.com) | $0.05/query | [@rakesh0x](https://github.com/rakesh0x) | Live |
+| [Prediction Market Aggregator](https://marketplace-service-template-nsnn.onrender.com) | $0.05/query | [@rakesh0x](https://github.com/rakesh0x) | Live |
+
+## Quality & Transparency
+
+This service adheres to the [Marketplace Quality Standards (#112)](https://github.com/bolivian-peru/marketplace-service-template/issues/112):
+
+1.  **[Proof of Output](proof/)**: Real JSON response samples for all integrated scrapers.
+2.  **[Technical Necessity](whyMobileProxy.md)**: Why mobile proxies are required for Polymarket, Kalshi, and Reddit.
+3.  **Enhanced Health**: `/health` endpoint checks connectivity to proxies and target sites.
+4.  **Full Schema**: Root discovery route (`/`) provides field-level documentation.
+
+## AI Readiness (MCP)
+
+This project includes a Model Context Protocol (MCP) server wrapper in `src/mcp.ts`. This allows AI agents (like Claude or ChatGPT) to interact with the aggregator through a standardized interface.
+
+To run the MCP server:
+```bash
+bun src/mcp.ts
+```
 
 ## Open Bounties — $1,200+ in $SX Tokens
 
