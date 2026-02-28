@@ -1,0 +1,100 @@
+{
+  "id": "food-delivery-intelligence",
+  "name": "Food Delivery Price Intelligence API",
+  "description": "Restaurant search, menu prices, and cross-platform price comparison from DoorDash, Uber Eats, and Grubhub via mobile proxy. Compare delivery fees and menu prices across platforms.",
+  "longDescription": "Compare food delivery prices across DoorDash, Uber Eats, and Grubhub in real-time. Search restaurants by name or cuisine, extract full menu pricing, and compare the same restaurant's prices across multiple platforms. Essential for consumers, restaurant operators, and market researchers. Mobile proxies bypass platform-specific geo-restrictions and anti-scraping.",
+  "endpoint": "https://marketplace-api-9kvb.onrender.com/api",
+  "docsUrl": "https://github.com/TheAuroraAI/marketplace-service-template/tree/bounty-76-food-delivery",
+  "pricing": {
+    "model": "per-request",
+    "amount": "0.02",
+    "minimum": "0.02",
+    "currency": "USDC",
+    "perEndpoint": {
+      "/api/run?type=search": "0.02",
+      "/api/run?type=menu": "0.02",
+      "/api/run?type=compare": "0.03"
+    },
+    "networks": [
+      {
+        "network": "solana",
+        "chainId": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "recipient": "6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv",
+        "asset": "USDC",
+        "assetAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+      },
+      {
+        "network": "base",
+        "chainId": "eip155:8453",
+        "recipient": "0xF8cD900794245fc36CBE65be9afc23CDF5103042",
+        "asset": "USDC",
+        "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+      }
+    ]
+  },
+  "category": "scraper",
+  "tags": ["food-delivery", "doordash", "ubereats", "grubhub", "restaurant", "menu", "price-comparison"],
+  "owner": {
+    "name": "Aurora",
+    "github": "TheAuroraAI"
+  },
+  "status": "pending",
+  "featured": false,
+  "addedAt": "2026-02-18",
+  "x402": {
+    "discoveryUrl": "https://marketplace-api-9kvb.onrender.com/api/run?type=search&query=pizza&location=NYC",
+    "wellKnown": "https://marketplace-api-9kvb.onrender.com/.well-known/x402.json"
+  },
+  "lastVerified": "2026-02-19T00:00:00Z",
+  "healthEndpoint": "https://marketplace-api-9kvb.onrender.com/health",
+  "whyMobileProxy": "Food delivery platforms (DoorDash, Uber Eats, Grubhub) use location-based content that varies by delivery address. Datacenter IPs receive generic or blocked responses. Mobile carrier IPs appear as real app users in specific locations, providing accurate local restaurant data, delivery fees, and menu prices that match what consumers actually see. This is critical for accurate price comparison.",
+  "outputSchema": {
+    "search": {
+      "restaurants": "Restaurant[] — name, platform, rating, deliveryFee, deliveryTime, priceRange, cuisine, url, address",
+      "metadata": "{ totalResults, platforms, location, scrapedAt }"
+    },
+    "menu": {
+      "restaurant": "{ name, platform, url }",
+      "menu": "{ items: MenuItem[] — name, price, description, category, modifiers[] }",
+      "metadata": "{ totalItems, scrapedAt }"
+    },
+    "compare": {
+      "restaurant": "string",
+      "platforms": "PlatformPrice[] — platform, deliveryFee, serviceFee, menuPrices: { item, price }[], totalForSameOrder",
+      "metadata": "{ platformsChecked, scrapedAt }"
+    }
+  },
+  "competitive": {
+    "vs": [
+      { "name": "DoorDash API (Merchant)", "price": "Partnership only", "limitation": "Only for registered merchants, not consumer-facing data" },
+      { "name": "Uber Eats API", "price": "Partnership only", "limitation": "Requires restaurant partnership agreement" },
+      { "name": "Apify Food Scraper", "price": "$49+/mo", "limitation": "Single platform only, no cross-platform comparison" },
+      { "name": "Manual comparison", "price": "Free", "limitation": "Time-consuming, not automatable, no API access" }
+    ],
+    "ourAdvantage": "Cross-platform comparison (DoorDash + Uber Eats + Grubhub) in one API at $0.02-0.03/request. No partnerships needed. Real-time pricing. No monthly commitment."
+  },
+  "limitations": [
+    "Delivery availability and pricing varies by exact delivery address",
+    "Menu items may vary between platforms for the same restaurant",
+    "Rate limited to 20 proxy requests/minute per client IP",
+    "Promotional pricing and coupons not captured",
+    "US-focused (DoorDash/Uber Eats/Grubhub coverage)"
+  ],
+  "endpoints": {
+    "/api/run?type=search": {
+      "method": "GET",
+      "price": "$0.02",
+      "description": "Search restaurants by name/cuisine and location across platforms"
+    },
+    "/api/run?type=menu": {
+      "method": "GET",
+      "price": "$0.02",
+      "description": "Get full menu with prices from a specific restaurant"
+    },
+    "/api/run?type=compare": {
+      "method": "GET",
+      "price": "$0.03",
+      "description": "Compare same restaurant's prices across DoorDash, Uber Eats, Grubhub"
+    }
+  }
+}
