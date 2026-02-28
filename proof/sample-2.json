@@ -1,0 +1,38 @@
+{
+  "_note": "Structural sample — Facebook Marketplace blocked requests on 2026-02-27. Data reflects the MarketplaceListing schema from src/scrapers/facebook-marketplace-scraper.ts.",
+  "endpoint": "GET /api/marketplace/listing/1234567890123456",
+  "collected_at": "2026-02-27T12:00:00Z",
+  "strategy": "Facebook ServerJS relay GraphQL data extraction (data-sjs script blocks)",
+  "listing": {
+    "id": "1234567890123456",
+    "title": "iPhone 15 Pro Max - 256GB Natural Titanium",
+    "price": 749,
+    "currency": "USD",
+    "location": "San Francisco, CA",
+    "seller": {
+      "name": "Alex M.",
+      "joined": "2018",
+      "rating": "4.8",
+      "profile_url": "https://www.facebook.com/marketplace/profile/100045678901234"
+    },
+    "condition": "Used - Like New",
+    "posted_at": "2026-02-26T14:30:00.000Z",
+    "images": [
+      "https://scontent.xx.fbcdn.net/v/t45.5328-4/438291847_sample_image_1.jpg",
+      "https://scontent.xx.fbcdn.net/v/t45.5328-4/438291847_sample_image_2.jpg",
+      "https://scontent.xx.fbcdn.net/v/t45.5328-4/438291847_sample_image_3.jpg"
+    ],
+    "description": "iPhone 15 Pro Max, 256GB, Natural Titanium. Bought in December, barely used. No scratches, comes with original box and charger. Selling because upgrading to 16 Pro. Cash only, local pickup in Mission District. No holds.",
+    "category": "Mobile Phones",
+    "url": "https://www.facebook.com/marketplace/item/1234567890123456"
+  },
+  "meta": {
+    "proxy": { "country": "US", "type": "mobile" },
+    "payment": {
+      "txHash": "AxSampleTxHash222222222222222222222222222222222222222222222222222222222222222222222",
+      "network": "solana",
+      "amount": 0.005,
+      "settled": true
+    }
+  }
+}
