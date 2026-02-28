@@ -1,0 +1,184 @@
+{
+  "metadata": {
+    "source": "airbnb.com",
+    "endpoint": "https://www.airbnb.com/api/v2/explore_tabs",
+    "params": {
+      "query": "New York",
+      "checkin": "2026-03-10",
+      "checkout": "2026-03-15",
+      "adults": 2,
+      "amenities": [
+        "superhost"
+      ],
+      "currency": "USD"
+    },
+    "fetchedAt": "2026-02-26T13:51:18Z",
+    "proxyIp": "172.56.168.66",
+    "proxyProvider": "Proxies.sx T-Mobile US mobile",
+    "searchResultCount": 10
+  },
+  "superhostListings": [
+    {
+      "listingId": "41295524",
+      "url": "https://www.airbnb.com/rooms/41295524",
+      "name": "Hotel like place - private patio and bathroom",
+      "roomType": "private_room",
+      "location": {
+        "city": "Brooklyn",
+        "publicAddress": "Brooklyn, NY, United States",
+        "coordinates": {
+          "lat": 40.67627,
+          "lng": -73.94137
+        }
+      },
+      "capacity": {
+        "guests": 2,
+        "bedrooms": 1,
+        "beds": 2
+      },
+      "rating": {
+        "stars": 5.0,
+        "reviews": 317
+      },
+      "priceDisplay": "$851",
+      "hostName": "Caio Julio",
+      "isSuperhost": true,
+      "canInstantBook": false
+    },
+    {
+      "listingId": "5298896",
+      "url": "https://www.airbnb.com/rooms/5298896",
+      "name": "Unique NYC Loft - Guest Room",
+      "roomType": "private_room",
+      "location": {
+        "city": "New York",
+        "publicAddress": "New York, NY, United States",
+        "coordinates": {
+          "lat": 40.70419,
+          "lng": -74.01127
+        }
+      },
+      "capacity": {
+        "guests": 2,
+        "bedrooms": 1,
+        "beds": 1
+      },
+      "rating": {
+        "stars": 5.0,
+        "reviews": 375
+      },
+      "priceDisplay": null,
+      "hostName": "Luke",
+      "isSuperhost": true,
+      "canInstantBook": false
+    },
+    {
+      "listingId": "1070270537377163305",
+      "url": "https://www.airbnb.com/rooms/1070270537377163305",
+      "name": "One King room at Brooklyn - Newly Renovated!",
+      "roomType": "private_room",
+      "location": {
+        "city": "Brooklyn",
+        "publicAddress": "Brooklyn, NY, United States",
+        "coordinates": {
+          "lat": 40.690157186681645,
+          "lng": -73.98692196057979
+        }
+      },
+      "capacity": {
+        "guests": 2,
+        "bedrooms": 1,
+        "beds": 1
+      },
+      "rating": {
+        "stars": 5.0,
+        "reviews": 568
+      },
+      "priceDisplay": null,
+      "hostName": "Hilton Brooklyn New York City",
+      "isSuperhost": true,
+      "canInstantBook": false
+    },
+    {
+      "listingId": "21969733",
+      "url": "https://www.airbnb.com/rooms/21969733",
+      "name": "BRIGHT HOMEY AND COZY  MINUTES TO NEW YORK  CITY",
+      "roomType": "entire_home",
+      "location": {
+        "city": "Jersey City",
+        "publicAddress": "Jersey City, NJ, United States",
+        "coordinates": {
+          "lat": 40.7479,
+          "lng": -74.05105
+        }
+      },
+      "capacity": {
+        "guests": 6,
+        "bedrooms": 1,
+        "beds": 3
+      },
+      "rating": {
+        "stars": 5.0,
+        "reviews": 280
+      },
+      "priceDisplay": null,
+      "hostName": "Kenia",
+      "isSuperhost": true,
+      "canInstantBook": false
+    },
+    {
+      "listingId": "1522517030737496324",
+      "url": "https://www.airbnb.com/rooms/1522517030737496324",
+      "name": "Designers Upper East Side 2 Bedroom.",
+      "roomType": "entire_home",
+      "location": {
+        "city": "New York",
+        "publicAddress": "New York, NY, United States",
+        "coordinates": {
+          "lat": 40.7759,
+          "lng": -73.95394
+        }
+      },
+      "capacity": {
+        "guests": 4,
+        "bedrooms": 2,
+        "beds": 2
+      },
+      "rating": {
+        "stars": null,
+        "reviews": 0
+      },
+      "priceDisplay": "$1,769",
+      "hostName": "Tara",
+      "isSuperhost": true,
+      "canInstantBook": false
+    },
+    {
+      "listingId": "1108082653379426204",
+      "url": "https://www.airbnb.com/rooms/1108082653379426204",
+      "name": "Tropical Oasis | Times Square. Heated Pool",
+      "roomType": "private_room",
+      "location": {
+        "city": "New York",
+        "publicAddress": "New York, NY, United States",
+        "coordinates": {
+          "lat": 40.75575514804686,
+          "lng": -73.98740612160151
+        }
+      },
+      "capacity": {
+        "guests": 2,
+        "bedrooms": 1,
+        "beds": 1
+      },
+      "rating": {
+        "stars": 5.0,
+        "reviews": 239
+      },
+      "priceDisplay": null,
+      "hostName": "Margaritaville Resort Times Square NYC",
+      "isSuperhost": true,
+      "canInstantBook": false
+    }
+  ]
+}

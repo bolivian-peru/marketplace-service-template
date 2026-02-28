@@ -16,6 +16,7 @@ import { fetchReviews, fetchBusinessDetails, fetchReviewSummary, searchBusinesse
 import { scrapeGoogleMaps, extractDetailedBusiness } from './scrapers/maps-scraper';
 import { researchRouter } from './routes/research';
 import { trendingRouter } from './routes/trending';
+import { searchAirbnb, getListingDetail, getListingReviews, getMarketStats } from './scrapers/airbnb-scraper';
 
 export const serviceRouter = new Hono();
 
