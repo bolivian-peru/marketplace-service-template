@@ -1,0 +1,27 @@
+{
+  "proxyPurchase": {
+    "txHash": "0xbc596de14a26bf687cef58b4eda9c697a5b2d15af00aebaced4ca847d2a0bbc5",
+    "network": "base",
+    "amountUSDC": 0.40,
+    "walletAddress": "0xc0140eea19bd90a7ca75882d5218efaf20426e42",
+    "verifyUrl": "https://basescan.org/tx/0xbc596de14a26bf687cef58b4eda9c697a5b2d15af00aebaced4ca847d2a0bbc5"
+  },
+  "proxyDetails": {
+    "provider": "Proxies.sx (x402 payment)",
+    "type": "residential_mobile",
+    "carrier": "T-Mobile USA",
+    "asn": "AS21928",
+    "exitIp": "172.56.169.116",
+    "country": "US",
+    "purchasedAt": "2026-02-28T17:17:56Z",
+    "expiresAt": "2026-02-28T18:17:52Z",
+    "trafficGB": 0.1
+  },
+  "connectionTest": {
+    "ipVerificationUrl": "https://api.ipify.org?format=json",
+    "confirmedExitIp": "172.56.169.116",
+    "confirmedAt": "2026-02-28T17:18:00Z",
+    "method": "HTTP GET via proxy → API returns exit IP"
+  },
+  "notes": "Mobile proxy used by proxyFetch() in src/proxy.ts for all Instagram API calls. Instagram's i.instagram.com endpoint requires authenticated session — public profile scraping uses carrier IP + mobile app headers as implemented in instagram-scraper.ts."
+}
