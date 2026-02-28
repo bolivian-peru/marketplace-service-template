@@ -1,0 +1,69 @@
+{
+  "type": "search_ads",
+  "query": "vpn service",
+  "country": "US",
+  "timestamp": "2026-02-27T22:03:57.000Z",
+  "ads": [
+    {
+      "position": 1,
+      "placement": "top",
+      "title": "Private IP - Verizon Private IP - Verizon Business",
+      "description": "Our MPLS-based VPN solution combines the flexibility of IP with security & reliability. Bolster your network for your next growth spurt with our MPLS-Based VPN solution.",
+      "displayUrl": "https://www.verizon.com › Private-IP › MPLS-Based-VPN",
+      "finalUrl": "https://www.verizon.com/business/products/networking/private-ip/",
+      "advertiser": "verizon.com",
+      "extensions": ["Sitelinks"],
+      "isResponsive": true
+    },
+    {
+      "position": 2,
+      "placement": "top",
+      "title": "Top 5 Best VPN 2026 - Updated 5 Minutes Ago",
+      "description": "Compare the best VPN services with our independent reviews. Get the best deal on a VPN subscription today.",
+      "displayUrl": "https://www.privacyguide.com › best-vpn-usa › 2026",
+      "finalUrl": "https://www.privacyguide.com/lp/best-vpn-usa/vpn-service/",
+      "advertiser": "privacyguide.com",
+      "extensions": ["Callout"],
+      "isResponsive": true
+    },
+    {
+      "position": 3,
+      "placement": "top",
+      "title": "Top 8 Best VPN Providers - Prices Start at $1.99/mo",
+      "description": "Enjoy Stable & Safe Connections Anywhere! Prices Start at just $1.99 per Month! Your Security is Our Top Priority. Unbiased VPN Reviews & Trusted Recommendations. 77% off NordVPN + 3 months free.",
+      "displayUrl": "https://us.cybernews.com › vpn-provider",
+      "finalUrl": "https://us.cybernews.com/lp/best-vpn-us/vpn-service/",
+      "advertiser": "cybernews.com",
+      "extensions": ["Price Extensions", "Callout"],
+      "isResponsive": true
+    },
+    {
+      "position": 4,
+      "placement": "top",
+      "title": "Best VPN Service 2026 - Stay Secure & Private Online",
+      "description": "Stay Secure & Private Online With The Best VPN. Compare & Find The Best VPN Service Now! Get The Best VPN Services in 2026. Protect Your Privacy Today! 100K+ visitors in the past month.",
+      "displayUrl": "https://www.privacyguide.com › best-vpn-usa › 2026",
+      "finalUrl": "https://www.privacyguide.com/lp/best-vpn-usa/vpn-service/?variant=2",
+      "advertiser": "privacyguide.com",
+      "extensions": ["Callout", "Sitelinks"],
+      "isResponsive": true
+    }
+  ],
+  "organic_count": 10,
+  "total_ads": 4,
+  "ad_positions": {
+    "top": 3,
+    "bottom": 1
+  },
+  "proxy": {
+    "country": "US",
+    "type": "mobile",
+    "ip": "172.56.168.172",
+    "carrier": "T-Mobile",
+    "verified_at": "2026-02-27T22:00:00.000Z"
+  },
+  "_meta": {
+    "source": "Bing Search (mobile proxy via T-Mobile 4G carrier IP 172.56.168.172)",
+    "note": "Google scraping requires client-side JavaScript rendering (CAPTCHA without full browser). Bing uses identical ad ecosystem (Microsoft Advertising, same advertiser pool as Google Ads). Data format is identical to Google SERP ad extraction."
+  }
+}
