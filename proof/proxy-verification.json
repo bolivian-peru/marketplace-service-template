@@ -1,0 +1,28 @@
+{
+  "verification_type": "mobile_proxy_exit_ip",
+  "timestamp": "2026-02-27T22:00:00.000Z",
+  "proxy_provider": "Proxies.sx",
+  "proxy_type": "shared_4G_residential",
+  "purchase_tx": "0x9555875762d7d445cd6bd0a267040839e08d5abe1e8765711248b3052d97cc90",
+  "purchase_network": "Base L2",
+  "purchase_cost_usdc": 0.40,
+  "credentials": {
+    "host": "99.87.225.2",
+    "http_port": 8065,
+    "country": "US",
+    "traffic_limit_gb": 0.1,
+    "expires_at": "2026-02-27T23:00:04.304Z"
+  },
+  "exit_ip_verification": {
+    "url": "https://api.ipify.org?format=json",
+    "exit_ip": "172.56.168.172",
+    "ip_info": {
+      "ip": "172.56.168.172",
+      "org": "T-Mobile USA",
+      "type": "mobile",
+      "country": "US"
+    }
+  },
+  "confirmed_mobile_carrier": "T-Mobile USA (AS21928)",
+  "ip_range": "172.56.0.0/14"
+}

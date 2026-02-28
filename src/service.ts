@@ -16,6 +16,20 @@ import { fetchReviews, fetchBusinessDetails, fetchReviewSummary, searchBusinesse
 import { scrapeGoogleMaps, extractDetailedBusiness } from './scrapers/maps-scraper';
 import { researchRouter } from './routes/research';
 import { trendingRouter } from './routes/trending';
+import { searchAirbnb, getListingDetail, getListingReviews, getMarketStats } from './scrapers/airbnb-scraper';
+import { scrapeProduct, searchAmazon, scrapeBestsellers, scrapeReviews as scrapeAmazonReviews } from './scrapers/amazon-scraper';
+import { getTrendingMarkets, searchMarkets, getMarketDetails } from './scrapers/prediction-market-scraper';
+import { getDiscoverFeed } from './scrapers/google-discover-scraper';
+import { searchApps, getAppDetails, getTopCharts, getAppReviews } from './scrapers/app-store-scraper';
+import { getTrending, getHashtagData, getCreatorProfile, getSoundData } from './scrapers/tiktok-scraper';
+import { searchRestaurants, getMenuPrices, comparePrices } from './scrapers/food-delivery-scraper';
+import { getProfile as igGetProfile, getPosts as igGetPosts, analyzeProfile as igAnalyzeProfile, analyzeImages as igAnalyzeImages, auditProfile as igAuditProfile } from './scrapers/instagram-scraper';
+import { searchTweets, getTrending as xGetTrending, getUserProfile as xGetUserProfile, getUserTweets, getThread } from './scrapers/x-twitter-scraper';
+import { getPersonProfile, getCompanyProfile, searchPeople, getCompanyEmployees } from './scrapers/linkedin-scraper';
+import { searchMarketplace, getListingDetail as fbGetListingDetail, getCategories, getNewListings } from './scrapers/facebook-marketplace-scraper';
+import { scrapeProperty, searchZillow, getComparableSales, getMarketStatsByZip } from './scrapers/zillow-scraper';
+import { searchReddit, getSubreddit, getTrending as redditGetTrending, getComments } from './scrapers/reddit-scraper';
+import { getSearchAds, getDisplayAds, getAdvertiserAds } from './scrapers/ad-verification-scraper';
 
 export const serviceRouter = new Hono();
 
