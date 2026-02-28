@@ -1,0 +1,123 @@
+{
+  "id": "tiktok-trend-intelligence",
+  "name": "TikTok Trend Intelligence API",
+  "description": "Real-time TikTok trending videos, hashtag analytics, creator profiles, and sound/music data via mobile proxy. Access TikTok intelligence without the Research API ($25K+/year).",
+  "longDescription": "Track TikTok trends in real-time: discover trending videos with engagement metrics, analyze hashtag performance and velocity, extract creator profiles with follower data, and get sound/music usage statistics. Mobile proxies bypass TikTok's aggressive anti-scraping that blocks all datacenter IPs.",
+  "endpoint": "https://marketplace-api-9kvb.onrender.com/api",
+  "docsUrl": "https://github.com/TheAuroraAI/marketplace-service-template/tree/bounty-51-tiktok-intelligence",
+  "pricing": {
+    "model": "per-request",
+    "amount": "0.01",
+    "minimum": "0.01",
+    "currency": "USDC",
+    "perEndpoint": {
+      "/api/run?type=trending": "0.01",
+      "/api/run?type=hashtag": "0.01",
+      "/api/run?type=creator": "0.02",
+      "/api/run?type=sound": "0.01"
+    },
+    "networks": [
+      {
+        "network": "solana",
+        "chainId": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "recipient": "6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv",
+        "asset": "USDC",
+        "assetAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+      },
+      {
+        "network": "base",
+        "chainId": "eip155:8453",
+        "recipient": "0xF8cD900794245fc36CBE65be9afc23CDF5103042",
+        "asset": "USDC",
+        "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+      }
+    ]
+  },
+  "category": "scraper",
+  "tags": ["tiktok", "trending", "social-media", "hashtag", "creator", "music", "viral"],
+  "owner": {
+    "name": "Aurora",
+    "github": "TheAuroraAI"
+  },
+  "status": "pending",
+  "featured": false,
+  "addedAt": "2026-02-18",
+  "x402": {
+    "discoveryUrl": "https://marketplace-api-9kvb.onrender.com/api/run?type=trending",
+    "wellKnown": "https://marketplace-api-9kvb.onrender.com/.well-known/x402.json"
+  },
+  "lastVerified": "2026-02-19T00:00:00Z",
+  "healthEndpoint": "https://marketplace-api-9kvb.onrender.com/health",
+  "whyMobileProxy": "TikTok uses advanced anti-bot measures including device fingerprinting, signature verification, and IP reputation scoring. Datacenter and residential IPs are blocked or served dummy data. Mobile carrier IPs (4G/5G) mimic real TikTok app users, which is the only reliable way to access TikTok's internal APIs for trending content, creator data, and sound metadata.",
+  "outputSchema": {
+    "trending": {
+      "videos": "TrendingVideo[] — id, description, author, likes, comments, shares, plays, music, hashtags",
+      "region": "string",
+      "totalResults": "number"
+    },
+    "hashtag": {
+      "hashtag": "string",
+      "viewCount": "number",
+      "videoCount": "number",
+      "topVideos": "Video[] — id, description, author, likes, plays",
+      "relatedHashtags": "string[]"
+    },
+    "creator": {
+      "username": "string",
+      "nickname": "string",
+      "bio": "string",
+      "followers": "number",
+      "following": "number",
+      "likes": "number",
+      "videoCount": "number",
+      "verified": "boolean",
+      "recentVideos": "Video[]"
+    },
+    "sound": {
+      "soundId": "string",
+      "title": "string",
+      "author": "string",
+      "duration": "number",
+      "usageCount": "number",
+      "topVideos": "Video[]"
+    }
+  },
+  "competitive": {
+    "vs": [
+      { "name": "TikTok Research API", "price": "$25,000+/year", "limitation": "Academic/enterprise only, approval required, limited quotas" },
+      { "name": "TikTok Commercial API", "price": "Partnership required", "limitation": "Not publicly available, requires business relationship" },
+      { "name": "Apify TikTok Scraper", "price": "$49+/mo", "limitation": "Delayed data, frequent breakage, limited endpoints" },
+      { "name": "Social Insider", "price": "$83-331/mo", "limitation": "Analytics only, no raw data access, monthly commitment" }
+    ],
+    "ourAdvantage": "Real-time TikTok data at $0.01-0.02/request. No API approval needed. No monthly commitment. Trending, hashtags, creators, and sounds all in one API."
+  },
+  "limitations": [
+    "Trending results vary by region (defaults to US)",
+    "Private creator accounts return limited data",
+    "Rate limited to 20 proxy requests/minute per client IP",
+    "Video download URLs are temporary and expire",
+    "Historical data limited to what TikTok surfaces in current feeds"
+  ],
+  "endpoints": {
+    "/api/run?type=trending": {
+      "method": "GET",
+      "price": "$0.01",
+      "description": "Get trending TikTok videos with engagement metrics"
+    },
+    "/api/run?type=hashtag": {
+      "method": "GET",
+      "price": "$0.01",
+      "description": "Get hashtag analytics: view count, video count, top videos"
+    },
+    "/api/run?type=creator": {
+      "method": "GET",
+      "price": "$0.02",
+      "description": "Get creator profile with followers, likes, recent videos"
+    },
+    "/api/run?type=sound": {
+      "method": "GET",
+      "price": "$0.01",
+      "description": "Get sound/music usage data and top videos"
+    }
+  }
+}

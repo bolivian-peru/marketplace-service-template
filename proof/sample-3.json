@@ -1,0 +1,108 @@
+{
+  "metadata": {
+    "proxyIp": "172.56.168.66",
+    "proxyExitIp": "172.56.169.238",
+    "proxyProvider": "T-Mobile US mobile (IPv4)",
+    "sessionToken": "x402s_ab00ab64c466c4bf05db063fd3e6b3ee",
+    "capturedAt": "2026-02-26T13:42:00Z",
+    "timestampMs": 1772113499000,
+    "logId": "20260226134459AC70968913EB540A96DE",
+    "region": "US",
+    "platform": "TikTok",
+    "endpoint": "https://www.tiktok.com/api/search/general/preview/?keyword=trending+music+2026&count=10",
+    "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Mobile/15E148 Safari/604.1"
+  },
+  "query": {
+    "keyword": "trending music 2026",
+    "type": "music_trends",
+    "description": "Trending music search suggestions on TikTok US (Feb 2026)",
+    "resultCount": 8
+  },
+  "trending_keywords": [
+    {
+      "keyword": "trending music 2026 on tiktok",
+      "group_id": "5628618076404755559",
+      "source": "sug",
+      "recall_sources": [
+        "tiktok_orion_query",
+        "tiktok_index_global_active_7d_query",
+        "tiktok_index_active_7d_query"
+      ],
+      "personalized": true,
+      "language": "en"
+    },
+    {
+      "keyword": "top songs in 2026",
+      "group_id": "1558945553584780645",
+      "source": "sug",
+      "recall_sources": [
+        "query_xlmr_viking_proxy_recall",
+        "tiktok_orion_search_session"
+      ],
+      "personalized": true,
+      "language": "en"
+    },
+    {
+      "keyword": "trending music 2026 motivation",
+      "group_id": "3310234832635088745",
+      "source": "sug",
+      "recall_sources": [
+        "tiktok_index_global_active_7d_query"
+      ],
+      "personalized": true,
+      "language": "en"
+    },
+    {
+      "keyword": "trending music 2026 viral now",
+      "group_id": "166766280814419999",
+      "source": "sug",
+      "recall_sources": [
+        "tiktok_orion_query"
+      ],
+      "personalized": true,
+      "language": "en"
+    },
+    {
+      "keyword": "new music 2026",
+      "group_id": "6786807383545649684",
+      "source": "sug",
+      "recall_sources": [
+        "orion_qse_recall"
+      ],
+      "personalized": true,
+      "language": "en"
+    },
+    {
+      "keyword": "trending music 2026 lyrics",
+      "group_id": "6479060164394365672",
+      "source": "sug",
+      "recall_sources": [
+        "tiktok_orion_query"
+      ],
+      "personalized": true,
+      "language": "en"
+    },
+    {
+      "keyword": "2026 trend",
+      "group_id": "3101944120697710279",
+      "source": "sug",
+      "recall_sources": [
+        "query_xlmr_viking_proxy_recall"
+      ],
+      "personalized": true,
+      "language": "en"
+    },
+    {
+      "keyword": "trending music 2026 of february",
+      "group_id": "4169527197331500216",
+      "source": "sug",
+      "recall_sources": [
+        "tiktok_orion_query"
+      ],
+      "personalized": true,
+      "language": "en"
+    }
+  ],
+  "_raw_status_code": 0,
+  "_raw_rid": "20260226134459AC70968913EB540A96DE"
+}
