@@ -350,5 +350,4 @@ export async function scrapeLinkedInCompany(companyName: string): Promise<Linked
   return fetchLinkedInCompany(url);
 }
 
-export { searchLinkedInPeople };
 export { searchCompanyEmployees as findCompanyEmployees };
