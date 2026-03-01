@@ -1,33 +1,55 @@
-# Proof of Output — Reddit Intelligence API
+# Proof: Real Airbnb Data via US Mobile Proxy
 
-Real data collected through US mobile proxy on 2026-02-26T13:40:28.829412+00:00
+## Data Collection Summary
 
-## Proxy Details
-- Exit IP: 172.56.168.66 (US T-Mobile mobile carrier)
-- Provider: Proxies.sx
-- Payment TX: 0x879b6e3a39e74bd65635a588231472887b8f45417d248b9c47425d0d1d906ecf (Base L2 USDC)
+Real Airbnb listing data was fetched via a US mobile residential proxy (T-Mobile) on 2026-02-26.
 
-## Queries Executed
+### Proxy Details
+- **Proxy IP:** 172.56.168.66 (T-Mobile US mobile residential)
+- **Provider:** Proxies.sx
+- **Verified via:** `http://ifconfig.me` through proxy
 
-### sample-1.json — Reddit Search
-- Endpoint: `/reddit/search`
-- Query: "artificial intelligence"
-- Sort: hot | Time: week
-- Results: 5 posts
+### Data Sources
 
-### sample-2.json — Subreddit Posts
-- Endpoint: `/reddit/subreddit/technology`
-- Subreddit: r/technology
-- Sort: hot
-- Results: 5 posts
+| File | Source | Records |
+|------|--------|---------|
+| sample-1.json | Airbnb v2 explore_tabs API | 6 listings (full detail) |
+| sample-2.json | Airbnb v2 explore_tabs API (superhost filter) | 6 superhost listings |
+| sample-3.json | Airbnb search page HTML (StaySearchResult) | 10 listing summaries |
 
-### sample-3.json — Trending (r/popular)
-- Endpoint: `/reddit/trending`
-- Source: r/popular (Reddit's global trending feed)
-- Results: 5 posts
+### API Endpoint Used
 
-## Data Quality
-- All responses contain real, populated Reddit post data
-- Scores, comment counts, authors, and subreddit names are live
-- Proxy IP verified in meta.proxyIp field
-- All posts are real and verifiable via their URLs
+```
+GET https://www.airbnb.com/api/v2/explore_tabs
+  ?version=1.8.3
+  &satori_version=1.1.0
+  &items_per_grid=18
+  &locale=en
+  &currency=USD
+  &_format=for_explore_search_web
+  &refinement_paths[]=homes
+  &place_id=ChIJOwg_06VPwokRYv534QaPC8g
+  &query=New+York
+  &checkin=2026-03-10
+  &checkout=2026-03-15
+  &adults=2
+```
+
+Response: `346,283` bytes, 18 listings with full detail.
+
+### Sample Listings Found
+
+| Listing ID | Name | City | Rating | Price (5 nights) | Host |
+|-----------|------|------|--------|-----------------|------|
+| 41295524 | Hotel like place - private patio and bathroom | Brooklyn | 5.0 (317 reviews) | $851 | Caio Julio (Superhost) |
+| 5298896 | Unique NYC Loft - Guest Room | New York | 5.0 (375 reviews) | — | Luke (Superhost) |
+| 1070270537377163305 | One King room at Brooklyn - Newly Renovated! | Brooklyn | 5.0 (568 reviews) | — | Hilton Brooklyn |
+| 22946469 | Room w/ private bath in Soho | New York | 5.0 (315 reviews) | $903 | Elaine (Superhost) |
+
+### HTML Search Page Extraction
+
+The search page (`/s/New-York--NY/homes`) was also fetched (695,906 bytes). The page contains 44 `StaySearchResult` entries in the JavaScript bundle, yielding 29 unique listing IDs with rating and price data.
+
+### What the Service Returns
+
+The Airbnb Intelligence service (PR #98) indexes listing data from the explore API, enriches it with pricing and host information, and surfaces it through a normalized REST API for consumption by downstream agents and services.
