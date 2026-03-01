@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: food-delivery-api
+    runtime: node
+    buildCommand: curl -fsSL https://bun.sh/install | bash && export PATH=$HOME/.bun/bin:$PATH && bun install
+    startCommand: $HOME/.bun/bin/bun run src/index.ts
+    envVars:
+      - key: PORT
+        value: 3000
