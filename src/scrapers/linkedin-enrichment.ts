@@ -350,5 +350,5 @@ export async function scrapeLinkedInCompany(companyName: string): Promise<Linked
   return fetchLinkedInCompany(url);
 }
 
-export { searchLinkedInPeople };
+// searchLinkedInPeople already exported at definition
 export { searchCompanyEmployees as findCompanyEmployees };
