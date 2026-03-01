@@ -66,7 +66,21 @@ app.get('/health', (c) => c.json({
   service: process.env.SERVICE_NAME || 'marketplace-service',
   version: '1.0.0',
   timestamp: new Date().toISOString(),
-  endpoints: ['/api/run', '/api/details', '/api/jobs', '/api/research', '/api/trending', '/api/reviews/search', '/api/reviews/:place_id', '/api/reviews/summary/:place_id', '/api/business/:place_id'],
+  endpoints: [
+    '/api/run',
+    '/api/details',
+    '/api/jobs',
+    '/api/research',
+    '/api/trending',
+    '/api/reviews/search',
+    '/api/reviews/:place_id',
+    '/api/reviews/summary/:place_id',
+    '/api/business/:place_id',
+    '/api/marketplace/search',
+    '/api/marketplace/listing/:id',
+    '/api/marketplace/categories',
+    '/api/marketplace/new',
+  ],
 }));
 
 app.get('/', (c) => c.json({

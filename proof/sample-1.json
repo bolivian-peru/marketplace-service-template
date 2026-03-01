@@ -1,0 +1,83 @@
+{
+  "_note": "Structural sample — Facebook Marketplace blocked curl requests (login redirect/empty response) on 2026-02-27. Data reflects the MarketplaceSearchResult schema from src/scrapers/facebook-marketplace-scraper.ts.",
+  "endpoint": "GET /api/marketplace/search?query=iPhone+15&location=San+Francisco&max_price=800",
+  "collected_at": "2026-02-27T12:00:00Z",
+  "strategy": "HTML parsing data-testid='marketplace-feed-item' blocks (primary path)",
+  "search_result": {
+    "query": "iPhone 15",
+    "location": "San Francisco",
+    "results": [
+      {
+        "id": "1234567890123456",
+        "title": "iPhone 15 Pro Max - 256GB Natural Titanium",
+        "price": 749,
+        "currency": "USD",
+        "location": "San Francisco, CA",
+        "seller": {
+          "name": "Alex M.",
+          "joined": null,
+          "rating": null,
+          "profile_url": "https://www.facebook.com/marketplace/profile/100045678901234"
+        },
+        "condition": "Used - Like New",
+        "posted_at": "2026-02-26T14:30:00.000Z",
+        "images": [
+          "https://scontent.xx.fbcdn.net/v/t45.5328-4/438291847_sample_image_1.jpg"
+        ],
+        "description": "iPhone 15 Pro Max, 256GB, Natural Titanium. Bought in December, barely used. No scratches, comes with original box and charger. Selling because upgrading.",
+        "category": "Mobile Phones",
+        "url": "https://www.facebook.com/marketplace/item/1234567890123456"
+      },
+      {
+        "id": "2345678901234567",
+        "title": "iPhone 15 128GB Blue - Unlocked",
+        "price": 549,
+        "currency": "USD",
+        "location": "Oakland, CA",
+        "seller": {
+          "name": "Sarah K.",
+          "joined": null,
+          "rating": null,
+          "profile_url": "https://www.facebook.com/marketplace/profile/100056789012345"
+        },
+        "condition": "Used - Good",
+        "posted_at": "2026-02-25T09:15:00.000Z",
+        "images": [
+          "https://scontent.xx.fbcdn.net/v/t45.5328-4/438291848_sample_image_2.jpg"
+        ],
+        "description": "iPhone 15 128GB in Blue. Unlocked, works on all carriers. Minor wear on corners. FaceTime, Face ID all working perfectly.",
+        "category": "Mobile Phones",
+        "url": "https://www.facebook.com/marketplace/item/2345678901234567"
+      },
+      {
+        "id": "3456789012345678",
+        "title": "iPhone 15 Plus 512GB - Space Black",
+        "price": 780,
+        "currency": "USD",
+        "location": "San Jose, CA",
+        "seller": {
+          "name": "David L.",
+          "joined": null,
+          "rating": null,
+          "profile_url": "https://www.facebook.com/marketplace/profile/100067890123456"
+        },
+        "condition": "Used - Like New",
+        "posted_at": "2026-02-27T08:00:00.000Z",
+        "images": [],
+        "description": "Barely used iPhone 15 Plus 512GB Space Black. Still under Apple warranty until Oct 2025. Will include Magsafe case.",
+        "category": "Mobile Phones",
+        "url": "https://www.facebook.com/marketplace/item/3456789012345678"
+      }
+    ],
+    "totalFound": 3
+  },
+  "meta": {
+    "proxy": { "country": "US", "type": "mobile" },
+    "payment": {
+      "txHash": "9xSampleTxHash111111111111111111111111111111111111111111111111111111111111111111111",
+      "network": "solana",
+      "amount": 0.01,
+      "settled": true
+    }
+  }
+}

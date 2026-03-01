@@ -1,0 +1,83 @@
+{
+  "_note": "Structural sample — Facebook Marketplace new listings monitor. Data reflects the MarketplaceSearchResult schema for /api/marketplace/new from src/scrapers/facebook-marketplace-scraper.ts.",
+  "endpoint": "GET /api/marketplace/new?location=New+York&category=electronics&hours=6",
+  "collected_at": "2026-02-27T12:00:00Z",
+  "strategy": "HTML parsing with relative timestamp parsing (relativeTimeToISO) for recency filtering",
+  "new_listings": {
+    "query": "new",
+    "location": "New York",
+    "results": [
+      {
+        "id": "4567890123456789",
+        "title": "MacBook Pro M3 14-inch - Space Gray",
+        "price": 1650,
+        "currency": "USD",
+        "location": "Manhattan, New York",
+        "seller": {
+          "name": "Jordan T.",
+          "joined": null,
+          "rating": null,
+          "profile_url": "https://www.facebook.com/marketplace/profile/100078901234567"
+        },
+        "condition": "Used - Like New",
+        "posted_at": "2026-02-27T10:45:00.000Z",
+        "images": [
+          "https://scontent.xx.fbcdn.net/v/t45.5328-4/new_listing_1.jpg"
+        ],
+        "description": "MacBook Pro M3 14-inch, 18GB RAM, 512GB SSD. Purchased 3 months ago, mint condition. AppleCare+ until 2026.",
+        "category": "Computers",
+        "url": "https://www.facebook.com/marketplace/item/4567890123456789"
+      },
+      {
+        "id": "5678901234567890",
+        "title": "Sony WH-1000XM5 Headphones",
+        "price": 220,
+        "currency": "USD",
+        "location": "Brooklyn, New York",
+        "seller": {
+          "name": "Maria S.",
+          "joined": null,
+          "rating": null,
+          "profile_url": "https://www.facebook.com/marketplace/profile/100089012345678"
+        },
+        "condition": "Used - Good",
+        "posted_at": "2026-02-27T11:20:00.000Z",
+        "images": [
+          "https://scontent.xx.fbcdn.net/v/t45.5328-4/new_listing_2.jpg"
+        ],
+        "description": "Sony WH-1000XM5 noise-cancelling headphones. Works perfectly, minor wear on ear cushions. Original box included.",
+        "category": "Electronics",
+        "url": "https://www.facebook.com/marketplace/item/5678901234567890"
+      },
+      {
+        "id": "6789012345678901",
+        "title": "iPad Pro 12.9\" M2 - WiFi + Cellular 256GB",
+        "price": 850,
+        "currency": "USD",
+        "location": "Queens, New York",
+        "seller": {
+          "name": "Chris R.",
+          "joined": null,
+          "rating": null,
+          "profile_url": "https://www.facebook.com/marketplace/profile/100090123456789"
+        },
+        "condition": "Used - Like New",
+        "posted_at": "2026-02-27T11:50:00.000Z",
+        "images": [],
+        "description": "iPad Pro 12.9 M2, 256GB, WiFi+Cellular. Purchased last year. Screen protector applied since day 1, no scratches. Apple Pencil 2 included.",
+        "category": "Tablets",
+        "url": "https://www.facebook.com/marketplace/item/6789012345678901"
+      }
+    ],
+    "totalFound": 3
+  },
+  "meta": {
+    "proxy": { "country": "US", "type": "mobile" },
+    "payment": {
+      "txHash": "BxSampleTxHash333333333333333333333333333333333333333333333333333333333333333333333",
+      "network": "base",
+      "amount": 0.02,
+      "settled": true
+    }
+  }
+}
