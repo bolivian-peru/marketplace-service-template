@@ -326,3 +326,7 @@ export interface ReviewSearchResponse {
   businesses: BusinessInfo[];
   totalFound: number;
 }
+
+// ─── AMAZON PRODUCT & BSR TRACKER TYPES (Bounty #72) ──
+
+export type { AmazonProduct, AmazonPrice, BsrRank, BuyBox, AmazonSearchResult, AmazonReview, AmazonBestseller } from '../scrapers/amazon';

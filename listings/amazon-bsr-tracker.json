@@ -1,0 +1,51 @@
+{
+  "id": "amazon-bsr-tracker",
+  "name": "Amazon Product & BSR Tracker",
+  "description": "Real-time Amazon product data: price, BSR rank, reviews, buy box, competitor analysis. 10 marketplaces. $0.005/lookup via x402.",
+  "longDescription": "Extract real-time Amazon product intelligence by ASIN — price history, Best Sellers Rank (BSR), review counts, ratings, buy box winner, and availability. Search products by keyword with category filtering. Fetch bestseller rankings and individual reviews. Supports 10 Amazon marketplaces (US, UK, DE, FR, IT, ES, CA, JP, IN, AU). Mobile proxy routing ensures reliable data extraction through Amazon's anti-bot systems. Perfect for e-commerce intelligence, pricing optimization, and competitor monitoring agents.",
+  "endpoint": "https://bounty72-amazon-bsr-tracker.onrender.com",
+  "docsUrl": "https://agents.proxies.sx/marketplace/skill.md",
+  "pricing": {
+    "model": "per-request",
+    "amount": "0.005",
+    "minimum": "0.005",
+    "currency": "USDC",
+    "networks": [
+      {
+        "network": "solana",
+        "chainId": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "recipient": "3Jom4MKhZR3fmDfQUxBZckpVKT6dHHP23NxtxC1uS5AM",
+        "asset": "USDC",
+        "assetAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+      },
+      {
+        "network": "base",
+        "chainId": "eip155:8453",
+        "recipient": "3Jom4MKhZR3fmDfQUxBZckpVKT6dHHP23NxtxC1uS5AM",
+        "asset": "USDC",
+        "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+      }
+    ]
+  },
+  "category": "data",
+  "tags": [
+    "amazon",
+    "bsr",
+    "product-data",
+    "e-commerce",
+    "price-tracker",
+    "competitor-analysis",
+    "bestsellers"
+  ],
+  "owner": {
+    "name": "Samuel33rc",
+    "github": "Samuel33rc"
+  },
+  "status": "pending",
+  "featured": false,
+  "addedAt": "2026-03-01",
+  "x402": {
+    "discoveryUrl": "https://bounty72-amazon-bsr-tracker.onrender.com/api/amazon/product/B0BSHF7WHW",
+    "wellKnown": "https://bounty72-amazon-bsr-tracker.onrender.com"
+  }
+}

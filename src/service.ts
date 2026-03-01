@@ -6,6 +6,7 @@
  *   GET /api/details   (Google Maps Place details)
  *   GET /api/jobs      (Job Market Intelligence)
  *   GET /api/reviews/* (Google Reviews & Business Data)
+ *   GET /api/amazon/*  (Amazon Product & BSR Tracker)
  */
 
 import { Hono } from 'hono';
@@ -14,6 +15,7 @@ import { extractPayment, verifyPayment, build402Response } from './payment';
 import { scrapeIndeed, scrapeLinkedIn, type JobListing } from './scrapers/job-scraper';
 import { fetchReviews, fetchBusinessDetails, fetchReviewSummary, searchBusinesses } from './scrapers/reviews';
 import { scrapeGoogleMaps, extractDetailedBusiness } from './scrapers/maps-scraper';
+import { scrapeProduct, scrapeSearch, scrapeBestsellers, scrapeReviews as scrapeAmazonReviews } from './scrapers/amazon';
 import { researchRouter } from './routes/research';
 import { trendingRouter } from './routes/trending';
 import { 
@@ -787,5 +789,232 @@ serviceRouter.get('/linkedin/company/:id/employees', async (c) => {
     });
   } catch (err: any) {
     return c.json({ error: 'Employee search failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ═══════════════════════════════════════════════════════
+// ─── AMAZON PRODUCT & BSR TRACKER API (Bounty #72) ──
+// ═══════════════════════════════════════════════════════
+
+const AMAZON_PRODUCT_PRICE = 0.005;
+const AMAZON_SEARCH_PRICE = 0.01;
+const AMAZON_REVIEWS_PRICE = 0.02;
+
+const SUPPORTED_MARKETPLACES = ['US', 'UK', 'DE', 'FR', 'IT', 'ES', 'CA', 'JP', 'IN', 'AU'];
+
+function validateMarketplace(mp: string | undefined): string {
+  const normalized = (mp || 'US').toUpperCase();
+  return SUPPORTED_MARKETPLACES.includes(normalized) ? normalized : 'US';
+}
+
+// ─── GET /api/amazon/product/:asin ──────────────────
+
+serviceRouter.get('/amazon/product/:asin', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/amazon/product/:asin', 'Amazon product data: price, BSR, rating, reviews, buy box, availability. Supports US/UK/DE/FR/IT/ES/CA/JP/IN/AU.', AMAZON_PRODUCT_PRICE, walletAddress, {
+      input: {
+        asin: 'string (required) — Amazon ASIN in URL path',
+        marketplace: 'string (optional, default: "US") — US, UK, DE, FR, IT, ES, CA, JP, IN, AU',
+      },
+      output: {
+        asin: 'string', title: 'string', price: '{ current, currency, was, discount_pct }',
+        bsr: '{ rank, category, sub_category_ranks }', rating: 'number', reviews_count: 'number',
+        buy_box: '{ seller, is_amazon, fulfilled_by }', availability: 'string',
+        brand: 'string', images: 'string[]', description: 'string', features: 'string[]',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, AMAZON_PRODUCT_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const clientIp = c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  if (!checkProxyRateLimit(clientIp)) {
+    c.header('Retry-After', '60');
+    return c.json({ error: 'Proxy rate limit exceeded', retryAfter: 60 }, 429);
+  }
+
+  const asin = c.req.param('asin');
+  if (!asin || !/^[A-Z0-9]{10}$/.test(asin)) {
+    return c.json({ error: 'Invalid ASIN. Must be exactly 10 alphanumeric characters.', example: '/api/amazon/product/B0BSHF7WHW?marketplace=US' }, 400);
+  }
+
+  const marketplace = validateMarketplace(c.req.query('marketplace'));
+
+  try {
+    const proxy = getProxy();
+    const product = await scrapeProduct(asin, marketplace);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...product,
+      meta: { marketplace, proxy: { country: proxy.country, type: 'mobile' } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Amazon product scrape failed', message: err?.message || String(err), hint: 'Amazon may have blocked the request. Retry in a few seconds.' }, 502);
+  }
+});
+
+// ─── GET /api/amazon/search ─────────────────────────
+
+serviceRouter.get('/amazon/search', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/amazon/search', 'Search Amazon products by keyword. Returns up to 20 results with price, rating, reviews.', AMAZON_SEARCH_PRICE, walletAddress, {
+      input: {
+        query: 'string (required) — search keywords',
+        category: 'string (optional) — Amazon category slug (e.g., "electronics")',
+        marketplace: 'string (optional, default: "US")',
+        limit: 'number (optional, default: 20, max: 20)',
+      },
+      output: { results: 'AmazonSearchResult[] — { asin, title, price, rating, reviews_count, image, is_sponsored, url }' },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, AMAZON_SEARCH_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const clientIp = c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  if (!checkProxyRateLimit(clientIp)) {
+    c.header('Retry-After', '60');
+    return c.json({ error: 'Proxy rate limit exceeded', retryAfter: 60 }, 429);
+  }
+
+  const query = c.req.query('query');
+  if (!query) return c.json({ error: 'Missing required parameter: query', example: '/api/amazon/search?query=wireless+headphones&marketplace=US' }, 400);
+
+  const marketplace = validateMarketplace(c.req.query('marketplace'));
+  const category = c.req.query('category');
+  const limit = Math.min(Math.max(parseInt(c.req.query('limit') || '20') || 20, 1), 20);
+
+  try {
+    const proxy = getProxy();
+    const results = await scrapeSearch(query, marketplace, category, limit);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      query, marketplace, category: category || null, results, totalFound: results.length,
+      meta: { proxy: { country: proxy.country, type: 'mobile' } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Amazon search failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/amazon/bestsellers ────────────────────
+
+serviceRouter.get('/amazon/bestsellers', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/amazon/bestsellers', 'Amazon Best Sellers by category. Returns ranked products with price & rating.', AMAZON_SEARCH_PRICE, walletAddress, {
+      input: {
+        category: 'string (optional, default: "electronics") — Amazon category slug',
+        marketplace: 'string (optional, default: "US")',
+        limit: 'number (optional, default: 20, max: 20)',
+      },
+      output: { results: 'AmazonBestseller[] — { rank, asin, title, price, rating, reviews_count, image, url }' },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, AMAZON_SEARCH_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const clientIp = c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  if (!checkProxyRateLimit(clientIp)) {
+    c.header('Retry-After', '60');
+    return c.json({ error: 'Proxy rate limit exceeded', retryAfter: 60 }, 429);
+  }
+
+  const marketplace = validateMarketplace(c.req.query('marketplace'));
+  const category = c.req.query('category') || 'electronics';
+  const limit = Math.min(Math.max(parseInt(c.req.query('limit') || '20') || 20, 1), 20);
+
+  try {
+    const proxy = getProxy();
+    const results = await scrapeBestsellers(marketplace, category, limit);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      marketplace, category, results, totalFound: results.length,
+      meta: { proxy: { country: proxy.country, type: 'mobile' } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Amazon bestsellers fetch failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/amazon/reviews/:asin ──────────────────
+
+serviceRouter.get('/amazon/reviews/:asin', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/amazon/reviews/:asin', 'Fetch Amazon product reviews by ASIN. Sort by recent or helpful.', AMAZON_REVIEWS_PRICE, walletAddress, {
+      input: {
+        asin: 'string (required) — Amazon ASIN in URL path',
+        sort: '"recent" | "helpful" (optional, default: "recent")',
+        marketplace: 'string (optional, default: "US")',
+        limit: 'number (optional, default: 10, max: 20)',
+      },
+      output: { asin: 'string', reviews: 'AmazonReview[] — { author, rating, title, text, date, verified_purchase, helpful_count }', marketplace: 'string' },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, AMAZON_REVIEWS_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const clientIp = c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  if (!checkProxyRateLimit(clientIp)) {
+    c.header('Retry-After', '60');
+    return c.json({ error: 'Proxy rate limit exceeded', retryAfter: 60 }, 429);
+  }
+
+  const asin = c.req.param('asin');
+  if (!asin || !/^[A-Z0-9]{10}$/.test(asin)) {
+    return c.json({ error: 'Invalid ASIN. Must be exactly 10 alphanumeric characters.' }, 400);
+  }
+
+  const marketplace = validateMarketplace(c.req.query('marketplace'));
+  const sort = c.req.query('sort') || 'recent';
+  if (!['recent', 'helpful'].includes(sort)) {
+    return c.json({ error: 'Invalid sort. Use: recent, helpful' }, 400);
+  }
+  const limit = Math.min(Math.max(parseInt(c.req.query('limit') || '10') || 10, 1), 20);
+
+  try {
+    const proxy = getProxy();
+    const result = await scrapeAmazonReviews(asin, marketplace, sort, limit);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      meta: { proxy: { country: proxy.country, type: 'mobile' } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Amazon reviews fetch failed', message: err?.message || String(err) }, 502);
   }
 });
