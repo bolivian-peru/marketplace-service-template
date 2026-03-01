@@ -1,79 +1,217 @@
 {
-  "type": "search",
-  "query": "artificial intelligence",
-  "subreddit": null,
-  "sort": "hot",
-  "posts": [
-    {
-      "id": "1reonr1",
-      "title": "Why is this subreddit spelled ArtificialInteligence instead of ArtificialIntelligence? (2 Ls in intelligence in English)",
-      "author": "Yeti_Ninja_7342",
-      "subreddit": "ArtificialInteligence",
-      "score": 22,
-      "commentCount": 28,
-      "url": "https://reddit.com/r/ArtificialInteligence/comments/1reonr1/why_is_this_subreddit_spelled/",
-      "selftext": "Why is this subreddit spelled ArtificialInteligence instead of ArtificialIntelligence? (2 Ls in intelligence in English)",
-      "createdUtc": 1772050873,
-      "thumbnail": null
+  "metadata": {
+    "source": "airbnb.com",
+    "endpoint": "https://www.airbnb.com/api/v2/explore_tabs",
+    "params": {
+      "query": "New York",
+      "place_id": "ChIJOwg_06VPwokRYv534QaPC8g",
+      "checkin": "2026-03-10",
+      "checkout": "2026-03-15",
+      "adults": 2,
+      "currency": "USD",
+      "locale": "en"
     },
-    {
-      "id": "1rewun7",
-      "title": "Class 10 Artificial intelligence",
-      "author": "PressureOk4860",
-      "subreddit": "CBSE",
-      "score": 4,
-      "commentCount": 14,
-      "url": "https://reddit.com/r/CBSE/comments/1rewun7/class_10_artificial_intelligence/",
-      "selftext": "iska pura syllabus aaega na?",
-      "createdUtc": 1772069997,
-      "thumbnail": "https://preview.redd.it/ffwjogcwtqlg1.jpeg?width=140&amp;height=140&amp;crop=1:1,smart&amp;auto=webp&amp;s=240d44f11cf1031ca863dffad381d3e0b9eed134"
-    },
-    {
-      "id": "1rf0whi",
-      "title": "Temple adding Artificial Intelligence Major??",
-      "author": "verylongegg",
-      "subreddit": "Temple",
-      "score": 7,
-      "commentCount": 6,
-      "url": "https://reddit.com/r/Temple/comments/1rf0whi/temple_adding_artificial_intelligence_major/",
-      "selftext": "https://preview.redd.it/cff9u7vvprlg1.png?width=2286&amp;format=png&amp;auto=webp&amp;s=3e498c06cb14a3742c0f9cac43070d74e00413ad\n\ntrying to convince my friend to transfer here over PSU, we were looking at the degree programs tool and this one stood out after she'd searched \"computer''. this is def a new thing, right? i don't remember seeing it at all before, and the redirect links lead to a request information form. it only shows up through the  tool and [here](https://cst.temple.edu/academics/d",
-      "createdUtc": 1772081256,
-      "thumbnail": "https://preview.redd.it/cff9u7vvprlg1.png?width=140&amp;height=50&amp;auto=webp&amp;s=1cd56d267f00a1f118231caf517d1cac97eeb3c9"
-    },
-    {
-      "id": "1refc22",
-      "title": "Building Pro-Worker Artificial Intelligence",
-      "author": "randommathaccount",
-      "subreddit": "neoliberal",
-      "score": 14,
-      "commentCount": 7,
-      "url": "https://reddit.com/r/neoliberal/comments/1refc22/building_proworker_artificial_intelligence/",
-      "selftext": "",
-      "createdUtc": 1772031208,
-      "thumbnail": "https://external-preview.redd.it/zxh-pPThdiRFEFrq7fnK5SkH-eSyns6DhiyHAgQ9DLc.jpeg?width=140&amp;height=73&amp;auto=webp&amp;s=1f68cd6051938b382326a48ec9bf0ac91c70c86e"
-    },
-    {
-      "id": "1reloic",
-      "title": "Your experience with the Artificial Intelligence Masters",
-      "author": "Annual-Cricket-3877",
-      "subreddit": "UZH",
-      "score": 5,
-      "commentCount": 0,
-      "url": "https://reddit.com/r/UZH/comments/1reloic/your_experience_with_the_artificial_intelligence/",
-      "selftext": "Hi, I am thinking about applying to the Artificial Intelligence Masters. \n\nBefore I do that I wanted to ask\n\n* What was/is your experience within this program?\n* Are you satisfied with what you are getting?\n* How is the student life / general atmosphere amongst other students?\n* Is there anything that you did not expect?\n\nWould be really nice to get some answer, I am just a bit indecisive if this is the best option for me :D  \n\n\n\n",
-      "createdUtc": 1772044573,
-      "thumbnail": null
-    }
-  ],
-  "pagination": {
-    "after": "t3_1reloic",
-    "hasMore": true
-  },
-  "meta": {
-    "query": "artificial intelligence",
-    "proxyCountry": "United States",
+    "fetchedAt": "2026-02-26T13:51:18Z",
     "proxyIp": "172.56.168.66",
-    "scrapedAt": "2026-02-26T13:40:28.829412+00:00",
-    "responseTimeMs": 1200
-  }
+    "proxyProvider": "Proxies.sx T-Mobile US mobile",
+    "totalResultsReturned": 18,
+    "paginationMetadata": {
+      "hasNextPage": true,
+      "itemsPerPage": 18
+    }
+  },
+  "listings": [
+    {
+      "listingId": "41295524",
+      "url": "https://www.airbnb.com/rooms/41295524",
+      "name": "Hotel like place - private patio and bathroom",
+      "roomType": "private_room",
+      "location": {
+        "city": "Brooklyn",
+        "publicAddress": "Brooklyn, NY, United States",
+        "lat": 40.67627,
+        "lng": -73.94137
+      },
+      "capacity": {
+        "guests": 2,
+        "bedrooms": 1,
+        "beds": 2,
+        "bathrooms": 1.0
+      },
+      "rating": {
+        "stars": 5.0,
+        "reviewCount": 317
+      },
+      "pricing": {
+        "displayPrice": "$851",
+        "stayDuration": "5 nights (Mar 10-15, 2026)",
+        "currency": "USD"
+      },
+      "host": {
+        "firstName": "Caio Julio",
+        "isSuperhost": true
+      },
+      "instantBook": false
+    },
+    {
+      "listingId": "5298896",
+      "url": "https://www.airbnb.com/rooms/5298896",
+      "name": "Unique NYC Loft - Guest Room",
+      "roomType": "private_room",
+      "location": {
+        "city": "New York",
+        "publicAddress": "New York, NY, United States",
+        "lat": 40.70419,
+        "lng": -74.01127
+      },
+      "capacity": {
+        "guests": 2,
+        "bedrooms": 1,
+        "beds": 1,
+        "bathrooms": 1.0
+      },
+      "rating": {
+        "stars": 5.0,
+        "reviewCount": 375
+      },
+      "pricing": {
+        "displayPrice": null,
+        "stayDuration": "5 nights (Mar 10-15, 2026)",
+        "currency": "USD"
+      },
+      "host": {
+        "firstName": "Luke",
+        "isSuperhost": true
+      },
+      "instantBook": false
+    },
+    {
+      "listingId": "1070270537377163305",
+      "url": "https://www.airbnb.com/rooms/1070270537377163305",
+      "name": "One King room at Brooklyn - Newly Renovated!",
+      "roomType": "private_room",
+      "location": {
+        "city": "Brooklyn",
+        "publicAddress": "Brooklyn, NY, United States",
+        "lat": 40.690157186681645,
+        "lng": -73.98692196057979
+      },
+      "capacity": {
+        "guests": 2,
+        "bedrooms": 1,
+        "beds": 1,
+        "bathrooms": 1.0
+      },
+      "rating": {
+        "stars": 5.0,
+        "reviewCount": 568
+      },
+      "pricing": {
+        "displayPrice": null,
+        "stayDuration": "5 nights (Mar 10-15, 2026)",
+        "currency": "USD"
+      },
+      "host": {
+        "firstName": "Hilton Brooklyn New York City",
+        "isSuperhost": true
+      },
+      "instantBook": false
+    },
+    {
+      "listingId": "1010503905929192028",
+      "url": "https://www.airbnb.com/rooms/1010503905929192028",
+      "name": "Steps to Times Square | Free Breakfast & Fitness",
+      "roomType": "private_room",
+      "location": {
+        "city": "New York",
+        "publicAddress": "New York, NY, United States",
+        "lat": 40.75724,
+        "lng": -73.99236
+      },
+      "capacity": {
+        "guests": 2,
+        "bedrooms": 1,
+        "beds": 1,
+        "bathrooms": 1.0
+      },
+      "rating": {
+        "stars": 4.5,
+        "reviewCount": 1129
+      },
+      "pricing": {
+        "displayPrice": "$1,095",
+        "stayDuration": "5 nights (Mar 10-15, 2026)",
+        "currency": "USD"
+      },
+      "host": {
+        "firstName": "Times Square South New York City",
+        "isSuperhost": false
+      },
+      "instantBook": false
+    },
+    {
+      "listingId": "1267449405198185516",
+      "url": "https://www.airbnb.com/rooms/1267449405198185516",
+      "name": "Pod Times Square Hotel",
+      "roomType": "private_room",
+      "location": {
+        "city": "New York",
+        "publicAddress": "New York, NY, United States",
+        "lat": 40.7583945,
+        "lng": -73.9930985
+      },
+      "capacity": {
+        "guests": 2,
+        "bedrooms": 1,
+        "beds": 1,
+        "bathrooms": 1.0
+      },
+      "rating": {
+        "stars": 4.5,
+        "reviewCount": 111
+      },
+      "pricing": {
+        "displayPrice": null,
+        "stayDuration": "5 nights (Mar 10-15, 2026)",
+        "currency": "USD"
+      },
+      "host": {
+        "firstName": "Pod Times Square Hotel",
+        "isSuperhost": false
+      },
+      "instantBook": false
+    },
+    {
+      "listingId": "21969733",
+      "url": "https://www.airbnb.com/rooms/21969733",
+      "name": "BRIGHT HOMEY AND COZY  MINUTES TO NEW YORK  CITY",
+      "roomType": "entire_home",
+      "location": {
+        "city": "Jersey City",
+        "publicAddress": "Jersey City, NJ, United States",
+        "lat": 40.7479,
+        "lng": -74.05105
+      },
+      "capacity": {
+        "guests": 6,
+        "bedrooms": 1,
+        "beds": 3,
+        "bathrooms": 1.0
+      },
+      "rating": {
+        "stars": 5.0,
+        "reviewCount": 280
+      },
+      "pricing": {
+        "displayPrice": null,
+        "stayDuration": "5 nights (Mar 10-15, 2026)",
+        "currency": "USD"
+      },
+      "host": {
+        "firstName": "Kenia",
+        "isSuperhost": true
+      },
+      "instantBook": false
+    }
+  ]
 }
