@@ -1,0 +1,262 @@
+{
+  "metadata": {
+    "source": "OpenStreetMap Overpass API",
+    "endpoint": "https://overpass-api.de/api/interpreter",
+    "query": {
+      "description": "Restaurants and fast food in Lower/Midtown Manhattan",
+      "boundingBox": "40.72,-74.01,40.76,-73.97",
+      "amenities": [
+        "restaurant",
+        "fast_food",
+        "cafe"
+      ],
+      "limit": 30
+    },
+    "fetchedAt": "2026-02-26T13:51:45Z",
+    "proxyIp": "172.56.168.66",
+    "proxyProvider": "Proxies.sx T-Mobile US mobile",
+    "totalResults": 30
+  },
+  "restaurants": [
+    {
+      "osmId": 357620442,
+      "name": "Sam Sunny",
+      "amenityType": "restaurant",
+      "cuisine": "korean",
+      "address": {
+        "street": "",
+        "city": "New York",
+        "state": "NY",
+        "country": "US"
+      },
+      "coordinates": {
+        "lat": 40.7415576,
+        "lng": -73.9784628
+      },
+      "contact": {
+        "phone": "+1-212-837-1044",
+        "website": "https://www.samsunnynyc.com"
+      },
+      "hours": "Mo-Th 12:00-22:00; Fr-Sa 12:00-23:00; Su 12:00-22:00",
+      "delivery": null,
+      "takeaway": null,
+      "dataSource": "OpenStreetMap"
+    },
+    {
+      "osmId": 419359956,
+      "name": "Bubo",
+      "amenityType": "restaurant",
+      "cuisine": "mediterranean;american",
+      "address": {
+        "street": "",
+        "city": "New York",
+        "state": "NY",
+        "country": "US"
+      },
+      "coordinates": {
+        "lat": 40.7460362,
+        "lng": -73.9776676
+      },
+      "contact": {
+        "phone": "+1-212-532-3300",
+        "website": "https://www.bubonyc.com"
+      },
+      "hours": "Mo-Th 16:00-01:00, Fr 16:00-02:30, Sa 12:00-01:00, Su 12:00-11:30",
+      "delivery": null,
+      "takeaway": null,
+      "dataSource": "OpenStreetMap"
+    },
+    {
+      "osmId": 419359995,
+      "name": "Little Alley",
+      "amenityType": "restaurant",
+      "cuisine": "chinese;shanghai",
+      "address": {
+        "street": "550 3rd Avenue",
+        "city": "New York",
+        "state": "NY",
+        "country": "US"
+      },
+      "coordinates": {
+        "lat": 40.7473845,
+        "lng": -73.9771526
+      },
+      "contact": {
+        "phone": "+1-646-998-3976",
+        "website": "https://www.littlealley.nyc"
+      },
+      "hours": "Mo-Th 11:30-15:00,17:00-22:00; Fr-Sa 11:30-15:00,17:00-22:30; Su 11:30-15:00,17:00-22:00",
+      "delivery": "yes",
+      "takeaway": "yes",
+      "dataSource": "OpenStreetMap"
+    },
+    {
+      "osmId": 419362699,
+      "name": "The Musket Room",
+      "amenityType": "restaurant",
+      "cuisine": "continental;eclectic",
+      "address": {
+        "street": "",
+        "city": "New York",
+        "state": "NY",
+        "country": "US"
+      },
+      "coordinates": {
+        "lat": 40.7239188,
+        "lng": -73.9937813
+      },
+      "contact": {
+        "phone": "+1-212-219-0764",
+        "website": "https://www.musketroom.com"
+      },
+      "hours": "Tu-Sa 17:00-23:00",
+      "delivery": null,
+      "takeaway": null,
+      "dataSource": "OpenStreetMap"
+    },
+    {
+      "osmId": 419367625,
+      "name": "Mi",
+      "amenityType": "restaurant",
+      "cuisine": "chinese",
+      "address": {
+        "street": "",
+        "city": "New York",
+        "state": "NY",
+        "country": "US"
+      },
+      "coordinates": {
+        "lat": 40.7461325,
+        "lng": -73.9775916
+      },
+      "contact": {
+        "phone": "+1-917-388-2679",
+        "website": null
+      },
+      "hours": "Mo-Su 11:30-21:00",
+      "delivery": null,
+      "takeaway": null,
+      "dataSource": "OpenStreetMap"
+    },
+    {
+      "osmId": 561239802,
+      "name": "Cafe Delecctica",
+      "amenityType": "cafe",
+      "cuisine": "coffee_shop;sandwich",
+      "address": {
+        "street": "564 3rd Avenue",
+        "city": "New York",
+        "state": "NY",
+        "country": "US"
+      },
+      "coordinates": {
+        "lat": 40.7481687,
+        "lng": -73.9766084
+      },
+      "contact": {
+        "phone": null,
+        "website": null
+      },
+      "hours": "Mo-Fr 07:30-17:00; Sa 08:00-16:00; Su off",
+      "delivery": null,
+      "takeaway": null,
+      "dataSource": "OpenStreetMap"
+    },
+    {
+      "osmId": 584120700,
+      "name": "Caf\u00e9 au bon gout",
+      "amenityType": "fast_food",
+      "cuisine": null,
+      "address": {
+        "street": "1 5th Avenue",
+        "city": "New York",
+        "state": "NY",
+        "country": "US"
+      },
+      "coordinates": {
+        "lat": 40.7458981,
+        "lng": -73.986688
+      },
+      "contact": {
+        "phone": null,
+        "website": null
+      },
+      "hours": null,
+      "delivery": null,
+      "takeaway": null,
+      "dataSource": "OpenStreetMap"
+    },
+    {
+      "osmId": 643414350,
+      "name": "Hard Rock Cafe",
+      "amenityType": "restaurant",
+      "cuisine": "american",
+      "address": {
+        "street": "1501 Broadway",
+        "city": "New York",
+        "state": "NY",
+        "country": "US"
+      },
+      "coordinates": {
+        "lat": 40.756994,
+        "lng": -73.9865512
+      },
+      "contact": {
+        "phone": "+1 212-343-3355",
+        "website": "https://www.hardrockcafe.com/location/new-york/"
+      },
+      "hours": null,
+      "delivery": "yes",
+      "takeaway": null,
+      "dataSource": "OpenStreetMap"
+    },
+    {
+      "osmId": 661889865,
+      "name": "Carbone",
+      "amenityType": "restaurant",
+      "cuisine": null,
+      "address": {
+        "street": "331 West 38th Street",
+        "city": "New York",
+        "state": "NY",
+        "country": "US"
+      },
+      "coordinates": {
+        "lat": 40.7554192,
+        "lng": -73.9930152
+      },
+      "contact": {
+        "phone": null,
+        "website": null
+      },
+      "hours": null,
+      "delivery": null,
+      "takeaway": null,
+      "dataSource": "OpenStreetMap"
+    },
+    {
+      "osmId": 662433328,
+      "name": "Freemans",
+      "amenityType": "restaurant",
+      "cuisine": "american",
+      "address": {
+        "street": "8 Freeman Alley",
+        "city": "New York",
+        "state": "NY",
+        "country": "US"
+      },
+      "coordinates": {
+        "lat": 40.7219891,
+        "lng": -73.9924423
+      },
+      "contact": {
+        "phone": "+1-212-420-0012",
+        "website": "https://www.freemansrestaurant.com"
+      },
+      "hours": "Mo-Th 11:00-23:00; Fr 11:00-02:00; Sa 10:00-02:00; Su 10:00-23:00",
+      "delivery": null,
+      "takeaway": null,
+      "dataSource": "OpenStreetMap"
+    }
+  ]
+}

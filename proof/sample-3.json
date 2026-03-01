@@ -1,0 +1,322 @@
+{
+  "metadata": {
+    "source": "OpenStreetMap Overpass API - Manhattan food delivery corridor",
+    "endpoint": "https://overpass-api.de/api/interpreter",
+    "query": {
+      "description": "Restaurants, fast food, cafes in Manhattan with delivery/takeaway tags",
+      "boundingBox": "40.70,-74.02,40.78,-73.93",
+      "amenities": [
+        "restaurant",
+        "fast_food"
+      ],
+      "hasCuisineTag": true
+    },
+    "fetchedAt": "2026-02-26T13:51:45Z",
+    "proxyIp": "172.56.168.66",
+    "proxyProvider": "Proxies.sx T-Mobile US mobile",
+    "totalResults": 20,
+    "deliveryEnabled": 7
+  },
+  "restaurants": [
+    {
+      "osmId": 349323821,
+      "name": "Five Guys",
+      "cuisine": "burger",
+      "amenityType": "fast_food",
+      "coordinates": {
+        "lat": 40.7625151,
+        "lng": -73.9766897
+      },
+      "delivery": "unknown",
+      "takeaway": "yes",
+      "phone": "+1 212-459-9600",
+      "website": "https://fiveguys.olo.express/menu/nyc-55th-st/info",
+      "openingHours": "Mo-Su 11:00-22:00"
+    },
+    {
+      "osmId": 380044344,
+      "name": "Pedro's",
+      "cuisine": "mexican",
+      "amenityType": "restaurant",
+      "coordinates": {
+        "lat": 40.7025302,
+        "lng": -73.9865515
+      },
+      "delivery": "unknown",
+      "takeaway": "unknown",
+      "phone": "+1-718-797-2851",
+      "website": "https://pedrosbrooklyn.com",
+      "openingHours": "Mo-We 12:00-22:00, Th-Sa 12:00-24:00, Su 12:00-22:00"
+    },
+    {
+      "osmId": 419359956,
+      "name": "Bubo",
+      "cuisine": "mediterranean;american",
+      "amenityType": "restaurant",
+      "coordinates": {
+        "lat": 40.7460362,
+        "lng": -73.9776676
+      },
+      "delivery": "unknown",
+      "takeaway": "unknown",
+      "phone": "+1-212-532-3300",
+      "website": "https://www.bubonyc.com",
+      "openingHours": "Mo-Th 16:00-01:00, Fr 16:00-02:30, Sa 12:00-01:00, Su 12:00-11:30"
+    },
+    {
+      "osmId": 419359995,
+      "name": "Little Alley",
+      "cuisine": "chinese;shanghai",
+      "amenityType": "restaurant",
+      "coordinates": {
+        "lat": 40.7473845,
+        "lng": -73.9771526
+      },
+      "delivery": "yes",
+      "takeaway": "yes",
+      "phone": "+1-646-998-3976",
+      "website": "https://www.littlealley.nyc",
+      "openingHours": "Mo-Th 11:30-15:00,17:00-22:00; Fr-Sa 11:30-15:00,17:00-22:30; Su 11:30-15:00,17:00-22:00"
+    },
+    {
+      "osmId": 419367625,
+      "name": "Mi",
+      "cuisine": "chinese",
+      "amenityType": "restaurant",
+      "coordinates": {
+        "lat": 40.7461325,
+        "lng": -73.9775916
+      },
+      "delivery": "unknown",
+      "takeaway": "unknown",
+      "phone": "+1-917-388-2679",
+      "website": null,
+      "openingHours": "Mo-Su 11:30-21:00"
+    },
+    {
+      "osmId": 617740844,
+      "name": "Carmine's Pizzeria",
+      "cuisine": "pizza",
+      "amenityType": "restaurant",
+      "coordinates": {
+        "lat": 40.714968,
+        "lng": -73.9443016
+      },
+      "delivery": "unknown",
+      "takeaway": "unknown",
+      "phone": null,
+      "website": "https.//www.carmineapizzeriamenu.com",
+      "openingHours": null
+    },
+    {
+      "osmId": 617740846,
+      "name": "El Loco Burrito",
+      "cuisine": "mexican",
+      "amenityType": "restaurant",
+      "coordinates": {
+        "lat": 40.7148102,
+        "lng": -73.9445968
+      },
+      "delivery": "yes",
+      "takeaway": "yes",
+      "phone": "+1 718-388-8215",
+      "website": null,
+      "openingHours": "Mo-Sa 11:00-21:00; Su 12:00-21:00"
+    },
+    {
+      "osmId": 617740847,
+      "name": "Tony's Pizza",
+      "cuisine": "pizza",
+      "amenityType": "restaurant",
+      "coordinates": {
+        "lat": 40.7150542,
+        "lng": -73.9446372
+      },
+      "delivery": "yes",
+      "takeaway": "yes",
+      "phone": "+1-718-384-8669",
+      "website": null,
+      "openingHours": "Mo-Th 10:00-23:00; Fr-Sa 10:00-24:00; Su 10:00-23:00"
+    },
+    {
+      "osmId": 617740848,
+      "name": "Dunkin'",
+      "cuisine": "donut;coffee_shop",
+      "amenityType": "fast_food",
+      "coordinates": {
+        "lat": 40.7147639,
+        "lng": -73.9442508
+      },
+      "delivery": "unknown",
+      "takeaway": "yes",
+      "phone": "+1 718-384-7640",
+      "website": "https://locations.dunkindonuts.com/en/ny/brooklyn/352-graham-ave/342627",
+      "openingHours": "05:00-22:00"
+    },
+    {
+      "osmId": 617741150,
+      "name": "East Met West",
+      "cuisine": "chinese",
+      "amenityType": "restaurant",
+      "coordinates": {
+        "lat": 40.714447,
+        "lng": -73.9439212
+      },
+      "delivery": "yes",
+      "takeaway": "yes",
+      "phone": "+1 718-218-7777",
+      "website": null,
+      "openingHours": "Mo-Th 11:00-23:00; Fr, Sa 11:00-23:30; Su 11:30-23:00"
+    },
+    {
+      "osmId": 622228254,
+      "name": "McDonald's",
+      "cuisine": "burger",
+      "amenityType": "fast_food",
+      "coordinates": {
+        "lat": 40.7220373,
+        "lng": -73.9404458
+      },
+      "delivery": "unknown",
+      "takeaway": "yes",
+      "phone": "+1 718-486-6195",
+      "website": "https://www.mcdonalds.com/us/en-us/location/23533.html",
+      "openingHours": "Mo-Th 06:00-24:00; Fr-Sa 06:00-01:00; Su 06:00-24:00"
+    },
+    {
+      "osmId": 643414350,
+      "name": "Hard Rock Cafe",
+      "cuisine": "american",
+      "amenityType": "restaurant",
+      "coordinates": {
+        "lat": 40.756994,
+        "lng": -73.9865512
+      },
+      "delivery": "yes",
+      "takeaway": "unknown",
+      "phone": "+1 212-343-3355",
+      "website": "https://www.hardrockcafe.com/location/new-york/",
+      "openingHours": null
+    },
+    {
+      "osmId": 662433328,
+      "name": "Freemans",
+      "cuisine": "american",
+      "amenityType": "restaurant",
+      "coordinates": {
+        "lat": 40.7219891,
+        "lng": -73.9924423
+      },
+      "delivery": "unknown",
+      "takeaway": "unknown",
+      "phone": "+1-212-420-0012",
+      "website": "https://www.freemansrestaurant.com",
+      "openingHours": "Mo-Th 11:00-23:00; Fr 11:00-02:00; Sa 10:00-02:00; Su 10:00-23:00"
+    },
+    {
+      "osmId": 662435489,
+      "name": "Aurora",
+      "cuisine": "italian",
+      "amenityType": "restaurant",
+      "coordinates": {
+        "lat": 40.7156935,
+        "lng": -73.9647329
+      },
+      "delivery": "unknown",
+      "takeaway": "unknown",
+      "phone": "+1-718-388-5100",
+      "website": "https://www.aurorabk.com",
+      "openingHours": "Mo-Th 12:00-23:00, Fr 12:00-23:30, Sa 11:00-23:30, Su 11:00-22:30"
+    },
+    {
+      "osmId": 663354158,
+      "name": "Giovanni",
+      "cuisine": "italian",
+      "amenityType": "restaurant",
+      "coordinates": {
+        "lat": 40.779131,
+        "lng": -73.960536
+      },
+      "delivery": "unknown",
+      "takeaway": "unknown",
+      "phone": null,
+      "website": "https://www.giovanniventicinque.com/",
+      "openingHours": null
+    },
+    {
+      "osmId": 663387602,
+      "name": "Taco Bell Cantina",
+      "cuisine": "tex-mex",
+      "amenityType": "fast_food",
+      "coordinates": {
+        "lat": 40.7529683,
+        "lng": -73.9926431
+      },
+      "delivery": "yes",
+      "takeaway": "yes",
+      "phone": "+1 929-232-3040",
+      "website": "https://locations.tacobell.com/ny/new-york/500-8th-avenue.html",
+      "openingHours": "Mo-Th, Su 08:00-03:00; Fr, Sa 08:00-04:00"
+    },
+    {
+      "osmId": 671071295,
+      "name": "2 Bros. Pizza",
+      "cuisine": "pizza",
+      "amenityType": "fast_food",
+      "coordinates": {
+        "lat": 40.7569564,
+        "lng": -73.9934438
+      },
+      "delivery": "unknown",
+      "takeaway": "yes",
+      "phone": "+1 212-695-2642",
+      "website": "https://www.2brospizza.com/location/542-9th-ave-new-york-ny-10018/",
+      "openingHours": "Mo-Su 11:00-01:00"
+    },
+    {
+      "osmId": 732372474,
+      "name": "Vinegar Hill House",
+      "cuisine": "american",
+      "amenityType": "restaurant",
+      "coordinates": {
+        "lat": 40.7027578,
+        "lng": -73.9812369
+      },
+      "delivery": "unknown",
+      "takeaway": "unknown",
+      "phone": null,
+      "website": "https://www.vinegarhillhouse.com/",
+      "openingHours": "Mo-Th 17:30-21:30; Fr 17:30-22:00; Sa 10:00-15:00,17:30-22:00; Su 10:00-15:00,17:30-21:30"
+    },
+    {
+      "osmId": 763652153,
+      "name": "S&P Sandwich Shop",
+      "cuisine": "sandwich",
+      "amenityType": "fast_food",
+      "coordinates": {
+        "lat": 40.7411174,
+        "lng": -73.9901665
+      },
+      "delivery": "yes",
+      "takeaway": "unknown",
+      "phone": "+1 212-961-8862",
+      "website": "https://www.sandwich.place/",
+      "openingHours": null
+    },
+    {
+      "osmId": 765800358,
+      "name": "Diner",
+      "cuisine": "american",
+      "amenityType": "restaurant",
+      "coordinates": {
+        "lat": 40.7106766,
+        "lng": -73.9655977
+      },
+      "delivery": "unknown",
+      "takeaway": "yes",
+      "phone": "+1-718-486-3077",
+      "website": "https://www.dinernyc.com/",
+      "openingHours": "Mo-Th 18:00-24:00; Fr 11:00-24:00; Sa, Su 10:00-24:00"
+    }
+  ]
+}
