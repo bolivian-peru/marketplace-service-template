@@ -16,6 +16,7 @@ import { fetchReviews, fetchBusinessDetails, fetchReviewSummary, searchBusinesse
 import { scrapeGoogleMaps, extractDetailedBusiness } from './scrapers/maps-scraper';
 import { researchRouter } from './routes/research';
 import { trendingRouter } from './routes/trending';
+import { foodRouter } from './routes/food';
 import { 
   scrapeLinkedInPerson, 
   scrapeLinkedInCompany, 
@@ -28,6 +29,9 @@ export const serviceRouter = new Hono();
 // ─── TREND INTELLIGENCE ROUTES (Bounty #70) ─────────
 serviceRouter.route('/research', researchRouter);
 serviceRouter.route('/trending', trendingRouter);
+
+// ─── FOOD DELIVERY INTELLIGENCE ROUTES (Bounty #76) ──
+serviceRouter.route('/food', foodRouter);
 
 const SERVICE_NAME = 'job-market-intelligence';
 const PRICE_USDC = 0.005;
