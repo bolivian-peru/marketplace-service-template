@@ -1301,20 +1301,22 @@ const AIRBNB_MARKET_STATS_PRICE = 0.05;
 // ─── GET /api/airbnb/search ─────────────────────────
 
 serviceRouter.get('/airbnb/search', async (c) => {
-  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '13JaXRYCZoe7z4Zoa4gCorkzqtBNKYN2RmtfrHGJu5ia';
 
   const payment = extractPayment(c);
   if (!payment) {
-    return c.json(build402Response('/api/airbnb/search', 'Search Airbnb listings by location, dates, guests. Returns pricing, ratings, host info.', AIRBNB_SEARCH_PRICE, walletAddress, {
+    return c.json(build402Response('/api/airbnb/search', 'Search Airbnb listings by location, dates, guests. Returns pricing, ratings, occupancy estimates, and revenue potential.', AIRBNB_SEARCH_PRICE, walletAddress, {
       input: {
         location: 'string (required) — city or area',
         checkin: 'string (optional) — YYYY-MM-DD',
         checkout: 'string (optional) — YYYY-MM-DD',
         guests: 'number (optional, default: 1)',
+        price_min: 'number (optional) — minimum price per night in USD',
+        price_max: 'number (optional) — maximum price per night in USD',
         limit: 'number (optional, default: 20, max: 50)',
       },
       output: {
-        listings: 'AirbnbListing[] — id, name, price, rating, reviewCount, host, roomType, amenities, coordinates',
+        listings: 'AirbnbListing[] — id, name, price, rating, reviewCount, host, roomType, amenities, coordinates, occupancy_estimate_pct, revenue_potential_monthly, revenue_potential_annual',
       },
     }), 402);
   }
@@ -1328,12 +1330,14 @@ serviceRouter.get('/airbnb/search', async (c) => {
   const checkin = c.req.query('checkin') || undefined;
   const checkout = c.req.query('checkout') || undefined;
   const guests = parseInt(c.req.query('guests') || '1') || 1;
+  const priceMin = c.req.query('price_min') ? parseInt(c.req.query('price_min')!) : undefined;
+  const priceMax = c.req.query('price_max') ? parseInt(c.req.query('price_max')!) : undefined;
   const limit = Math.min(Math.max(parseInt(c.req.query('limit') || '20') || 20, 1), 50);
 
   try {
     const proxy = getProxy();
     const ip = await getProxyExitIp();
-    const results = await searchAirbnb(location, checkin, checkout, guests, limit);
+    const results = await searchAirbnb(location, checkin, checkout, guests, priceMin, priceMax, limit);
 
     c.header('X-Payment-Settled', 'true');
     c.header('X-Payment-TxHash', payment.txHash);
@@ -1351,14 +1355,14 @@ serviceRouter.get('/airbnb/search', async (c) => {
 // ─── GET /api/airbnb/listing/:id ────────────────────
 
 serviceRouter.get('/airbnb/listing/:id', async (c) => {
-  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '13JaXRYCZoe7z4Zoa4gCorkzqtBNKYN2RmtfrHGJu5ia';
 
   const payment = extractPayment(c);
   if (!payment) {
-    return c.json(build402Response('/api/airbnb/listing/:id', 'Get detailed Airbnb listing: host, amenities, pricing calendar, location.', AIRBNB_LISTING_PRICE, walletAddress, {
+    return c.json(build402Response('/api/airbnb/listing/:id', 'Get detailed Airbnb listing: host, amenities, pricing, occupancy estimate, revenue potential.', AIRBNB_LISTING_PRICE, walletAddress, {
       input: { id: 'string (required) — Airbnb listing ID (in URL path)' },
       output: {
-        listing: 'AirbnbListingDetail — id, name, description, price, rating, host, amenities, photos, location, houseRules',
+        listing: 'AirbnbListingDetail — id, name, description, price, rating, host, amenities, photos, location, houseRules, occupancy_estimate_pct, revenue_potential_monthly, revenue_potential_annual',
       },
     }), 402);
   }
@@ -1390,7 +1394,7 @@ serviceRouter.get('/airbnb/listing/:id', async (c) => {
 // ─── GET /api/airbnb/reviews/:listing_id ────────────
 
 serviceRouter.get('/airbnb/reviews/:listing_id', async (c) => {
-  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '13JaXRYCZoe7z4Zoa4gCorkzqtBNKYN2RmtfrHGJu5ia';
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -1434,18 +1438,18 @@ serviceRouter.get('/airbnb/reviews/:listing_id', async (c) => {
 // ─── GET /api/airbnb/market-stats ───────────────────
 
 serviceRouter.get('/airbnb/market-stats', async (c) => {
-  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '13JaXRYCZoe7z4Zoa4gCorkzqtBNKYN2RmtfrHGJu5ia';
 
   const payment = extractPayment(c);
   if (!payment) {
-    return c.json(build402Response('/api/airbnb/market-stats', 'Airbnb market statistics: average daily rate, price distribution, superhost percentage for an area.', AIRBNB_MARKET_STATS_PRICE, walletAddress, {
+    return c.json(build402Response('/api/airbnb/market-stats', 'Airbnb market statistics: avg daily rate, occupancy estimates, revenue potential, price distribution, superhost % for an area.', AIRBNB_MARKET_STATS_PRICE, walletAddress, {
       input: {
         location: 'string (required) — city or area',
         checkin: 'string (optional) — YYYY-MM-DD',
         checkout: 'string (optional) — YYYY-MM-DD',
       },
       output: {
-        stats: '{ averageDailyRate, medianPrice, priceDistribution, superhostPercentage, totalListings, averageRating }',
+        stats: '{ avg_daily_rate, median_daily_rate, avg_occupancy_estimate_pct, avg_revenue_potential_monthly, avg_revenue_potential_annual, priceDistribution, superhostPercentage, totalListings, avgRating }',
       },
     }), 402);
   }

@@ -25,6 +25,9 @@ export interface AirbnbListing {
   bedrooms: number;
   bathrooms: number;
   max_guests: number;
+  occupancy_estimate_pct: number | null;
+  revenue_potential_monthly: number | null;
+  revenue_potential_annual: number | null;
   amenities: string[];
   images: string[];
   url: string;
@@ -59,6 +62,9 @@ export interface MarketStats {
   location: string;
   avg_daily_rate: number | null;
   median_daily_rate: number | null;
+  avg_occupancy_estimate_pct: number | null;
+  avg_revenue_potential_monthly: number | null;
+  avg_revenue_potential_annual: number | null;
   total_listings: number;
   avg_rating: number | null;
   superhost_pct: number | null;
@@ -98,6 +104,80 @@ function extractBetween(html: string, start: string, end: string): string | null
   const j = html.indexOf(end, i + start.length);
   if (j === -1) return null;
   return html.slice(i + start.length, j).trim();
+}
+
+function toNumber(value: unknown): number | null {
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  if (typeof value === 'string') {
+    const normalized = value.replace(/[^\d.-]/g, '');
+    if (!normalized) return null;
+    const parsed = Number(normalized);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  return null;
+}
+
+/**
+ * Parse price and currency from various international formats:
+ * - $125, €89, £99, ¥15000
+ * - Rp1,525,452 (IDR), RM280 (MYR), ₹4,500 (INR)
+ * - 1.525.452 IDR (dot as thousand separator)
+ */
+function parsePrice(text: string): { amount: number | null; currency: string } {
+  // USD
+  const usd = text.match(/\$\s*([\d,]+)/);
+  if (usd) return { amount: parseInt(usd[1].replace(/,/g, '')), currency: 'USD' };
+
+  // EUR
+  const eur = text.match(/€\s*([\d,]+)/);
+  if (eur) return { amount: parseInt(eur[1].replace(/,/g, '')), currency: 'EUR' };
+
+  // GBP
+  const gbp = text.match(/£\s*([\d,]+)/);
+  if (gbp) return { amount: parseInt(gbp[1].replace(/,/g, '')), currency: 'GBP' };
+
+  // IDR (Rp)
+  const idr = text.match(/Rp\s*([\d.,]+)/);
+  if (idr) {
+    const cleaned = idr[1].replace(/[.,]/g, '');
+    return { amount: parseInt(cleaned), currency: 'IDR' };
+  }
+
+  // Generic: number followed by currency code
+  const generic = text.match(/([\d,.]+)\s*(USD|EUR|GBP|IDR|INR|MYR|JPY|AUD|CAD|SGD|THB|PHP|KRW|TWD|BRL)/i);
+  if (generic) {
+    const amount = parseInt(generic[1].replace(/[.,]/g, ''));
+    return { amount, currency: generic[2].toUpperCase() };
+  }
+
+  return { amount: null, currency: 'USD' };
+}
+
+function clamp(n: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, n));
+}
+
+function estimateOccupancyPct(listing: Pick<AirbnbListing, 'rating' | 'reviews_count' | 'superhost' | 'bedrooms' | 'type'>): number {
+  const rating = listing.rating ?? 4.4;
+  const reviewBoost = Math.min((listing.reviews_count ?? 0) / 8, 12);
+  const superhostBoost = listing.superhost ? 8 : 0;
+  const bedroomBoost = Math.min((listing.bedrooms || 0) * 1.5, 6);
+  const typeBoost = /entire|home|apartment/i.test(listing.type) ? 4 : 0;
+
+  const baseline = 42 + (rating - 4) * 18;
+  return Math.round(clamp(baseline + reviewBoost + superhostBoost + bedroomBoost + typeBoost, 25, 92));
+}
+
+function estimateRevenuePotential(pricePerNight: number | null, occupancyPct: number | null): { monthly: number | null; annual: number | null } {
+  if (!pricePerNight || !occupancyPct) {
+    return { monthly: null, annual: null };
+  }
+
+  const monthly = Math.round(pricePerNight * 30 * (occupancyPct / 100));
+  return {
+    monthly,
+    annual: monthly * 12,
+  };
 }
 
 async function fetchAirbnbPage(url: string): Promise<string> {
@@ -191,12 +271,7 @@ function parseListingFromHtml(html: string): AirbnbListing[] {
     const type = typeMatch ? cleanText(typeMatch[1]) : '';
 
     // Price
-    let pricePerNight: number | null = null;
-    const priceMatch = cardHtml.match(/\$(\d[\d,]*)\s*(?:night|per night)/i) ||
-                       cardHtml.match(/(\d[\d,]*)\s*(?:USD|EUR|GBP)/);
-    if (priceMatch) {
-      pricePerNight = parseInt(priceMatch[1].replace(/,/g, ''));
-    }
+    const { amount: pricePerNight, currency } = parsePrice(cardHtml);
 
     // Rating
     let rating: number | null = null;
@@ -205,8 +280,8 @@ function parseListingFromHtml(html: string): AirbnbListing[] {
 
     // Reviews count
     let reviewsCount: number | null = null;
-    const reviewsMatch = cardHtml.match(/\((\d[\d,]*)\s*(?:review|rating)/i);
-    if (reviewsMatch) reviewsCount = parseInt(reviewsMatch[1].replace(/,/g, ''));
+    const reviewsMatch = cardHtml.match(/\((\d[\d,.]*)\s*(?:review|rating)/i);
+    if (reviewsMatch) reviewsCount = parseInt(reviewsMatch[1].replace(/[.,]/g, ''));
 
     // Superhost
     const superhost = cardHtml.toLowerCase().includes('superhost');
@@ -228,19 +303,31 @@ function parseListingFromHtml(html: string): AirbnbListing[] {
     if (guestMatch) maxGuests = parseInt(guestMatch[1]);
 
     if (id && (title || pricePerNight)) {
+      const occupancyEstimate = estimateOccupancyPct({
+        rating,
+        reviews_count: reviewsCount,
+        superhost,
+        bedrooms,
+        type,
+      });
+      const revenuePotential = estimateRevenuePotential(pricePerNight, occupancyEstimate);
+
       listings.push({
         id,
         title,
         type,
         price_per_night: pricePerNight,
         total_price: null,
-        currency: 'USD',
+        currency: currency,
         rating,
         reviews_count: reviewsCount,
         superhost,
         bedrooms,
         bathrooms,
         max_guests: maxGuests,
+        occupancy_estimate_pct: occupancyEstimate,
+        revenue_potential_monthly: revenuePotential.monthly,
+        revenue_potential_annual: revenuePotential.annual,
         amenities: [],
         images: images.slice(0, 5),
         url: `${AIRBNB_BASE}/rooms/${id}`,
@@ -254,27 +341,46 @@ function parseListingFromHtml(html: string): AirbnbListing[] {
 }
 
 function parseListingData(listing: any, pricing?: any): AirbnbListing {
+  const pricePerNight = toNumber(pricing?.rate?.amount) ?? toNumber(pricing?.pricePerNight);
+  const rating = toNumber(listing.avgRating) ?? toNumber(listing.reviewsRating);
+  const reviewsCount = toNumber(listing.reviewsCount) ?? toNumber(listing.numberOfReviews);
+  const bedrooms = toNumber(listing.bedrooms) ?? 0;
+  const bathrooms = toNumber(listing.bathrooms) ?? 0;
+  const maxGuests = toNumber(listing.personCapacity) ?? toNumber(listing.maxGuests) ?? 0;
+
+  const occupancyEstimate = estimateOccupancyPct({
+    rating,
+    reviews_count: reviewsCount,
+    superhost: Boolean(listing.isSuperhost || listing.is_superhost),
+    bedrooms,
+    type: listing.roomTypeCategory || listing.propertyType || listing.room_type || '',
+  });
+  const revenuePotential = estimateRevenuePotential(pricePerNight, occupancyEstimate);
+
   return {
     id: String(listing.id || listing.listingId || ''),
     title: listing.name || listing.title || '',
     type: listing.roomTypeCategory || listing.propertyType || listing.room_type || '',
-    price_per_night: pricing?.rate?.amount || pricing?.pricePerNight || null,
-    total_price: pricing?.total?.amount || null,
+    price_per_night: pricePerNight,
+    total_price: toNumber(pricing?.total?.amount),
     currency: pricing?.rate?.currency || pricing?.currency || 'USD',
-    rating: listing.avgRating || listing.reviewsRating || null,
-    reviews_count: listing.reviewsCount || listing.numberOfReviews || null,
-    superhost: listing.isSuperhost || listing.is_superhost || false,
-    bedrooms: listing.bedrooms || 0,
-    bathrooms: listing.bathrooms || 0,
-    max_guests: listing.personCapacity || listing.maxGuests || 0,
+    rating,
+    reviews_count: reviewsCount,
+    superhost: Boolean(listing.isSuperhost || listing.is_superhost),
+    bedrooms,
+    bathrooms,
+    max_guests: maxGuests,
+    occupancy_estimate_pct: occupancyEstimate,
+    revenue_potential_monthly: revenuePotential.monthly,
+    revenue_potential_annual: revenuePotential.annual,
     amenities: (listing.previewAmenities || listing.amenityIds || []).slice(0, 20),
     images: (listing.contextualPictures || listing.photos || [])
       .map((p: any) => p.picture || p.large || p.url || '')
       .filter(Boolean)
       .slice(0, 5),
     url: `${AIRBNB_BASE}/rooms/${listing.id || listing.listingId}`,
-    lat: listing.lat || listing.coordinate?.latitude || null,
-    lng: listing.lng || listing.coordinate?.longitude || null,
+    lat: toNumber(listing.lat) ?? toNumber(listing.coordinate?.latitude),
+    lng: toNumber(listing.lng) ?? toNumber(listing.coordinate?.longitude),
   };
 }
 
@@ -328,9 +434,7 @@ export async function getListingDetail(listingId: string): Promise<AirbnbListing
   const description = descBlock ? cleanText(descBlock).slice(0, 3000) : (data.description || '');
 
   // Price
-  let pricePerNight: number | null = null;
-  const priceMatch = html.match(/\$(\d[\d,]*)\s*(?:\/?\s*night|per night)/i);
-  if (priceMatch) pricePerNight = parseInt(priceMatch[1].replace(/,/g, ''));
+  const { amount: pricePerNight, currency } = parsePrice(html);
 
   // Rating
   let rating: number | null = null;
@@ -346,8 +450,8 @@ export async function getListingDetail(listingId: string): Promise<AirbnbListing
   if (data.aggregateRating?.reviewCount) {
     reviewsCount = parseInt(data.aggregateRating.reviewCount);
   } else {
-    const rcMatch = html.match(/(\d[\d,]*)\s*review/i);
-    if (rcMatch) reviewsCount = parseInt(rcMatch[1].replace(/,/g, ''));
+    const rcMatch = html.match(/(\d[\d,.]*)\s*review/i);
+    if (rcMatch) reviewsCount = parseInt(rcMatch[1].replace(/[.,]/g, ''));
   }
 
   // Type
@@ -417,19 +521,31 @@ export async function getListingDetail(listingId: string): Promise<AirbnbListing
   // Neighborhood
   const neighborhoodMatch = html.match(/data-section-id="LOCATION_DEFAULT"[\s\S]*?<h3[^>]*>([^<]+)/);
 
+  const occupancyEstimate = estimateOccupancyPct({
+    rating,
+    reviews_count: reviewsCount,
+    superhost,
+    bedrooms,
+    type,
+  });
+  const revenuePotential = estimateRevenuePotential(pricePerNight, occupancyEstimate);
+
   return {
     id: listingId,
     title,
     type,
     price_per_night: pricePerNight,
     total_price: null,
-    currency: 'USD',
+    currency,
     rating,
     reviews_count: reviewsCount,
     superhost,
     bedrooms,
     bathrooms,
     max_guests: maxGuests,
+    occupancy_estimate_pct: occupancyEstimate,
+    revenue_potential_monthly: revenuePotential.monthly,
+    revenue_potential_annual: revenuePotential.annual,
     amenities: amenities.slice(0, 30),
     images: images.slice(0, 10),
     url: `${AIRBNB_BASE}/rooms/${listingId}`,
@@ -529,6 +645,9 @@ export async function getMarketStats(
 
   const prices = listings.map(l => l.price_per_night).filter((p): p is number => p !== null && p > 0);
   const ratings = listings.map(l => l.rating).filter((r): r is number => r !== null);
+  const occupancies = listings.map(l => l.occupancy_estimate_pct).filter((o): o is number => o !== null);
+  const monthlyRevenue = listings.map(l => l.revenue_potential_monthly).filter((r): r is number => r !== null);
+  const annualRevenue = listings.map(l => l.revenue_potential_annual).filter((r): r is number => r !== null);
 
   // Price statistics
   const sortedPrices = [...prices].sort((a, b) => a - b);
@@ -540,6 +659,16 @@ export async function getMarketStats(
   // Rating average
   const avgRating = ratings.length > 0
     ? Math.round((ratings.reduce((a, b) => a + b, 0) / ratings.length) * 10) / 10
+    : null;
+
+  const avgOccupancy = occupancies.length > 0
+    ? Math.round(occupancies.reduce((a, b) => a + b, 0) / occupancies.length)
+    : null;
+  const avgRevenueMonthly = monthlyRevenue.length > 0
+    ? Math.round(monthlyRevenue.reduce((a, b) => a + b, 0) / monthlyRevenue.length)
+    : null;
+  const avgRevenueAnnual = annualRevenue.length > 0
+    ? Math.round(annualRevenue.reduce((a, b) => a + b, 0) / annualRevenue.length)
     : null;
 
   // Superhost percentage
@@ -568,6 +697,9 @@ export async function getMarketStats(
     location,
     avg_daily_rate: avg,
     median_daily_rate: median,
+    avg_occupancy_estimate_pct: avgOccupancy,
+    avg_revenue_potential_monthly: avgRevenueMonthly,
+    avg_revenue_potential_annual: avgRevenueAnnual,
     total_listings: listings.length,
     avg_rating: avgRating,
     superhost_pct: superhostPct,
