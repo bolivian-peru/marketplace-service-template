@@ -30,6 +30,7 @@ import {
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
 import { scrapeAppleRankings, scrapeGoogleRankings } from './scrapers/appstore';
+import { scrapeGoogleSerp } from './scrapers/google-serp-scraper';
 
 export const serviceRouter = new Hono();
 
@@ -1478,5 +1479,58 @@ serviceRouter.get('/airbnb/market-stats', async (c) => {
     });
   } catch (err: any) {
     return c.json({ error: 'Airbnb market stats failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ═══════════════════════════════════════════════════════
+// ─── GOOGLE SERP & AI SEARCH API (Bounty #149) ─────
+// ═══════════════════════════════════════════════════════
+
+const GOOGLE_SERP_PRICE = 0.01;
+
+serviceRouter.get('/google/search', async (c) => {
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '13JaXRYCZoe7z4Zoa4gCorkzqtBNKYN2RmtfrHGJu5ia';
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/google/search', 'Extract Google Search results (SERP) with organic listings, People Also Ask, and AI Overviews.', GOOGLE_SERP_PRICE, walletAddress, {
+      input: {
+        q: 'string (required) — search query',
+        gl: 'string (optional, default: US) — country code (e.g., US, UK, ID)',
+        hl: 'string (optional, default: en) — language code',
+      },
+      output: {
+        query: 'string',
+        results: 'GoogleSearchResult[] — title, url, snippet, position',
+        ai_overview: 'string (optional) — SGE/AI generated summary',
+        related_questions: 'string[] (optional) — People Also Ask',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, GOOGLE_SERP_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const query = c.req.query('q');
+  if (!query) return c.json({ error: 'Missing required parameter: q' }, 400);
+
+  const country = c.req.query('gl') || 'US';
+  const language = c.req.query('hl') || 'en';
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const results = await scrapeGoogleSerp(query, country, language);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...results,
+      meta: { country, language, proxy: { ip, country: proxy.country, type: 'mobile' } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Google SERP fetch failed', message: err?.message || String(err) }, 502);
   }
 });

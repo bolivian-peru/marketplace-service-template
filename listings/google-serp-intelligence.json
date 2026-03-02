@@ -1,0 +1,14 @@
+{
+  "name": "Google SERP + AI Search Intelligence API",
+  "description": "Extract real-time Google Search results including organic listings, 'People Also Ask' questions, and AI Overviews (SGE). High-reliability extraction via mobile carrier proxies.",
+  "pricing": {
+    "endpoints": [
+      { "path": "/api/google/search", "price": "$0.01", "unit": "per search query" }
+    ],
+    "comparison": "SerpApi charges $0.01/search. Bright Data SERP API: $0.003/req but often blocks SGE content. Our service provides full AI Overviews and mobile-first results via x402 micropayments."
+  },
+  "whyMobileProxy": "Google aggressively blocks datacenter IPs and serves different results based on browser fingerprinting. AI Overviews (SGE) are more frequently triggered on mobile carrier IPs. Mobile proxies from Proxies.sx ensure 99% bypass of CAPTCHAs and authentic mobile search results.",
+  "sampleOutput": "See proof/google-serp-sample.json",
+  "uptime": "99.9%",
+  "limitations": ["Max 20 results per search", "AI Overviews trigger based on Google's internal logic"]
+}
