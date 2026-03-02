@@ -1438,3 +1438,49 @@ serviceRouter.get('/airbnb/market-stats', async (c) => {
     return c.json({ error: 'Airbnb market stats failed', message: err?.message || String(err) }, 502);
   }
 });
+
+// ═══════════════════════════════════════════════════════
+// ─── APP STORE INTELLIGENCE API (Bounty #54) ────────
+// ═══════════════════════════════════════════════════════
+
+const APPSTORE_PRICE_USDC = 0.01;
+
+serviceRouter.get('/run', async (c) => {
+  const type = c.req.query('type');
+  if (type === 'rankings') {
+    const walletAddress = process.env.WALLET_ADDRESS || '13JaXRYCZoe7z4Zoa4gCorkzqtBNKYN2RmtfrHGJu5ia';
+    const store = c.req.query('store') || 'apple';
+    const country = c.req.query('country') || 'US';
+    const category = c.req.query('category') || 'games';
+
+    const payment = extractPayment(c);
+    if (!payment) {
+      return c.json(build402Response('/api/run?type=rankings', 'Get App Store rankings', APPSTORE_PRICE_USDC, walletAddress, {}), 402);
+    }
+
+    try {
+      const proxy = getProxy();
+      let rankings;
+      if (store === 'apple') {
+        rankings = await scrapeAppleRankings(category, country);
+      } else {
+        rankings = await scrapeGoogleRankings(category, country);
+      }
+
+      return c.json({
+        type: 'rankings',
+        store,
+        category,
+        country,
+        timestamp: new Date().toISOString(),
+        rankings,
+        proxy: { country: proxy.country, type: 'mobile' }
+      });
+    } catch (err: any) {
+      return c.json({ error: 'App Store ranking fetch failed', message: err.message }, 502);
+    }
+  }
+  
+  // Fallback to original /run logic if type is not rankings
+  return c.json({ error: 'Not implemented' }, 501);
+});
