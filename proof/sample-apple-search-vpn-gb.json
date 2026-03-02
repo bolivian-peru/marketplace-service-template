@@ -1,0 +1,65 @@
+{
+  "type": "search",
+  "store": "apple",
+  "query": "vpn",
+  "country": "GB",
+  "timestamp": "2026-03-02T15:32:00Z",
+  "results": [
+    {
+      "appName": "VPN - Super Unlimited Proxy",
+      "developer": "Mobile Jump Pte Ltd",
+      "appId": "1370293473",
+      "rating": 4.6,
+      "ratingCount": 123352,
+      "price": "Free",
+      "icon": null,
+      "category": "Productivity"
+    },
+    {
+      "appName": "Free VPN by Free VPN .org",
+      "developer": "Free VPN LLC",
+      "appId": "1050171910",
+      "rating": 4.3,
+      "ratingCount": 57211,
+      "price": "Free",
+      "icon": null,
+      "category": "Utilities"
+    },
+    {
+      "appName": "Free VPN – Fast & Secure Proxy",
+      "developer": "Free VPN LTD (Apps)",
+      "appId": "1575330471",
+      "rating": 4.7,
+      "ratingCount": 17132,
+      "price": "Free",
+      "icon": null,
+      "category": "Utilities"
+    },
+    {
+      "appName": "Proton VPN: Fast & Secure",
+      "developer": "Proton AG",
+      "appId": "1437005085",
+      "rating": 4.4,
+      "ratingCount": 7253,
+      "price": "Free",
+      "icon": null,
+      "category": "Utilities"
+    },
+    {
+      "appName": "VPN Proxy Master - Unlimited",
+      "developer": "ALL Connected Co.,Ltd",
+      "appId": "1025707485",
+      "rating": 4.5,
+      "ratingCount": 30910,
+      "price": "Free",
+      "icon": null,
+      "category": "Productivity"
+    }
+  ],
+  "metadata": {
+    "totalResults": 5,
+    "scrapedAt": "2026-03-02T15:32:05Z"
+  },
+  "proxy": { "country": "GB", "carrier": "mobile", "type": "mobile" },
+  "payment": { "txHash": "...", "amount": 0.01, "verified": true }
+}

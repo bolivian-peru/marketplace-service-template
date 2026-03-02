@@ -10,6 +10,7 @@
  *   GET /api/reddit/*  (Reddit Intelligence)
  *   GET /api/instagram/* (Instagram Intelligence + AI Vision)
  *   GET /api/linkedin/* (LinkedIn Enrichment)
+ *   GET /api/apps      (App Store Intelligence — Apple + Google Play)
  */
 
 import { Hono } from 'hono';
@@ -29,6 +30,11 @@ import {
 } from './scrapers/linkedin-enrichment';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
+import {
+  fetchAppleRankings, fetchAppleAppDetail, searchAppleApps, fetchAppleTrending,
+  fetchGPlayRankings, fetchGPlayAppDetail, searchGPlayApps, fetchGPlayTrending,
+  SUPPORTED_COUNTRIES as APP_COUNTRIES, VALID_CATEGORIES as APP_CATEGORIES,
+} from './scrapers/appstore-scraper';
 
 export const serviceRouter = new Hono();
 
@@ -1436,5 +1442,157 @@ serviceRouter.get('/airbnb/market-stats', async (c) => {
     });
   } catch (err: any) {
     return c.json({ error: 'Airbnb market stats failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── APP STORE INTELLIGENCE (Bounty #54) ─────────────
+// GET /api/apps?type=rankings&store=apple&category=games&country=US
+// GET /api/apps?type=app&store=google&appId=com.spotify.music&country=DE
+// GET /api/apps?type=search&store=apple&query=vpn&country=GB
+// GET /api/apps?type=trending&store=google&country=US
+
+const APP_RANKING_PRICE = 0.01;
+const APP_DETAIL_PRICE = 0.015;
+const APP_SEARCH_PRICE = 0.01;
+const APP_TRENDING_PRICE = 0.01;
+const APP_WALLET = process.env.WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+
+serviceRouter.get('/apps', async (c) => {
+  const payment = extractPayment(c);
+  const type = c.req.query('type');
+  const walletAddress = APP_WALLET;
+
+  const priceMap: Record<string, number> = {
+    rankings: APP_RANKING_PRICE,
+    app: APP_DETAIL_PRICE,
+    search: APP_SEARCH_PRICE,
+    trending: APP_TRENDING_PRICE,
+  };
+
+  if (!payment) {
+    return c.json(build402Response(
+      '/api/apps',
+      'App Store Intelligence API: real-time app rankings, details, reviews, and search from Apple App Store + Google Play Store via mobile proxy. Types: rankings ($0.01), app ($0.015), search ($0.01), trending ($0.01).',
+      APP_RANKING_PRICE,
+      walletAddress,
+      {
+        queryParams: {
+          type: 'string — "rankings" | "app" | "search" | "trending" (required)',
+          store: 'string — "apple" | "google" (required)',
+          category: `string — Category slug (for rankings, optional). Valid: ${APP_CATEGORIES.join(', ')}`,
+          appId: 'string — App ID (required for type=app). Apple: numeric ID, Google: package name',
+          query: 'string — Search query (required for type=search)',
+          country: `string — Country code (default: US). Supported: ${APP_COUNTRIES.join(', ')}`,
+        },
+        output: {
+          type: 'string — rankings | app | search | trending',
+          store: 'string — apple | google',
+          rankings: 'AppRanking[] — rank, appName, developer, appId, rating, ratingCount, price, category, icon',
+          app: 'AppDetail — full metadata + reviews array',
+          results: 'AppSearchResult[] — search matches',
+          trending: 'AppRanking[] — newly released/trending apps',
+          proxy: '{ country, carrier, type }',
+          payment: '{ txHash, amount, verified }',
+        },
+      },
+    ), 402);
+  }
+
+  if (!type || !priceMap[type]) {
+    return c.json({
+      error: 'Missing or invalid type parameter',
+      valid: Object.keys(priceMap),
+      example: '/api/apps?type=rankings&store=apple&category=games&country=US',
+    }, 400);
+  }
+
+  const price = priceMap[type];
+  const verification = await verifyPayment(payment, walletAddress, price);
+  if (!verification.valid) {
+    return c.json({ error: 'Payment verification failed', details: verification.error }, 402);
+  }
+
+  const store = (c.req.query('store') || '').toLowerCase();
+  if (!['apple', 'google'].includes(store)) {
+    return c.json({
+      error: 'Missing or invalid store parameter',
+      valid: ['apple', 'google'],
+      example: '/api/apps?type=rankings&store=apple&category=games&country=US',
+    }, 400);
+  }
+
+  const country = (c.req.query('country') || 'US').toUpperCase();
+  if (!APP_COUNTRIES.includes(country)) {
+    return c.json({ error: `Unsupported country: ${country}`, supported: APP_COUNTRIES }, 400);
+  }
+
+  try {
+    const proxy = getProxy();
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    const proxyMeta = { country: proxy.country, carrier: 'mobile', type: 'mobile' as const };
+    const paymentMeta = { txHash: payment.txHash, amount: verification.amount, verified: true };
+
+    if (type === 'rankings') {
+      const category = c.req.query('category') || 'all';
+      const result = store === 'apple'
+        ? await fetchAppleRankings(category, country)
+        : await fetchGPlayRankings(category, country);
+      return c.json({ ...result, proxy: proxyMeta, payment: paymentMeta });
+    }
+
+    if (type === 'app') {
+      const appId = c.req.query('appId');
+      if (!appId) {
+        return c.json({
+          error: 'Missing required parameter: appId',
+          example: store === 'apple'
+            ? '/api/apps?type=app&store=apple&appId=544007664&country=US'
+            : '/api/apps?type=app&store=google&appId=com.spotify.music&country=DE',
+        }, 400);
+      }
+      const result = store === 'apple'
+        ? await fetchAppleAppDetail(appId, country)
+        : await fetchGPlayAppDetail(appId, country);
+      return c.json({ ...result, proxy: proxyMeta, payment: paymentMeta });
+    }
+
+    if (type === 'search') {
+      const query = c.req.query('query');
+      if (!query) {
+        return c.json({
+          error: 'Missing required parameter: query',
+          example: '/api/apps?type=search&store=apple&query=vpn&country=GB',
+        }, 400);
+      }
+      const result = store === 'apple'
+        ? await searchAppleApps(query, country)
+        : await searchGPlayApps(query, country);
+      return c.json({ ...result, proxy: proxyMeta, payment: paymentMeta });
+    }
+
+    if (type === 'trending') {
+      const result = store === 'apple'
+        ? await fetchAppleTrending(country)
+        : await fetchGPlayTrending(country);
+      return c.json({ ...result, proxy: proxyMeta, payment: paymentMeta });
+    }
+
+    return c.json({ error: 'Invalid type' }, 400);
+  } catch (err: any) {
+    if (err?.message?.includes('not found')) {
+      return c.json({ error: 'App not found', message: err.message }, 404);
+    }
+    if (err?.message?.includes('403') || err?.message?.includes('captcha')) {
+      return c.json({ error: 'captcha_detected', message: 'Target store returned a challenge page' }, 503);
+    }
+    if (err?.message?.includes('429')) {
+      return c.json({ error: 'rate_limited', message: 'Target store rate-limited the request' }, 503);
+    }
+    if (err?.message?.includes('Proxy')) {
+      return c.json({ error: 'proxy_error', message: err.message }, 502);
+    }
+    return c.json({ error: 'App store scrape failed', message: err?.message || String(err) }, 502);
   }
 });

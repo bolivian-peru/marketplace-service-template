@@ -1,0 +1,86 @@
+{
+  "type": "rankings",
+  "store": "apple",
+  "category": "games",
+  "country": "DE",
+  "timestamp": "2026-03-02T15:30:10Z",
+  "rankings": [
+    {
+      "rank": 1,
+      "appName": "Subway Surfers City",
+      "developer": "Sybo Games ApS",
+      "appId": "6504188939",
+      "rating": null,
+      "ratingCount": null,
+      "price": "Free",
+      "inAppPurchases": false,
+      "category": "Games",
+      "lastUpdated": null,
+      "size": null,
+      "icon": null
+    },
+    {
+      "rank": 2,
+      "appName": "Disney Solitaire",
+      "developer": "SuperPlay",
+      "appId": "6475757306",
+      "rating": null,
+      "ratingCount": null,
+      "price": "Free",
+      "inAppPurchases": false,
+      "category": "Games",
+      "lastUpdated": null,
+      "size": null,
+      "icon": null
+    },
+    {
+      "rank": 3,
+      "appName": "Brawl Stars",
+      "developer": "Supercell",
+      "appId": "1229016807",
+      "rating": null,
+      "ratingCount": null,
+      "price": "Free",
+      "inAppPurchases": false,
+      "category": "Games",
+      "lastUpdated": null,
+      "size": null,
+      "icon": null
+    },
+    {
+      "rank": 4,
+      "appName": "Game is Hard",
+      "developer": "UNICO STUDIO",
+      "appId": "6748826648",
+      "rating": null,
+      "ratingCount": null,
+      "price": "Free",
+      "inAppPurchases": false,
+      "category": "Games",
+      "lastUpdated": null,
+      "size": null,
+      "icon": null
+    },
+    {
+      "rank": 5,
+      "appName": "Magic Sort!",
+      "developer": "Grand Games A.S.",
+      "appId": "6499209744",
+      "rating": null,
+      "ratingCount": null,
+      "price": "Free",
+      "inAppPurchases": false,
+      "category": "Games",
+      "lastUpdated": null,
+      "size": null,
+      "icon": null
+    }
+  ],
+  "metadata": {
+    "totalRanked": 5,
+    "scrapedAt": "2026-03-02T15:30:15Z"
+  },
+  "_countryDifferences": "Germany #1 is Subway Surfers City (US #7), Brawl Stars at DE #3 is absent from US top 10, Rainbow Six Mobile (US #1) is absent from DE top 5",
+  "proxy": { "country": "DE", "carrier": "mobile", "type": "mobile" },
+  "payment": { "txHash": "...", "amount": 0.01, "verified": true }
+}

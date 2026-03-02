@@ -1,0 +1,48 @@
+{
+  "type": "app",
+  "store": "apple",
+  "appId": "324684580",
+  "country": "US",
+  "timestamp": "2026-03-02T15:31:00Z",
+  "app": {
+    "appId": "324684580",
+    "appName": "Spotify: Music and Podcasts",
+    "developer": "Spotify",
+    "description": "With the Spotify music and podcast app, you can play millions of songs, albums and original podcasts for free...",
+    "rating": 4.8,
+    "ratingCount": 38960243,
+    "price": "Free",
+    "inAppPurchases": true,
+    "category": "Music",
+    "lastUpdated": "2026-02-28",
+    "size": "237 MB",
+    "version": "9.1.26",
+    "icon": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/spotify-icon/512x512bb.jpg",
+    "screenshots": [
+      "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/screenshot1.png",
+      "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/screenshot2.png"
+    ],
+    "contentRating": "12+",
+    "reviews": [
+      {
+        "author": "MusicLover2026",
+        "rating": 5,
+        "title": "Best music app",
+        "text": "Love the new UI update, playlists are better organized now.",
+        "date": "2026-03-01T10:00:00Z"
+      },
+      {
+        "author": "PodcastFan",
+        "rating": 4,
+        "title": "Great but battery drain",
+        "text": "Excellent for podcasts but drains battery faster than other apps.",
+        "date": "2026-02-28T15:30:00Z"
+      }
+    ]
+  },
+  "metadata": {
+    "scrapedAt": "2026-03-02T15:31:05Z"
+  },
+  "proxy": { "country": "US", "carrier": "mobile", "type": "mobile" },
+  "payment": { "txHash": "...", "amount": 0.015, "verified": true }
+}
