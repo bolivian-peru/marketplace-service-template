@@ -326,3 +326,59 @@ export interface ReviewSearchResponse {
   businesses: BusinessInfo[];
   totalFound: number;
 }
+
+// ─── APP STORE INTELLIGENCE TYPES ───────────────────
+
+export interface AppRanking {
+  rank: number;
+  appName: string;
+  developer: string;
+  appId: string;
+  rating: number | null;
+  ratingCount: number | null;
+  price: string;
+  inAppPurchases: boolean;
+  category: string;
+  lastUpdated: string | null;
+  size: string | null;
+  icon: string | null;
+}
+
+export interface AppReview {
+  author: string;
+  rating: number;
+  title: string;
+  text: string;
+  date: string;
+}
+
+export interface AppDetails extends AppRanking {
+  description: string;
+  version: string;
+  reviews: AppReview[];
+}
+
+export interface AppIntelligenceResponse {
+  type: 'rankings' | 'app' | 'search' | 'trending';
+  store: 'apple' | 'google';
+  category?: string;
+  country: string;
+  query?: string;
+  appId?: string;
+  timestamp: string;
+  rankings?: AppRanking[];
+  app?: AppDetails;
+  results?: AppRanking[];
+  metadata: {
+    totalRanked?: number;
+    totalResults?: number;
+    scrapedAt: string;
+  };
+  payment: { 
+    txHash: string; 
+    network: string; 
+    amount: number; 
+    settled: boolean;
+    verified: boolean;
+  };
+}

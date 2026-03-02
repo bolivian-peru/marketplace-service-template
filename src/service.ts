@@ -4,6 +4,7 @@
  * Exposes:
  *   GET /api/run       (Google Maps Lead Generator)
  *   GET /api/details   (Google Maps Place details)
+ *   GET /api/run       (App Store Intelligence)
  *   GET /api/jobs      (Job Market Intelligence)
  *   GET /api/reviews/* (Google Reviews & Business Data)
  */
@@ -14,6 +15,10 @@ import { extractPayment, verifyPayment, build402Response } from './payment';
 import { scrapeIndeed, scrapeLinkedIn, type JobListing } from './scrapers/job-scraper';
 import { fetchReviews, fetchBusinessDetails, fetchReviewSummary, searchBusinesses } from './scrapers/reviews';
 import { scrapeGoogleMaps, extractDetailedBusiness } from './scrapers/maps-scraper';
+import { 
+  scrapeAppleRankings, getAppleAppDetails, searchAppleApps,
+  scrapeGoogleRankings, getGoogleAppDetails, searchGoogleApps 
+} from './scrapers/app-scraper';
 import { researchRouter } from './routes/research';
 import { trendingRouter } from './routes/trending';
 
@@ -23,11 +28,13 @@ export const serviceRouter = new Hono();
 serviceRouter.route('/research', researchRouter);
 serviceRouter.route('/trending', trendingRouter);
 
-const SERVICE_NAME = 'job-market-intelligence';
+const SERVICE_NAME = 'marketplace-intelligence';
 const PRICE_USDC = 0.005;
 const DESCRIPTION = 'Job Market Intelligence API (Indeed/LinkedIn): title, company, location, salary, date, link, remote + proxy exit metadata.';
 const MAPS_PRICE_USDC = 0.005;
 const MAPS_DESCRIPTION = 'Extract structured business data from Google Maps: name, address, phone, website, email, hours, ratings, reviews, categories, and geocoordinates. Search by category + location with full pagination.';
+const APP_STORE_PRICE_USDC = 0.01;
+const APP_STORE_DESCRIPTION = 'App Store Intelligence API: Scrape rankings, reviews, and metadata from Apple App Store and Google Play Store through real mobile proxies.';
 
 const MAPS_OUTPUT_SCHEMA = {
   input: {
@@ -61,6 +68,29 @@ const MAPS_OUTPUT_SCHEMA = {
   },
 };
 
+const APP_STORE_OUTPUT_SCHEMA = {
+  input: {
+    type: "'rankings' | 'app' | 'search' | 'trending' (required)",
+    store: "'apple' | 'google' (required)",
+    country: "US, DE, FR, ES, GB, PL (required)",
+    category: "string (optional, for type=rankings)",
+    appId: "string (optional, for type=app)",
+    query: "string (optional, for type=search)",
+  },
+  output: {
+    type: "string",
+    store: "string",
+    country: "string",
+    timestamp: "string",
+    rankings: "AppRanking[]",
+    app: "AppDetails",
+    results: "AppRanking[]",
+    metadata: "{ totalRanked, scrapedAt }",
+    proxy: "{ country, carrier, type: 'mobile' }",
+    payment: "{ txHash, amount, verified }",
+  },
+};
+
 async function getProxyExitIp(): Promise<string | null> {
   try {
     const r = await proxyFetch('https://api.ipify.org?format=json', {
@@ -82,15 +112,21 @@ serviceRouter.get('/run', async (c) => {
     return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
   }
 
+  const type = c.req.query('type');
+  const isAppRequest = type && ['rankings', 'app', 'search', 'trending'].includes(type);
+  const price = isAppRequest ? APP_STORE_PRICE_USDC : MAPS_PRICE_USDC;
+  const description = isAppRequest ? APP_STORE_DESCRIPTION : MAPS_DESCRIPTION;
+  const schema = isAppRequest ? APP_STORE_OUTPUT_SCHEMA : MAPS_OUTPUT_SCHEMA;
+
   const payment = extractPayment(c);
   if (!payment) {
     return c.json(
-      build402Response('/api/run', MAPS_DESCRIPTION, MAPS_PRICE_USDC, walletAddress, MAPS_OUTPUT_SCHEMA),
+      build402Response('/api/run', description, price, walletAddress, schema),
       402,
     );
   }
 
-  const verification = await verifyPayment(payment, walletAddress, MAPS_PRICE_USDC);
+  const verification = await verifyPayment(payment, walletAddress, price);
   if (!verification.valid) {
     return c.json({
       error: 'Payment verification failed',
@@ -103,6 +139,87 @@ serviceRouter.get('/run', async (c) => {
   if (!checkProxyRateLimit(clientIp)) {
     c.header('Retry-After', '60');
     return c.json({ error: 'Proxy rate limit exceeded. Max 20 requests/min to protect proxy quota.', retryAfter: 60 }, 429);
+  }
+
+  const proxy = getProxy();
+
+  if (isAppRequest) {
+    const store = c.req.query('store');
+    const country = c.req.query('country') || 'US';
+    
+    if (!store || !['apple', 'google'].includes(store)) {
+      return c.json({ error: 'Invalid or missing store parameter: apple or google' }, 400);
+    }
+
+    try {
+      let result: any = {
+        type,
+        store,
+        country,
+        timestamp: new Date().toISOString(),
+      };
+
+      if (type === 'rankings' || type === 'trending') {
+        const category = c.req.query('category') || 'games';
+        result.category = category;
+        if (store === 'apple') {
+          result.rankings = await scrapeAppleRankings(category, country, type);
+        } else {
+          result.rankings = await scrapeGoogleRankings(category, country, type);
+        }
+        result.metadata = { 
+          totalRanked: result.rankings.length, 
+          scrapedAt: new Date().toISOString() 
+        };
+      } else if (type === 'app') {
+        const appId = c.req.query('appId');
+        if (!appId) return c.json({ error: 'Missing appId parameter' }, 400);
+        result.appId = appId;
+        if (store === 'apple') {
+          result.app = await getAppleAppDetails(appId, country);
+        } else {
+          result.app = await getGoogleAppDetails(appId, country);
+        }
+        result.metadata = { scrapedAt: new Date().toISOString() };
+      } else if (type === 'search') {
+        const query = c.req.query('query');
+        if (!query) return c.json({ error: 'Missing query parameter' }, 400);
+        result.query = query;
+        if (store === 'apple') {
+          result.results = await searchAppleApps(query, country);
+        } else {
+          result.results = await searchGoogleApps(query, country);
+        }
+        result.metadata = { 
+          totalResults: result.results.length, 
+          scrapedAt: new Date().toISOString() 
+        };
+      }
+
+      c.header('X-Payment-Settled', 'true');
+      c.header('X-Payment-TxHash', payment.txHash);
+
+      return c.json({
+        ...result,
+        proxy: { 
+          country: proxy.country, 
+          carrier: process.env.PROXY_CARRIER || 'T-Mobile', 
+          type: 'mobile' 
+        },
+        payment: {
+          txHash: payment.txHash,
+          network: payment.network,
+          amount: verification.amount,
+          settled: true,
+          verified: true,
+        },
+      });
+    } catch (err: any) {
+      return c.json({
+        error: 'Service execution failed',
+        message: err.message,
+      }, 502);
+    }
   }
 
   const query = c.req.query('query');
@@ -138,7 +255,6 @@ serviceRouter.get('/run', async (c) => {
   const startIndex = pageToken ? parseInt(pageToken) || 0 : 0;
 
   try {
-    const proxy = getProxy();
     const result = await scrapeGoogleMaps(query, location, limit, startIndex);
 
     c.header('X-Payment-Settled', 'true');
