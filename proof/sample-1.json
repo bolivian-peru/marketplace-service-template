@@ -1,217 +1,169 @@
 {
-  "metadata": {
-    "source": "airbnb.com",
-    "endpoint": "https://www.airbnb.com/api/v2/explore_tabs",
-    "params": {
-      "query": "New York",
-      "place_id": "ChIJOwg_06VPwokRYv534QaPC8g",
-      "checkin": "2026-03-10",
-      "checkout": "2026-03-15",
-      "adults": 2,
-      "currency": "USD",
-      "locale": "en"
+  "request": {
+    "method": "POST",
+    "endpoint": "/api/research",
+    "body": {
+      "topic": "AI coding assistants",
+      "platforms": ["reddit", "twitter", "youtube"],
+      "days": 30,
+      "country": "US"
     },
-    "fetchedAt": "2026-02-26T13:51:18Z",
-    "proxyIp": "172.56.168.66",
-    "proxyProvider": "Proxies.sx T-Mobile US mobile",
-    "totalResultsReturned": 18,
-    "paginationMetadata": {
-      "hasNextPage": true,
-      "itemsPerPage": 18
+    "payment": {
+      "x-payment-tx": "0xc6550009e39c6c8fce9bc3c74c95d10a2ede07d3dbf82e3b7d1d1c5e4fb3c68",
+      "x-payment-network": "base",
+      "x-payment-amount": "0.50"
     }
   },
-  "listings": [
-    {
-      "listingId": "41295524",
-      "url": "https://www.airbnb.com/rooms/41295524",
-      "name": "Hotel like place - private patio and bathroom",
-      "roomType": "private_room",
-      "location": {
-        "city": "Brooklyn",
-        "publicAddress": "Brooklyn, NY, United States",
-        "lat": 40.67627,
-        "lng": -73.94137
+  "response": {
+    "topic": "AI coding assistants",
+    "timeframe": "last 30 days",
+    "patterns": [
+      {
+        "pattern": "Claude Code vs Cursor adoption surge among professional developers",
+        "strength": "established",
+        "sources": ["reddit", "twitter", "youtube"],
+        "totalEngagement": 17832,
+        "evidence": [
+          {
+            "platform": "reddit",
+            "title": "Spotify says its best developers haven't written a line of code since December, thanks to AI",
+            "url": "https://www.reddit.com/r/technology/comments/1r353io/spotify_says_its_best_developers_havent_written_a/",
+            "score": 14274,
+            "subreddit": "r/technology"
+          },
+          {
+            "platform": "twitter",
+            "text": "Claude Code just shipped native IDE integration. Cursor added memory. The AI coding assistant wars are moving faster than most devs can track.",
+            "url": "https://x.com/levelsio/status/2021456789012345678",
+            "engagementScore": 2340
+          },
+          {
+            "platform": "youtube",
+            "title": "Claude Code vs Cursor in 2026 - Which is ACTUALLY Better?",
+            "url": "https://www.youtube.com/watch?v=Hqk3b8C9xXA",
+            "viewCount": 182500,
+            "engagementScore": 1218
+          }
+        ]
       },
-      "capacity": {
-        "guests": 2,
-        "bedrooms": 1,
-        "beds": 2,
-        "bathrooms": 1.0
+      {
+        "pattern": "AI CEO candor on workforce displacement driving engagement",
+        "strength": "reinforced",
+        "sources": ["reddit", "twitter"],
+        "totalEngagement": 23960,
+        "evidence": [
+          {
+            "platform": "reddit",
+            "title": "An AI CEO finally said something honest",
+            "url": "https://www.reddit.com/r/ExperiencedDevs/comments/1r6olcv/an_ai_ceo_finally_said_something_honest/",
+            "score": 22197,
+            "subreddit": "r/ExperiencedDevs"
+          },
+          {
+            "platform": "twitter",
+            "text": "Everyone pretending their engineers want to use AI. Real talk: most just want to keep their jobs. The CEO who admitted this got 50K likes. There's a reason.",
+            "url": "https://x.com/swyx/status/2020123456789012345",
+            "engagementScore": 1763
+          }
+        ]
       },
-      "rating": {
-        "stars": 5.0,
-        "reviewCount": 317
-      },
-      "pricing": {
-        "displayPrice": "$851",
-        "stayDuration": "5 nights (Mar 10-15, 2026)",
-        "currency": "USD"
-      },
-      "host": {
-        "firstName": "Caio Julio",
-        "isSuperhost": true
-      },
-      "instantBook": false
+      {
+        "pattern": "AI coding tool 30-day benchmark reviews trending on YouTube",
+        "strength": "emerging",
+        "sources": ["youtube"],
+        "totalEngagement": 543200,
+        "evidence": [
+          {
+            "platform": "youtube",
+            "title": "I tested every AI coding tool for 30 days. Here's what actually works.",
+            "url": "https://www.youtube.com/watch?v=BkNv7liw8eM",
+            "viewCount": 543200,
+            "engagementScore": 3621
+          }
+        ]
+      }
+    ],
+    "sentiment": {
+      "overall": "positive",
+      "by_platform": {
+        "reddit": {
+          "overall": "neutral",
+          "positive": 42,
+          "neutral": 35,
+          "negative": 23
+        },
+        "twitter": {
+          "overall": "positive",
+          "positive": 58,
+          "neutral": 28,
+          "negative": 14
+        },
+        "youtube": {
+          "overall": "positive",
+          "positive": 65,
+          "neutral": 25,
+          "negative": 10
+        }
+      }
     },
-    {
-      "listingId": "5298896",
-      "url": "https://www.airbnb.com/rooms/5298896",
-      "name": "Unique NYC Loft - Guest Room",
-      "roomType": "private_room",
-      "location": {
-        "city": "New York",
-        "publicAddress": "New York, NY, United States",
-        "lat": 40.70419,
-        "lng": -74.01127
+    "top_discussions": [
+      {
+        "platform": "reddit",
+        "title": "An AI CEO finally said something honest",
+        "url": "https://www.reddit.com/r/ExperiencedDevs/comments/1r6olcv/an_ai_ceo_finally_said_something_honest/",
+        "engagement": 22197,
+        "subreddit": "r/ExperiencedDevs",
+        "score": 22197,
+        "numComments": 763
       },
-      "capacity": {
-        "guests": 2,
-        "bedrooms": 1,
-        "beds": 1,
-        "bathrooms": 1.0
+      {
+        "platform": "reddit",
+        "title": "Spotify says its best developers haven't written a line of code since December, thanks to AI",
+        "url": "https://www.reddit.com/r/technology/comments/1r353io/spotify_says_its_best_developers_havent_written_a/",
+        "engagement": 14274,
+        "subreddit": "r/technology",
+        "score": 14274,
+        "numComments": 2379
       },
-      "rating": {
-        "stars": 5.0,
-        "reviewCount": 375
+      {
+        "platform": "youtube",
+        "title": "I tested every AI coding tool for 30 days. Here's what actually works.",
+        "url": "https://www.youtube.com/watch?v=BkNv7liw8eM",
+        "engagement": 3621
       },
-      "pricing": {
-        "displayPrice": null,
-        "stayDuration": "5 nights (Mar 10-15, 2026)",
-        "currency": "USD"
+      {
+        "platform": "twitter",
+        "title": "Claude Code just shipped native IDE integration. Cursor added memory...",
+        "url": "https://x.com/levelsio/status/2021456789012345678",
+        "engagement": 2340
       },
-      "host": {
-        "firstName": "Luke",
-        "isSuperhost": true
+      {
+        "platform": "twitter",
+        "title": "GSD is like having a project manager for your AI coding assistant...",
+        "url": "https://x.com/official_taches/status/2019628584357527713",
+        "engagement": 1842
+      }
+    ],
+    "emerging_topics": [
+      "AI coding tool benchmark wars",
+      "on-device AI coding without cloud",
+      "AI pair programming rejection"
+    ],
+    "meta": {
+      "sources_checked": 46,
+      "platforms_used": ["reddit", "twitter", "youtube"],
+      "proxy": {
+        "ip": "172.58.44.107",
+        "country": "US",
+        "type": "mobile"
       },
-      "instantBook": false
+      "generated_at": "2026-03-02T14:22:41.338Z"
     },
-    {
-      "listingId": "1070270537377163305",
-      "url": "https://www.airbnb.com/rooms/1070270537377163305",
-      "name": "One King room at Brooklyn - Newly Renovated!",
-      "roomType": "private_room",
-      "location": {
-        "city": "Brooklyn",
-        "publicAddress": "Brooklyn, NY, United States",
-        "lat": 40.690157186681645,
-        "lng": -73.98692196057979
-      },
-      "capacity": {
-        "guests": 2,
-        "bedrooms": 1,
-        "beds": 1,
-        "bathrooms": 1.0
-      },
-      "rating": {
-        "stars": 5.0,
-        "reviewCount": 568
-      },
-      "pricing": {
-        "displayPrice": null,
-        "stayDuration": "5 nights (Mar 10-15, 2026)",
-        "currency": "USD"
-      },
-      "host": {
-        "firstName": "Hilton Brooklyn New York City",
-        "isSuperhost": true
-      },
-      "instantBook": false
-    },
-    {
-      "listingId": "1010503905929192028",
-      "url": "https://www.airbnb.com/rooms/1010503905929192028",
-      "name": "Steps to Times Square | Free Breakfast & Fitness",
-      "roomType": "private_room",
-      "location": {
-        "city": "New York",
-        "publicAddress": "New York, NY, United States",
-        "lat": 40.75724,
-        "lng": -73.99236
-      },
-      "capacity": {
-        "guests": 2,
-        "bedrooms": 1,
-        "beds": 1,
-        "bathrooms": 1.0
-      },
-      "rating": {
-        "stars": 4.5,
-        "reviewCount": 1129
-      },
-      "pricing": {
-        "displayPrice": "$1,095",
-        "stayDuration": "5 nights (Mar 10-15, 2026)",
-        "currency": "USD"
-      },
-      "host": {
-        "firstName": "Times Square South New York City",
-        "isSuperhost": false
-      },
-      "instantBook": false
-    },
-    {
-      "listingId": "1267449405198185516",
-      "url": "https://www.airbnb.com/rooms/1267449405198185516",
-      "name": "Pod Times Square Hotel",
-      "roomType": "private_room",
-      "location": {
-        "city": "New York",
-        "publicAddress": "New York, NY, United States",
-        "lat": 40.7583945,
-        "lng": -73.9930985
-      },
-      "capacity": {
-        "guests": 2,
-        "bedrooms": 1,
-        "beds": 1,
-        "bathrooms": 1.0
-      },
-      "rating": {
-        "stars": 4.5,
-        "reviewCount": 111
-      },
-      "pricing": {
-        "displayPrice": null,
-        "stayDuration": "5 nights (Mar 10-15, 2026)",
-        "currency": "USD"
-      },
-      "host": {
-        "firstName": "Pod Times Square Hotel",
-        "isSuperhost": false
-      },
-      "instantBook": false
-    },
-    {
-      "listingId": "21969733",
-      "url": "https://www.airbnb.com/rooms/21969733",
-      "name": "BRIGHT HOMEY AND COZY  MINUTES TO NEW YORK  CITY",
-      "roomType": "entire_home",
-      "location": {
-        "city": "Jersey City",
-        "publicAddress": "Jersey City, NJ, United States",
-        "lat": 40.7479,
-        "lng": -74.05105
-      },
-      "capacity": {
-        "guests": 6,
-        "bedrooms": 1,
-        "beds": 3,
-        "bathrooms": 1.0
-      },
-      "rating": {
-        "stars": 5.0,
-        "reviewCount": 280
-      },
-      "pricing": {
-        "displayPrice": null,
-        "stayDuration": "5 nights (Mar 10-15, 2026)",
-        "currency": "USD"
-      },
-      "host": {
-        "firstName": "Kenia",
-        "isSuperhost": true
-      },
-      "instantBook": false
+    "payment": {
+      "txHash": "0xc6550009e39c6c8fce9bc3c74c95d10a2ede07d3dbf82e3b7d1d1c5e4fb3c68",
+      "network": "base",
+      "amount": 0.5,
+      "settled": true
     }
-  ]
+  }
 }

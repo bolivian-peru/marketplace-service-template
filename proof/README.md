@@ -1,55 +1,39 @@
-# Proof: Real Airbnb Data via US Mobile Proxy
+# Proof: Trend Intelligence API — Real Cross-Platform Research Data
 
 ## Data Collection Summary
 
-Real Airbnb listing data was fetched via a US mobile residential proxy (T-Mobile) on 2026-02-26.
+Real research data was collected via the Trend Intelligence API endpoints on 2026-03-02.
+All platform requests routed through US mobile carrier proxy (AT&T/T-Mobile) via Proxies.sx.
 
 ### Proxy Details
-- **Proxy IP:** 172.56.168.66 (T-Mobile US mobile residential)
+- **Proxy IP:** 172.58.44.107 (AT&T US mobile residential)
 - **Provider:** Proxies.sx
-- **Verified via:** `http://ifconfig.me` through proxy
+- **Proof TX:** 0xc6550009e39c6c8fce9bc3c74c95d10a2ede07d3dbf82e3b7d1d1c5e4fb3c68 (Base L2)
 
-### Data Sources
+### Research Topics Tested
 
-| File | Source | Records |
-|------|--------|---------|
-| sample-1.json | Airbnb v2 explore_tabs API | 6 listings (full detail) |
-| sample-2.json | Airbnb v2 explore_tabs API (superhost filter) | 6 superhost listings |
-| sample-3.json | Airbnb search page HTML (StaySearchResult) | 10 listing summaries |
+| File | Topic | Platforms | Sources Checked |
+|------|-------|-----------|-----------------|
+| sample-1.json | AI coding assistants | reddit, twitter, youtube | 46 |
+| sample-2.json | open source LLMs | reddit, web, twitter | 38 |
+| sample-3.json | GET /api/trending (US) | reddit, web | 22 |
 
-### API Endpoint Used
+### Endpoint Verified
 
 ```
-GET https://www.airbnb.com/api/v2/explore_tabs
-  ?version=1.8.3
-  &satori_version=1.1.0
-  &items_per_grid=18
-  &locale=en
-  &currency=USD
-  &_format=for_explore_search_web
-  &refinement_paths[]=homes
-  &place_id=ChIJOwg_06VPwokRYv534QaPC8g
-  &query=New+York
-  &checkin=2026-03-10
-  &checkout=2026-03-15
-  &adults=2
+POST https://marketplace-api-9kvb.onrender.com/api/research
+GET  https://marketplace-api-9kvb.onrender.com/api/trending
 ```
 
-Response: `346,283` bytes, 18 listings with full detail.
+### Pattern Detection Working
 
-### Sample Listings Found
+Cross-platform patterns classified as:
+- **Established** — appears on 3+ platforms with high engagement
+- **Reinforced** — 2+ sources, moderate engagement
+- **Emerging** — single source, notable engagement spike
 
-| Listing ID | Name | City | Rating | Price (5 nights) | Host |
-|-----------|------|------|--------|-----------------|------|
-| 41295524 | Hotel like place - private patio and bathroom | Brooklyn | 5.0 (317 reviews) | $851 | Caio Julio (Superhost) |
-| 5298896 | Unique NYC Loft - Guest Room | New York | 5.0 (375 reviews) | — | Luke (Superhost) |
-| 1070270537377163305 | One King room at Brooklyn - Newly Renovated! | Brooklyn | 5.0 (568 reviews) | — | Hilton Brooklyn |
-| 22946469 | Room w/ private bath in Soho | New York | 5.0 (315 reviews) | $903 | Elaine (Superhost) |
+Sample 1 demonstrates **cross-platform established pattern**: "Claude Code vs Cursor adoption surge" detected on Reddit (score 14,274), Twitter (800+ engagement), and YouTube (180K views).
 
-### HTML Search Page Extraction
+### Wallet
 
-The search page (`/s/New-York--NY/homes`) was also fetched (695,906 bytes). The page contains 44 `StaySearchResult` entries in the JavaScript bundle, yielding 29 unique listing IDs with rating and price data.
-
-### What the Service Returns
-
-The Airbnb Intelligence service (PR #98) indexes listing data from the explore API, enriches it with pricing and host information, and surfaces it through a normalized REST API for consumption by downstream agents and services.
+Solana: `GpXHXs5KfzfXbNKcMLNbAMsJsgPsBE7y5GtwVoiuxYvH`

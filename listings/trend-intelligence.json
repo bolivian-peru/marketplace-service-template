@@ -1,0 +1,63 @@
+{
+  "id": "trend-intelligence",
+  "name": "Trend Intelligence API",
+  "description": "Cross-platform research synthesis engine. Query Reddit, X/Twitter, YouTube, and the web simultaneously for any topic, then receive structured intelligence with pattern detection, sentiment analysis, and engagement-weighted scoring.",
+  "longDescription": "A synthesis engine, not just a scraper. Raw signals from Reddit, X/Twitter, YouTube, and the web go in — structured intelligence with cross-platform pattern detection comes out. The API identifies patterns that appear across multiple platforms, classifying them as Established (3+ platforms, high engagement), Reinforced (2+ sources, moderate engagement), or Emerging (single source, notable spike). Returns sentiment breakdown per platform, top discussions ranked by engagement, and emerging topics. All requests routed through US mobile carrier proxies (AT&T/T-Mobile) for maximum platform trust and reduced rate-limiting. Tiered pricing: $0.10 single-platform, $0.50 cross-platform (2-3 platforms), $1.00 full report (all 4 platforms).",
+  "endpoint": "https://marketplace-api-9kvb.onrender.com",
+  "docsUrl": "https://marketplace-api-9kvb.onrender.com/api/research",
+  "pricingModel": "x402",
+  "pricing": {
+    "single_platform": 0.10,
+    "cross_platform": 0.50,
+    "full_report": 1.00,
+    "trending": 0.10,
+    "currency": "USDC",
+    "network": "base"
+  },
+  "endpoints": [
+    {
+      "method": "POST",
+      "path": "/api/research",
+      "description": "Cross-platform trend synthesis for a given topic",
+      "priceUsdc": 0.50,
+      "input": {
+        "topic": "string (required) - topic or keyword to research, 2-200 chars",
+        "platforms": "('reddit'|'web'|'youtube'|'twitter'|'x')[] (optional, default: ['reddit','web'])",
+        "days": "number (optional, 1-90, default: 30)",
+        "country": "string (optional, ISO 2-letter code, default: 'US')"
+      },
+      "output": {
+        "topic": "string",
+        "timeframe": "string",
+        "patterns": "TrendPattern[] — cross-platform signals with strength classification",
+        "sentiment": "{ overall, by_platform: Record<platform, { positive%, neutral%, negative% }> }",
+        "top_discussions": "TopDiscussion[] — highest-engagement posts across platforms",
+        "emerging_topics": "string[] — single-platform high-engagement signals",
+        "meta": "{ sources_checked, platforms_used, proxy: { ip, country, type }, generated_at }"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/trending",
+      "description": "What is trending right now across platforms",
+      "priceUsdc": 0.10,
+      "input": {
+        "country": "string (optional, default: 'US')",
+        "platforms": "string (optional, comma-separated, default: 'reddit,web')",
+        "limit": "number (optional, 1-50, default: 20)"
+      },
+      "output": {
+        "country": "string",
+        "platforms": "string[]",
+        "trending": "TrendingItem[] — { topic, platform, engagement, traffic?, url? }",
+        "generated_at": "string (ISO 8601)",
+        "meta": "{ proxy: { ip, country, type } }"
+      }
+    }
+  ],
+  "wallet": "GpXHXs5KfzfXbNKcMLNbAMsJsgPsBE7y5GtwVoiuxYvH",
+  "walletNetwork": "solana",
+  "sampleOutput": "listings/trend-intel-ai-coding-assistants.json",
+  "tags": ["trends", "reddit", "twitter", "youtube", "sentiment", "research", "intelligence", "cross-platform"],
+  "category": "intelligence"
+}
