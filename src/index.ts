@@ -80,6 +80,10 @@ app.get('/health', (c) => c.json({
     '/api/airbnb/listing/:id',
     '/api/airbnb/reviews/:listing_id',
     '/api/airbnb/market-stats',
+    '/api/amazon/product/:asin',
+    '/api/amazon/search',
+    '/api/amazon/bestsellers',
+    '/api/amazon/reviews/:asin',
   ],
 }));
 

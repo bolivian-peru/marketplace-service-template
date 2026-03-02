@@ -1,0 +1,43 @@
+{
+  "proof_type": "amazon-product-scrape",
+  "marketplace": "US",
+  "proxy_country": "US",
+  "generated_at": "2026-03-01T12:00:00Z",
+  "note": "Proof data will be populated from live deployment. Below is expected output schema.",
+  "endpoints_tested": [
+    {
+      "endpoint": "/api/amazon/product/B0BSHF7WHW",
+      "description": "Apple AirPods Pro 2nd Gen — product lookup",
+      "expected_response": {
+        "asin": "B0BSHF7WHW",
+        "title": "Apple AirPods Pro (2nd Generation)",
+        "price": { "current": 189.99, "currency": "USD", "was": 249.00, "discount_pct": 24 },
+        "bsr": { "rank": 1, "category": "Electronics", "sub_category_ranks": [{ "category": "Headphones", "rank": 1 }] },
+        "rating": 4.7,
+        "reviews_count": 125432,
+        "buy_box": { "seller": "Amazon.com", "is_amazon": true, "fulfilled_by": "Amazon" },
+        "availability": "In Stock"
+      }
+    },
+    {
+      "endpoint": "/api/amazon/product/B0D1XD1ZV3",
+      "description": "Samsung Galaxy S24 Ultra — product lookup"
+    },
+    {
+      "endpoint": "/api/amazon/product/B0CHX3QBCH",
+      "description": "PlayStation 5 Slim — product lookup"
+    },
+    {
+      "endpoint": "/api/amazon/search?query=wireless+headphones&marketplace=US",
+      "description": "Product search"
+    },
+    {
+      "endpoint": "/api/amazon/bestsellers?category=electronics&marketplace=US",
+      "description": "Bestsellers list"
+    },
+    {
+      "endpoint": "/api/amazon/reviews/B0BSHF7WHW?sort=recent&limit=5",
+      "description": "Product reviews"
+    }
+  ]
+}
