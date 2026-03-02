@@ -1,55 +1,3 @@
-/**
- * Cross-platform pattern detection.
- * Finds topics appearing across sources and scores signal strength.
- */
-
-import type { RedditPost } from '../scrapers/reddit';
-import type { WebResult, TrendingTopic } from '../scrapers/web';
-import type { YouTubeResult } from '../scrapers/youtube';
-import type { TwitterResult } from '../scrapers/twitter';
-import type { SignalStrength, TrendPattern, PatternEvidence } from '../types/index';
-
-const STOPWORDS = new Set([
-  'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for',
-  'of', 'with', 'by', 'from', 'as', 'is', 'was', 'are', 'were', 'been',
-  'be', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could',
-  'should', 'may', 'might', 'shall', 'can', 'this', 'that', 'these', 'those',
-  'it', 'its', 'i', 'me', 'my', 'we', 'our', 'you', 'your', 'he', 'she',
-  'they', 'them', 'their', 'what', 'which', 'who', 'how', 'when', 'where',
-  'why', 'all', 'each', 'every', 'both', 'more', 'most', 'other', 'some',
-  'such', 'no', 'not', 'only', 'same', 'so', 'than', 'too', 'very', 'just',
-  'about', 'up', 'out', 'if', 'then', 'there', 'also', 'into', 'after',
-  'before', 'new', 'one', 'two', 'three', 'now', 'like', 'get', 'got', 'use',
-  'using', 'used', 'any', 'even', 'still', 'much', 'many', 'well', 'back',
-  'way', 'make', 'made', 'really', 'see', 'think', 'know', 'go', 'going',
-  'good', 'time', 'year', 'day', 'week', 'month', 'post', 'comment', 'https',
-  'http', 'www', 'com', 'reddit', 'subreddit',
-]);
-
-const MIN_KEYWORD_LENGTH = 3;
-const MAX_KEYWORD_LENGTH = 80;
-const MAX_PATTERNS = 10;
-const EMERGING_ENGAGEMENT_THRESHOLD = 100;
-const MAX_ITEMS_PER_PLATFORM = 100;
-const MAX_TEXT_LENGTH = 1_200;
-const MAX_TOKENS_PER_TEXT = 150;
-const MAX_TERMS_PER_TEXT = 250;
-const MAX_KEYWORDS_PER_PLATFORM = 4_000;
-const MAX_SIGNAL_KEYWORDS = 6_000;
-
-function clamp(value: number, min: number, max: number): number {
-  if (!Number.isFinite(value)) return min;
-  return Math.min(Math.max(Math.floor(value), min), max);
-}
-
-interface KeywordSignal {
-  keyword: string;
-  platforms: Set<string>;
-  totalEngagement: number;
-  evidence: PatternEvidence[];
-}
-
-function normalizeKeyword(term: string): string | null {
   const normalized = term.trim().toLowerCase();
   if (normalized.length < MIN_KEYWORD_LENGTH || normalized.length > MAX_KEYWORD_LENGTH) {
     return null;
@@ -105,16 +53,18 @@ function addKeyword(
   weight: number,
   evidence: PatternEvidence,
 ): void {
+  if (map.size >= MAX_KEYWORDS_PER_PLATFORM && !map.has(term)) {
+    return;
+  }
+
   const existing = map.get(term);
   if (existing) {
     existing.weight += weight;
-    if (existing.evidence.length < 3) {
+    if (existing.evidence.length < 5) {
       existing.evidence.push(evidence);
     }
   } else {
-    if (map.size < MAX_KEYWORDS_PER_PLATFORM) {
-      map.set(term, { weight, evidence: [evidence] });
-    }
+    map.set(term, { weight, evidence: [evidence] });
   }
 }
 
@@ -220,64 +170,6 @@ function extractTrendingKeywords(
   return keywords;
 }
 
-function extractYouTubeKeywords(
-  results: YouTubeResult[],
-): Map<string, { weight: number; evidence: PatternEvidence[] }> {
-  const keywords = new Map<string, { weight: number; evidence: PatternEvidence[] }>();
-
-  for (const result of results.slice(0, MAX_ITEMS_PER_PLATFORM)) {
-    const text = `${result.title} ${result.description}`;
-    const tokens = tokenizeText(text);
-    const bigrams = extractBigrams(tokens);
-    const allTerms = Array.from(new Set([...tokens, ...bigrams])).slice(0, MAX_TERMS_PER_TEXT);
-    const engagement = result.engagementScore;
-
-    const evidence: PatternEvidence = {
-      platform: 'youtube',
-      title: result.title,
-      url: result.url,
-      engagement: Math.round(engagement),
-    };
-
-    for (const rawTerm of allTerms) {
-      const term = normalizeKeyword(rawTerm);
-      if (!term) continue;
-      addKeyword(keywords, term, engagement, evidence);
-    }
-  }
-
-  return keywords;
-}
-
-function extractTwitterKeywords(
-  results: TwitterResult[],
-): Map<string, { weight: number; evidence: PatternEvidence[] }> {
-  const keywords = new Map<string, { weight: number; evidence: PatternEvidence[] }>();
-
-  for (const result of results.slice(0, MAX_ITEMS_PER_PLATFORM)) {
-    const text = result.text;
-    const tokens = tokenizeText(text);
-    const bigrams = extractBigrams(tokens);
-    const allTerms = Array.from(new Set([...tokens, ...bigrams])).slice(0, MAX_TERMS_PER_TEXT);
-    const engagement = result.engagementScore;
-
-    const evidence: PatternEvidence = {
-      platform: 'twitter',
-      title: result.text.slice(0, 100),
-      url: result.url,
-      engagement: Math.round(engagement),
-    };
-
-    for (const rawTerm of allTerms) {
-      const term = normalizeKeyword(rawTerm);
-      if (!term) continue;
-      addKeyword(keywords, term, engagement, evidence);
-    }
-  }
-
-  return keywords;
-}
-
 function classifyStrength(
   platformCount: number,
   totalEngagement: number,
@@ -292,8 +184,6 @@ export interface PlatformData {
   reddit?: RedditPost[];
   web?: WebResult[];
   webTrending?: TrendingTopic[];
-  youtube?: YouTubeResult[];
-  twitter?: TwitterResult[];
 }
 
 export function detectPatterns(data: PlatformData): TrendPattern[] {
@@ -307,12 +197,6 @@ export function detectPatterns(data: PlatformData): TrendPattern[] {
   }
   if (data.webTrending && data.webTrending.length > 0) {
     platformMaps.push({ platform: 'web_trending', map: extractTrendingKeywords(data.webTrending) });
-  }
-  if (data.youtube && data.youtube.length > 0) {
-    platformMaps.push({ platform: 'youtube', map: extractYouTubeKeywords(data.youtube) });
-  }
-  if (data.twitter && data.twitter.length > 0) {
-    platformMaps.push({ platform: 'twitter', map: extractTwitterKeywords(data.twitter) });
   }
 
   if (platformMaps.length === 0) return [];
@@ -362,42 +246,5 @@ export function detectPatterns(data: PlatformData): TrendPattern[] {
     const strength = classifyStrength(platformCount, signal.totalEngagement);
     const platformList = Array.from(signal.platforms).map((p) =>
       p === 'web_trending' ? 'web' : p,
-    ) as ('reddit' | 'web' | 'youtube' | 'twitter')[];
+    ) as ('reddit' | 'web')[];
 
-    const uniquePlatforms = Array.from(new Set(platformList)) as ('reddit' | 'web' | 'youtube' | 'twitter')[];
-
-    scored.push({
-      pattern: signal.keyword,
-      strength,
-      sources: uniquePlatforms,
-      totalEngagement: Math.round(signal.totalEngagement),
-      evidence: signal.evidence.slice(0, 5),
-    });
-  }
-
-  const strengthOrder: Record<SignalStrength, number> = {
-    established: 3,
-    reinforced: 2,
-    emerging: 1,
-  };
-
-  scored.sort((a, b) => {
-    const strengthDiff = strengthOrder[b.strength] - strengthOrder[a.strength];
-    if (strengthDiff !== 0) return strengthDiff;
-    return b.totalEngagement - a.totalEngagement;
-  });
-
-  return scored.slice(0, MAX_PATTERNS);
-}
-
-export function getTopKeywords(
-  posts: RedditPost[],
-  limit: number = 10,
-): { keyword: string; weight: number; evidence: PatternEvidence[] }[] {
-  const safeLimit = clamp(limit, 1, 50);
-  const map = extractRedditKeywords(posts.slice(0, MAX_ITEMS_PER_PLATFORM));
-  return Array.from(map.entries())
-    .map(([keyword, data]) => ({ keyword, ...data }))
-    .sort((a, b) => b.weight - a.weight)
-    .slice(0, safeLimit);
-}
