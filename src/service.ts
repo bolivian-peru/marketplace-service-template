@@ -28,6 +28,7 @@ import {
   findCompanyEmployees 
 } from './scrapers/linkedin-enrichment';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
+import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
 
 export const serviceRouter = new Hono();
 
@@ -795,12 +796,6 @@ serviceRouter.get('/linkedin/company/:id/employees', async (c) => {
     return c.json({ error: 'Employee search failed', message: err?.message || String(err) }, 502);
   }
 });
-import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
-  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
-  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
-  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
-  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
-
 
 // ═══════════════════════════════════════════════════════
 // ─── REDDIT INTELLIGENCE API (Bounty #68) ──────────
