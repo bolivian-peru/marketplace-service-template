@@ -10,6 +10,7 @@
  *   GET /api/reddit/*  (Reddit Intelligence)
  *   GET /api/instagram/* (Instagram Intelligence + AI Vision)
  *   GET /api/linkedin/* (LinkedIn Enrichment)
+ *   GET /api/ads/*     (Mobile Ad Verification & Creative Intelligence)
  */
 
 import { Hono } from 'hono';
@@ -29,6 +30,7 @@ import {
 } from './scrapers/linkedin-enrichment';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
+import { fetchSearchAds, fetchDisplayAds, fetchAdvertiserAds } from './scrapers/ad-verification';
 
 export const serviceRouter = new Hono();
 
@@ -1436,5 +1438,106 @@ serviceRouter.get('/airbnb/market-stats', async (c) => {
     });
   } catch (err: any) {
     return c.json({ error: 'Airbnb market stats failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── MOBILE AD VERIFICATION & CREATIVE INTELLIGENCE (Bounty #53) ───
+
+const AD_WALLET = process.env.WALLET_ADDRESS || '0xF8cD900794245fc36CBE65be9afc23CDF5103042';
+const AD_SEARCH_PRICE = 0.02;
+const AD_DISPLAY_PRICE = 0.015;
+const AD_ADVERTISER_PRICE = 0.01;
+
+const AD_COUNTRIES = ['US', 'DE', 'FR', 'ES', 'GB', 'PL'];
+
+// GET /api/ads?type=search_ads&query=best+vpn&country=US
+// GET /api/ads?type=display_ads&url=https://techcrunch.com&country=DE
+// GET /api/ads?type=advertiser&domain=nordvpn.com&country=US
+serviceRouter.get('/ads', async (c) => {
+  const payment = extractPayment(c);
+  const type = c.req.query('type');
+  const walletAddress = AD_WALLET;
+
+  const priceMap: Record<string, number> = {
+    search_ads: AD_SEARCH_PRICE,
+    display_ads: AD_DISPLAY_PRICE,
+    advertiser: AD_ADVERTISER_PRICE,
+  };
+
+  if (!payment) {
+    return c.json(build402Response('/api/ads', 'Mobile Ad Verification & Creative Intelligence: see what ads appear from a real 4G/5G mobile device in any country. Types: search_ads ($0.02), display_ads ($0.015), advertiser ($0.01).', AD_SEARCH_PRICE, walletAddress, {
+      queryParams: {
+        type: 'string — "search_ads" | "display_ads" | "advertiser" (required)',
+        query: 'string — Search query (required for search_ads)',
+        url: 'string — URL to check (required for display_ads)',
+        domain: 'string — Advertiser domain (required for advertiser)',
+        country: `string — Country code (default: US, supported: ${AD_COUNTRIES.join(', ')})`,
+      },
+      output: {
+        type: 'string — search_ads | display_ads | advertiser',
+        ads: 'AdEntry[] — Detected ads with title, description, URL, advertiser, extensions',
+        proxy: '{ country: string, type: "mobile" }',
+        payment: '{ txHash, amount, settled }',
+      },
+    }), 402);
+  }
+
+  if (!type || !priceMap[type]) {
+    return c.json({ error: 'Missing or invalid type param', valid: Object.keys(priceMap), example: '/api/ads?type=search_ads&query=best+vpn&country=US' }, 400);
+  }
+
+  const price = priceMap[type];
+  const verification = await verifyPayment(payment, walletAddress, price);
+  if (!verification.valid) {
+    return c.json({ error: 'Payment verification failed', details: verification.error }, 402);
+  }
+
+  const country = (c.req.query('country') || 'US').toUpperCase();
+  if (!AD_COUNTRIES.includes(country)) {
+    return c.json({ error: `Unsupported country: ${country}`, supported: AD_COUNTRIES }, 400);
+  }
+
+  try {
+    const proxy = getProxy();
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    if (type === 'search_ads') {
+      const query = c.req.query('query');
+      if (!query) return c.json({ error: 'Missing required param: query', example: '/api/ads?type=search_ads&query=best+vpn&country=US' }, 400);
+      const result = await fetchSearchAds(query, country);
+      return c.json({
+        ...result,
+        proxy: { country: proxy.country, type: 'mobile' as const },
+        payment: { txHash: payment.txHash, amount: verification.amount, verified: true },
+      });
+    }
+
+    if (type === 'display_ads') {
+      const url = c.req.query('url');
+      if (!url) return c.json({ error: 'Missing required param: url', example: '/api/ads?type=display_ads&url=https://techcrunch.com&country=DE' }, 400);
+      if (!url.startsWith('http')) return c.json({ error: 'url must start with http:// or https://' }, 400);
+      const result = await fetchDisplayAds(url, country);
+      return c.json({
+        ...result,
+        proxy: { country: proxy.country, type: 'mobile' as const },
+        payment: { txHash: payment.txHash, amount: verification.amount, verified: true },
+      });
+    }
+
+    if (type === 'advertiser') {
+      const domain = c.req.query('domain');
+      if (!domain) return c.json({ error: 'Missing required param: domain', example: '/api/ads?type=advertiser&domain=nordvpn.com&country=US' }, 400);
+      const result = await fetchAdvertiserAds(domain, country);
+      return c.json({
+        ...result,
+        proxy: { country: proxy.country, type: 'mobile' as const },
+        payment: { txHash: payment.txHash, amount: verification.amount, verified: true },
+      });
+    }
+
+    return c.json({ error: 'Invalid type' }, 400);
+  } catch (err: any) {
+    return c.json({ error: 'Ad verification failed', message: err?.message || String(err) }, 502);
   }
 });
