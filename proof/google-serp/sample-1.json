@@ -1,0 +1,32 @@
+{
+  "query": "benefits of airbnb vs hotel for long stay",
+  "results": [
+    {
+      "title": "Airbnb vs. Hotel: Which Is Right for Your Next Trip?",
+      "url": "https://www.nerdwallet.com/article/travel/airbnb-vs-hotel",
+      "snippet": "For longer stays, Airbnbs often offer better value with kitchen access and separate living areas...",
+      "position": 1
+    },
+    {
+      "title": "Is Airbnb or a Hotel Better for a Long-Term Stay?",
+      "url": "https://www.tripsavvy.com/airbnb-vs-hotel-long-term-stay-4177265",
+      "snippet": "Hotels offer consistency and service, while Airbnbs provide a more residential feel and better weekly rates...",
+      "position": 2
+    }
+  ],
+  "ai_overview": "For long-term stays (over a week), Airbnbs are generally preferred due to cost savings from weekly/monthly discounts and the availability of kitchens. Hotels are better if you prioritize daily cleaning, on-site gyms, and professional security.",
+  "related_questions": [
+    "Is it cheaper to stay in an Airbnb for a month?",
+    "Do Airbnbs have better WiFi than hotels?",
+    "What are the risks of long-term Airbnb stays?"
+  ],
+  "meta": {
+    "country": "US",
+    "language": "en",
+    "proxy": {
+      "ip": "172.58.44.107",
+      "country": "US",
+      "type": "mobile"
+    }
+  }
+}
