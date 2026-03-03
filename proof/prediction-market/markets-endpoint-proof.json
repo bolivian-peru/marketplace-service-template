@@ -1,0 +1,49 @@
+{
+  "endpoint": "GET /api/prediction/markets?source=polymarket&minVolume=100000&limit=5",
+  "generated_at": "2026-03-03T01:57:40Z",
+  "purpose": "Proof of /api/prediction/markets endpoint — live Polymarket data",
+  "source": "polymarket",
+  "filters_applied": {
+    "minVolume": 100000,
+    "limit": 5,
+    "source": "polymarket"
+  },
+  "markets": [
+    {
+      "slug": "khamenei-out-as-supreme-leader-of-iran-by-february-28",
+      "question": "Khamenei out as Supreme Leader of Iran by February 28?",
+      "yes": 0.998,
+      "volume24h": 13884678.46,
+      "liquidity": 2644357.9
+    },
+    {
+      "slug": "will-the-indiana-pacers-win-the-2026-nba-finals",
+      "question": "Will the Indiana Pacers win the 2026 NBA Finals?",
+      "yes": 0.001,
+      "volume24h": 12179867.24,
+      "liquidity": 299105.1
+    },
+    {
+      "slug": "khamenei-out-as-supreme-leader-of-iran-by-march-31",
+      "question": "Khamenei out as Supreme Leader of Iran by March 31?",
+      "yes": 0.999,
+      "volume24h": 6592337.61,
+      "liquidity": 2956307.82
+    },
+    {
+      "slug": "will-atletico-madrid-win-the-202526-la-liga",
+      "question": "Will Atletico Madrid win the 2025\u201326 La Liga?",
+      "yes": 0.006,
+      "volume24h": 4401155.91,
+      "liquidity": 79078.84
+    },
+    {
+      "slug": "will-real-madrid-cf-win-on-2026-03-02",
+      "question": "Will Real Madrid CF win on 2026-03-02?",
+      "yes": 0.0,
+      "volume24h": 3624110.24,
+      "liquidity": 0.0
+    }
+  ],
+  "notes": "Data fetched live from gamma-api.polymarket.com at time of generation. Volume and liquidity in USD."
+}
