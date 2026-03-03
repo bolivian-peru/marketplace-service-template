@@ -1,0 +1,23 @@
+{
+  "proxyPurchase": {
+    "txHash": "0x879b6e3a39e74bd65635a588231472887b8f45417d248b9c47425d0d1d906ecf",
+    "network": "base",
+    "amountUSDC": 0.4,
+    "walletAddress": "0xc0140eea19bd90a7ca75882d5218efaf20426e42",
+    "verifyUrl": "https://basescan.org/tx/0x879b6e3a39e74bd65635a588231472887b8f45417d248b9c47425d0d1d906ecf"
+  },
+  "proxyDetails": {
+    "provider": "Proxies.sx",
+    "exitIp": "172.56.169.238",
+    "carrier": "T-Mobile US",
+    "type": "mobile",
+    "country": "US"
+  },
+  "connectionTest": {
+    "testUrl": "https://www.tiktok.com/api/search/general/preview/?keyword=dance",
+    "statusCode": 200,
+    "dataExtracted": "TikTok trending topics, hashtags with real impression IDs",
+    "timestamp": "2026-02-26T13:00:00Z"
+  },
+  "notes": "US mobile proxy used to collect real TikTok Trend Intelligence data"
+}
