@@ -789,7 +789,7 @@ serviceRouter.get('/linkedin/company/:id/employees', async (c) => {
     return c.json({ error: 'Employee search failed', message: err?.message || String(err) }, 502);
   }
 });
-import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
+import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile, discoverAccounts } from './scrapers/instagram-scraper';
 
 // ═══════════════════════════════════════════════════════
 // ─── INSTAGRAM INTELLIGENCE + AI VISION API ─────────
@@ -800,6 +800,7 @@ const IG_POSTS_PRICE    = 0.02;   // $0.02 per posts fetch
 const IG_ANALYZE_PRICE  = 0.15;   // $0.15 per full analysis (includes AI vision)
 const IG_IMAGES_PRICE   = 0.08;   // $0.08 per image-only analysis
 const IG_AUDIT_PRICE    = 0.05;   // $0.05 per authenticity audit
+const IG_DISCOVER_PRICE = 0.03;   // $0.03 per discover search
 
 // ─── GET /api/instagram/profile/:username ───────────
 
@@ -1032,5 +1033,48 @@ serviceRouter.get('/instagram/audit/:username', async (c) => {
     });
   } catch (err: any) {
     return c.json({ error: 'Instagram audit failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/instagram/discover ────────────────────
+serviceRouter.get('/instagram/discover', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/instagram/discover', 'Search/filter Instagram accounts by AI-derived attributes: niche, account type, sentiment, follower range, brand safety', IG_DISCOVER_PRICE, walletAddress, {
+      query_params: { niche: 'travel|food|fashion|fitness|tech|beauty|lifestyle|photography|business|music', account_type: 'influencer|business|personal|bot_fake', sentiment: 'positive|neutral|negative', min_followers: 10000, max_followers: 1000000, brand_safe: true },
+      example: '/api/instagram/discover?niche=travel&account_type=influencer&min_followers=50000&brand_safe=true',
+    }), 402);
+  }
+  const verification = await verifyPayment(payment, walletAddress, IG_DISCOVER_PRICE);
+  if (!verification.valid) {
+    return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+  }
+
+  const niche = c.req.query('niche') || undefined;
+  const account_type = c.req.query('account_type') || undefined;
+  const sentiment = c.req.query('sentiment') || undefined;
+  const min_followers = c.req.query('min_followers') ? parseInt(c.req.query('min_followers')!, 10) : undefined;
+  const max_followers = c.req.query('max_followers') ? parseInt(c.req.query('max_followers')!, 10) : undefined;
+  const brand_safe = c.req.query('brand_safe') === 'true' ? true : undefined;
+
+  try {
+    const proxy = getProxy();
+    const results = await discoverAccounts({ niche, account_type, sentiment, min_followers, max_followers, brand_safe });
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      query: { niche, account_type, sentiment, min_followers, max_followers, brand_safe },
+      results,
+      count: results.length,
+      meta: { proxy: { country: proxy.country, type: 'mobile' } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Instagram discover failed', message: err?.message || String(err) }, 502);
   }
 });

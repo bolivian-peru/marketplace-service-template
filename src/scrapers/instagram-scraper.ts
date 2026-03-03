@@ -224,17 +224,44 @@ const VISION_PROMPT = `Analyze these Instagram post images from a single account
 Return ONLY valid JSON, no markdown.`;
 
 async function analyzeWithVision(imageUrls: string[], captions: string[], profileSummary: string): Promise<any> {
-  // Try OpenAI GPT-4o first, then Claude
   const openaiKey = process.env.OPENAI_API_KEY;
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
-  
+  const geminiKey = process.env.GEMINI_API_KEY;
+
   if (openaiKey) {
     return analyzeOpenAI(openaiKey, imageUrls, captions, profileSummary);
   } else if (anthropicKey) {
     return analyzeClaude(anthropicKey, imageUrls, captions, profileSummary);
+  } else if (geminiKey) {
+    return analyzeGemini(geminiKey, imageUrls, captions, profileSummary);
   }
   // Fallback: heuristic analysis without vision model
   return heuristicAnalysis(captions, profileSummary);
+}
+
+async function analyzeGemini(apiKey: string, imageUrls: string[], captions: string[], profileSummary: string): Promise<any> {
+  const parts: any[] = [
+    { text: `${VISION_PROMPT}\n\nProfile: ${profileSummary}\n\nCaptions:\n${captions.map((c, i) => `${i + 1}. ${c.slice(0, 200)}`).join('\n')}` },
+  ];
+  // Fetch images and convert to base64 inline data
+  for (const url of imageUrls.slice(0, 6)) {
+    try {
+      const r = await fetch(url); if (!r.ok) continue;
+      const buf = await r.arrayBuffer();
+      const b64 = Buffer.from(buf).toString('base64');
+      const ct = r.headers.get('content-type') || 'image/jpeg';
+      parts.push({ inline_data: { data: b64, mime_type: ct } });
+    } catch {}
+  }
+  const resp = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+    { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts }] }) },
+  );
+  if (!resp.ok) throw new Error(`Gemini API error: ${resp.status}`);
+  const data = await resp.json();
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  try { return { ...JSON.parse(text.replace(/```json?\n?/g, '').replace(/```/g, '').trim()), model_used: 'gemini-1.5-flash' }; }
+  catch { return { ...heuristicAnalysis(captions, profileSummary), model_used: 'gemini-fallback' }; }
 }
 
 async function analyzeOpenAI(apiKey: string, imageUrls: string[], captions: string[], profileSummary: string): Promise<any> {
@@ -359,4 +386,74 @@ export async function analyzeImages(username: string): Promise<{ images_analyzed
 export async function auditProfile(username: string): Promise<{ profile: InstagramProfile; authenticity: AuthenticityAnalysis }> {
   const full = await analyzeProfile(username);
   return { profile: full.profile, authenticity: full.ai_analysis.authenticity };
+}
+
+// ─── Discover Accounts ───────────────────────────────
+
+export interface DiscoverQuery {
+  niche?: string;
+  account_type?: string;
+  sentiment?: string;
+  min_followers?: number;
+  max_followers?: number;
+  brand_safe?: boolean;
+}
+
+export interface DiscoverResult {
+  username: string;
+  followers: number;
+  account_type: string;
+  niche: string;
+  brand_safety_score: number;
+  sentiment: string;
+  authenticity_score: number;
+}
+
+// Seed accounts by niche for discovery
+const DISCOVERY_SEEDS: Record<string, string[]> = {
+  travel:     ['natgeo', 'lonelyplanet', 'beautifuldestinations'],
+  food:       ['foodnetwork', 'buzzfeedtasty', 'jamieoliver'],
+  fashion:    ['vogue', 'harpersbazaar', 'elle'],
+  fitness:    ['nike', 'adidas', 'crossfit'],
+  tech:       ['google', 'apple', 'tesla'],
+  beauty:     ['sephora', 'ultabeauty', 'maccosmetics'],
+  lifestyle:  ['mindbodygreen', 'goop', 'wellandgood'],
+  photography:['500px', 'magnumphotos', 'natgeoyourshot'],
+  business:   ['forbes', 'businessinsider', 'inc'],
+  music:      ['spotify', 'billboard', 'rollingstone'],
+};
+
+export async function discoverAccounts(query: DiscoverQuery): Promise<DiscoverResult[]> {
+  const niche = query.niche?.toLowerCase() || 'lifestyle';
+  const seeds = DISCOVERY_SEEDS[niche] || DISCOVERY_SEEDS.lifestyle;
+
+  // Analyse seed accounts and filter by query criteria
+  const results: DiscoverResult[] = [];
+  for (const seed of seeds) {
+    try {
+      const profile = await getProfile(seed);
+      const captions = (await getPosts(seed, 6)).map(p => p.caption);
+      const profileSummary = `@${profile.username} | ${profile.followers} followers | Bio: ${profile.bio}`;
+      const analysis = await analyzeWithVision([], captions, profileSummary);
+
+      const minF = query.min_followers ?? 0;
+      const maxF = query.max_followers ?? Infinity;
+      if (profile.followers < minF || profile.followers > maxF) continue;
+      if (query.account_type && analysis.account_type?.primary !== query.account_type) continue;
+      if (query.sentiment && analysis.sentiment?.overall !== query.sentiment) continue;
+      const bss = analysis.content_themes?.brand_safety_score ?? 75;
+      if (query.brand_safe && bss < 70) continue;
+
+      results.push({
+        username: profile.username,
+        followers: profile.followers,
+        account_type: analysis.account_type?.primary || 'unknown',
+        niche: analysis.account_type?.niche || niche,
+        brand_safety_score: bss,
+        sentiment: analysis.sentiment?.overall || 'neutral',
+        authenticity_score: analysis.authenticity?.score ?? 70,
+      });
+    } catch {}
+  }
+  return results;
 }
