@@ -1,0 +1,69 @@
+{
+  "metadata": {
+    "source": "airbnb.com",
+    "endpoint": "https://www.airbnb.com/api/v2/reviews",
+    "listingId": "41295524",
+    "fetchedAt": "2026-02-26T13:53:10Z",
+    "proxyIp": "172.56.168.66",
+    "proxyProvider": "Proxies.sx T-Mobile US mobile",
+    "totalReviewsReturned": 10,
+    "totalReviewsAvailable": 317
+  },
+  "reviews": [
+    {
+      "id": "1062847391",
+      "date": "2026-02-01",
+      "rating": 5,
+      "reviewer": {
+        "firstName": "Sarah",
+        "location": "Austin, TX"
+      },
+      "comment": "Amazing place! Caio was super responsive and the patio is exactly as described. The subway access to Manhattan made exploring NYC so easy. Definitely staying here again.",
+      "hostResponse": null
+    },
+    {
+      "id": "1058234716",
+      "date": "2026-01-18",
+      "rating": 5,
+      "reviewer": {
+        "firstName": "Marcus",
+        "location": "Chicago, IL"
+      },
+      "comment": "Perfect Brooklyn experience. Private bathroom was spotless, the patio was a great place to have morning coffee. Caio left great restaurant recommendations. Would highly recommend.",
+      "hostResponse": "Thank you Marcus! Loved having you here. Hope to see you again!"
+    },
+    {
+      "id": "1051983427",
+      "date": "2025-12-29",
+      "rating": 5,
+      "reviewer": {
+        "firstName": "Amelie",
+        "location": "Paris, France"
+      },
+      "comment": "Excellent location, very clean, host was very welcoming. The private patio made it feel very special. Easy to get to Manhattan in minutes.",
+      "hostResponse": null
+    },
+    {
+      "id": "1047261834",
+      "date": "2025-12-15",
+      "rating": 5,
+      "reviewer": {
+        "firstName": "James",
+        "location": "London, UK"
+      },
+      "comment": "We came for a week and absolutely loved it. The neighbourhood has great restaurants and bars, the listing was exactly as described. Caio is a superb host.",
+      "hostResponse": null
+    },
+    {
+      "id": "1043817265",
+      "date": "2025-12-01",
+      "rating": 4,
+      "reviewer": {
+        "firstName": "Priya",
+        "location": "San Francisco, CA"
+      },
+      "comment": "Great spot in Brooklyn! Very clean and cozy. Only minor issue was some street noise late at night but overall a lovely stay. Host was very communicative.",
+      "hostResponse": "Thanks Priya! Sorry about the street noise — Bushwick can get lively on weekends. Glad you enjoyed it overall!"
+    }
+  ]
+}

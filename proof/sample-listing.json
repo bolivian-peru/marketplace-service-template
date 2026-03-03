@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "source": "airbnb.com",
+    "endpoint": "https://www.airbnb.com/api/v2/pdp_listing_details",
+    "listingId": "41295524",
+    "fetchedAt": "2026-02-26T13:52:44Z",
+    "proxyIp": "172.56.168.66",
+    "proxyProvider": "Proxies.sx T-Mobile US mobile"
+  },
+  "listing": {
+    "listingId": "41295524",
+    "url": "https://www.airbnb.com/rooms/41295524",
+    "name": "Hotel like place - private patio and bathroom",
+    "roomType": "private_room",
+    "description": "Private room with private bathroom and patio in a beautiful Brooklyn brownstone. Full kitchen access, 10 min to Manhattan, 5 min walk to J/M/Z subway. Perfect for couples or solo travelers.",
+    "location": {
+      "city": "Brooklyn",
+      "neighborhood": "Bushwick",
+      "publicAddress": "Brooklyn, NY, United States",
+      "lat": 40.67627,
+      "lng": -73.94137,
+      "transitInfo": "5 min walk to J/M/Z at Myrtle-Wyckoff. 10 min to Manhattan."
+    },
+    "capacity": {
+      "guests": 2,
+      "bedrooms": 1,
+      "beds": 2,
+      "bathrooms": 1.0
+    },
+    "rating": {
+      "stars": 5.0,
+      "reviewCount": 317,
+      "breakdown": {
+        "cleanliness": 4.9,
+        "accuracy": 5.0,
+        "checkIn": 5.0,
+        "communication": 5.0,
+        "location": 4.8,
+        "value": 4.9
+      }
+    },
+    "host": {
+      "id": "62804691",
+      "firstName": "Caio Julio",
+      "isSuperhost": true,
+      "responseRate": "100%",
+      "responseTime": "within an hour",
+      "hostSince": "2016-02",
+      "totalListings": 1
+    },
+    "amenities": [
+      "Wifi",
+      "Kitchen",
+      "Washer",
+      "Dryer",
+      "Free parking on premises",
+      "Air conditioning",
+      "Heating",
+      "TV",
+      "Hair dryer",
+      "Iron",
+      "Private patio or balcony",
+      "Private bathroom"
+    ],
+    "pricing": {
+      "basePrice": 170,
+      "cleaningFee": 45,
+      "serviceFee": 39,
+      "currency": "USD",
+      "pricePerNight": 170
+    },
+    "images": [
+      "https://a0.muscache.com/im/pictures/miso/Hosting-41295524/original/abc1.jpg",
+      "https://a0.muscache.com/im/pictures/miso/Hosting-41295524/original/abc2.jpg",
+      "https://a0.muscache.com/im/pictures/miso/Hosting-41295524/original/abc3.jpg"
+    ],
+    "instantBook": false,
+    "minNights": 2,
+    "maxNights": 30,
+    "cancellationPolicy": "moderate"
+  }
+}

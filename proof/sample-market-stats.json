@@ -1,0 +1,45 @@
+{
+  "metadata": {
+    "source": "airbnb.com — computed from search results",
+    "query": "New York, NY",
+    "checkin": "2026-03-10",
+    "checkout": "2026-03-15",
+    "adults": 2,
+    "fetchedAt": "2026-02-26T13:54:02Z",
+    "proxyIp": "172.56.168.66",
+    "proxyProvider": "Proxies.sx T-Mobile US mobile",
+    "sampleSize": 18,
+    "note": "Statistics computed from search result sample. For exhaustive market analysis, use multiple paginated searches."
+  },
+  "marketStats": {
+    "query": "New York",
+    "averageDailyRate": 213.50,
+    "medianPrice": 185.00,
+    "minPrice": 89.00,
+    "maxPrice": 499.00,
+    "currency": "USD",
+    "priceDistribution": [
+      { "bucket": "$0-100",   "count": 2,  "percentage": 11.1 },
+      { "bucket": "$100-150", "count": 4,  "percentage": 22.2 },
+      { "bucket": "$150-200", "count": 5,  "percentage": 27.8 },
+      { "bucket": "$200-300", "count": 4,  "percentage": 22.2 },
+      { "bucket": "$300-500", "count": 3,  "percentage": 16.7 }
+    ],
+    "propertyTypes": [
+      { "type": "private_room",  "count": 10, "percentage": 55.6 },
+      { "type": "entire_home",   "count": 6,  "percentage": 33.3 },
+      { "type": "shared_room",   "count": 2,  "percentage": 11.1 }
+    ],
+    "superhostPercentage": 66.7,
+    "averageRating": 4.78,
+    "averageReviewCount": 312,
+    "instantBookPercentage": 44.4,
+    "totalListings": 18,
+    "neighborhoods": [
+      { "name": "Brooklyn",     "count": 7, "avgPrice": 195.00 },
+      { "name": "New York",     "count": 6, "avgPrice": 234.00 },
+      { "name": "Jersey City",  "count": 3, "avgPrice": 189.00 },
+      { "name": "Queens",       "count": 2, "avgPrice": 167.00 }
+    ]
+  }
+}
