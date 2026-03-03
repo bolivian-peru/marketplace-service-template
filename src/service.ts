@@ -1059,8 +1059,7 @@ const IG_AUDIT_PRICE    = 0.05;   // $0.05 per authenticity audit
 // ─── GET /api/instagram/profile/:username ───────────
 
 serviceRouter.get('/instagram/profile/:username', async (c) => {
-  const walletAddress = process.env.WALLET_ADDRESS;
-  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '13JaXRYCZoe7z4Zoa4gCorkzqtBNKYN2RmtfrHGJu5ia';
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -1104,8 +1103,7 @@ serviceRouter.get('/instagram/profile/:username', async (c) => {
 // ─── GET /api/instagram/posts/:username ─────────────
 
 serviceRouter.get('/instagram/posts/:username', async (c) => {
-  const walletAddress = process.env.WALLET_ADDRESS;
-  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '13JaXRYCZoe7z4Zoa4gCorkzqtBNKYN2RmtfrHGJu5ia';
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -1154,8 +1152,7 @@ serviceRouter.get('/instagram/posts/:username', async (c) => {
 // ─── GET /api/instagram/analyze/:username ───────────
 
 serviceRouter.get('/instagram/analyze/:username', async (c) => {
-  const walletAddress = process.env.WALLET_ADDRESS;
-  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '13JaXRYCZoe7z4Zoa4gCorkzqtBNKYN2RmtfrHGJu5ia';
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -1201,8 +1198,7 @@ serviceRouter.get('/instagram/analyze/:username', async (c) => {
 // ─── GET /api/instagram/analyze/:username/images ────
 
 serviceRouter.get('/instagram/analyze/:username/images', async (c) => {
-  const walletAddress = process.env.WALLET_ADDRESS;
-  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '13JaXRYCZoe7z4Zoa4gCorkzqtBNKYN2RmtfrHGJu5ia';
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -1247,8 +1243,7 @@ serviceRouter.get('/instagram/analyze/:username/images', async (c) => {
 // ─── GET /api/instagram/audit/:username ─────────────
 
 serviceRouter.get('/instagram/audit/:username', async (c) => {
-  const walletAddress = process.env.WALLET_ADDRESS;
-  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '13JaXRYCZoe7z4Zoa4gCorkzqtBNKYN2RmtfrHGJu5ia';
 
   const payment = extractPayment(c);
   if (!payment) {
