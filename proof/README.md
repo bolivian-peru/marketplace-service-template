@@ -51,4 +51,4 @@ GET  https://marketplace-api-9kvb.onrender.com/api/trending
 
 ### Wallet
 
-Solana: `6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv`
+Solana: `GpXHXs5KfzfXbNKcMLNbAMsJsgPsBE7y5GtwVoiuxYvH`

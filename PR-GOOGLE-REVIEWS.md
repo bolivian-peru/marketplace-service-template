@@ -122,7 +122,7 @@ The Dockerfile is production-ready:
 ```bash
 docker build -t google-reviews-api .
 docker run -p 3000:3000 \
-  -e WALLET_ADDRESS=6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv \
+  -e WALLET_ADDRESS=GpXHXs5KfzfXbNKcMLNbAMsJsgPsBE7y5GtwVoiuxYvH \
   -e WALLET_ADDRESS_BASE=0xF8cD900794245fc36CBE65be9afc23CDF5103042 \
   -e PROXY_HOST=your-proxy-host \
   -e PROXY_HTTP_PORT=your-port \
@@ -139,7 +139,7 @@ Health check: `GET /health` returns `{ "status": "healthy", "endpoints": [...] }
 
 **Solana:**
 ```
-6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv
+GpXHXs5KfzfXbNKcMLNbAMsJsgPsBE7y5GtwVoiuxYvH
 ```
 
 **Base:**
