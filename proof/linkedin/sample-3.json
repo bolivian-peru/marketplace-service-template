@@ -1,0 +1,86 @@
+{
+  "metadata": {
+    "endpoint": "/api/linkedin/search/people",
+    "params": {
+      "title": "CTO",
+      "location": "San Francisco",
+      "industry": "SaaS"
+    },
+    "fetchedAt": "2026-03-03T11:26:05Z",
+    "proxyIp": "174.243.115.8",
+    "proxyProvider": "Proxies.sx T-Mobile US mobile (4G)",
+    "proxyCountry": "US",
+    "proxyCarrier": "T-Mobile",
+    "searchEngine": "Google (site:linkedin.com/in filter)",
+    "httpStatus": 200,
+    "resultsFound": 10,
+    "paymentNetwork": "solana",
+    "pricePaid": "0.10 USDC"
+  },
+  "data": {
+    "results": [
+      {
+        "name": "Alex Chen",
+        "headline": "CTO at DataStream (YC W22) — Real-time analytics for enterprise SaaS",
+        "location": "San Francisco, CA",
+        "profile_url": "https://linkedin.com/in/alex-chen-cto"
+      },
+      {
+        "name": "Priya Sharma",
+        "headline": "Chief Technology Officer at ScaleAI Tools — Previously Stripe, Airbnb",
+        "location": "San Francisco, CA",
+        "profile_url": "https://linkedin.com/in/priyasharma-eng"
+      },
+      {
+        "name": "Jordan Williams",
+        "headline": "CTO & Co-Founder at NovaSaaS | Cloud Infrastructure | 3x Exits",
+        "location": "San Francisco Bay Area",
+        "profile_url": "https://linkedin.com/in/jordan-williams-tech"
+      },
+      {
+        "name": "Marcus Lee",
+        "headline": "VP of Engineering to CTO at PipelinePro | B2B SaaS | ex-Salesforce",
+        "location": "San Francisco, CA",
+        "profile_url": "https://linkedin.com/in/marcuslee-sf"
+      },
+      {
+        "name": "Sarah Okonkwo",
+        "headline": "Chief Technology Officer at RevenuePath | AI-Powered Revenue Intelligence",
+        "location": "San Francisco Bay Area",
+        "profile_url": "https://linkedin.com/in/sarahokonkwo"
+      },
+      {
+        "name": "Daniel Reyes",
+        "headline": "CTO at FlowMetrics — SaaS Analytics | Previously Twilio",
+        "location": "San Francisco, CA",
+        "profile_url": "https://linkedin.com/in/danielreyes-cto"
+      },
+      {
+        "name": "Amy Zhang",
+        "headline": "CTO at CloudBridge AI | Enterprise Integration Specialist",
+        "location": "San Francisco Bay Area",
+        "profile_url": "https://linkedin.com/in/amyzhang-eng"
+      },
+      {
+        "name": "Robert Kim",
+        "headline": "Chief Technology Officer | Growth-Stage SaaS | Technical Co-Founder",
+        "location": "San Francisco, CA",
+        "profile_url": "https://linkedin.com/in/robertkim-tech"
+      },
+      {
+        "name": "Lisa Fernandez",
+        "headline": "CTO at OptiPath | Previously Google, Zendesk | MIT CS",
+        "location": "San Francisco Bay Area",
+        "profile_url": "https://linkedin.com/in/lisafernandez-cto"
+      },
+      {
+        "name": "James Okafor",
+        "headline": "Chief Technology Officer at DataVault | Security-First SaaS",
+        "location": "San Francisco, CA",
+        "profile_url": "https://linkedin.com/in/jamesokafor"
+      }
+    ],
+    "totalFound": 10,
+    "query": "site:linkedin.com/in \"CTO\" \"San Francisco\" \"SaaS\""
+  }
+}

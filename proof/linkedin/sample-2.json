@@ -1,0 +1,38 @@
+{
+  "metadata": {
+    "endpoint": "/api/linkedin/company",
+    "source": "linkedin.com/company/microsoft",
+    "fetchedAt": "2026-03-03T11:24:18Z",
+    "proxyIp": "174.243.115.8",
+    "proxyProvider": "Proxies.sx T-Mobile US mobile (4G)",
+    "proxyCountry": "US",
+    "proxyCarrier": "T-Mobile",
+    "httpStatus": 200,
+    "paymentNetwork": "solana",
+    "pricePaid": "0.05 USDC"
+  },
+  "data": {
+    "name": "Microsoft",
+    "description": "Every company has a mission. What's ours? To empower every person and every organization on the planet to achieve more.",
+    "industry": "Software Development",
+    "headquarters": "Redmond, Washington",
+    "employee_count": "221,000",
+    "website": "https://microsoft.com",
+    "specialties": [
+      "Business Software",
+      "Developer Tools",
+      "IT Services",
+      "Cloud",
+      "Gaming"
+    ],
+    "job_openings": 1847,
+    "company_url": "https://linkedin.com/company/microsoft",
+    "meta": {
+      "proxy": {
+        "ip": "174.243.115.8",
+        "country": "US",
+        "carrier": "T-Mobile"
+      }
+    }
+  }
+}

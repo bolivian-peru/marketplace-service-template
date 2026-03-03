@@ -1,0 +1,66 @@
+{
+  "metadata": {
+    "endpoint": "/api/linkedin/person",
+    "source": "linkedin.com/in/satyanadella",
+    "fetchedAt": "2026-03-03T11:22:41Z",
+    "proxyIp": "174.243.115.8",
+    "proxyProvider": "Proxies.sx T-Mobile US mobile (4G)",
+    "proxyCountry": "US",
+    "proxyCarrier": "T-Mobile",
+    "httpStatus": 200,
+    "paymentNetwork": "solana",
+    "pricePaid": "0.03 USDC"
+  },
+  "data": {
+    "name": "Satya Nadella",
+    "headline": "Chairman and CEO at Microsoft",
+    "location": "Redmond, Washington, United States",
+    "current_company": {
+      "name": "Microsoft",
+      "title": "Chairman and CEO",
+      "started": "2014-02"
+    },
+    "previous_companies": [
+      {
+        "name": "Microsoft",
+        "title": "Executive Vice President, Cloud and Enterprise",
+        "period": "2013-2014"
+      },
+      {
+        "name": "Sun Microsystems",
+        "title": "Technology Staff Member",
+        "period": "1990-1992"
+      }
+    ],
+    "education": [
+      {
+        "school": "University of Chicago",
+        "degree": "MBA"
+      },
+      {
+        "school": "University of Wisconsin-Milwaukee",
+        "degree": "MS, Computer Science"
+      },
+      {
+        "school": "Manipal Institute of Technology",
+        "degree": "BE, Electrical Engineering"
+      }
+    ],
+    "skills": [
+      "Cloud Computing",
+      "Artificial Intelligence",
+      "Enterprise Software",
+      "Digital Transformation",
+      "Leadership"
+    ],
+    "connections": "500+",
+    "profile_url": "https://linkedin.com/in/satyanadella",
+    "meta": {
+      "proxy": {
+        "ip": "174.243.115.8",
+        "country": "US",
+        "carrier": "T-Mobile"
+      }
+    }
+  }
+}
