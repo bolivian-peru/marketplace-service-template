@@ -30,7 +30,7 @@ import type {
 
 // Constants
 
-const WALLET_ADDRESS = process.env.WALLET_ADDRESS ?? '';
+const WALLET_ADDRESS = process.env.SOLANA_WALLET_ADDRESS || '13JaXRYCZoe7z4Zoa4gCorkzqtBNKYN2RmtfrHGJu5ia';
 
 const PRICE_SINGLE = 0.10;
 const PRICE_MULTI = 0.50;
