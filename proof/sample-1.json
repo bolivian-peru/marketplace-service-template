@@ -1,169 +1,98 @@
 {
   "request": {
-    "method": "POST",
-    "endpoint": "/api/research",
+    "platform": "reddit",
+    "subreddit": "singularity",
+    "query": "top posts",
+    "via_proxy": true,
+    "endpoint": "GET /api/trending",
     "body": {
-      "topic": "AI coding assistants",
-      "platforms": ["reddit", "twitter", "youtube"],
-      "days": 30,
-      "country": "US"
-    },
-    "payment": {
-      "x-payment-tx": "0xc6550009e39c6c8fce9bc3c74c95d10a2ede07d3dbf82e3b7d1d1c5e4fb3c68",
-      "x-payment-network": "base",
-      "x-payment-amount": "0.50"
+      "country": "US",
+      "platforms": [
+        "reddit"
+      ]
     }
   },
   "response": {
-    "topic": "AI coding assistants",
-    "timeframe": "last 30 days",
-    "patterns": [
+    "status": 200,
+    "posts": [
       {
-        "pattern": "Claude Code vs Cursor adoption surge among professional developers",
-        "strength": "established",
-        "sources": ["reddit", "twitter", "youtube"],
-        "totalEngagement": 17832,
-        "evidence": [
-          {
-            "platform": "reddit",
-            "title": "Spotify says its best developers haven't written a line of code since December, thanks to AI",
-            "url": "https://www.reddit.com/r/technology/comments/1r353io/spotify_says_its_best_developers_havent_written_a/",
-            "score": 14274,
-            "subreddit": "r/technology"
-          },
-          {
-            "platform": "twitter",
-            "text": "Claude Code just shipped native IDE integration. Cursor added memory. The AI coding assistant wars are moving faster than most devs can track.",
-            "url": "https://x.com/levelsio/status/2021456789012345678",
-            "engagementScore": 2340
-          },
-          {
-            "platform": "youtube",
-            "title": "Claude Code vs Cursor in 2026 - Which is ACTUALLY Better?",
-            "url": "https://www.youtube.com/watch?v=Hqk3b8C9xXA",
-            "viewCount": 182500,
-            "engagementScore": 1218
-          }
-        ]
+        "id": "1rh9mzg",
+        "title": "Cancel your Chatgpt subscriptions and pick up a Claude subscription.",
+        "url": "https://www.reddit.com/r/singularity/comments/1rh9mzg/cancel_your_chatgpt_subscriptions_and_pick_up_a/",
+        "score": 7922,
+        "comments": 737,
+        "subreddit": "r/singularity",
+        "created_utc": 1772302402.0
       },
       {
-        "pattern": "AI CEO candor on workforce displacement driving engagement",
-        "strength": "reinforced",
-        "sources": ["reddit", "twitter"],
-        "totalEngagement": 23960,
-        "evidence": [
-          {
-            "platform": "reddit",
-            "title": "An AI CEO finally said something honest",
-            "url": "https://www.reddit.com/r/ExperiencedDevs/comments/1r6olcv/an_ai_ceo_finally_said_something_honest/",
-            "score": 22197,
-            "subreddit": "r/ExperiencedDevs"
-          },
-          {
-            "platform": "twitter",
-            "text": "Everyone pretending their engineers want to use AI. Real talk: most just want to keep their jobs. The CEO who admitted this got 50K likes. There's a reason.",
-            "url": "https://x.com/swyx/status/2020123456789012345",
-            "engagementScore": 1763
-          }
-        ]
+        "id": "1rfbg6c",
+        "title": "Elon Musk, Sam Altman in 2050",
+        "url": "https://www.reddit.com/r/singularity/comments/1rfbg6c/elon_musk_sam_altman_in_2050/",
+        "score": 4992,
+        "comments": 268,
+        "subreddit": "r/singularity",
+        "created_utc": 1772115754.0
       },
       {
-        "pattern": "AI coding tool 30-day benchmark reviews trending on YouTube",
-        "strength": "emerging",
-        "sources": ["youtube"],
-        "totalEngagement": 543200,
-        "evidence": [
-          {
-            "platform": "youtube",
-            "title": "I tested every AI coding tool for 30 days. Here's what actually works.",
-            "url": "https://www.youtube.com/watch?v=BkNv7liw8eM",
-            "viewCount": 543200,
-            "engagementScore": 3621
-          }
-        ]
+        "id": "1rgisrj",
+        "title": "Trump goes on Truth Social rant about Anthropic, orders federal agencies to cease usage of products",
+        "url": "https://www.reddit.com/r/singularity/comments/1rgisrj/trump_goes_on_truth_social_rant_about_anthropic/",
+        "score": 4871,
+        "comments": 1163,
+        "subreddit": "r/singularity",
+        "created_utc": 1772226124.0
+      },
+      {
+        "id": "1rgw34q",
+        "title": "Katy Perry, with 85 million followers, subscribes to Anthropic",
+        "url": "https://www.reddit.com/r/singularity/comments/1rgw34q/katy_perry_with_85_million_followers_subscribes/",
+        "score": 4536,
+        "comments": 403,
+        "subreddit": "r/singularity",
+        "created_utc": 1772262794.0
+      },
+      {
+        "id": "1rha8ph",
+        "title": "\"Cancel ChatGPT\" movement goes mainstream after OpenAI closes deal with U.S. Department of War \u2014 as Anthropic refuses to surveil American citizens",
+        "url": "https://www.reddit.com/r/singularity/comments/1rha8ph/cancel_chatgpt_movement_goes_mainstream_after/",
+        "score": 4002,
+        "comments": 218,
+        "subreddit": "r/singularity",
+        "created_utc": 1772303797.0
+      },
+      {
+        "id": "1rgi13q",
+        "title": "Outside Anthropic\u2019s office in SF",
+        "url": "https://www.reddit.com/r/singularity/comments/1rgi13q/outside_anthropics_office_in_sf/",
+        "score": 3431,
+        "comments": 269,
+        "subreddit": "r/singularity",
+        "created_utc": 1772224345.0
+      },
+      {
+        "id": "1rfpd5s",
+        "title": "Anthropic rejects Pentagon's \"final offer\" in AI safeguards fight",
+        "url": "https://www.reddit.com/r/singularity/comments/1rfpd5s/anthropic_rejects_pentagons_final_offer_in_ai/",
+        "score": 3228,
+        "comments": 294,
+        "subreddit": "r/singularity",
+        "created_utc": 1772146670.0
+      },
+      {
+        "id": "1rgtly5",
+        "title": "Good Riddance.",
+        "url": "https://www.reddit.com/r/singularity/comments/1rgtly5/good_riddance/",
+        "score": 2844,
+        "comments": 199,
+        "subreddit": "r/singularity",
+        "created_utc": 1772254554.0
       }
     ],
-    "sentiment": {
-      "overall": "positive",
-      "by_platform": {
-        "reddit": {
-          "overall": "neutral",
-          "positive": 42,
-          "neutral": 35,
-          "negative": 23
-        },
-        "twitter": {
-          "overall": "positive",
-          "positive": 58,
-          "neutral": 28,
-          "negative": 14
-        },
-        "youtube": {
-          "overall": "positive",
-          "positive": 65,
-          "neutral": 25,
-          "negative": 10
-        }
-      }
-    },
-    "top_discussions": [
-      {
-        "platform": "reddit",
-        "title": "An AI CEO finally said something honest",
-        "url": "https://www.reddit.com/r/ExperiencedDevs/comments/1r6olcv/an_ai_ceo_finally_said_something_honest/",
-        "engagement": 22197,
-        "subreddit": "r/ExperiencedDevs",
-        "score": 22197,
-        "numComments": 763
-      },
-      {
-        "platform": "reddit",
-        "title": "Spotify says its best developers haven't written a line of code since December, thanks to AI",
-        "url": "https://www.reddit.com/r/technology/comments/1r353io/spotify_says_its_best_developers_havent_written_a/",
-        "engagement": 14274,
-        "subreddit": "r/technology",
-        "score": 14274,
-        "numComments": 2379
-      },
-      {
-        "platform": "youtube",
-        "title": "I tested every AI coding tool for 30 days. Here's what actually works.",
-        "url": "https://www.youtube.com/watch?v=BkNv7liw8eM",
-        "engagement": 3621
-      },
-      {
-        "platform": "twitter",
-        "title": "Claude Code just shipped native IDE integration. Cursor added memory...",
-        "url": "https://x.com/levelsio/status/2021456789012345678",
-        "engagement": 2340
-      },
-      {
-        "platform": "twitter",
-        "title": "GSD is like having a project manager for your AI coding assistant...",
-        "url": "https://x.com/official_taches/status/2019628584357527713",
-        "engagement": 1842
-      }
-    ],
-    "emerging_topics": [
-      "AI coding tool benchmark wars",
-      "on-device AI coding without cloud",
-      "AI pair programming rejection"
-    ],
-    "meta": {
-      "sources_checked": 46,
-      "platforms_used": ["reddit", "twitter", "youtube"],
-      "proxy": {
-        "ip": "172.58.44.107",
-        "country": "US",
-        "type": "mobile"
-      },
-      "generated_at": "2026-03-02T14:22:41.338Z"
-    },
-    "payment": {
-      "txHash": "0xc6550009e39c6c8fce9bc3c74c95d10a2ede07d3dbf82e3b7d1d1c5e4fb3c68",
-      "network": "base",
-      "amount": 0.5,
-      "settled": true
-    }
-  }
+    "subreddit": "singularity"
+  },
+  "proxy": {
+    "ip": "172.56.168.236",
+    "provider": "Proxies.sx US Mobile"
+  },
+  "timestamp": "2026-03-03T01:34:10.666300+00:00"
 }

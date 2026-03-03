@@ -1,94 +1,83 @@
 {
   "request": {
-    "method": "GET",
-    "endpoint": "/api/trending?country=US&platforms=reddit,web&limit=10",
-    "payment": {
-      "x-payment-tx": "0xc6550009e39c6c8fce9bc3c74c95d10a2ede07d3dbf82e3b7d1d1c5e4fb3c68",
-      "x-payment-network": "base",
-      "x-payment-amount": "0.10"
-    }
+    "platform": "reddit",
+    "subreddit": "MachineLearning",
+    "query": "top posts",
+    "via_proxy": true,
+    "endpoint": "GET /api/trending"
   },
   "response": {
-    "country": "US",
-    "platforms": ["reddit", "web"],
-    "trending": [
+    "status": 200,
+    "posts": [
       {
-        "topic": "DeepSeek R2 open source model release",
-        "platform": "reddit",
-        "engagement": 18934,
-        "url": "https://www.reddit.com/r/MachineLearning/comments/1r7ab3c/deepseek_r2_technical_report/"
+        "id": "1rdca7x",
+        "title": "[D] Papers with no code",
+        "score": 201,
+        "comments": 95,
+        "url": "https://www.reddit.com/r/MachineLearning/comments/1rdca7x/d_papers_with_no_code/",
+        "subreddit": "r/MachineLearning"
       },
       {
-        "topic": "AI CEO workforce displacement honesty",
-        "platform": "reddit",
-        "engagement": 22197,
-        "url": "https://www.reddit.com/r/ExperiencedDevs/comments/1r6olcv/an_ai_ceo_finally_said_something_honest/"
+        "id": "1repn7v",
+        "title": "[D] ML Engineers \u2014 How did you actually learn PyTorch? I keep forgetting everything.",
+        "score": 185,
+        "comments": 63,
+        "url": "https://www.reddit.com/r/MachineLearning/comments/1repn7v/d_ml_engineers_how_did_you_actually_learn_pytorch/",
+        "subreddit": "r/MachineLearning"
       },
       {
-        "topic": "Spotify developers stopped writing code via AI",
-        "platform": "reddit",
-        "engagement": 14274,
-        "url": "https://www.reddit.com/r/technology/comments/1r353io/spotify_says_its_best_developers_havent_written_a/"
+        "id": "1rh84o0",
+        "title": "[R] Tiny transformers (&lt;100 params) can add two 10-digit numbers to 100% accuracy",
+        "score": 141,
+        "comments": 50,
+        "url": "https://www.reddit.com/r/MachineLearning/comments/1rh84o0/r_tiny_transformers_100_params_can_add_two/",
+        "subreddit": "r/MachineLearning"
       },
       {
-        "topic": "Claude Code vs Cursor 2026",
-        "platform": "web",
-        "engagement": 0,
-        "traffic": "Breakout",
-        "url": "https://trends.google.com/trends/explore?q=claude+code+vs+cursor"
+        "id": "1rgsgt6",
+        "title": "[P] Micro Diffusion \u2014 Discrete text diffusion in ~150 lines of pure Python",
+        "score": 78,
+        "comments": 13,
+        "url": "https://www.reddit.com/r/MachineLearning/comments/1rgsgt6/p_micro_diffusion_discrete_text_diffusion_in_150/",
+        "subreddit": "r/MachineLearning"
       },
       {
-        "topic": "Local LLM inference hardware",
-        "platform": "reddit",
-        "engagement": 9847,
-        "url": "https://www.reddit.com/r/LocalLLaMA/comments/1r4def5/best_setup_for_70b_models_2026/"
+        "id": "1rfle5p",
+        "title": "[D] First time reviewer. I got assigned 9 papers. I'm so nervous. What if I mess up. Any advice?",
+        "score": 78,
+        "comments": 44,
+        "url": "https://www.reddit.com/r/MachineLearning/comments/1rfle5p/d_first_time_reviewer_i_got_assigned_9_papers_im/",
+        "subreddit": "r/MachineLearning"
       },
       {
-        "topic": "AI job displacement statistics 2026",
-        "platform": "web",
-        "engagement": 0,
-        "traffic": "Rising +450%",
-        "url": "https://trends.google.com/trends/explore?q=ai+job+displacement+2026"
+        "id": "1reee40",
+        "title": "[R] Large-Scale Online Deanonymization with LLMs",
+        "score": 56,
+        "comments": 11,
+        "url": "https://www.reddit.com/r/MachineLearning/comments/1reee40/r_largescale_online_deanonymization_with_llms/",
+        "subreddit": "r/MachineLearning"
       },
       {
-        "topic": "Open source LLM fine-tuning tutorial",
-        "platform": "reddit",
-        "engagement": 7231,
-        "url": "https://www.reddit.com/r/MachineLearning/comments/1r5ghij/fine_tuning_llama4_for_production/"
+        "id": "1ren2m5",
+        "title": "[D] How do y'all stay up to date with papers?",
+        "score": 54,
+        "comments": 34,
+        "url": "https://www.reddit.com/r/MachineLearning/comments/1ren2m5/d_how_do_yall_stay_up_to_date_with_papers/",
+        "subreddit": "r/MachineLearning"
       },
       {
-        "topic": "Vibe coding productivity claims",
-        "platform": "reddit",
-        "engagement": 6821,
-        "url": "https://www.reddit.com/r/programming/comments/1r4klmn/vibe_coding_reality_check/"
-      },
-      {
-        "topic": "MCP protocol adoption across AI tools",
-        "platform": "web",
-        "engagement": 0,
-        "traffic": "Rising +230%",
-        "url": "https://trends.google.com/trends/explore?q=model+context+protocol"
-      },
-      {
-        "topic": "Multi-agent workflows replacing solo AI assistants",
-        "platform": "reddit",
-        "engagement": 5194,
-        "url": "https://www.reddit.com/r/MachineLearning/comments/1r3nopq/multi_agent_vs_single_agent_workflows/"
+        "id": "1rhuwyt",
+        "title": "[R] Benchmarked 94 LLM endpoints for jan 2026. open source is now within 5 quality points of proprietary",
+        "score": 49,
+        "comments": 14,
+        "url": "https://www.reddit.com/r/MachineLearning/comments/1rhuwyt/r_benchmarked_94_llm_endpoints_for_jan_2026_open/",
+        "subreddit": "r/MachineLearning"
       }
-    ],
-    "generated_at": "2026-03-02T14:38:55.112Z",
-    "meta": {
-      "proxy": {
-        "ip": "172.58.44.107",
-        "country": "US",
-        "type": "mobile"
-      }
-    },
-    "payment": {
-      "txHash": "0xc6550009e39c6c8fce9bc3c74c95d10a2ede07d3dbf82e3b7d1d1c5e4fb3c68",
-      "network": "base",
-      "amount": 0.1,
-      "settled": true
-    }
-  }
+    ]
+  },
+  "proxy": {
+    "ip": "172.56.168.236",
+    "provider": "Proxies.sx US Mobile"
+  },
+  "timestamp": "2026-03-03T01:34:10Z"
 }

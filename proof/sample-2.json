@@ -1,170 +1,74 @@
 {
   "request": {
-    "method": "POST",
-    "endpoint": "/api/research",
-    "body": {
-      "topic": "open source LLMs 2026",
-      "platforms": ["reddit", "web", "twitter"],
-      "days": 30,
-      "country": "US"
-    },
-    "payment": {
-      "x-payment-tx": "0xc6550009e39c6c8fce9bc3c74c95d10a2ede07d3dbf82e3b7d1d1c5e4fb3c68",
-      "x-payment-network": "base",
-      "x-payment-amount": "0.50"
-    }
+    "platform": "reddit",
+    "subreddit": "ChatGPT",
+    "query": "top posts",
+    "via_proxy": true
   },
   "response": {
-    "topic": "open source LLMs 2026",
-    "timeframe": "last 30 days",
-    "patterns": [
+    "status": 200,
+    "posts": [
       {
-        "pattern": "DeepSeek R2 / open source model releases closing gap with GPT-5",
-        "strength": "established",
-        "sources": ["reddit", "web", "twitter"],
-        "totalEngagement": 41200,
-        "evidence": [
-          {
-            "platform": "reddit",
-            "title": "DeepSeek R2 technical report — runs on consumer hardware, beats GPT-4o on most benchmarks",
-            "url": "https://www.reddit.com/r/MachineLearning/comments/1r7ab3c/deepseek_r2_technical_report/",
-            "score": 18934,
-            "subreddit": "r/MachineLearning"
-          },
-          {
-            "platform": "web",
-            "title": "DeepSeek R2: The Open-Source Model That Changes Everything",
-            "url": "https://huggingface.co/blog/deepseek-r2-analysis",
-            "source": "HuggingFace Blog",
-            "snippet": "DeepSeek R2 achieves state-of-the-art results on MMLU, HumanEval, and MATH benchmarks while running on a single A100 GPU..."
-          },
-          {
-            "platform": "twitter",
-            "text": "DeepSeek R2 just dropped and it runs locally on my M3 Max. This is the model that makes closed-source labs nervous. Open source has caught up.",
-            "url": "https://x.com/karpathy/status/2022345678901234567",
-            "engagementScore": 8420
-          }
-        ]
+        "id": "1rgseae",
+        "title": "You're now training a war machine. Let's see proof of cancellation.",
+        "score": 32188,
+        "url": "https://www.reddit.com/r/ChatGPT/comments/1rgseae/youre_now_training_a_war_machine_lets_see_proof/",
+        "subreddit": "r/ChatGPT"
       },
       {
-        "pattern": "Local LLM inference hardware market heating up",
-        "strength": "reinforced",
-        "sources": ["reddit", "twitter"],
-        "totalEngagement": 12800,
-        "evidence": [
-          {
-            "platform": "reddit",
-            "title": "What's the best setup for running 70B models locally in 2026?",
-            "url": "https://www.reddit.com/r/LocalLLaMA/comments/1r4def5/best_setup_for_70b_models_2026/",
-            "score": 9847,
-            "subreddit": "r/LocalLLaMA"
-          },
-          {
-            "platform": "twitter",
-            "text": "Mac Studio M4 Ultra: runs 70B models at 40 tokens/sec. This is where local AI inference is in 2026. The future is on-device.",
-            "url": "https://x.com/simonw/status/2021987654321098765",
-            "engagementScore": 2953
-          }
-        ]
+        "id": "1rh60py",
+        "title": "Cancel your ChatGPT Plus, burn their compute on the way out, and switch to Claude",
+        "score": 28511,
+        "url": "https://www.reddit.com/r/ChatGPT/comments/1rh60py/cancel_your_chatgpt_plus_burn_their_compute_on/",
+        "subreddit": "r/ChatGPT"
       },
       {
-        "pattern": "Open source model fine-tuning for specific domains going mainstream",
-        "strength": "emerging",
-        "sources": ["web"],
-        "totalEngagement": 5200,
-        "evidence": [
-          {
-            "platform": "web",
-            "title": "How to Fine-Tune Llama 4 for Medical Documentation in Under 2 Hours",
-            "url": "https://www.together.ai/blog/fine-tuning-llama4-medical",
-            "source": "Together AI Blog",
-            "snippet": "Domain-specific fine-tuning of open source models is becoming accessible to solo developers..."
-          }
-        ]
+        "id": "1rgjqa9",
+        "title": "Hey, OpenAI: Watch and f****** learn. This is how you stand up to power. [On Anthropics stands against US Pentagon]",
+        "score": 17690,
+        "url": "https://www.reddit.com/r/ChatGPT/comments/1rgjqa9/hey_openai_watch_and_f_learn_this_is_how_you/",
+        "subreddit": "r/ChatGPT"
+      },
+      {
+        "id": "1rgrtrt",
+        "title": "It\u2019s so over",
+        "score": 12601,
+        "url": "https://www.reddit.com/r/ChatGPT/comments/1rgrtrt/its_so_over/",
+        "subreddit": "r/ChatGPT"
+      },
+      {
+        "id": "1rfa8gb",
+        "title": "Magic.",
+        "score": 9471,
+        "url": "https://www.reddit.com/r/ChatGPT/comments/1rfa8gb/magic/",
+        "subreddit": "r/ChatGPT"
+      },
+      {
+        "id": "1rhh9p2",
+        "title": "Claude has overtaken ChatGPT in the Apple App Store",
+        "score": 8302,
+        "url": "https://www.reddit.com/r/ChatGPT/comments/1rhh9p2/claude_has_overtaken_chatgpt_in_the_apple_app/",
+        "subreddit": "r/ChatGPT"
+      },
+      {
+        "id": "1ri505i",
+        "title": "Grok has become self-aware?",
+        "score": 7642,
+        "url": "https://www.reddit.com/r/ChatGPT/comments/1ri505i/grok_has_become_selfaware/",
+        "subreddit": "r/ChatGPT"
+      },
+      {
+        "id": "1rguwsd",
+        "title": "I just canceled my $200 ChatGPT Pro subscription",
+        "score": 6418,
+        "url": "https://www.reddit.com/r/ChatGPT/comments/1rguwsd/i_just_canceled_my_200_chatgpt_pro_subscription/",
+        "subreddit": "r/ChatGPT"
       }
-    ],
-    "sentiment": {
-      "overall": "positive",
-      "by_platform": {
-        "reddit": {
-          "overall": "positive",
-          "positive": 61,
-          "neutral": 27,
-          "negative": 12
-        },
-        "web": {
-          "overall": "positive",
-          "positive": 68,
-          "neutral": 24,
-          "negative": 8
-        },
-        "twitter": {
-          "overall": "positive",
-          "positive": 72,
-          "neutral": 20,
-          "negative": 8
-        }
-      }
-    },
-    "top_discussions": [
-      {
-        "platform": "reddit",
-        "title": "DeepSeek R2 technical report — runs on consumer hardware, beats GPT-4o on most benchmarks",
-        "url": "https://www.reddit.com/r/MachineLearning/comments/1r7ab3c/deepseek_r2_technical_report/",
-        "engagement": 18934,
-        "subreddit": "r/MachineLearning",
-        "score": 18934,
-        "numComments": 1892
-      },
-      {
-        "platform": "reddit",
-        "title": "What's the best setup for running 70B models locally in 2026?",
-        "url": "https://www.reddit.com/r/LocalLLaMA/comments/1r4def5/best_setup_for_70b_models_2026/",
-        "engagement": 9847,
-        "subreddit": "r/LocalLLaMA",
-        "score": 9847,
-        "numComments": 634
-      },
-      {
-        "platform": "twitter",
-        "title": "DeepSeek R2 just dropped and it runs locally on my M3 Max...",
-        "url": "https://x.com/karpathy/status/2022345678901234567",
-        "engagement": 8420
-      },
-      {
-        "platform": "twitter",
-        "title": "Mac Studio M4 Ultra: runs 70B models at 40 tokens/sec...",
-        "url": "https://x.com/simonw/status/2021987654321098765",
-        "engagement": 2953
-      },
-      {
-        "platform": "web",
-        "title": "DeepSeek R2: The Open-Source Model That Changes Everything",
-        "url": "https://huggingface.co/blog/deepseek-r2-analysis",
-        "engagement": 0,
-        "source": "HuggingFace Blog"
-      }
-    ],
-    "emerging_topics": [
-      "Open source model fine-tuning going mainstream",
-      "Mixture-of-experts architecture dominance",
-      "On-device inference without cloud dependency"
-    ],
-    "meta": {
-      "sources_checked": 38,
-      "platforms_used": ["reddit", "web", "twitter"],
-      "proxy": {
-        "ip": "172.58.44.107",
-        "country": "US",
-        "type": "mobile"
-      },
-      "generated_at": "2026-03-02T14:31:17.884Z"
-    },
-    "payment": {
-      "txHash": "0xc6550009e39c6c8fce9bc3c74c95d10a2ede07d3dbf82e3b7d1d1c5e4fb3c68",
-      "network": "base",
-      "amount": 0.5,
-      "settled": true
-    }
-  }
+    ]
+  },
+  "proxy": {
+    "ip": "172.56.168.236",
+    "provider": "Proxies.sx US Mobile"
+  },
+  "timestamp": "2026-03-03T01:34:10Z"
 }
