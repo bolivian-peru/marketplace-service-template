@@ -185,7 +185,7 @@ async function fetchPolymarketOdds(marketSlug: string): Promise<MarketOdds | nul
   }
 }
 
-async function fetchPolymarketActive(): Promise<Array<{ slug: string; question: string; yes: number; volume24h: number; liquidity: number }>> {
+export async function fetchPolymarketActive(): Promise<Array<{ slug: string; question: string; yes: number; volume24h: number; liquidity: number }>> {
   try {
     const resp = await fetch(`${GAMMA_API}/markets?active=true&limit=50&order=volume24hr&ascending=false`, {
       headers: { 'Accept': 'application/json', 'User-Agent': 'Mozilla/5.0' },
@@ -242,7 +242,7 @@ async function fetchKalshiOdds(ticker: string): Promise<KalshiOdds | null> {
   }
 }
 
-async function fetchKalshiActive(): Promise<Array<{ ticker: string; title: string; yes: number; volume24h: number }>> {
+export async function fetchKalshiActive(): Promise<Array<{ ticker: string; title: string; yes: number; volume24h: number }>> {
   try {
     const resp = await fetch(`${KALSHI_BASE}/markets?status=open&limit=50`, {
       headers: { 'Accept': 'application/json', 'User-Agent': 'Mozilla/5.0' },

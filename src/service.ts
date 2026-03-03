@@ -35,6 +35,8 @@ import {
   getArbitrageOpportunities,
   getSentimentAnalysis,
   getTrendingMarketsWithDivergence,
+  fetchPolymarketActive,
+  fetchKalshiActive,
 } from './scrapers/prediction-market-scraper';
 
 export const serviceRouter = new Hono();
@@ -1448,7 +1450,7 @@ serviceRouter.get('/airbnb/market-stats', async (c) => {
 
 // ─── PREDICTION MARKET SIGNAL AGGREGATOR (Bounty #55) ───
 
-const PREDICT_WALLET = process.env.WALLET_ADDRESS || '0xF8cD900794245fc36CBE65be9afc23CDF5103042';
+const PREDICT_WALLET = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
 const PREDICT_SIGNAL_PRICE = 0.05;
 const PREDICT_ARBITRAGE_PRICE = 0.03;
 const PREDICT_SENTIMENT_PRICE = 0.02;
@@ -1631,5 +1633,70 @@ serviceRouter.get('/prediction/trending', async (c) => {
     });
   } catch (err: any) {
     return c.json({ error: 'Trending markets fetch failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// GET /api/prediction/markets?minVolume=1000&minLiquidity=5000&limit=20
+serviceRouter.get('/prediction/markets', async (c) => {
+  const payment = extractPayment(c);
+  const walletAddress = PREDICT_WALLET;
+  const PREDICT_MARKETS_PRICE = 0.02;
+
+  if (!payment) {
+    return c.json(build402Response('/api/prediction/markets', 'List active prediction markets from Polymarket and Kalshi with volume and liquidity filters.', PREDICT_MARKETS_PRICE, walletAddress, {
+      queryParams: {
+        minVolume: 'number (optional) — minimum 24h volume in USD',
+        minLiquidity: 'number (optional) — minimum liquidity in USD (Polymarket only)',
+        limit: 'number (optional, default: 20, max: 50) — max markets to return per source',
+        source: 'string (optional: "polymarket"|"kalshi"|"all", default: "all")',
+      },
+      output: {
+        type: 'markets',
+        polymarket: 'Array<{ slug, question, yes, volume24h, liquidity }>',
+        kalshi: 'Array<{ ticker, title, yes, volume24h }>',
+        proxy: '{ country, type }',
+        payment: '{ txHash, amount, settled }',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, PREDICT_MARKETS_PRICE);
+  if (!verification.valid) {
+    return c.json({ error: 'Payment verification failed', details: verification.error }, 402);
+  }
+
+  try {
+    const proxy = getProxy();
+    const minVolume = Math.max(0, parseFloat(c.req.query('minVolume') ?? '0') || 0);
+    const minLiquidity = Math.max(0, parseFloat(c.req.query('minLiquidity') ?? '0') || 0);
+    const limit = Math.min(50, Math.max(1, parseInt(c.req.query('limit') ?? '20', 10) || 20));
+    const source = c.req.query('source') ?? 'all';
+
+    const [polymarkets, kalshiMarkets] = await Promise.all([
+      source !== 'kalshi' ? fetchPolymarketActive() : Promise.resolve([]),
+      source !== 'polymarket' ? fetchKalshiActive() : Promise.resolve([]),
+    ]);
+
+    const filteredPoly = polymarkets
+      .filter(m => m.volume24h >= minVolume && m.liquidity >= minLiquidity)
+      .slice(0, limit);
+
+    const filteredKalshi = kalshiMarkets
+      .filter(m => m.volume24h >= minVolume)
+      .slice(0, limit);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      type: 'markets',
+      polymarket: filteredPoly,
+      kalshi: filteredKalshi,
+      filters: { minVolume, minLiquidity, limit, source },
+      proxy: { country: proxy.country, carrier: proxy.country, type: 'mobile' },
+      payment: { txHash: payment.txHash, amount: verification.amount, verified: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Markets fetch failed', message: err?.message || String(err) }, 502);
   }
 });
