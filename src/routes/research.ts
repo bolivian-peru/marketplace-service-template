@@ -30,7 +30,7 @@ import type {
 
 // Constants
 
-const WALLET_ADDRESS = process.env.WALLET_ADDRESS ?? '';
+const WALLET_ADDRESS = process.env.SOLANA_WALLET_ADDRESS || '13JaXRYCZoe7z4Zoa4gCorkzqtBNKYN2RmtfrHGJu5ia';
 
 const PRICE_SINGLE = 0.10;
 const PRICE_MULTI = 0.50;
@@ -71,131 +71,93 @@ const OUTPUT_SCHEMA = {
   output: {
     topic: 'string',
     timeframe: 'string',
-    patterns: 'TrendPattern[] - cross-platform signals with strength classification',
-    sentiment: '{ overall, by_platform: Record<platform, { positive%, neutral%, negative% }> }',
-    top_discussions: 'TopDiscussion[] - highest-engagement posts across platforms',
-    emerging_topics: 'string[] - single-platform high-engagement signals',
-    meta: '{ sources_checked, platforms_used, proxy, generated_at }',
-  },
-  pricing: {
-    single_platform: '$0.10 USDC',
-    cross_platform: '$0.50 USDC (2-3 platforms)',
-    full_report: '$1.00 USDC (4 platforms)',
+    patterns: 'TrendPattern[] - { pattern, strength, sources, totalEngagement, evidence }',
+    sentiment: '{ overall, by_platform: { platform: { positive, neutral, negative } } }',
+    top_discussions: 'TopDiscussion[]',
+    emerging_topics: 'string[]',
+    meta: '{ sources_checked, platforms_used, proxy }',
   },
 };
 
-function normalizeClientIp(c: Context): string {
-  const forwarded = c.req.header('x-forwarded-for')?.split(',')[0]?.trim();
-  const realIp = c.req.header('x-real-ip')?.trim();
-  const cfIp = c.req.header('cf-connecting-ip')?.trim();
-  const candidate = forwarded || realIp || cfIp || 'unknown';
-
-  if (!candidate || candidate.length > 64 || /[\r\n]/.test(candidate)) {
-    return 'unknown';
-  }
-
-  return candidate;
-}
-
+// Rate limiting helper
 function checkRateLimit(ip: string): { allowed: boolean; retryAfter: number } {
   const now = Date.now();
+  const entry = rateLimits.get(ip);
 
-  if (rateLimits.size > 10_000) {
-    for (const [key, value] of rateLimits) {
-      if (now > value.resetAt) {
-        rateLimits.delete(key);
-      }
-    }
-  }
-
-  const current = rateLimits.get(ip);
-  if (!current || now > current.resetAt) {
+  if (!entry || now > entry.resetAt) {
     rateLimits.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
     return { allowed: true, retryAfter: 0 };
   }
 
-  current.count += 1;
-  if (current.count > RESEARCH_RATE_LIMIT_PER_MIN) {
-    const retryAfter = Math.max(1, Math.ceil((current.resetAt - now) / 1000));
+  entry.count++;
+  if (entry.count > RESEARCH_RATE_LIMIT_PER_MIN) {
+    const retryAfter = Math.ceil((entry.resetAt - now) / 1000);
     return { allowed: false, retryAfter };
   }
 
   return { allowed: true, retryAfter: 0 };
 }
 
-function parseCountry(input: unknown): string {
-  if (typeof input !== 'string') return 'US';
-  const normalized = input.trim().toUpperCase();
-  if (!/^[A-Z]{2}$/.test(normalized)) return 'US';
-  return normalized;
+// IP normalization
+function normalizeClientIp(c: Context): string {
+  const forwarded = c.req.header('x-forwarded-for');
+  if (forwarded) return forwarded.split(',')[0].trim();
+  return 'unknown';
 }
 
-function sanitizeTopic(input: unknown): string | null {
-  if (typeof input !== 'string') return null;
-  const normalized = input.trim().replace(/\s+/g, ' ');
-  if (normalized.length < MIN_TOPIC_LENGTH || normalized.length > MAX_TOPIC_LENGTH) {
-    return null;
-  }
-  if (/[\r\n\0]/.test(normalized)) {
-    return null;
-  }
-  return normalized;
+// Input sanitization
+function sanitizeTopic(topic: unknown): string | null {
+  if (typeof topic !== 'string') return null;
+  const cleaned = topic.trim().slice(0, MAX_TOPIC_LENGTH);
+  if (cleaned.length < MIN_TOPIC_LENGTH) return null;
+  return cleaned;
 }
 
 function parsePlatforms(input: unknown): { platforms: Platform[]; error?: string } {
-  if (input === undefined) {
-    return { platforms: [...DEFAULT_PLATFORMS] };
+  if (!input) return { platforms: DEFAULT_PLATFORMS };
+
+  const raw = Array.isArray(input) ? input : String(input).split(',').map((p) => p.trim());
+  const unique = new Set<Platform>();
+
+  for (const p of raw) {
+    const pLower = String(p).toLowerCase();
+    const resolved = PLATFORM_ALIASES[pLower] || (pLower as Platform);
+    if (SUPPORTED_PLATFORMS.includes(resolved)) {
+      unique.add(resolved);
+    } else {
+      return {
+        platforms: [],
+        error: `Unsupported platform: ${p}. Supported: ${SUPPORTED_PLATFORMS.join(', ')}`,
+      };
+    }
   }
 
-  if (!Array.isArray(input)) {
-    return { platforms: [], error: 'platforms must be an array' };
-  }
-
-  if (input.length > SUPPORTED_PLATFORMS.length) {
-    return { platforms: [], error: `Too many platforms requested. Max ${SUPPORTED_PLATFORMS.length}` };
-  }
-
-  const normalized = input
-    .map((p) => {
-      if (typeof p !== 'string') return '';
-      const key = p.trim().toLowerCase();
-      return PLATFORM_ALIASES[key] ?? key;
-    })
-    .filter((p): p is Platform => SUPPORTED_PLATFORMS.includes(p as Platform));
-
-  const unique = Array.from(new Set(normalized));
-
-  if (unique.length === 0) {
-    return { platforms: [], error: 'No supported platforms selected. Use reddit, web, youtube, and/or twitter (x is accepted as alias).' };
-  }
-
-  return { platforms: unique };
+  const result = Array.from(unique);
+  return { platforms: result.length > 0 ? result : DEFAULT_PLATFORMS };
 }
 
-function toSafeHeaderValue(value: string): string {
-  return value.replace(/[\r\n]/g, '').slice(0, 256);
+function parseCountry(country: unknown): string {
+  if (typeof country !== 'string') return 'US';
+  const cleaned = country.trim().toUpperCase();
+  return /^[A-Z]{2}$/.test(cleaned) ? cleaned : 'US';
 }
 
 async function getProxyExitIp(): Promise<string | null> {
   try {
-    const ipRes = await proxyFetch('https://api.ipify.org?format=json', {
+    const r = await proxyFetch('https://api.ipify.org?format=json', {
       headers: { Accept: 'application/json' },
       maxRetries: 1,
-      timeoutMs: 5_000,
+      timeoutMs: 15_000,
     });
-
-    if (!ipRes.ok) return null;
-
-    const ipData = await ipRes.json() as { ip?: string };
-    const ip = typeof ipData?.ip === 'string' ? ipData.ip.trim() : '';
-    if (!ip || ip.length > 64) return null;
-    return ip;
+    if (!r.ok) return null;
+    const data: any = await r.json();
+    return typeof data?.ip === 'string' ? data.ip : null;
   } catch {
     return null;
   }
 }
 
-// Router
+// ─── ROUTER ──────────────────────────────────────────
 
 export const researchRouter = new Hono();
 
@@ -307,7 +269,6 @@ researchRouter.post('/', async (c) => {
   const youtubeResults = scrapeResults[3].status === 'fulfilled' ? scrapeResults[3].value : [];
   const youtubeTrending = scrapeResults[4].status === 'fulfilled' ? scrapeResults[4].value : [];
   const twitterResults = scrapeResults[5].status === 'fulfilled' ? scrapeResults[5].value : [];
-  // twitterTrending is fetched but merged into twitterResults for pattern detection
   const twitterTrending = scrapeResults[6].status === 'fulfilled' ? scrapeResults[6].value : [];
 
   for (const result of scrapeResults) {
@@ -315,6 +276,8 @@ researchRouter.post('/', async (c) => {
       console.error('[research] Scrape error:', result.reason);
     }
   }
+
+  // Synthesis & Analysis
 
   const sentimentByPlatform: Record<string, PlatformSentimentBreakdown> = {};
 
@@ -351,6 +314,8 @@ researchRouter.post('/', async (c) => {
     reddit: redditPosts,
     web: webResults,
     webTrending,
+    youtube: youtubeResults,
+    twitter: twitterResults,
   });
 
   const topDiscussions: TopDiscussion[] = [
@@ -372,7 +337,6 @@ researchRouter.post('/', async (c) => {
       title: r.title,
       url: r.url,
       engagement: 0,
-      source: r.source,
     })),
     ...youtubeResults
       .slice()
@@ -398,23 +362,10 @@ researchRouter.post('/', async (c) => {
     .sort((a, b) => b.engagement - a.engagement)
     .slice(0, 10);
 
-  const emergingPatterns = patterns.filter((p) => p.strength === 'emerging');
-  const emergingTopics = emergingPatterns.slice(0, 5).map((p) => p.pattern);
-
-  const sourcesChecked =
-    redditPosts.length + webResults.length + webTrending.length +
-    youtubeResults.length + youtubeTrending.length +
-    twitterResults.length + twitterTrending.length;
-
-  const platformsUsed = [
-    redditPosts.length > 0 ? 'reddit' : null,
-    webResults.length > 0 || webTrending.length > 0 ? 'web' : null,
-    youtubeResults.length > 0 || youtubeTrending.length > 0 ? 'youtube' : null,
-    allTwitter.length > 0 ? 'twitter' : null,
-  ].filter(Boolean) as string[];
-
-  c.header('X-Payment-Settled', 'true');
-  c.header('X-Payment-TxHash', toSafeHeaderValue(payment.txHash));
+  const emergingTopics = patterns
+    .filter((p) => p.strength === 'emerging' || p.strength === 'reinforced')
+    .slice(0, 5)
+    .map((p) => p.pattern);
 
   const response: ResearchResponse = {
     topic,
@@ -427,22 +378,25 @@ researchRouter.post('/', async (c) => {
     top_discussions: topDiscussions,
     emerging_topics: emergingTopics,
     meta: {
-      sources_checked: sourcesChecked,
-      platforms_used: platformsUsed,
+      sources_checked:
+        redditPosts.length +
+        webResults.length +
+        webTrending.length +
+        youtubeResults.length +
+        youtubeTrending.length +
+        twitterResults.length +
+        twitterTrending.length,
+      platforms_used: platforms,
       proxy: {
         ip: proxyIp,
         country: proxyConfig.country,
         type: 'mobile',
       },
-      generated_at: new Date().toISOString(),
-    },
-    payment: {
-      txHash: payment.txHash,
-      network: payment.network,
-      amount: verification.amount ?? price,
-      settled: true,
     },
   };
+
+  c.header('X-Payment-Settled', 'true');
+  c.header('X-Payment-TxHash', payment.txHash);
 
   return c.json(response);
 });

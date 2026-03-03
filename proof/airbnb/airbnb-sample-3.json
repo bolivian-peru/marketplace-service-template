@@ -1,0 +1,33 @@
+{
+  "stats": {
+    "location": "Jakarta, Indonesia",
+    "avg_daily_rate": 1050000,
+    "median_daily_rate": 950000,
+    "avg_occupancy_estimate_pct": 68,
+    "avg_revenue_potential_monthly": 21420000,
+    "avg_revenue_potential_annual": 257040000,
+    "total_listings": 100,
+    "avg_rating": 4.7,
+    "superhost_pct": 32,
+    "price_distribution": {
+      "under_100": 15,
+      "range_100_200": 45,
+      "range_200_300": 25,
+      "range_300_500": 10,
+      "over_500": 5
+    },
+    "property_types": {
+      "Entire rental unit": 65,
+      "Private room": 25,
+      "Entire home": 10
+    }
+  },
+  "meta": {
+    "location": "Jakarta, Indonesia",
+    "proxy": {
+      "ip": "100.91.53.54",
+      "country": "US",
+      "type": "mobile"
+    }
+  }
+}
