@@ -71,8 +71,8 @@
   "infrastructure": "Proxies.sx mobile proxies (real 4G/5G IPs)",
   "networks": ["solana", "base"],
   "wallets": {
-    "solana": "6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv",
-    "base": "0xF8cD900794245fc36CBE65be9afc23CDF5103042"
+    "solana": "GpXHXs5KfzfXbNKcMLNbAMsJsgPsBE7y5GtwVoiuxYvH",
+    "base": "0xC0140eEa19bD90a7cA75882d5218eFaF20426e42"
   },
   "category": "data",
   "tags": ["google", "reviews", "business", "ratings", "maps", "local"]
