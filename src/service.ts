@@ -247,7 +247,7 @@ serviceRouter.get('/details', async (c) => {
 });
 
 serviceRouter.get('/jobs', async (c) => {
-  const walletAddress = '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = 'GpXHXs5KfzfXbNKcMLNbAMsJsgPsBE7y5GtwVoiuxYvH';
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -807,7 +807,7 @@ const REDDIT_COMMENTS_PRICE = 0.01;  // $0.01 per comment thread
 // ─── GET /api/reddit/search ─────────────────────────
 
 serviceRouter.get('/reddit/search', async (c) => {
-  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || 'GpXHXs5KfzfXbNKcMLNbAMsJsgPsBE7y5GtwVoiuxYvH';
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -861,7 +861,7 @@ serviceRouter.get('/reddit/search', async (c) => {
 // ─── GET /api/reddit/trending ───────────────────────
 
 serviceRouter.get('/reddit/trending', async (c) => {
-  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || 'GpXHXs5KfzfXbNKcMLNbAMsJsgPsBE7y5GtwVoiuxYvH';
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -903,7 +903,7 @@ serviceRouter.get('/reddit/trending', async (c) => {
 // ─── GET /api/reddit/subreddit/:name ────────────────
 
 serviceRouter.get('/reddit/subreddit/:name', async (c) => {
-  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || 'GpXHXs5KfzfXbNKcMLNbAMsJsgPsBE7y5GtwVoiuxYvH';
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -957,7 +957,7 @@ serviceRouter.get('/reddit/subreddit/:name', async (c) => {
 // ─── GET /api/reddit/thread/:id ─────────────────────
 
 serviceRouter.get('/reddit/thread/*', async (c) => {
-  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || 'GpXHXs5KfzfXbNKcMLNbAMsJsgPsBE7y5GtwVoiuxYvH';
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -1263,7 +1263,7 @@ const AIRBNB_MARKET_STATS_PRICE = 0.05;
 // ─── GET /api/airbnb/search ─────────────────────────
 
 serviceRouter.get('/airbnb/search', async (c) => {
-  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || 'GpXHXs5KfzfXbNKcMLNbAMsJsgPsBE7y5GtwVoiuxYvH';
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -1313,7 +1313,7 @@ serviceRouter.get('/airbnb/search', async (c) => {
 // ─── GET /api/airbnb/listing/:id ────────────────────
 
 serviceRouter.get('/airbnb/listing/:id', async (c) => {
-  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || 'GpXHXs5KfzfXbNKcMLNbAMsJsgPsBE7y5GtwVoiuxYvH';
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -1352,7 +1352,7 @@ serviceRouter.get('/airbnb/listing/:id', async (c) => {
 // ─── GET /api/airbnb/reviews/:listing_id ────────────
 
 serviceRouter.get('/airbnb/reviews/:listing_id', async (c) => {
-  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || 'GpXHXs5KfzfXbNKcMLNbAMsJsgPsBE7y5GtwVoiuxYvH';
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -1396,7 +1396,7 @@ serviceRouter.get('/airbnb/reviews/:listing_id', async (c) => {
 // ─── GET /api/airbnb/market-stats ───────────────────
 
 serviceRouter.get('/airbnb/market-stats', async (c) => {
-  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || 'GpXHXs5KfzfXbNKcMLNbAMsJsgPsBE7y5GtwVoiuxYvH';
 
   const payment = extractPayment(c);
   if (!payment) {
