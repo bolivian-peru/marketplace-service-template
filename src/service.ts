@@ -99,6 +99,55 @@ async function getProxyExitIp(): Promise<string | null> {
 }
 
 serviceRouter.get('/run', async (c) => {
+  // Prediction Market Signal Aggregator (Issue #55 spec: GET /api/run?type=signal|arbitrage|sentiment|trending)
+  const type = c.req.query('type');
+  if (type === 'signal' || type === 'arbitrage' || type === 'sentiment' || type === 'trending') {
+    const predWallet = process.env.SOLANA_WALLET_ADDRESS || 'GpXHXs5KfzfXbNKcMLNbAMsJsgPsBE7y5GtwVoiuxYvH';
+    const priceMap: Record<string, number> = { signal: 0.05, arbitrage: 0.03, sentiment: 0.02, trending: 0.04 };
+    const price = priceMap[type];
+    const payment = extractPayment(c);
+
+    if (!payment) {
+      return c.json(build402Response(`/api/run?type=${type}`, `Prediction market ${type} aggregator — see /api/prediction/${type} for full schema`, price, predWallet, {}), 402);
+    }
+
+    const verification = await verifyPayment(payment, predWallet, price);
+    if (!verification.valid) {
+      return c.json({ error: 'Payment verification failed', details: verification.error }, 402);
+    }
+
+    try {
+      if (type === 'signal') {
+        const market = c.req.query('market');
+        if (!market) return c.json({ error: 'Missing required query param: market', example: '/api/run?type=signal&market=us-presidential-election-2028' }, 400);
+        const result = await getMarketSignal(market);
+        c.header('X-Payment-Settled', 'true');
+        c.header('X-Payment-TxHash', payment.txHash);
+        return c.json({ ...result, payment: { txHash: payment.txHash, amount: verification.amount, verified: true } });
+      } else if (type === 'arbitrage') {
+        const result = await getArbitrageOpportunities();
+        c.header('X-Payment-Settled', 'true');
+        c.header('X-Payment-TxHash', payment.txHash);
+        return c.json({ ...result, payment: { txHash: payment.txHash, amount: verification.amount, verified: true } });
+      } else if (type === 'sentiment') {
+        const topic = c.req.query('topic');
+        if (!topic) return c.json({ error: 'Missing required query param: topic', example: '/api/run?type=sentiment&topic=bitcoin+etf&country=US' }, 400);
+        const country = c.req.query('country') || 'US';
+        const result = await getSentimentAnalysis(topic, country);
+        c.header('X-Payment-Settled', 'true');
+        c.header('X-Payment-TxHash', payment.txHash);
+        return c.json({ ...result, payment: { txHash: payment.txHash, amount: verification.amount, verified: true } });
+      } else {
+        const result = await getTrendingMarketsWithDivergence();
+        c.header('X-Payment-Settled', 'true');
+        c.header('X-Payment-TxHash', payment.txHash);
+        return c.json({ ...result, payment: { txHash: payment.txHash, amount: verification.amount, verified: true } });
+      }
+    } catch (err: any) {
+      return c.json({ error: `Prediction market ${type} failed`, message: err?.message || String(err) }, 502);
+    }
+  }
+
   const walletAddress = process.env.WALLET_ADDRESS;
   if (!walletAddress) {
     return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
