@@ -21,6 +21,7 @@ import { scrapeGoogleMaps, extractDetailedBusiness } from './scrapers/maps-scrap
 import { researchRouter } from './routes/research';
 import { trendingRouter } from './routes/trending';
 import { predictionRouter } from './routes/prediction-signals';
+import { fetchPolymarketOdds, fetchKalshiOdds, fetchMetaculusForecasts, fetchRedditSentiment, classifySentiment } from './scrapers/prediction-markets';
 import { searchAirbnb, getListingDetail, getListingReviews, getMarketStats } from './scrapers/airbnb-scraper';
 import { 
   scrapeLinkedInPerson, 
@@ -112,6 +113,64 @@ serviceRouter.get('/run', async (c) => {
       reason: verification.error,
       hint: 'Ensure the transaction is confirmed and sends the correct USDC amount to the recipient wallet.',
     }, 402);
+  }
+
+  // Issue #55 compatibility: support /api/run?type=signal|arbitrage|sentiment|trending
+  const type = (c.req.query('type') || '').toLowerCase();
+  if (type) {
+    const market = c.req.query('market') || 'us-election';
+    const topic = c.req.query('topic') || market;
+
+    const [polymarket, kalshi, metaculus, reddit] = await Promise.all([
+      fetchPolymarketOdds(10).catch(() => []),
+      fetchKalshiOdds(10).catch(() => []),
+      fetchMetaculusForecasts(10).catch(() => []),
+      fetchRedditSentiment(topic, 20).catch(() => []),
+    ]);
+
+    const social = classifySentiment(reddit);
+    const pYes = polymarket[0]?.yes;
+    const kYes = kalshi[0]?.yes;
+    const spread = pYes !== undefined && kYes !== undefined ? Number(Math.abs(pYes - kYes).toFixed(4)) : 0;
+    const bullish = social.positive - social.negative;
+    const divergence = pYes !== undefined ? Number((bullish - (pYes - 0.5)).toFixed(4)) : 0;
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      type,
+      market,
+      timestamp: new Date().toISOString(),
+      odds: {
+        polymarket: polymarket[0] ?? null,
+        kalshi: kalshi[0] ?? null,
+        metaculus: metaculus[0] ?? null,
+      },
+      sentiment: {
+        reddit: social,
+        redditSamples: reddit.slice(0, 5),
+        x: { status: 'not_implemented_in_v1', reason: 'requires auth/session-safe scraper path' },
+      },
+      signals: {
+        arbitrage: {
+          detected: spread >= 0.03,
+          spread,
+          confidence: spread >= 0.05 ? 0.8 : spread >= 0.03 ? 0.65 : 0.4,
+        },
+        sentimentDivergence: {
+          detected: Math.abs(divergence) >= 0.08,
+          magnitude: Math.abs(divergence),
+        },
+      },
+      proxy: { country: getProxy().country, type: 'mobile' as const },
+      payment: {
+        txHash: payment.txHash,
+        network: payment.network,
+        amount: verification.amount,
+        settled: true,
+      },
+    });
   }
 
   const clientIp = c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
