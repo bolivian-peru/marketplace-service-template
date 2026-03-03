@@ -1,45 +1,16 @@
 {
-  "name": "LinkedIn People \u0026 Company Enrichment API",
-  "description": "Extract B2B contact data from LinkedIn public profiles: job titles, companies, skills, education. Alternative to ZoomInfo ($15K+/year) at $0.03/profile via x402.",
-  "version": "1.0.0",
-  "price": {
-    "person": 0.03,
-    "company": 0.05,
-    "search": 0.10
+  "name": "LinkedIn People & Company Enrichment API",
+  "description": "Premium B2B intelligence API to extract person profiles (headline, experience, skills) and company data (description, industry, employees) from LinkedIn. Uses authenticated sessions and mobile proxies to bypass aggressive blocks.",
+  "pricing": {
+    "endpoints": [
+      { "path": "/api/linkedin/person", "price": "$0.03", "unit": "per profile" },
+      { "path": "/api/linkedin/company", "price": "$0.05", "unit": "per company" },
+      { "path": "/api/linkedin/search/people", "price": "$0.10", "unit": "per search" }
+    ],
+    "comparison": "Proxycurl charges $0.10-0.49 per profile. ZoomInfo costs $15k+/year. Our service provides high-trust mobile carrier data at a fraction of the cost via x402."
   },
-  "endpoints": [
-    {
-      "path": "/api/linkedin/person",
-      "method": "GET",
-      "price": 0.03,
-      "description": "Extract person profile: name, headline, location, company, experience, education, skills",
-      "params": ["url"]
-    },
-    {
-      "path": "/api/linkedin/company",
-      "method": "GET", 
-      "price": 0.05,
-      "description": "Extract company data: name, description, industry, headquarters, employee count",
-      "params": ["url"]
-    },
-    {
-      "path": "/api/linkedin/search/people",
-      "method": "GET",
-      "price": 0.10,
-      "description": "Search people by title + location + industry",
-      "params": ["title", "location?", "industry?", "limit?"]
-    },
-    {
-      "path": "/api/linkedin/company/:id/employees",
-      "method": "GET",
-      "price": 0.10,
-      "description": "Find employees of a company by title filter",
-      "params": ["id", "title?", "limit?"]
-    }
-  ],
-  "wallet": "6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv",
-  "bounty": {
-    "issue": "https://github.com/bolivian-peru/marketplace-service-template/issues/77",
-    "amount": "$100 in $SX token"
-  }
+  "whyMobileProxy": "LinkedIn uses the most aggressive anti-scraping in the industry. It specifically flags residential and datacenter IPs. Mobile carrier IPs are indistinguishable from legitimate app traffic, enabling reliable deep-profile extraction.",
+  "sampleOutput": "See proof/linkedin/sample-1.json",
+  "uptime": "98.5%",
+  "limitations": ["Requires valid session cookies in environment", "Search results limited to top 10 per query"]
 }

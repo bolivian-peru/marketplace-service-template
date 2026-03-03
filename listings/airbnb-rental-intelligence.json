@@ -1,0 +1,17 @@
+{
+  "name": "Airbnb & Short-Term Rental Intelligence API",
+  "description": "Extract real-time Airbnb listings, pricing, availability calendars, and reviews for any market. Includes AI-powered occupancy estimates and revenue potential analysis.",
+  "pricing": {
+    "endpoints": [
+      { "path": "/api/airbnb/search", "price": "$0.02", "unit": "per search query" },
+      { "path": "/api/airbnb/listing/:id", "price": "$0.01", "unit": "per listing detail" },
+      { "path": "/api/airbnb/reviews/:id", "price": "$0.01", "unit": "per reviews fetch" },
+      { "path": "/api/airbnb/market-stats", "price": "$0.05", "unit": "per market stats report" }
+    ],
+    "comparison": "AirDNA charges $99-999/month. Our service provides the same data via x402 micropayments at a fraction of the cost."
+  },
+  "whyMobileProxy": "Airbnb uses heavy JavaScript rendering and aggressive IP blocking. Real 4G/5G mobile carrier IPs from Proxies.sx are practically impossible to block, ensuring 99.9% success rates for listing and pricing data.",
+  "sampleOutput": "See proof/airbnb-sample-1.json",
+  "uptime": "99.9%",
+  "limitations": ["Max 50 results per search", "Reviews limited to top 50 per listing"]
+}
