@@ -29,6 +29,8 @@ import {
 } from './scrapers/linkedin-enrichment';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
+import { scrapeAppleRankings, scrapeGoogleRankings } from './scrapers/appstore';
+import { scrapeGoogleSerp } from './scrapers/google-serp-scraper';
 
 export const serviceRouter = new Hono();
 
@@ -88,6 +90,43 @@ async function getProxyExitIp(): Promise<string | null> {
     return null;
   }
 }
+
+  const type = c.req.query('type');
+  
+  if (type === 'rankings') {
+    const walletAddress = process.env.WALLET_ADDRESS || '13JaXRYCZoe7z4Zoa4gCorkzqtBNKYN2RmtfrHGJu5ia';
+    const store = c.req.query('store') || 'apple';
+    const country = c.req.query('country') || 'US';
+    const category = c.req.query('category') || 'games';
+
+    const payment = extractPayment(c);
+    const APPSTORE_PRICE_USDC = 0.01;
+    if (!payment) {
+      return c.json(build402Response('/api/run?type=rankings', 'Get App Store rankings', APPSTORE_PRICE_USDC, walletAddress, {}), 402);
+    }
+
+    try {
+      const proxy = getProxy();
+      let rankings;
+      if (store === 'apple') {
+        rankings = await scrapeAppleRankings(category, country);
+      } else {
+        rankings = await scrapeGoogleRankings(category, country);
+      }
+
+      return c.json({
+        type: 'rankings',
+        store,
+        category,
+        country,
+        timestamp: new Date().toISOString(),
+        rankings,
+        proxy: { country: proxy.country, type: 'mobile' }
+      });
+    } catch (err: any) {
+      return c.json({ error: 'App Store ranking fetch failed', message: err.message }, 502);
+    }
+  }
 
 serviceRouter.get('/run', async (c) => {
   const walletAddress = process.env.WALLET_ADDRESS;
@@ -247,7 +286,7 @@ serviceRouter.get('/details', async (c) => {
 });
 
 serviceRouter.get('/jobs', async (c) => {
-  const walletAddress = '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '13JaXRYCZoe7z4Zoa4gCorkzqtBNKYN2RmtfrHGJu5ia';
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -567,53 +606,34 @@ serviceRouter.get('/linkedin/person', async (c) => {
     return c.json(
       build402Response('/api/linkedin/person', 'LinkedIn Person Profile Enrichment', LINKEDIN_PERSON_PRICE_USDC, walletAddress, {
         input: { url: 'string — LinkedIn profile URL (required)' },
-        output: { person: 'LinkedInPerson — name, headline, company, education, skills', meta: 'proxy info' },
+        output: { person: 'LinkedInPerson — name, headline, company, experience, education, skills' },
       }),
       402,
     );
   }
 
   const verification = await verifyPayment(payment, walletAddress, LINKEDIN_PERSON_PRICE_USDC);
-  if (!verification.valid) {
-    return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
-  }
+  if (!verification.valid) return c.json({ error: 'Payment verification failed' }, 402);
 
   const url = c.req.query('url');
-  if (!url) {
-    return c.json({ error: 'Missing required parameter: url', example: '/api/linkedin/person?url=linkedin.com/in/username' }, 400);
-  }
+  if (!url) return c.json({ error: 'Missing parameter: url' }, 400);
 
-  // Extract public ID from URL
-  const publicIdMatch = url.match(/linkedin\.com\/in\/([^\/\?]+)/);
-  if (!publicIdMatch) {
-    return c.json({ error: 'Invalid LinkedIn profile URL', example: 'linkedin.com/in/username' }, 400);
-  }
+  const username = url.match(/linkedin\.com\/in\/([^\/\?]+)/)?.[1];
+  if (!username) return c.json({ error: 'Invalid LinkedIn profile URL' }, 400);
 
   try {
     const proxy = getProxy();
-    const person = await scrapeLinkedInPerson(publicIdMatch[1]);
-
-    if (!person) {
-      return c.json({ error: 'Failed to scrape profile. Profile may be private or LinkedIn blocked the request.' }, 502);
-    }
+    const cookies = process.env.LINKEDIN_COOKIES || '';
+    const scraper = new LinkedInScraper(cookies);
+    const person = await scraper.getPersonProfile(username);
 
     c.header('X-Payment-Settled', 'true');
-    c.header('X-Payment-TxHash', payment.txHash);
-
     return c.json({
-      person: {
-        ...person,
-        meta: { proxy: { country: proxy.country, type: 'mobile' } },
-      },
-      payment: {
-        txHash: payment.txHash,
-        network: payment.network,
-        amount: verification.amount,
-        settled: true,
-      },
+      person: { ...person, meta: { proxy: { country: proxy.country, type: 'mobile' } } },
+      payment: { txHash: payment.txHash, settled: true },
     });
   } catch (err: any) {
-    return c.json({ error: 'Profile fetch failed', message: err?.message || String(err) }, 502);
+    return c.json({ error: 'LinkedIn profile fetch failed', message: err.message }, 502);
   }
 });
 
@@ -626,52 +646,32 @@ serviceRouter.get('/linkedin/company', async (c) => {
     return c.json(
       build402Response('/api/linkedin/company', 'LinkedIn Company Profile Enrichment', LINKEDIN_COMPANY_PRICE_USDC, walletAddress, {
         input: { url: 'string — LinkedIn company URL (required)' },
-        output: { company: 'LinkedInCompany — name, description, industry, employees', meta: 'proxy info' },
+        output: { company: 'LinkedInCompany — name, description, industry, employees' },
       }),
       402,
     );
   }
 
   const verification = await verifyPayment(payment, walletAddress, LINKEDIN_COMPANY_PRICE_USDC);
-  if (!verification.valid) {
-    return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
-  }
+  if (!verification.valid) return c.json({ error: 'Payment verification failed' }, 402);
 
   const url = c.req.query('url');
-  if (!url) {
-    return c.json({ error: 'Missing required parameter: url', example: '/api/linkedin/company?url=linkedin.com/company/name' }, 400);
-  }
-
-  const companyIdMatch = url.match(/linkedin\.com\/company\/([^\/\?]+)/);
-  if (!companyIdMatch) {
-    return c.json({ error: 'Invalid LinkedIn company URL', example: 'linkedin.com/company/name' }, 400);
-  }
+  const companyId = url?.match(/linkedin\.com\/company\/([^\/\?]+)/)?.[1];
+  if (!companyId) return c.json({ error: 'Invalid LinkedIn company URL' }, 400);
 
   try {
     const proxy = getProxy();
-    const company = await scrapeLinkedInCompany(companyIdMatch[1]);
-
-    if (!company) {
-      return c.json({ error: 'Failed to scrape company. Company may not exist or LinkedIn blocked the request.' }, 502);
-    }
+    const cookies = process.env.LINKEDIN_COOKIES || '';
+    const scraper = new LinkedInScraper(cookies);
+    const company = await scraper.getCompanyProfile(companyId);
 
     c.header('X-Payment-Settled', 'true');
-    c.header('X-Payment-TxHash', payment.txHash);
-
     return c.json({
-      company: {
-        ...company,
-        meta: { proxy: { country: proxy.country, type: 'mobile' } },
-      },
-      payment: {
-        txHash: payment.txHash,
-        network: payment.network,
-        amount: verification.amount,
-        settled: true,
-      },
+      company: { ...company, meta: { proxy: { country: proxy.country, type: 'mobile' } } },
+      payment: { txHash: payment.txHash, settled: true },
     });
   } catch (err: any) {
-    return c.json({ error: 'Company fetch failed', message: err?.message || String(err) }, 502);
+    return c.json({ error: 'LinkedIn company fetch failed', message: err.message }, 502);
   }
 });
 
@@ -795,7 +795,7 @@ const REDDIT_COMMENTS_PRICE = 0.01;  // $0.01 per comment thread
 // ─── GET /api/reddit/search ─────────────────────────
 
 serviceRouter.get('/reddit/search', async (c) => {
-  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '13JaXRYCZoe7z4Zoa4gCorkzqtBNKYN2RmtfrHGJu5ia';
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -849,7 +849,7 @@ serviceRouter.get('/reddit/search', async (c) => {
 // ─── GET /api/reddit/trending ───────────────────────
 
 serviceRouter.get('/reddit/trending', async (c) => {
-  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '13JaXRYCZoe7z4Zoa4gCorkzqtBNKYN2RmtfrHGJu5ia';
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -891,7 +891,7 @@ serviceRouter.get('/reddit/trending', async (c) => {
 // ─── GET /api/reddit/subreddit/:name ────────────────
 
 serviceRouter.get('/reddit/subreddit/:name', async (c) => {
-  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '13JaXRYCZoe7z4Zoa4gCorkzqtBNKYN2RmtfrHGJu5ia';
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -945,7 +945,7 @@ serviceRouter.get('/reddit/subreddit/:name', async (c) => {
 // ─── GET /api/reddit/thread/:id ─────────────────────
 
 serviceRouter.get('/reddit/thread/*', async (c) => {
-  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '13JaXRYCZoe7z4Zoa4gCorkzqtBNKYN2RmtfrHGJu5ia';
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -1008,8 +1008,7 @@ const IG_AUDIT_PRICE    = 0.05;   // $0.05 per authenticity audit
 // ─── GET /api/instagram/profile/:username ───────────
 
 serviceRouter.get('/instagram/profile/:username', async (c) => {
-  const walletAddress = process.env.WALLET_ADDRESS;
-  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '13JaXRYCZoe7z4Zoa4gCorkzqtBNKYN2RmtfrHGJu5ia';
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -1053,8 +1052,7 @@ serviceRouter.get('/instagram/profile/:username', async (c) => {
 // ─── GET /api/instagram/posts/:username ─────────────
 
 serviceRouter.get('/instagram/posts/:username', async (c) => {
-  const walletAddress = process.env.WALLET_ADDRESS;
-  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '13JaXRYCZoe7z4Zoa4gCorkzqtBNKYN2RmtfrHGJu5ia';
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -1103,8 +1101,7 @@ serviceRouter.get('/instagram/posts/:username', async (c) => {
 // ─── GET /api/instagram/analyze/:username ───────────
 
 serviceRouter.get('/instagram/analyze/:username', async (c) => {
-  const walletAddress = process.env.WALLET_ADDRESS;
-  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '13JaXRYCZoe7z4Zoa4gCorkzqtBNKYN2RmtfrHGJu5ia';
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -1150,8 +1147,7 @@ serviceRouter.get('/instagram/analyze/:username', async (c) => {
 // ─── GET /api/instagram/analyze/:username/images ────
 
 serviceRouter.get('/instagram/analyze/:username/images', async (c) => {
-  const walletAddress = process.env.WALLET_ADDRESS;
-  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '13JaXRYCZoe7z4Zoa4gCorkzqtBNKYN2RmtfrHGJu5ia';
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -1196,8 +1192,7 @@ serviceRouter.get('/instagram/analyze/:username/images', async (c) => {
 // ─── GET /api/instagram/audit/:username ─────────────
 
 serviceRouter.get('/instagram/audit/:username', async (c) => {
-  const walletAddress = process.env.WALLET_ADDRESS;
-  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '13JaXRYCZoe7z4Zoa4gCorkzqtBNKYN2RmtfrHGJu5ia';
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -1251,20 +1246,22 @@ const AIRBNB_MARKET_STATS_PRICE = 0.05;
 // ─── GET /api/airbnb/search ─────────────────────────
 
 serviceRouter.get('/airbnb/search', async (c) => {
-  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '13JaXRYCZoe7z4Zoa4gCorkzqtBNKYN2RmtfrHGJu5ia';
 
   const payment = extractPayment(c);
   if (!payment) {
-    return c.json(build402Response('/api/airbnb/search', 'Search Airbnb listings by location, dates, guests. Returns pricing, ratings, host info.', AIRBNB_SEARCH_PRICE, walletAddress, {
+    return c.json(build402Response('/api/airbnb/search', 'Search Airbnb listings by location, dates, guests. Returns pricing, ratings, occupancy estimates, and revenue potential.', AIRBNB_SEARCH_PRICE, walletAddress, {
       input: {
         location: 'string (required) — city or area',
         checkin: 'string (optional) — YYYY-MM-DD',
         checkout: 'string (optional) — YYYY-MM-DD',
         guests: 'number (optional, default: 1)',
+        price_min: 'number (optional) — minimum price per night in USD',
+        price_max: 'number (optional) — maximum price per night in USD',
         limit: 'number (optional, default: 20, max: 50)',
       },
       output: {
-        listings: 'AirbnbListing[] — id, name, price, rating, reviewCount, host, roomType, amenities, coordinates',
+        listings: 'AirbnbListing[] — id, name, price, rating, reviewCount, host, roomType, amenities, coordinates, occupancy_estimate_pct, revenue_potential_monthly, revenue_potential_annual',
       },
     }), 402);
   }
@@ -1278,12 +1275,14 @@ serviceRouter.get('/airbnb/search', async (c) => {
   const checkin = c.req.query('checkin') || undefined;
   const checkout = c.req.query('checkout') || undefined;
   const guests = parseInt(c.req.query('guests') || '1') || 1;
+  const priceMin = c.req.query('price_min') ? parseInt(c.req.query('price_min')!) : undefined;
+  const priceMax = c.req.query('price_max') ? parseInt(c.req.query('price_max')!) : undefined;
   const limit = Math.min(Math.max(parseInt(c.req.query('limit') || '20') || 20, 1), 50);
 
   try {
     const proxy = getProxy();
     const ip = await getProxyExitIp();
-    const results = await searchAirbnb(location, checkin, checkout, guests, limit);
+    const results = await searchAirbnb(location, checkin, checkout, guests, priceMin, priceMax, limit);
 
     c.header('X-Payment-Settled', 'true');
     c.header('X-Payment-TxHash', payment.txHash);
@@ -1301,14 +1300,14 @@ serviceRouter.get('/airbnb/search', async (c) => {
 // ─── GET /api/airbnb/listing/:id ────────────────────
 
 serviceRouter.get('/airbnb/listing/:id', async (c) => {
-  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '13JaXRYCZoe7z4Zoa4gCorkzqtBNKYN2RmtfrHGJu5ia';
 
   const payment = extractPayment(c);
   if (!payment) {
-    return c.json(build402Response('/api/airbnb/listing/:id', 'Get detailed Airbnb listing: host, amenities, pricing calendar, location.', AIRBNB_LISTING_PRICE, walletAddress, {
+    return c.json(build402Response('/api/airbnb/listing/:id', 'Get detailed Airbnb listing: host, amenities, pricing, occupancy estimate, revenue potential.', AIRBNB_LISTING_PRICE, walletAddress, {
       input: { id: 'string (required) — Airbnb listing ID (in URL path)' },
       output: {
-        listing: 'AirbnbListingDetail — id, name, description, price, rating, host, amenities, photos, location, houseRules',
+        listing: 'AirbnbListingDetail — id, name, description, price, rating, host, amenities, photos, location, houseRules, occupancy_estimate_pct, revenue_potential_monthly, revenue_potential_annual',
       },
     }), 402);
   }
@@ -1340,7 +1339,7 @@ serviceRouter.get('/airbnb/listing/:id', async (c) => {
 // ─── GET /api/airbnb/reviews/:listing_id ────────────
 
 serviceRouter.get('/airbnb/reviews/:listing_id', async (c) => {
-  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '13JaXRYCZoe7z4Zoa4gCorkzqtBNKYN2RmtfrHGJu5ia';
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -1384,18 +1383,18 @@ serviceRouter.get('/airbnb/reviews/:listing_id', async (c) => {
 // ─── GET /api/airbnb/market-stats ───────────────────
 
 serviceRouter.get('/airbnb/market-stats', async (c) => {
-  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '13JaXRYCZoe7z4Zoa4gCorkzqtBNKYN2RmtfrHGJu5ia';
 
   const payment = extractPayment(c);
   if (!payment) {
-    return c.json(build402Response('/api/airbnb/market-stats', 'Airbnb market statistics: average daily rate, price distribution, superhost percentage for an area.', AIRBNB_MARKET_STATS_PRICE, walletAddress, {
+    return c.json(build402Response('/api/airbnb/market-stats', 'Airbnb market statistics: avg daily rate, occupancy estimates, revenue potential, price distribution, superhost % for an area.', AIRBNB_MARKET_STATS_PRICE, walletAddress, {
       input: {
         location: 'string (required) — city or area',
         checkin: 'string (optional) — YYYY-MM-DD',
         checkout: 'string (optional) — YYYY-MM-DD',
       },
       output: {
-        stats: '{ averageDailyRate, medianPrice, priceDistribution, superhostPercentage, totalListings, averageRating }',
+        stats: '{ avg_daily_rate, median_daily_rate, avg_occupancy_estimate_pct, avg_revenue_potential_monthly, avg_revenue_potential_annual, priceDistribution, superhostPercentage, totalListings, avgRating }',
       },
     }), 402);
   }
@@ -1424,5 +1423,58 @@ serviceRouter.get('/airbnb/market-stats', async (c) => {
     });
   } catch (err: any) {
     return c.json({ error: 'Airbnb market stats failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ═══════════════════════════════════════════════════════
+// ─── GOOGLE SERP & AI SEARCH API (Bounty #149) ─────
+// ═══════════════════════════════════════════════════════
+
+const GOOGLE_SERP_PRICE = 0.01;
+
+serviceRouter.get('/google/search', async (c) => {
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '13JaXRYCZoe7z4Zoa4gCorkzqtBNKYN2RmtfrHGJu5ia';
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/google/search', 'Extract Google Search results (SERP) with organic listings, People Also Ask, and AI Overviews.', GOOGLE_SERP_PRICE, walletAddress, {
+      input: {
+        q: 'string (required) — search query',
+        gl: 'string (optional, default: US) — country code (e.g., US, UK, ID)',
+        hl: 'string (optional, default: en) — language code',
+      },
+      output: {
+        query: 'string',
+        results: 'GoogleSearchResult[] — title, url, snippet, position',
+        ai_overview: 'string (optional) — SGE/AI generated summary',
+        related_questions: 'string[] (optional) — People Also Ask',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, GOOGLE_SERP_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const query = c.req.query('q');
+  if (!query) return c.json({ error: 'Missing required parameter: q' }, 400);
+
+  const country = c.req.query('gl') || 'US';
+  const language = c.req.query('hl') || 'en';
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const results = await scrapeGoogleSerp(query, country, language);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...results,
+      meta: { country, language, proxy: { ip, country: proxy.country, type: 'mobile' } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Google SERP fetch failed', message: err?.message || String(err) }, 502);
   }
 });
