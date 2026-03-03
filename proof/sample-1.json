@@ -1,217 +1,140 @@
 {
+  "country": "US",
+  "category": "technology",
+  "discover_feed": [
+    {
+      "position": 1,
+      "title": "\u2018A feedback loop with no brake\u2019: how an AI doomsday report shook US markets - The Guardian",
+      "source": "Google News",
+      "url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxOam1VaUUycHM3Nlllakd2ZFo0MDZOaUJGNndoNE1jNGFRM0hRNWdTVEJTd0ZGUnlNblBzQWNHSnZ4ODJOek5oR0NrVmtCdjVLVzBMQXRSSWhPUmREZEJDaXdlMEhFZHNEYUtBZUNRTF9ZMHN4WDg4QjE1Ymp5WHkxUHRoTXNQXzNVR1I3aFpVaEtJajlqM0JQMUlTSml2LXE0NTZLbzhFLVV2Ujk3bTNrRVhn?oc=5",
+      "snippet": "<a href=\"https://news.google.com/rss/articles/CBMisgFBVV95cUxOam1VaUUycHM3Nlllakd2ZFo0MDZOaUJGNndoNE1jNGFRM0hRNWdTVEJTd0ZGUnlNblBzQWNHSnZ4ODJOek5oR0NrVmtCdjVLVzBMQXRSSWhPUmREZEJDaXdlMEhFZHNEYUtBZUNRTF9ZMHN4WDg4QjE1Ymp5WHkxUHRoTXNQXzNVR1I3aFpVaEtJajlqM0JQMUlTSml2LXE0NTZLbzhFLVV2Ujk3bTNrRVhn?oc=5\" tar",
+      "publishedAt": "Tue, 24 Feb 2026 19:38:00 GMT",
+      "category": "technology",
+      "contentType": "article",
+      "imageUrl": "",
+      "engagement": {
+        "hasVideoPreview": false,
+        "format": "article"
+      }
+    },
+    {
+      "position": 2,
+      "title": "The Edge of Mathematics - The Atlantic",
+      "source": "Google News",
+      "url": "https://news.google.com/rss/articles/CBMigAFBVV95cUxNVU5nYlJVRUlvbVRVR0pPYzVGOEZabVlVdDNLSGhhcHI5X2Nhd0NiVW9tUEQtbEU5WkYtRGo2cTNNVjJVWHlrZGpWTXZPekRkVnNSQTJSaEJ3U1YxMnNLTTZteUZiRDRNUmh3SXFkMkplOUlYSjZnMThDNElLU3FmRQ?oc=5",
+      "snippet": "<a href=\"https://news.google.com/rss/articles/CBMigAFBVV95cUxNVU5nYlJVRUlvbVRVR0pPYzVGOEZabVlVdDNLSGhhcHI5X2Nhd0NiVW9tUEQtbEU5WkYtRGo2cTNNVjJVWHlrZGpWTXZPekRkVnNSQTJSaEJ3U1YxMnNLTTZteUZiRDRNUmh3SXFkMkplOUlYSjZnMThDNElLU3FmRQ?oc=5\" target=\"_blank\">The Edge of Mathematics</a>&nbsp;&nbsp;<font color=\"#",
+      "publishedAt": "Tue, 24 Feb 2026 12:55:56 GMT",
+      "category": "technology",
+      "contentType": "article",
+      "imageUrl": "",
+      "engagement": {
+        "hasVideoPreview": false,
+        "format": "article"
+      }
+    },
+    {
+      "position": 3,
+      "title": "Stocks Mount Tentative Recovery After AI Scare: Markets Wrap - Bloomberg",
+      "source": "Google News",
+      "url": "https://news.google.com/rss/articles/CBMilAFBVV95cUxNU2JFNU80TWpmOXVaRXA5M3h2MEZyUjYzOUx3YkdCbng1N1QwaFA2cXZMek5MWGxaV1c3eTFNT3V4Q1JZcWpKekVxZURjUV81YXZBTUdnMU1zTlZNSW9xOEJ4ZURhUE0tTF9SWXdGLXZWSWM1eWNYQXY2OVhocWtnN3EtTEw5LUNUaG1LUDBXWDg0Mjhw?oc=5",
+      "snippet": "<a href=\"https://news.google.com/rss/articles/CBMilAFBVV95cUxNU2JFNU80TWpmOXVaRXA5M3h2MEZyUjYzOUx3YkdCbng1N1QwaFA2cXZMek5MWGxaV1c3eTFNT3V4Q1JZcWpKekVxZURjUV81YXZBTUdnMU1zTlZNSW9xOEJ4ZURhUE0tTF9SWXdGLXZWSWM1eWNYQXY2OVhocWtnN3EtTEw5LUNUaG1LUDBXWDg0Mjhw?oc=5\" target=\"_blank\">Stocks Mount Tentative Reco",
+      "publishedAt": "Tue, 24 Feb 2026 21:02:33 GMT",
+      "category": "technology",
+      "contentType": "article",
+      "imageUrl": "",
+      "engagement": {
+        "hasVideoPreview": false,
+        "format": "article"
+      }
+    },
+    {
+      "position": 4,
+      "title": "AI nerves are fraying. Anthropic keeps doubling down - CNN",
+      "source": "Google News",
+      "url": "https://news.google.com/rss/articles/CBMifEFVX3lxTE9KTmE4OHFXOFBuUzJxeHZTeUlwVW95RlVudm5vclY4VGRuNnhRcGxEaFM1aG9MTUtkRmJSRDBhRXZ3bS1zRkNQR3lDRzhmTnM5T1hMb0xFcmJkVTVfdFVzaE1CakdpSUtFaXl2MUFPVjFpckxHWmFoejJ6VjE?oc=5",
+      "snippet": "<a href=\"https://news.google.com/rss/articles/CBMifEFVX3lxTE9KTmE4OHFXOFBuUzJxeHZTeUlwVW95RlVudm5vclY4VGRuNnhRcGxEaFM1aG9MTUtkRmJSRDBhRXZ3bS1zRkNQR3lDRzhmTnM5T1hMb0xFcmJkVTVfdFVzaE1CakdpSUtFaXl2MUFPVjFpckxHWmFoejJ6VjE?oc=5\" target=\"_blank\">AI nerves are fraying. Anthropic keeps doubling down</a>&nbs",
+      "publishedAt": "Tue, 24 Feb 2026 14:30:33 GMT",
+      "category": "technology",
+      "contentType": "article",
+      "imageUrl": "",
+      "engagement": {
+        "hasVideoPreview": false,
+        "format": "article"
+      }
+    },
+    {
+      "position": 5,
+      "title": "Most teens believe their peers are using AI to cheat in school - The Washington Post",
+      "source": "Google News",
+      "url": "https://news.google.com/rss/articles/CBMiigFBVV95cUxQaURtQkZsS3puanhVQmkwa3VQaFBtSG9ndV9qaUpPOTVIU0xkbFdxc1o1dmZLaVFoanNDX1Y5MHIzY0ptSWw3Q1c4TUJNVHZnR3FqZmx5WEdmakpVTS1Ydkl6ZllqNnd4U0hyVXo2R2NvdVktYjBoQ083cEVvc05YeWNBT0ZPUm1nZ2c?oc=5",
+      "snippet": "<a href=\"https://news.google.com/rss/articles/CBMiigFBVV95cUxQaURtQkZsS3puanhVQmkwa3VQaFBtSG9ndV9qaUpPOTVIU0xkbFdxc1o1dmZLaVFoanNDX1Y5MHIzY0ptSWw3Q1c4TUJNVHZnR3FqZmx5WEdmakpVTS1Ydkl6ZllqNnd4U0hyVXo2R2NvdVktYjBoQ083cEVvc05YeWNBT0ZPUm1nZ2c?oc=5\" target=\"_blank\">Most teens believe their peers are using",
+      "publishedAt": "Tue, 24 Feb 2026 21:01:46 GMT",
+      "category": "technology",
+      "contentType": "article",
+      "imageUrl": "",
+      "engagement": {
+        "hasVideoPreview": false,
+        "format": "article"
+      }
+    },
+    {
+      "position": 6,
+      "title": "Accenture Acquires Advanced AI Technology to Help Communications Companies Accelerate Autonomous Network Journeys - Accenture",
+      "source": "Google News",
+      "url": "https://news.google.com/rss/articles/CBMi6gFBVV95cUxOdjhQdlZvTXZpWV80TjFlNzBKNm9xR0owRDlGSE9IR1NrcFRvZzFDeVhQOWV5TW5ET3NqdFFnSXZpWE9DWVZsYktrMDBzVG10UXA0SkVNd3JTSFROQjdQMDdHX1ZYRktXVGVRaC15bmdQM2tlS0xHeFRkdGVxTTlTTkZwcjd6bWVRVDlBY3lWT1BKZHRYaWFjODR6VGYzTGdVMlJHRHloNzg0NjhCWjhQa09nbjFWdlZqYlZmcTRLc2xhTS1WME9wNlY5Ny1OSlVsUTlPcjA2SHRkZmdoR3JEdzRwajVSdmU3Q1E?oc=5",
+      "snippet": "<a href=\"https://news.google.com/rss/articles/CBMi6gFBVV95cUxOdjhQdlZvTXZpWV80TjFlNzBKNm9xR0owRDlGSE9IR1NrcFRvZzFDeVhQOWV5TW5ET3NqdFFnSXZpWE9DWVZsYktrMDBzVG10UXA0SkVNd3JTSFROQjdQMDdHX1ZYRktXVGVRaC15bmdQM2tlS0xHeFRkdGVxTTlTTkZwcjd6bWVRVDlBY3lWT1BKZHRYaWFjODR6VGYzTGdVMlJHRHloNzg0NjhCWjhQa09nbjFWdlZqYl",
+      "publishedAt": "Tue, 24 Feb 2026 12:31:14 GMT",
+      "category": "technology",
+      "contentType": "article",
+      "imageUrl": "",
+      "engagement": {
+        "hasVideoPreview": false,
+        "format": "article"
+      }
+    },
+    {
+      "position": 7,
+      "title": "Hegseth demands full military access to Anthropic's AI model Claude and sets deadline for end of week - CBS News",
+      "source": "Google News",
+      "url": "https://news.google.com/rss/articles/CBMigAFBVV95cUxOZXUyQlVjZ1RVbkJCejFCYkNwMEEyTTBfMm9DNi1jc1d3Q043eEN0MUZMOTI3N21FX0xRWHUzclQ5Uzd2VVBOdlhELXlGYm1UdVlDUmktY0NDbjlFRjdQMDBYSlFxNkxnRlVfWTFDSmZOSHl5N0FWd09uUlhPUE02Y9IBhgFBVV95cUxOam9NcjFGVTBBQnVmbERCa2hHenRvLXdNN2N1MXFnMWx4ZVdqMVpvV016c19ZWDdkVmZzZWR3R1hjeWdVb185dWhuZWJpYXVUVnk4ZG1aMjQ3dTJ3LUFzdjRGanNHTk9rTlgwMGROc1lYNnRhYmU5alhROFVCMWRWVFUySXZKZw?oc=5",
+      "snippet": "<a href=\"https://news.google.com/rss/articles/CBMigAFBVV95cUxOZXUyQlVjZ1RVbkJCejFCYkNwMEEyTTBfMm9DNi1jc1d3Q043eEN0MUZMOTI3N21FX0xRWHUzclQ5Uzd2VVBOdlhELXlGYm1UdVlDUmktY0NDbjlFRjdQMDBYSlFxNkxnRlVfWTFDSmZOSHl5N0FWd09uUlhPUE02Y9IBhgFBVV95cUxOam9NcjFGVTBBQnVmbERCa2hHenRvLXdNN2N1MXFnMWx4ZVdqMVpvV016c19ZWD",
+      "publishedAt": "Tue, 24 Feb 2026 20:31:50 GMT",
+      "category": "technology",
+      "contentType": "article",
+      "imageUrl": "",
+      "engagement": {
+        "hasVideoPreview": false,
+        "format": "article"
+      }
+    },
+    {
+      "position": 8,
+      "title": "Pete Hegseth threatens to cut Anthropic from Pentagon supply chain in showdown with CEO - Financial Times",
+      "source": "Google News",
+      "url": "https://news.google.com/rss/articles/CBMicEFVX3lxTE1fY0ticEd1NEp6LVR6SXhremg5cHlheTdsQnFBTG96bWhGRFdvMldVcGtGb0M3TWdEdC1qeWFEbDFodExOdWgwRzNBbFdQRHhjUnppWkZzNGZYb0MweHRlQV85dHF2ZFo4cld2eVpvaXI?oc=5",
+      "snippet": "<a href=\"https://news.google.com/rss/articles/CBMicEFVX3lxTE1fY0ticEd1NEp6LVR6SXhremg5cHlheTdsQnFBTG96bWhGRFdvMldVcGtGb0M3TWdEdC1qeWFEbDFodExOdWgwRzNBbFdQRHhjUnppWkZzNGZYb0MweHRlQV85dHF2ZFo4cld2eVpvaXI?oc=5\" target=\"_blank\">Pete Hegseth threatens to cut Anthropic from Pentagon supply chain in showdo",
+      "publishedAt": "Tue, 24 Feb 2026 18:29:24 GMT",
+      "category": "technology",
+      "contentType": "article",
+      "imageUrl": "",
+      "engagement": {
+        "hasVideoPreview": false,
+        "format": "article"
+      }
+    }
+  ],
   "metadata": {
-    "source": "airbnb.com",
-    "endpoint": "https://www.airbnb.com/api/v2/explore_tabs",
-    "params": {
-      "query": "New York",
-      "place_id": "ChIJOwg_06VPwokRYv534QaPC8g",
-      "checkin": "2026-03-10",
-      "checkout": "2026-03-15",
-      "adults": 2,
-      "currency": "USD",
-      "locale": "en"
-    },
-    "fetchedAt": "2026-02-26T13:51:18Z",
-    "proxyIp": "172.56.168.66",
-    "proxyProvider": "Proxies.sx T-Mobile US mobile",
-    "totalResultsReturned": 18,
-    "paginationMetadata": {
-      "hasNextPage": true,
-      "itemsPerPage": 18
-    }
+    "feedLength": 8,
+    "scrapedAt": "2026-02-24T21:30:15.136317+00:00",
+    "proxyCountry": "US",
+    "proxyIp": "172.56.169.60"
   },
-  "listings": [
-    {
-      "listingId": "41295524",
-      "url": "https://www.airbnb.com/rooms/41295524",
-      "name": "Hotel like place - private patio and bathroom",
-      "roomType": "private_room",
-      "location": {
-        "city": "Brooklyn",
-        "publicAddress": "Brooklyn, NY, United States",
-        "lat": 40.67627,
-        "lng": -73.94137
-      },
-      "capacity": {
-        "guests": 2,
-        "bedrooms": 1,
-        "beds": 2,
-        "bathrooms": 1.0
-      },
-      "rating": {
-        "stars": 5.0,
-        "reviewCount": 317
-      },
-      "pricing": {
-        "displayPrice": "$851",
-        "stayDuration": "5 nights (Mar 10-15, 2026)",
-        "currency": "USD"
-      },
-      "host": {
-        "firstName": "Caio Julio",
-        "isSuperhost": true
-      },
-      "instantBook": false
-    },
-    {
-      "listingId": "5298896",
-      "url": "https://www.airbnb.com/rooms/5298896",
-      "name": "Unique NYC Loft - Guest Room",
-      "roomType": "private_room",
-      "location": {
-        "city": "New York",
-        "publicAddress": "New York, NY, United States",
-        "lat": 40.70419,
-        "lng": -74.01127
-      },
-      "capacity": {
-        "guests": 2,
-        "bedrooms": 1,
-        "beds": 1,
-        "bathrooms": 1.0
-      },
-      "rating": {
-        "stars": 5.0,
-        "reviewCount": 375
-      },
-      "pricing": {
-        "displayPrice": null,
-        "stayDuration": "5 nights (Mar 10-15, 2026)",
-        "currency": "USD"
-      },
-      "host": {
-        "firstName": "Luke",
-        "isSuperhost": true
-      },
-      "instantBook": false
-    },
-    {
-      "listingId": "1070270537377163305",
-      "url": "https://www.airbnb.com/rooms/1070270537377163305",
-      "name": "One King room at Brooklyn - Newly Renovated!",
-      "roomType": "private_room",
-      "location": {
-        "city": "Brooklyn",
-        "publicAddress": "Brooklyn, NY, United States",
-        "lat": 40.690157186681645,
-        "lng": -73.98692196057979
-      },
-      "capacity": {
-        "guests": 2,
-        "bedrooms": 1,
-        "beds": 1,
-        "bathrooms": 1.0
-      },
-      "rating": {
-        "stars": 5.0,
-        "reviewCount": 568
-      },
-      "pricing": {
-        "displayPrice": null,
-        "stayDuration": "5 nights (Mar 10-15, 2026)",
-        "currency": "USD"
-      },
-      "host": {
-        "firstName": "Hilton Brooklyn New York City",
-        "isSuperhost": true
-      },
-      "instantBook": false
-    },
-    {
-      "listingId": "1010503905929192028",
-      "url": "https://www.airbnb.com/rooms/1010503905929192028",
-      "name": "Steps to Times Square | Free Breakfast & Fitness",
-      "roomType": "private_room",
-      "location": {
-        "city": "New York",
-        "publicAddress": "New York, NY, United States",
-        "lat": 40.75724,
-        "lng": -73.99236
-      },
-      "capacity": {
-        "guests": 2,
-        "bedrooms": 1,
-        "beds": 1,
-        "bathrooms": 1.0
-      },
-      "rating": {
-        "stars": 4.5,
-        "reviewCount": 1129
-      },
-      "pricing": {
-        "displayPrice": "$1,095",
-        "stayDuration": "5 nights (Mar 10-15, 2026)",
-        "currency": "USD"
-      },
-      "host": {
-        "firstName": "Times Square South New York City",
-        "isSuperhost": false
-      },
-      "instantBook": false
-    },
-    {
-      "listingId": "1267449405198185516",
-      "url": "https://www.airbnb.com/rooms/1267449405198185516",
-      "name": "Pod Times Square Hotel",
-      "roomType": "private_room",
-      "location": {
-        "city": "New York",
-        "publicAddress": "New York, NY, United States",
-        "lat": 40.7583945,
-        "lng": -73.9930985
-      },
-      "capacity": {
-        "guests": 2,
-        "bedrooms": 1,
-        "beds": 1,
-        "bathrooms": 1.0
-      },
-      "rating": {
-        "stars": 4.5,
-        "reviewCount": 111
-      },
-      "pricing": {
-        "displayPrice": null,
-        "stayDuration": "5 nights (Mar 10-15, 2026)",
-        "currency": "USD"
-      },
-      "host": {
-        "firstName": "Pod Times Square Hotel",
-        "isSuperhost": false
-      },
-      "instantBook": false
-    },
-    {
-      "listingId": "21969733",
-      "url": "https://www.airbnb.com/rooms/21969733",
-      "name": "BRIGHT HOMEY AND COZY  MINUTES TO NEW YORK  CITY",
-      "roomType": "entire_home",
-      "location": {
-        "city": "Jersey City",
-        "publicAddress": "Jersey City, NJ, United States",
-        "lat": 40.7479,
-        "lng": -74.05105
-      },
-      "capacity": {
-        "guests": 6,
-        "bedrooms": 1,
-        "beds": 3,
-        "bathrooms": 1.0
-      },
-      "rating": {
-        "stars": 5.0,
-        "reviewCount": 280
-      },
-      "pricing": {
-        "displayPrice": null,
-        "stayDuration": "5 nights (Mar 10-15, 2026)",
-        "currency": "USD"
-      },
-      "host": {
-        "firstName": "Kenia",
-        "isSuperhost": true
-      },
-      "instantBook": false
-    }
-  ]
+  "_proof_meta": {
+    "proxy_ip": "172.56.169.60",
+    "proxy_carrier": "T-Mobile USA (mobile residential)",
+    "proxy_tx_hash": "0xc655e656981acec60320149aaf98ecf8c2f03e52db36c0f1f5581054861f3c68",
+    "proxy_chain": "Base",
+    "proxy_cost_usd": "0.40",
+    "collected_at": "2026-02-24T21:30:15.136340+00:00"
+  }
 }

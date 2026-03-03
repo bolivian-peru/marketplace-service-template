@@ -1,55 +1,40 @@
-# Proof: Real Airbnb Data via US Mobile Proxy
+# Google Discover Feed Intelligence API — Proof of Real Outputs
 
-## Data Collection Summary
+These samples were collected through a mobile proxy on 2026-02-24.
 
-Real Airbnb listing data was fetched via a US mobile residential proxy (T-Mobile) on 2026-02-26.
+## Proxy Details
 
-### Proxy Details
-- **Proxy IP:** 172.56.168.66 (T-Mobile US mobile residential)
-- **Provider:** Proxies.sx
-- **Verified via:** `http://ifconfig.me` through proxy
+| Field | Value |
+|-------|-------|
+| Exit IP | `172.56.169.60` |
+| Carrier | T-Mobile USA (mobile residential) |
+| Country | United States |
+| Base TX | [`0xc655...3c68`](https://basescan.org/tx/0xc655e656981acec60320149aaf98ecf8c2f03e52db36c0f1f5581054861f3c68) |
+| Cost | $0.40 USDC |
+| Network | Base L2 |
 
-### Data Sources
+## What Was Queried
 
-| File | Source | Records |
-|------|--------|---------|
-| sample-1.json | Airbnb v2 explore_tabs API | 6 listings (full detail) |
-| sample-2.json | Airbnb v2 explore_tabs API (superhost filter) | 6 superhost listings |
-| sample-3.json | Airbnb search page HTML (StaySearchResult) | 10 listing summaries |
+| Sample | Category | Query | Items |
+|--------|----------|-------|-------|
+| sample-1.json | Technology | AI technology trends | 8 articles |
+| sample-2.json | AI Agents | Autonomous AI agents | 8 articles |
+| sample-3.json | Crypto | Cryptocurrency/blockchain | 8 articles |
 
-### API Endpoint Used
+## Key Fields
 
-```
-GET https://www.airbnb.com/api/v2/explore_tabs
-  ?version=1.8.3
-  &satori_version=1.1.0
-  &items_per_grid=18
-  &locale=en
-  &currency=USD
-  &_format=for_explore_search_web
-  &refinement_paths[]=homes
-  &place_id=ChIJOwg_06VPwokRYv534QaPC8g
-  &query=New+York
-  &checkin=2026-03-10
-  &checkout=2026-03-15
-  &adults=2
-```
+Each item contains:
+- `title` — Article headline
+- `source` — Publisher name
+- `url` — Google News redirect URL
+- `snippet` — Article description preview
+- `publishedAt` — RFC 822 timestamp
+- `category` — Topic category
+- `contentType` — `article | video | web_story`
+- `metadata.proxyIp` — Confirms mobile proxy was used
 
-Response: `346,283` bytes, 18 listings with full detail.
+## Why Mobile Proxy
 
-### Sample Listings Found
-
-| Listing ID | Name | City | Rating | Price (5 nights) | Host |
-|-----------|------|------|--------|-----------------|------|
-| 41295524 | Hotel like place - private patio and bathroom | Brooklyn | 5.0 (317 reviews) | $851 | Caio Julio (Superhost) |
-| 5298896 | Unique NYC Loft - Guest Room | New York | 5.0 (375 reviews) | — | Luke (Superhost) |
-| 1070270537377163305 | One King room at Brooklyn - Newly Renovated! | Brooklyn | 5.0 (568 reviews) | — | Hilton Brooklyn |
-| 22946469 | Room w/ private bath in Soho | New York | 5.0 (315 reviews) | $903 | Elaine (Superhost) |
-
-### HTML Search Page Extraction
-
-The search page (`/s/New-York--NY/homes`) was also fetched (695,906 bytes). The page contains 44 `StaySearchResult` entries in the JavaScript bundle, yielding 29 unique listing IDs with rating and price data.
-
-### What the Service Returns
-
-The Airbnb Intelligence service (PR #98) indexes listing data from the explore API, enriches it with pricing and host information, and surfaces it through a normalized REST API for consumption by downstream agents and services.
+Google Discover delivers personalised, geo-targeted content. A US mobile IP
+(T-Mobile residential) ensures results match what US mobile users see, bypassing
+datacenter IP blocks that Google applies to API scraping.

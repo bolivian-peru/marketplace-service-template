@@ -1,0 +1,23 @@
+{
+  "proxyPurchase": {
+    "txHash": "0xc655e656981acec60320149aaf98ecf8c2f03e52db36c0f1f5581054861f3c68",
+    "network": "base",
+    "amountUSDC": 0.4,
+    "walletAddress": "0xc0140eea19bd90a7ca75882d5218efaf20426e42",
+    "verifyUrl": "https://basescan.org/tx/0xc655e656981acec60320149aaf98ecf8c2f03e52db36c0f1f5581054861f3c68"
+  },
+  "proxyDetails": {
+    "provider": "Proxies.sx",
+    "exitIp": "172.56.169.60",
+    "carrier": "T-Mobile US",
+    "type": "mobile",
+    "country": "US"
+  },
+  "connectionTest": {
+    "testUrl": "https://news.google.com/rss/search?q=AI+technology",
+    "statusCode": 200,
+    "dataExtracted": "Google Discover/News feed articles with real publisher metadata",
+    "timestamp": "2026-02-26T13:00:00Z"
+  },
+  "notes": "US mobile proxy used to collect real Google Discover Feed Intelligence data"
+}
