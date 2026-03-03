@@ -27,7 +27,7 @@ import {
   searchLinkedInPeople, 
   findCompanyEmployees 
 } from './scrapers/linkedin-enrichment';
-import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
+import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile, discoverInstagramAccounts } from './scrapers/instagram-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
 import { scrapeAppleRankings, scrapeGoogleRankings } from './scrapers/appstore';
 import { scrapeGoogleSerp } from './scrapers/google-serp-scraper';
@@ -1004,6 +1004,7 @@ const IG_POSTS_PRICE    = 0.02;   // $0.02 per posts fetch
 const IG_ANALYZE_PRICE  = 0.15;   // $0.15 per full analysis (includes AI vision)
 const IG_IMAGES_PRICE   = 0.08;   // $0.08 per image-only analysis
 const IG_AUDIT_PRICE    = 0.05;   // $0.05 per authenticity audit
+const IG_DISCOVER_PRICE = 0.03;   // $0.03 per discovery search
 
 // ─── GET /api/instagram/profile/:username ───────────
 
@@ -1231,6 +1232,49 @@ serviceRouter.get('/instagram/audit/:username', async (c) => {
     });
   } catch (err: any) {
     return c.json({ error: 'Instagram audit failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/instagram/discover ─────────────────────
+
+serviceRouter.get('/instagram/discover', async (c) => {
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '13JaXRYCZoe7z4Zoa4gCorkzqtBNKYN2RmtfrHGJu5ia';
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/instagram/discover', 'Discover Instagram accounts by niche, topic, or keywords.', IG_DISCOVER_PRICE, walletAddress, {
+      input: {
+        niche: 'string (required) — niche or topic to search',
+        limit: 'number (optional, default: 10, max: 20)',
+      },
+      output: {
+        results: 'InstagramDiscoveryResult[] — username, full_name, profile_url, niche',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, IG_DISCOVER_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const niche = c.req.query('niche');
+  if (!niche) return c.json({ error: 'Missing required parameter: niche' }, 400);
+
+  const limit = Math.min(Math.max(parseInt(c.req.query('limit') || '10') || 10, 1), 20);
+
+  try {
+    const proxy = getProxy();
+    const results = await discoverInstagramAccounts(niche, limit);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      results,
+      meta: { niche, limit, proxy: { country: proxy.country, type: 'mobile' } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Instagram discovery failed', message: err?.message || String(err) }, 502);
   }
 });
 
