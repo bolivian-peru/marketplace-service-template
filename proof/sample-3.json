@@ -1,100 +1,108 @@
 {
   "metadata": {
-    "source": "airbnb.com",
-    "endpoint": "https://www.airbnb.com/s/New-York--NY/homes",
-    "method": "HTML search page extraction",
-    "params": {
-      "destination": "New York, NY",
-      "checkin": "2026-03-10",
-      "checkout": "2026-03-15",
-      "adults": 2
-    },
-    "fetchedAt": "2026-02-26T13:51:18Z",
     "proxyIp": "172.56.168.66",
-    "proxyProvider": "Proxies.sx T-Mobile US mobile",
-    "listingsExtracted": 29,
-    "extractionNote": "44 StaySearchResult entries found in page JS, 29 unique after dedup"
+    "proxyExitIp": "172.56.169.238",
+    "proxyProvider": "T-Mobile US mobile (IPv4)",
+    "sessionToken": "x402s_ab00ab64c466c4bf05db063fd3e6b3ee",
+    "capturedAt": "2026-02-26T13:42:00Z",
+    "timestampMs": 1772113499000,
+    "logId": "20260226134459AC70968913EB540A96DE",
+    "region": "US",
+    "platform": "TikTok",
+    "endpoint": "https://www.tiktok.com/api/search/general/preview/?keyword=trending+music+2026&count=10",
+    "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Mobile/15E148 Safari/604.1"
   },
-  "listingSummaries": [
+  "query": {
+    "keyword": "trending music 2026",
+    "type": "music_trends",
+    "description": "Trending music search suggestions on TikTok US (Feb 2026)",
+    "resultCount": 8
+  },
+  "trending_keywords": [
     {
-      "listingId": "2027023659",
-      "url": "https://www.airbnb.com/rooms/2027023659",
-      "rating": "4.9 (317)",
-      "priceFor5Nights": "$851 for 5 nights",
-      "priceDisplay": "$851",
-      "dataSource": "Airbnb search page StaySearchResult component"
+      "keyword": "trending music 2026 on tiktok",
+      "group_id": "5628618076404755559",
+      "source": "sug",
+      "recall_sources": [
+        "tiktok_orion_query",
+        "tiktok_index_global_active_7d_query",
+        "tiktok_index_active_7d_query"
+      ],
+      "personalized": true,
+      "language": "en"
     },
     {
-      "listingId": "801378680",
-      "url": "https://www.airbnb.com/rooms/801378680",
-      "rating": "4.97 (375)",
-      "priceFor5Nights": null,
-      "priceDisplay": null,
-      "dataSource": "Airbnb search page StaySearchResult component"
+      "keyword": "top songs in 2026",
+      "group_id": "1558945553584780645",
+      "source": "sug",
+      "recall_sources": [
+        "query_xlmr_viking_proxy_recall",
+        "tiktok_orion_search_session"
+      ],
+      "personalized": true,
+      "language": "en"
     },
     {
-      "listingId": "2322612075",
-      "url": "https://www.airbnb.com/rooms/2322612075",
-      "rating": "4.62 (1129)",
-      "priceFor5Nights": "$1,095 for 5 nights",
-      "priceDisplay": "$1,095",
-      "dataSource": "Airbnb search page StaySearchResult component"
+      "keyword": "trending music 2026 motivation",
+      "group_id": "3310234832635088745",
+      "source": "sug",
+      "recall_sources": [
+        "tiktok_index_global_active_7d_query"
+      ],
+      "personalized": true,
+      "language": "en"
     },
     {
-      "listingId": "2146521584",
-      "url": "https://www.airbnb.com/rooms/2146521584",
-      "rating": "4.76 (568)",
-      "priceFor5Nights": null,
-      "priceDisplay": null,
-      "dataSource": "Airbnb search page StaySearchResult component"
+      "keyword": "trending music 2026 viral now",
+      "group_id": "166766280814419999",
+      "source": "sug",
+      "recall_sources": [
+        "tiktok_orion_query"
+      ],
+      "personalized": true,
+      "language": "en"
     },
     {
-      "listingId": "414986416",
-      "url": "https://www.airbnb.com/rooms/414986416",
-      "rating": "4.9 (280)",
-      "priceFor5Nights": null,
-      "priceDisplay": null,
-      "dataSource": "Airbnb search page StaySearchResult component"
+      "keyword": "new music 2026",
+      "group_id": "6786807383545649684",
+      "source": "sug",
+      "recall_sources": [
+        "orion_qse_recall"
+      ],
+      "personalized": true,
+      "language": "en"
     },
     {
-      "listingId": "1596354668",
-      "url": "https://www.airbnb.com/rooms/1596354668",
-      "rating": "4.52 (238)",
-      "priceFor5Nights": null,
-      "priceDisplay": null,
-      "dataSource": "Airbnb search page StaySearchResult component"
+      "keyword": "trending music 2026 lyrics",
+      "group_id": "6479060164394365672",
+      "source": "sug",
+      "recall_sources": [
+        "tiktok_orion_query"
+      ],
+      "personalized": true,
+      "language": "en"
     },
     {
-      "listingId": "2389454677",
-      "url": "https://www.airbnb.com/rooms/2389454677",
-      "rating": "4.57 (111)",
-      "priceFor5Nights": "$866 for 5 nights",
-      "priceDisplay": null,
-      "dataSource": "Airbnb search page StaySearchResult component"
+      "keyword": "2026 trend",
+      "group_id": "3101944120697710279",
+      "source": "sug",
+      "recall_sources": [
+        "query_xlmr_viking_proxy_recall"
+      ],
+      "personalized": true,
+      "language": "en"
     },
     {
-      "listingId": "2003449921",
-      "url": "https://www.airbnb.com/rooms/2003449921",
-      "rating": "4.87 (239)",
-      "priceFor5Nights": null,
-      "priceDisplay": null,
-      "dataSource": "Airbnb search page StaySearchResult component"
-    },
-    {
-      "listingId": "2426509811",
-      "url": "https://www.airbnb.com/rooms/2426509811",
-      "rating": null,
-      "priceFor5Nights": "$1,769 for 5 nights",
-      "priceDisplay": "$1,769",
-      "dataSource": "Airbnb search page StaySearchResult component"
-    },
-    {
-      "listingId": "1617652818",
-      "url": "https://www.airbnb.com/rooms/1617652818",
-      "rating": "4.91 (125)",
-      "priceFor5Nights": null,
-      "priceDisplay": null,
-      "dataSource": "Airbnb search page StaySearchResult component"
+      "keyword": "trending music 2026 of february",
+      "group_id": "4169527197331500216",
+      "source": "sug",
+      "recall_sources": [
+        "tiktok_orion_query"
+      ],
+      "personalized": true,
+      "language": "en"
     }
-  ]
+  ],
+  "_raw_status_code": 0,
+  "_raw_rid": "20260226134459AC70968913EB540A96DE"
 }

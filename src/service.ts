@@ -10,6 +10,7 @@
  *   GET /api/reddit/*  (Reddit Intelligence)
  *   GET /api/instagram/* (Instagram Intelligence + AI Vision)
  *   GET /api/linkedin/* (LinkedIn Enrichment)
+ *   GET /api/tiktok/*  (TikTok Trend Intelligence)
  */
 
 import { Hono } from 'hono';
@@ -28,7 +29,8 @@ import {
   findCompanyEmployees 
 } from './scrapers/linkedin-enrichment';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
-import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
+import { searchReddit, getSubreddit, getTrending as getTrendingReddit, getComments } from './scrapers/reddit-scraper';
+import { getTrending as getTikTokTrending, getHashtagData, getCreatorProfile, getSoundData } from './scrapers/tiktok-scraper';
 
 export const serviceRouter = new Hono();
 
@@ -882,7 +884,7 @@ serviceRouter.get('/reddit/trending', async (c) => {
   try {
     const proxy = getProxy();
     const ip = await getProxyExitIp();
-    const result = await getTrending(limit);
+    const result = await getTrendingReddit(limit);
 
     c.header('X-Payment-Settled', 'true');
     c.header('X-Payment-TxHash', payment.txHash);
@@ -1436,5 +1438,192 @@ serviceRouter.get('/airbnb/market-stats', async (c) => {
     });
   } catch (err: any) {
     return c.json({ error: 'Airbnb market stats failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── TIKTOK TREND INTELLIGENCE (Bounty #51) ─────────
+
+const TIKTOK_TRENDING_PRICE = 0.005;
+const TIKTOK_HASHTAG_PRICE = 0.005;
+const TIKTOK_CREATOR_PRICE = 0.008;
+const TIKTOK_SOUND_PRICE = 0.005;
+
+// GET /api/tiktok/trending?country=US
+serviceRouter.get('/tiktok/trending', async (c) => {
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/tiktok/trending', 'Fetch TikTok trending videos and keywords by country via mobile proxy', TIKTOK_TRENDING_PRICE, walletAddress, {
+      input: { country: 'string — ISO 3166-1 alpha-2 country code (default: "US")' },
+      output: {
+        country: 'string',
+        trending_keywords: 'string[]',
+        trending_videos: 'TikTokVideo[] — id, description, authorUsername, likes, comments, shares, plays, soundTitle, hashtags, createdAt',
+        metadata: '{ scrapedAt, proxyCountry, proxyIp }',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, TIKTOK_TRENDING_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const country = (c.req.query('country') || 'US').toUpperCase().slice(0, 2);
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const result = await getTikTokTrending(country, proxyFetch);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      meta: { proxy: { ip, country: proxy.country, type: 'mobile' } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'TikTok trending fetch failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// GET /api/tiktok/hashtag/:tag?country=US
+serviceRouter.get('/tiktok/hashtag/:tag', async (c) => {
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/tiktok/hashtag/:tag', 'Fetch TikTok hashtag data: top videos, challenge info, usage count via mobile proxy', TIKTOK_HASHTAG_PRICE, walletAddress, {
+      input: {
+        tag: 'string (in URL) — hashtag name without #',
+        country: 'string — ISO 3166-1 alpha-2 country code (default: "US")',
+      },
+      output: {
+        hashtag: 'string',
+        videoCount: 'number',
+        videos: 'TikTokVideo[]',
+        relatedHashtags: 'string[]',
+        metadata: '{ scrapedAt, proxyCountry, proxyIp }',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, TIKTOK_HASHTAG_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const tag = c.req.param('tag');
+  if (!tag) return c.json({ error: 'Missing hashtag in URL path', example: '/api/tiktok/hashtag/fyp' }, 400);
+  const country = (c.req.query('country') || 'US').toUpperCase().slice(0, 2);
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const result = await getHashtagData(tag, country, proxyFetch);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      meta: { proxy: { ip, country: proxy.country, type: 'mobile' } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'TikTok hashtag fetch failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// GET /api/tiktok/creator/:username
+serviceRouter.get('/tiktok/creator/:username', async (c) => {
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/tiktok/creator/:username', 'Fetch TikTok creator profile: followers, bio, top videos, engagement metrics via mobile proxy', TIKTOK_CREATOR_PRICE, walletAddress, {
+      input: { username: 'string (in URL) — TikTok username without @' },
+      output: {
+        username: 'string',
+        displayName: 'string',
+        bio: 'string',
+        followers: 'number',
+        following: 'number',
+        likes: 'number',
+        isVerified: 'boolean',
+        videoCount: 'number',
+        topVideos: 'TikTokVideo[]',
+        metadata: '{ scrapedAt, proxyCountry, proxyIp }',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, TIKTOK_CREATOR_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const username = c.req.param('username');
+  if (!username) return c.json({ error: 'Missing username in URL path', example: '/api/tiktok/creator/charlidamelio' }, 400);
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const result = await getCreatorProfile(username, proxyFetch);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      meta: { proxy: { ip, country: proxy.country, type: 'mobile' } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'TikTok creator fetch failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// GET /api/tiktok/sound/:id
+serviceRouter.get('/tiktok/sound/:id', async (c) => {
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/tiktok/sound/:id', 'Fetch TikTok sound/music data: title, artist, usage count, top videos using the sound via mobile proxy', TIKTOK_SOUND_PRICE, walletAddress, {
+      input: { id: 'string (in URL) — TikTok sound ID' },
+      output: {
+        sound_id: 'string',
+        title: 'string',
+        artist: 'string',
+        usageCount: 'number',
+        videos: 'TikTokVideo[]',
+        metadata: '{ scrapedAt, proxyCountry, proxyIp }',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, TIKTOK_SOUND_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const soundId = c.req.param('id');
+  if (!soundId) return c.json({ error: 'Missing sound ID in URL path', example: '/api/tiktok/sound/7049271608283298817' }, 400);
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const result = await getSoundData(soundId, proxyFetch);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      meta: { proxy: { ip, country: proxy.country, type: 'mobile' } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'TikTok sound fetch failed', message: err?.message || String(err) }, 502);
   }
 });
