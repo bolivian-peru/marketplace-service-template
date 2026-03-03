@@ -76,6 +76,12 @@ app.get('/health', (c) => c.json({
     '/api/reviews/:place_id',
     '/api/reviews/summary/:place_id',
     '/api/business/:place_id',
+    '/api/instagram/profile/:username',
+    '/api/instagram/posts/:username',
+    '/api/instagram/analyze/:username',
+    '/api/instagram/analyze/:username/images',
+    '/api/instagram/audit/:username',
+    '/api/instagram/discover',
     '/api/airbnb/search',
     '/api/airbnb/listing/:id',
     '/api/airbnb/reviews/:listing_id',
@@ -95,6 +101,12 @@ app.get('/', (c) => c.json({
     { method: 'GET', path: '/api/reviews/:place_id', description: 'Fetch Google reviews by Place ID', price: '0.02 USDC' },
     { method: 'GET', path: '/api/business/:place_id', description: 'Get business details + review summary', price: '0.01 USDC' },
     { method: 'GET', path: '/api/reviews/summary/:place_id', description: 'Get review summary stats', price: '0.005 USDC' },
+    { method: 'GET', path: '/api/instagram/profile/:username', description: 'Instagram profile intelligence', price: '0.01 USDC' },
+    { method: 'GET', path: '/api/instagram/posts/:username', description: 'Instagram post feed intelligence', price: '0.02 USDC' },
+    { method: 'GET', path: '/api/instagram/analyze/:username', description: 'Full Instagram AI vision analysis', price: '0.15 USDC' },
+    { method: 'GET', path: '/api/instagram/analyze/:username/images', description: 'Instagram image-only AI vision analysis', price: '0.08 USDC' },
+    { method: 'GET', path: '/api/instagram/audit/:username', description: 'Instagram authenticity audit', price: '0.05 USDC' },
+    { method: 'GET', path: '/api/instagram/discover', description: 'AI-filtered influencer/account discovery', price: '0.03 USDC' },
   ],
   pricing: {
     amount: process.env.PRICE_USDC || '0.005',
@@ -128,7 +140,7 @@ app.get('/', (c) => c.json({
 
 app.route('/api', serviceRouter);
 
-app.notFound((c) => c.json({ error: 'Not found', endpoints: ['/', '/health', '/api/run', '/api/details', '/api/jobs', '/api/reviews/search', '/api/reviews/:place_id', '/api/business/:place_id', '/api/reviews/summary/:place_id'] }, 404));
+app.notFound((c) => c.json({ error: 'Not found', endpoints: ['/', '/health', '/api/run', '/api/details', '/api/jobs', '/api/reviews/search', '/api/reviews/:place_id', '/api/business/:place_id', '/api/reviews/summary/:place_id', '/api/instagram/discover'] }, 404));
 
 app.onError((err, c) => {
   console.error(`[ERROR] ${err.message}`);

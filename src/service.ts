@@ -27,7 +27,7 @@ import {
   searchLinkedInPeople, 
   findCompanyEmployees 
 } from './scrapers/linkedin-enrichment';
-import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
+import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile, discoverAccounts } from './scrapers/instagram-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
 
 export const serviceRouter = new Hono();
@@ -1016,6 +1016,7 @@ const IG_POSTS_PRICE    = 0.02;   // $0.02 per posts fetch
 const IG_ANALYZE_PRICE  = 0.15;   // $0.15 per full analysis (includes AI vision)
 const IG_IMAGES_PRICE   = 0.08;   // $0.08 per image-only analysis
 const IG_AUDIT_PRICE    = 0.05;   // $0.05 per authenticity audit
+const IG_DISCOVER_PRICE = 0.03;   // $0.03 per AI-filtered account discovery
 
 // ─── GET /api/instagram/profile/:username ───────────
 
@@ -1248,6 +1249,105 @@ serviceRouter.get('/instagram/audit/:username', async (c) => {
     });
   } catch (err: any) {
     return c.json({ error: 'Instagram audit failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/instagram/discover ─────────────────────
+
+serviceRouter.get('/instagram/discover', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/instagram/discover', 'Discover Instagram accounts by AI-derived filters: niche, account_type, sentiment, brand safety, followers', IG_DISCOVER_PRICE, walletAddress, {
+      input: {
+        niche: 'string (optional) — e.g. travel, fitness, fashion',
+        account_type: 'string (optional) — influencer, business, personal, bot_fake, meme_page, news_media',
+        type: 'string (optional alias for account_type)',
+        sentiment: 'string (optional) — positive, neutral, negative, mixed',
+        min_followers: 'number (optional)',
+        max_followers: 'number (optional)',
+        brand_safe: 'boolean (optional) — true to keep only safety score >= 70',
+        limit: 'number (optional, default: 10, max: 25)',
+      },
+      output: {
+        accounts: '[{ username, followers, engagement_rate, account_type, niche, sentiment, brand_safety_score, match_reasons[] }]',
+        scanned: 'number',
+        returned: 'number',
+        partial_failures: 'string[]',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, IG_DISCOVER_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const clientIp = c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  if (!checkProxyRateLimit(clientIp)) {
+    c.header('Retry-After', '60');
+    return c.json({ error: 'Proxy rate limit exceeded. Max 20 requests/min to protect proxy quota.', retryAfter: 60 }, 429);
+  }
+
+  const toNumber = (value: string | undefined): number | undefined => {
+    if (value == null || value === '') return undefined;
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : NaN;
+  };
+
+  const parseBool = (value: string | undefined): boolean | undefined => {
+    if (value == null || value === '') return undefined;
+    const normalized = value.trim().toLowerCase();
+    if (['1', 'true', 'yes', 'y'].includes(normalized)) return true;
+    if (['0', 'false', 'no', 'n'].includes(normalized)) return false;
+    return undefined;
+  };
+
+  const minFollowers = toNumber(c.req.query('min_followers'));
+  const maxFollowers = toNumber(c.req.query('max_followers'));
+  const limit = toNumber(c.req.query('limit'));
+  const brandSafe = parseBool(c.req.query('brand_safe'));
+
+  if (Number.isNaN(minFollowers) || Number.isNaN(maxFollowers) || Number.isNaN(limit)) {
+    return c.json({ error: 'Invalid numeric filters. Use numbers for min_followers, max_followers, and limit.' }, 400);
+  }
+  if (minFollowers != null && minFollowers < 0) return c.json({ error: 'min_followers must be >= 0' }, 400);
+  if (maxFollowers != null && maxFollowers < 0) return c.json({ error: 'max_followers must be >= 0' }, 400);
+  if (minFollowers != null && maxFollowers != null && minFollowers > maxFollowers) {
+    return c.json({ error: 'min_followers cannot be greater than max_followers' }, 400);
+  }
+  if (limit != null && (limit < 1 || limit > 25)) return c.json({ error: 'limit must be between 1 and 25' }, 400);
+  if (c.req.query('brand_safe') && brandSafe == null) {
+    return c.json({ error: 'brand_safe must be true/false (or 1/0)' }, 400);
+  }
+
+  const filters = {
+    niche: c.req.query('niche') || undefined,
+    account_type: c.req.query('account_type') || c.req.query('type') || undefined,
+    sentiment: c.req.query('sentiment') || undefined,
+    min_followers: minFollowers,
+    max_followers: maxFollowers,
+    brand_safe: brandSafe,
+    limit: limit != null ? Math.floor(limit) : undefined,
+  };
+
+  try {
+    const proxy = getProxy();
+    const result = await discoverAccounts(filters);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      meta: {
+        filters,
+        proxy: { country: proxy.country, type: 'mobile' },
+      },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Instagram discover failed', message: err?.message || String(err) }, 502);
   }
 });
 

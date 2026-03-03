@@ -55,6 +55,32 @@ export interface AIAnalysis {
 
 export interface FullAnalysis { profile: InstagramProfile; posts: InstagramPost[]; ai_analysis: AIAnalysis; }
 
+export interface DiscoverFilters {
+  niche?: string;
+  account_type?: string;
+  sentiment?: string;
+  min_followers?: number;
+  max_followers?: number;
+  brand_safe?: boolean;
+  limit?: number;
+}
+
+export interface DiscoverResult {
+  accounts: Array<{
+    username: string;
+    followers: number;
+    engagement_rate: number;
+    account_type: string;
+    niche: string;
+    sentiment: string;
+    brand_safety_score: number;
+    match_reasons: string[];
+  }>;
+  scanned: number;
+  returned: number;
+  partial_failures: string[];
+}
+
 // ─── Helpers ────────────────────────────────────────
 
 function cleanText(s: string): string {
@@ -224,20 +250,33 @@ const VISION_PROMPT = `Analyze these Instagram post images from a single account
 Return ONLY valid JSON, no markdown.`;
 
 async function analyzeWithVision(imageUrls: string[], captions: string[], profileSummary: string): Promise<any> {
-  // Try OpenAI GPT-4o first, then Claude
-  const openaiKey = process.env.OPENAI_API_KEY;
+  const provider = (process.env.VISION_PROVIDER || 'openai-compatible').toLowerCase();
+  const visionApiKey = process.env.VISION_API_KEY || process.env.OPENAI_API_KEY;
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
-  
-  if (openaiKey) {
-    return analyzeOpenAI(openaiKey, imageUrls, captions, profileSummary);
-  } else if (anthropicKey) {
+
+  if ((provider === 'openai' || provider === 'openai-compatible') && visionApiKey) {
+    return analyzeOpenAICompatible(visionApiKey, imageUrls, captions, profileSummary);
+  }
+
+  if (provider === 'anthropic' && anthropicKey) {
     return analyzeClaude(anthropicKey, imageUrls, captions, profileSummary);
   }
+
+  if (visionApiKey) {
+    return analyzeOpenAICompatible(visionApiKey, imageUrls, captions, profileSummary);
+  }
+
+  if (anthropicKey) {
+    return analyzeClaude(anthropicKey, imageUrls, captions, profileSummary);
+  }
+
   // Fallback: heuristic analysis without vision model
   return heuristicAnalysis(captions, profileSummary);
 }
 
-async function analyzeOpenAI(apiKey: string, imageUrls: string[], captions: string[], profileSummary: string): Promise<any> {
+async function analyzeOpenAICompatible(apiKey: string, imageUrls: string[], captions: string[], profileSummary: string): Promise<any> {
+  const baseUrl = (process.env.VISION_BASE_URL || 'https://api.openai.com/v1').replace(/\/$/, '');
+  const model = process.env.VISION_MODEL || 'gpt-4o';
   const content: any[] = [
     { type: 'text', text: `${VISION_PROMPT}\n\nProfile: ${profileSummary}\n\nCaptions:\n${captions.map((c, i) => `${i + 1}. ${c.slice(0, 200)}`).join('\n')}` },
   ];
@@ -245,15 +284,15 @@ async function analyzeOpenAI(apiKey: string, imageUrls: string[], captions: stri
   for (const url of imageUrls.slice(0, 6)) {
     content.push({ type: 'image_url', image_url: { url, detail: 'low' } });
   }
-  const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+  const resp = await fetch(`${baseUrl}/chat/completions`, {
     method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-    body: JSON.stringify({ model: 'gpt-4o', messages: [{ role: 'user', content }], max_tokens: 1500, temperature: 0.3 }),
+    body: JSON.stringify({ model, messages: [{ role: 'user', content }], max_tokens: 1500, temperature: 0.3 }),
   });
-  if (!resp.ok) throw new Error(`OpenAI API error: ${resp.status}`);
+  if (!resp.ok) throw new Error(`Vision API error: ${resp.status}`);
   const data = await resp.json();
   const text = data.choices?.[0]?.message?.content || '';
-  try { return { ...JSON.parse(text.replace(/```json?\n?/g, '').replace(/```/g, '').trim()), model_used: 'gpt-4o' }; }
-  catch { return { ...heuristicAnalysis(captions, profileSummary), model_used: 'gpt-4o-fallback' }; }
+  try { return { ...JSON.parse(text.replace(/```json?\n?/g, '').replace(/```/g, '').trim()), model_used: model }; }
+  catch { return { ...heuristicAnalysis(captions, profileSummary), model_used: `${model}-fallback` }; }
 }
 
 async function analyzeClaude(apiKey: string, imageUrls: string[], captions: string[], profileSummary: string): Promise<any> {
@@ -359,4 +398,73 @@ export async function analyzeImages(username: string): Promise<{ images_analyzed
 export async function auditProfile(username: string): Promise<{ profile: InstagramProfile; authenticity: AuthenticityAnalysis }> {
   const full = await analyzeProfile(username);
   return { profile: full.profile, authenticity: full.ai_analysis.authenticity };
+}
+
+
+function parseSeedUsernames(): string[] {
+  const raw = process.env.IG_DISCOVER_SEED_USERNAMES || '';
+  return raw.split(',').map((s) => s.trim()).filter(Boolean);
+}
+
+function includesValue(target: string | undefined, expected: string | undefined): boolean {
+  if (!expected) return true;
+  return (target || '').toLowerCase().includes(expected.toLowerCase());
+}
+
+export async function discoverAccounts(filters: DiscoverFilters): Promise<DiscoverResult> {
+  const limit = Math.min(Math.max(filters.limit || 10, 1), 25);
+  const seeds = parseSeedUsernames().slice(0, 50);
+  if (!seeds.length) {
+    throw new Error('IG_DISCOVER_SEED_USERNAMES is empty. Add comma-separated public usernames in env.');
+  }
+
+  const accounts: DiscoverResult['accounts'] = [];
+  const partial_failures: string[] = [];
+
+  for (const username of seeds) {
+    try {
+      const full = await analyzeProfile(username);
+      const { profile, ai_analysis } = full;
+      const reasons: string[] = [];
+
+      const niche = ai_analysis.account_type?.niche || ai_analysis.content_themes?.top_themes?.[0] || 'unknown';
+      const accountType = ai_analysis.account_type?.primary || 'unknown';
+      const sentiment = ai_analysis.sentiment?.overall || 'neutral';
+      const safety = ai_analysis.content_themes?.brand_safety_score || 0;
+
+      if (filters.min_followers != null && profile.followers < filters.min_followers) continue;
+      if (filters.max_followers != null && profile.followers > filters.max_followers) continue;
+      if (filters.brand_safe === true && safety < 70) continue;
+      if (!includesValue(niche, filters.niche)) continue;
+      if (!includesValue(accountType, filters.account_type)) continue;
+      if (!includesValue(sentiment, filters.sentiment)) continue;
+
+      if (filters.niche) reasons.push(`niche:${niche}`);
+      if (filters.account_type) reasons.push(`type:${accountType}`);
+      if (filters.sentiment) reasons.push(`sentiment:${sentiment}`);
+      if (filters.brand_safe) reasons.push(`brand_safety:${safety}`);
+
+      accounts.push({
+        username: profile.username,
+        followers: profile.followers,
+        engagement_rate: profile.engagement_rate,
+        account_type: accountType,
+        niche,
+        sentiment,
+        brand_safety_score: safety,
+        match_reasons: reasons.length ? reasons : ['matched'],
+      });
+
+      if (accounts.length >= limit) break;
+    } catch (err: any) {
+      partial_failures.push(`${username}: ${err?.message || String(err)}`);
+    }
+  }
+
+  return {
+    accounts,
+    scanned: seeds.length,
+    returned: accounts.length,
+    partial_failures,
+  };
 }
