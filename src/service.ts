@@ -2,7 +2,7 @@
  * Service Router — Marketplace API
  *
  * Exposes:
- *   GET /api/run       (Google Maps Lead Generator)
+ *   GET /api/run       (Google Maps Lead Generator OR TikTok Trend Intelligence via type=...)
  *   GET /api/details   (Google Maps Place details)
  *   GET /api/jobs      (Job Market Intelligence)
  *   GET /api/reviews/* (Google Reviews & Business Data)
@@ -29,6 +29,7 @@ import {
 } from './scrapers/linkedin-enrichment';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
+import { getTikTokTrending, getTikTokHashtag, getTikTokCreator, getTikTokSound } from './scrapers/tiktok-scraper';
 
 export const serviceRouter = new Hono();
 
@@ -41,6 +42,8 @@ const PRICE_USDC = 0.005;
 const DESCRIPTION = 'Job Market Intelligence API (Indeed/LinkedIn): title, company, location, salary, date, link, remote + proxy exit metadata.';
 const MAPS_PRICE_USDC = 0.005;
 const MAPS_DESCRIPTION = 'Extract structured business data from Google Maps: name, address, phone, website, email, hours, ratings, reviews, categories, and geocoordinates. Search by category + location with full pagination.';
+const TIKTOK_PRICE_USDC = 0.02;
+const TIKTOK_DESCRIPTION = 'TikTok Trend Intelligence via mobile proxy: trending videos, hashtags, sounds, creator analytics.';
 
 const MAPS_OUTPUT_SCHEMA = {
   input: {
@@ -74,6 +77,24 @@ const MAPS_OUTPUT_SCHEMA = {
   },
 };
 
+const TIKTOK_OUTPUT_SCHEMA = {
+  input: {
+    type: '"trending" | "hashtag" | "creator" | "sound" (required)',
+    country: 'string — country code like US/DE/GB (optional, default from proxy country)',
+    tag: 'string — required when type=hashtag',
+    username: 'string — required when type=creator',
+    id: 'string — required when type=sound',
+  },
+  output: {
+    type: 'string',
+    country: 'string',
+    timestamp: 'ISO datetime string',
+    data: 'object — videos + trend metrics based on type',
+    proxy: '{ country: string, carrier: string, type: "mobile" }',
+    payment: '{ txHash, network, amount, settled }',
+  },
+};
+
 async function getProxyExitIp(): Promise<string | null> {
   try {
     const r = await proxyFetch('https://api.ipify.org?format=json', {
@@ -95,15 +116,37 @@ serviceRouter.get('/run', async (c) => {
     return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
   }
 
+  const requestedType = (c.req.query('type') || '').toLowerCase();
+  const tiktokTypes = new Set(['trending', 'hashtag', 'creator', 'sound']);
+  const isTikTokRequest = tiktokTypes.has(requestedType);
+
+  if (requestedType && !isTikTokRequest) {
+    return c.json({
+      error: 'Invalid type parameter',
+      allowed: ['trending', 'hashtag', 'creator', 'sound'],
+      example: '/api/run?type=trending&country=US',
+    }, 400);
+  }
+
   const payment = extractPayment(c);
   if (!payment) {
     return c.json(
-      build402Response('/api/run', MAPS_DESCRIPTION, MAPS_PRICE_USDC, walletAddress, MAPS_OUTPUT_SCHEMA),
+      build402Response(
+        '/api/run',
+        isTikTokRequest ? TIKTOK_DESCRIPTION : MAPS_DESCRIPTION,
+        isTikTokRequest ? TIKTOK_PRICE_USDC : MAPS_PRICE_USDC,
+        walletAddress,
+        isTikTokRequest ? TIKTOK_OUTPUT_SCHEMA : MAPS_OUTPUT_SCHEMA,
+      ),
       402,
     );
   }
 
-  const verification = await verifyPayment(payment, walletAddress, MAPS_PRICE_USDC);
+  const verification = await verifyPayment(
+    payment,
+    walletAddress,
+    isTikTokRequest ? TIKTOK_PRICE_USDC : MAPS_PRICE_USDC,
+  );
   if (!verification.valid) {
     return c.json({
       error: 'Payment verification failed',
@@ -118,40 +161,85 @@ serviceRouter.get('/run', async (c) => {
     return c.json({ error: 'Proxy rate limit exceeded. Max 20 requests/min to protect proxy quota.', retryAfter: 60 }, 429);
   }
 
-  const query = c.req.query('query');
-  const location = c.req.query('location');
-  const limitParam = c.req.query('limit');
-  const pageToken = c.req.query('pageToken');
-
-  if (!query) {
-    return c.json({
-      error: 'Missing required parameter: query',
-      hint: 'Provide a search query like ?query=plumbers&location=Austin+TX',
-      example: '/api/run?query=restaurants&location=New+York+City&limit=20',
-    }, 400);
-  }
-
-  if (!location) {
-    return c.json({
-      error: 'Missing required parameter: location',
-      hint: 'Provide a location like ?query=plumbers&location=Austin+TX',
-      example: '/api/run?query=restaurants&location=New+York+City&limit=20',
-    }, 400);
-  }
-
-  let limit = 20;
-  if (limitParam) {
-    const parsed = parseInt(limitParam);
-    if (isNaN(parsed) || parsed < 1) {
-      return c.json({ error: 'Invalid limit parameter: must be a positive integer' }, 400);
-    }
-    limit = Math.min(parsed, 100);
-  }
-
-  const startIndex = pageToken ? parseInt(pageToken) || 0 : 0;
-
   try {
     const proxy = getProxy();
+
+    if (isTikTokRequest) {
+      const country = (c.req.query('country') || proxy.country || 'US').toUpperCase();
+      const carrier = process.env.PROXY_CARRIER || 'mobile-carrier';
+      let data: any;
+
+      if (requestedType === 'trending') {
+        data = await getTikTokTrending(country);
+      } else if (requestedType === 'hashtag') {
+        const tag = c.req.query('tag');
+        if (!tag) {
+          return c.json({ error: 'Missing required parameter: tag', example: '/api/run?type=hashtag&tag=ai&country=US' }, 400);
+        }
+        data = await getTikTokHashtag(tag, country);
+      } else if (requestedType === 'creator') {
+        const username = c.req.query('username');
+        if (!username) {
+          return c.json({ error: 'Missing required parameter: username', example: '/api/run?type=creator&username=@charlidamelio' }, 400);
+        }
+        data = await getTikTokCreator(username, country);
+      } else {
+        const id = c.req.query('id');
+        if (!id) {
+          return c.json({ error: 'Missing required parameter: id', example: '/api/run?type=sound&id=12345' }, 400);
+        }
+        data = await getTikTokSound(id, country);
+      }
+
+      c.header('X-Payment-Settled', 'true');
+      c.header('X-Payment-TxHash', payment.txHash);
+
+      return c.json({
+        type: requestedType,
+        country,
+        timestamp: new Date().toISOString(),
+        data,
+        proxy: { country: proxy.country, carrier, type: 'mobile' },
+        payment: {
+          txHash: payment.txHash,
+          network: payment.network,
+          amount: verification.amount,
+          settled: true,
+        },
+      });
+    }
+
+    const query = c.req.query('query');
+    const location = c.req.query('location');
+    const limitParam = c.req.query('limit');
+    const pageToken = c.req.query('pageToken');
+
+    if (!query) {
+      return c.json({
+        error: 'Missing required parameter: query',
+        hint: 'Provide a search query like ?query=plumbers&location=Austin+TX',
+        example: '/api/run?query=restaurants&location=New+York+City&limit=20',
+      }, 400);
+    }
+
+    if (!location) {
+      return c.json({
+        error: 'Missing required parameter: location',
+        hint: 'Provide a location like ?query=plumbers&location=Austin+TX',
+        example: '/api/run?query=restaurants&location=New+York+City&limit=20',
+      }, 400);
+    }
+
+    let limit = 20;
+    if (limitParam) {
+      const parsed = parseInt(limitParam);
+      if (isNaN(parsed) || parsed < 1) {
+        return c.json({ error: 'Invalid limit parameter: must be a positive integer' }, 400);
+      }
+      limit = Math.min(parsed, 100);
+    }
+
+    const startIndex = pageToken ? parseInt(pageToken) || 0 : 0;
     const result = await scrapeGoogleMaps(query, location, limit, startIndex);
 
     c.header('X-Payment-Settled', 'true');
@@ -171,7 +259,9 @@ serviceRouter.get('/run', async (c) => {
     return c.json({
       error: 'Service execution failed',
       message: err.message,
-      hint: 'Google Maps may be temporarily blocking requests. Try again in a few minutes.',
+      hint: isTikTokRequest
+        ? 'TikTok may be rate-limiting or challenging this proxy IP. Retry after rotation.'
+        : 'Google Maps may be temporarily blocking requests. Try again in a few minutes.',
     }, 502);
   }
 });
