@@ -1,217 +1,189 @@
 {
-  "metadata": {
-    "source": "airbnb.com",
-    "endpoint": "https://www.airbnb.com/api/v2/explore_tabs",
-    "params": {
-      "query": "New York",
-      "place_id": "ChIJOwg_06VPwokRYv534QaPC8g",
-      "checkin": "2026-03-10",
-      "checkout": "2026-03-15",
-      "adults": 2,
-      "currency": "USD",
-      "locale": "en"
-    },
-    "fetchedAt": "2026-02-26T13:51:18Z",
-    "proxyIp": "172.56.168.66",
-    "proxyProvider": "Proxies.sx T-Mobile US mobile",
-    "totalResultsReturned": 18,
-    "paginationMetadata": {
-      "hasNextPage": true,
-      "itemsPerPage": 18
-    }
+  "endpoint": "GET /api/marketplace/search",
+  "query": {
+    "query": "laptop",
+    "location": "San Francisco, CA",
+    "limit": 10
   },
-  "listings": [
+  "results": [
     {
-      "listingId": "41295524",
-      "url": "https://www.airbnb.com/rooms/41295524",
-      "name": "Hotel like place - private patio and bathroom",
-      "roomType": "private_room",
-      "location": {
-        "city": "Brooklyn",
-        "publicAddress": "Brooklyn, NY, United States",
-        "lat": 40.67627,
-        "lng": -73.94137
-      },
-      "capacity": {
-        "guests": 2,
-        "bedrooms": 1,
-        "beds": 2,
-        "bathrooms": 1.0
-      },
-      "rating": {
-        "stars": 5.0,
-        "reviewCount": 317
-      },
-      "pricing": {
-        "displayPrice": "$851",
-        "stayDuration": "5 nights (Mar 10-15, 2026)",
-        "currency": "USD"
-      },
-      "host": {
-        "firstName": "Caio Julio",
-        "isSuperhost": true
-      },
-      "instantBook": false
+      "id": "1268778788497680",
+      "title": "Laptop",
+      "price": 125.0,
+      "currency": "USD",
+      "priceFormatted": "$125",
+      "location": "San Francisco, CA",
+      "condition": null,
+      "description": null,
+      "category": null,
+      "seller": null,
+      "images": [
+        "https://scontent-atl3-1.xx.fbcdn.net/v/t39.84726-6/646713285_1405714147434297_9162669800776633468_n.jpg?stp=c0.152.261.261a_dst-jpg_p261x260_tt6&_nc_cat=101&ccb=1-7&_nc_sid=92e707&_nc_ohc=zy0FX8BXJzMQ7kNvwELF9Rh&_nc_oc=AdlgHi9RRfml9XB0DNlwkpFWGlWQ22_P3o46EcAHfDQzUIPXI1LXzrEpppth02oNeI0&_nc_zt=14&_nc_ht=scontent-atl3-1.xx&_nc_gid=A67NgdyhRztVJqcX11IaRA&_nc_ss=8&oh=00_AfyUV_-QKB74ztJx33rT4zQYgD8A-rg9md-SnHKm-BI-hg&oe=69AC1EEA"
+      ],
+      "listingUrl": "https://www.facebook.com/marketplace/item/1268778788497680",
+      "postedAt": null,
+      "isDeliveryAvailable": true,
+      "isSold": false,
+      "isPending": false
     },
     {
-      "listingId": "5298896",
-      "url": "https://www.airbnb.com/rooms/5298896",
-      "name": "Unique NYC Loft - Guest Room",
-      "roomType": "private_room",
-      "location": {
-        "city": "New York",
-        "publicAddress": "New York, NY, United States",
-        "lat": 40.70419,
-        "lng": -74.01127
-      },
-      "capacity": {
-        "guests": 2,
-        "bedrooms": 1,
-        "beds": 1,
-        "bathrooms": 1.0
-      },
-      "rating": {
-        "stars": 5.0,
-        "reviewCount": 375
-      },
-      "pricing": {
-        "displayPrice": null,
-        "stayDuration": "5 nights (Mar 10-15, 2026)",
-        "currency": "USD"
-      },
-      "host": {
-        "firstName": "Luke",
-        "isSuperhost": true
-      },
-      "instantBook": false
+      "id": "1676727530397584",
+      "title": "ASUS Laptop L410 14\u201d",
+      "price": 140.0,
+      "currency": "USD",
+      "priceFormatted": "$140",
+      "location": "San Leandro, CA",
+      "condition": null,
+      "description": null,
+      "category": null,
+      "seller": null,
+      "images": [
+        "https://scontent-atl3-3.xx.fbcdn.net/v/t39.84726-6/569033757_821447080285628_2994294304764843512_n.jpg?stp=c0.43.261.261a_dst-jpg_p261x260_tt6&_nc_cat=105&ccb=1-7&_nc_sid=92e707&_nc_ohc=21ik4mDwxVYQ7kNvwHroWdm&_nc_oc=AdlAdclV65o9GAdtM_t7EG1xebKl-EQRZMYrDcr1jBQfpoBN9uLHFVbpEagJheJXT8E&_nc_zt=14&_nc_ht=scontent-atl3-3.xx&_nc_gid=A67NgdyhRztVJqcX11IaRA&_nc_ss=8&oh=00_Afz0qGTw7lYzH8tLT0rxHle3HV1NUU1qBiMVze7DwdkJNg&oe=69ABFC93"
+      ],
+      "listingUrl": "https://www.facebook.com/marketplace/item/1676727530397584",
+      "postedAt": null,
+      "isDeliveryAvailable": true,
+      "isSold": false,
+      "isPending": false
     },
     {
-      "listingId": "1070270537377163305",
-      "url": "https://www.airbnb.com/rooms/1070270537377163305",
-      "name": "One King room at Brooklyn - Newly Renovated!",
-      "roomType": "private_room",
-      "location": {
-        "city": "Brooklyn",
-        "publicAddress": "Brooklyn, NY, United States",
-        "lat": 40.690157186681645,
-        "lng": -73.98692196057979
-      },
-      "capacity": {
-        "guests": 2,
-        "bedrooms": 1,
-        "beds": 1,
-        "bathrooms": 1.0
-      },
-      "rating": {
-        "stars": 5.0,
-        "reviewCount": 568
-      },
-      "pricing": {
-        "displayPrice": null,
-        "stayDuration": "5 nights (Mar 10-15, 2026)",
-        "currency": "USD"
-      },
-      "host": {
-        "firstName": "Hilton Brooklyn New York City",
-        "isSuperhost": true
-      },
-      "instantBook": false
+      "id": "1576449473560736",
+      "title": "Laptop",
+      "price": 100.0,
+      "currency": "USD",
+      "priceFormatted": "$100",
+      "location": "Antioch, CA",
+      "condition": null,
+      "description": null,
+      "category": null,
+      "seller": null,
+      "images": [
+        "https://scontent-atl3-1.xx.fbcdn.net/v/t39.84726-6/634200884_889102563727977_7769645380736958968_n.jpg?stp=c0.151.261.261a_dst-jpg_p261x260_tt6&_nc_cat=100&ccb=1-7&_nc_sid=92e707&_nc_ohc=V8xNVmkzJRMQ7kNvwHLEfwm&_nc_oc=AdnaFR2BhMyFo4T6XgtQBvd-SJJLJf2R4kgZHyf92Q9B5LftVe0qjoblc_WIoGlaI9Y&_nc_zt=14&_nc_ht=scontent-atl3-1.xx&_nc_gid=A67NgdyhRztVJqcX11IaRA&_nc_ss=8&oh=00_AfypaL5HeTscjYbRmjykCDGL6ewQgNqtQRHvQu1FAPmlUg&oe=69AC2A6C"
+      ],
+      "listingUrl": "https://www.facebook.com/marketplace/item/1576449473560736",
+      "postedAt": null,
+      "isDeliveryAvailable": true,
+      "isSold": false,
+      "isPending": false
     },
     {
-      "listingId": "1010503905929192028",
-      "url": "https://www.airbnb.com/rooms/1010503905929192028",
-      "name": "Steps to Times Square | Free Breakfast & Fitness",
-      "roomType": "private_room",
-      "location": {
-        "city": "New York",
-        "publicAddress": "New York, NY, United States",
-        "lat": 40.75724,
-        "lng": -73.99236
-      },
-      "capacity": {
-        "guests": 2,
-        "bedrooms": 1,
-        "beds": 1,
-        "bathrooms": 1.0
-      },
-      "rating": {
-        "stars": 4.5,
-        "reviewCount": 1129
-      },
-      "pricing": {
-        "displayPrice": "$1,095",
-        "stayDuration": "5 nights (Mar 10-15, 2026)",
-        "currency": "USD"
-      },
-      "host": {
-        "firstName": "Times Square South New York City",
-        "isSuperhost": false
-      },
-      "instantBook": false
+      "id": "1252450612970424",
+      "title": "HP Touchscreen laptop",
+      "price": 600.0,
+      "currency": "USD",
+      "priceFormatted": "$600",
+      "location": "San Francisco, CA",
+      "condition": null,
+      "description": null,
+      "category": null,
+      "seller": null,
+      "images": [
+        "https://scontent-atl3-3.xx.fbcdn.net/v/t39.84726-6/645566725_1328596655979688_6577467961185470263_n.jpg?stp=c43.0.260.260a_dst-jpg_p261x260_tt6&_nc_cat=110&ccb=1-7&_nc_sid=92e707&_nc_ohc=WLgFFKjwwSEQ7kNvwGuJhsH&_nc_oc=Admeo67STeD0T6ZFsR-9-selGQHB9UH4BHcwehcSbkzQWAg-WRgWNWWnsk1guLWTM4w&_nc_zt=14&_nc_ht=scontent-atl3-3.xx&_nc_gid=A67NgdyhRztVJqcX11IaRA&_nc_ss=8&oh=00_Afz9LQxCcrMmo7_xXdZvAqtoTrbIbvkTZAx430sxzsuQCg&oe=69AC0996"
+      ],
+      "listingUrl": "https://www.facebook.com/marketplace/item/1252450612970424",
+      "postedAt": null,
+      "isDeliveryAvailable": true,
+      "isSold": false,
+      "isPending": false
     },
     {
-      "listingId": "1267449405198185516",
-      "url": "https://www.airbnb.com/rooms/1267449405198185516",
-      "name": "Pod Times Square Hotel",
-      "roomType": "private_room",
-      "location": {
-        "city": "New York",
-        "publicAddress": "New York, NY, United States",
-        "lat": 40.7583945,
-        "lng": -73.9930985
-      },
-      "capacity": {
-        "guests": 2,
-        "bedrooms": 1,
-        "beds": 1,
-        "bathrooms": 1.0
-      },
-      "rating": {
-        "stars": 4.5,
-        "reviewCount": 111
-      },
-      "pricing": {
-        "displayPrice": null,
-        "stayDuration": "5 nights (Mar 10-15, 2026)",
-        "currency": "USD"
-      },
-      "host": {
-        "firstName": "Pod Times Square Hotel",
-        "isSuperhost": false
-      },
-      "instantBook": false
+      "id": "25883903131276417",
+      "title": "MSI Gaming Laptop - PROFITS TO HELP LOCAL SCHOOL DONATION CLUB",
+      "price": 150.0,
+      "currency": "USD",
+      "priceFormatted": "$150",
+      "location": "San Francisco, CA",
+      "condition": null,
+      "description": null,
+      "category": null,
+      "seller": null,
+      "images": [
+        "https://scontent-atl3-1.xx.fbcdn.net/v/t39.84726-6/641336602_1246451804106356_2009589707661016474_n.jpg?stp=c0.43.261.261a_dst-jpg_p261x260_tt6&_nc_cat=103&ccb=1-7&_nc_sid=92e707&_nc_ohc=leVDx7ooQhEQ7kNvwFbaYXC&_nc_oc=Adlgjpj_cV4zUBiZbMwkmJj1rPMBRzOKNf2_ztYaH95gxYn6pU4nVSqRdh02ICAew20&_nc_zt=14&_nc_ht=scontent-atl3-1.xx&_nc_gid=A67NgdyhRztVJqcX11IaRA&_nc_ss=8&oh=00_Afygeg_H-K8lm_XFuY1g_lpVDP0oKzfXBP7O14bwwcHh-g&oe=69AC2B38"
+      ],
+      "listingUrl": "https://www.facebook.com/marketplace/item/25883903131276417",
+      "postedAt": null,
+      "isDeliveryAvailable": true,
+      "isSold": false,
+      "isPending": false
     },
     {
-      "listingId": "21969733",
-      "url": "https://www.airbnb.com/rooms/21969733",
-      "name": "BRIGHT HOMEY AND COZY  MINUTES TO NEW YORK  CITY",
-      "roomType": "entire_home",
-      "location": {
-        "city": "Jersey City",
-        "publicAddress": "Jersey City, NJ, United States",
-        "lat": 40.7479,
-        "lng": -74.05105
-      },
-      "capacity": {
-        "guests": 6,
-        "bedrooms": 1,
-        "beds": 3,
-        "bathrooms": 1.0
-      },
-      "rating": {
-        "stars": 5.0,
-        "reviewCount": 280
-      },
-      "pricing": {
-        "displayPrice": null,
-        "stayDuration": "5 nights (Mar 10-15, 2026)",
-        "currency": "USD"
-      },
-      "host": {
-        "firstName": "Kenia",
-        "isSuperhost": true
-      },
-      "instantBook": false
+      "id": "895553823093272",
+      "title": "Hp laptop",
+      "price": 110.0,
+      "currency": "USD",
+      "priceFormatted": "$110",
+      "location": "San Francisco, CA",
+      "condition": null,
+      "description": null,
+      "category": null,
+      "seller": null,
+      "images": [
+        "https://scontent-atl3-1.xx.fbcdn.net/v/t39.84726-6/643721309_1428495042405659_8794240433632562280_n.jpg?stp=c0.152.261.261a_dst-jpg_p261x260_tt6&_nc_cat=103&ccb=1-7&_nc_sid=92e707&_nc_ohc=3GqHpKOCqTQQ7kNvwHWFD5m&_nc_oc=Adn0e2cLy6F3WoHe_gu1gEc4KpCXCK8OnoOPHb2ZQS1tXmNqstG2I2gfEeWNGCUyab8&_nc_zt=14&_nc_ht=scontent-atl3-1.xx&_nc_gid=A67NgdyhRztVJqcX11IaRA&_nc_ss=8&oh=00_AfzkDnj_tveBK6HrAskaMBOYuKIBo25OrCnjWZscQm8WuQ&oe=69AC2C23"
+      ],
+      "listingUrl": "https://www.facebook.com/marketplace/item/895553823093272",
+      "postedAt": null,
+      "isDeliveryAvailable": true,
+      "isSold": false,
+      "isPending": false
+    },
+    {
+      "id": "2202387170291094",
+      "title": "Cyborg 15 A13V (Slightly Upgraded) Gaming Laptop",
+      "price": 650.0,
+      "currency": "USD",
+      "priceFormatted": "$650",
+      "location": "San Francisco, CA",
+      "condition": null,
+      "description": null,
+      "category": null,
+      "seller": null,
+      "images": [
+        "https://scontent-atl3-3.xx.fbcdn.net/v/t39.84726-6/643982790_975991818424799_2174545458896260417_n.jpg?stp=c0.43.261.261a_dst-jpg_p261x260_tt6&_nc_cat=110&ccb=1-7&_nc_sid=92e707&_nc_ohc=rqUkPhrmOBMQ7kNvwG7aJsU&_nc_oc=Adn7vJg41FGGdnAYnmdc7myceFcTGBJmQfrWnqeZZ2c1UEtMvIwe9_j6fSU5Ta9qtpk&_nc_zt=14&_nc_ht=scontent-atl3-3.xx&_nc_gid=A67NgdyhRztVJqcX11IaRA&_nc_ss=8&oh=00_AfxiSe5D1wz5XCrCnzb8eptLIXNa4UpFGrYws4rr0cfWSg&oe=69ABFFCC"
+      ],
+      "listingUrl": "https://www.facebook.com/marketplace/item/2202387170291094",
+      "postedAt": null,
+      "isDeliveryAvailable": true,
+      "isSold": false,
+      "isPending": false
+    },
+    {
+      "id": "4358886224396403",
+      "title": "HP laptop for sale",
+      "price": 100.0,
+      "currency": "USD",
+      "priceFormatted": "$100",
+      "location": "Napa, CA",
+      "condition": null,
+      "description": null,
+      "category": null,
+      "seller": null,
+      "images": [
+        "https://scontent-atl3-3.xx.fbcdn.net/v/t39.84726-6/636754264_2444403676012124_1342634951613383234_n.jpg?stp=c43.0.260.260a_dst-jpg_p261x260_tt6&_nc_cat=111&ccb=1-7&_nc_sid=92e707&_nc_ohc=wdA07r9YbzsQ7kNvwEs_o0k&_nc_oc=AdkmnyUJy_9P-WLc7biT7OF6nvga_LofDO5ku1_j_KNFklnr3PiXs3EbGO4hhVxwM2A&_nc_zt=14&_nc_ht=scontent-atl3-3.xx&_nc_gid=A67NgdyhRztVJqcX11IaRA&_nc_ss=8&oh=00_AfyQJmPRnisO9HNl7RjpxdOx-qlDr-4WK-L-ojH2gNpBMw&oe=69AC0B67"
+      ],
+      "listingUrl": "https://www.facebook.com/marketplace/item/4358886224396403",
+      "postedAt": null,
+      "isDeliveryAvailable": true,
+      "isSold": false,
+      "isPending": false
     }
-  ]
+  ],
+  "totalFound": 10,
+  "cursor": null,
+  "location": "San Francisco, CA",
+  "searchQuery": "laptop",
+  "meta": {
+    "proxy": {
+      "country": "US",
+      "type": "mobile",
+      "provider": "apify-mobile-proxy"
+    },
+    "scrapedAt": "2026-03-03T02:14:37.786207Z",
+    "responseTimeMs": 847
+  },
+  "payment": {
+    "txHash": "0xbdb9a2d9c89f4e2a1b3f5d6e7c8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6",
+    "network": "base",
+    "amount": 0.02,
+    "settled": true
+  }
 }
