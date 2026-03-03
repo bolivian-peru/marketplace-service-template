@@ -1,0 +1,26 @@
+{
+  "person": {
+    "name": "hyanzime account",
+    "headline": "Software Engineer at Microsoft",
+    "location": "Denpasar, Bali",
+    "experience": [
+      {
+        "title": "Software Engineer",
+        "company": "Microsoft"
+      }
+    ],
+    "education": [],
+    "skills": ["Java", "C++", "System Design"],
+    "profile_url": "https://www.linkedin.com/in/hyanzime-account-3416743b4/",
+    "meta": {
+      "proxy": {
+        "country": "ID",
+        "type": "mobile"
+      }
+    }
+  },
+  "payment": {
+    "txHash": "5Kj8...m9Z",
+    "settled": true
+  }
+}
