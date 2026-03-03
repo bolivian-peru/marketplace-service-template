@@ -29,6 +29,7 @@ import {
 } from './scrapers/linkedin-enrichment';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
+import { scrapeGoogleDiscover } from './scrapers/google-discover-scraper';
 
 export const serviceRouter = new Hono();
 
@@ -41,6 +42,8 @@ const PRICE_USDC = 0.005;
 const DESCRIPTION = 'Job Market Intelligence API (Indeed/LinkedIn): title, company, location, salary, date, link, remote + proxy exit metadata.';
 const MAPS_PRICE_USDC = 0.005;
 const MAPS_DESCRIPTION = 'Extract structured business data from Google Maps: name, address, phone, website, email, hours, ratings, reviews, categories, and geocoordinates. Search by category + location with full pagination.';
+const DISCOVER_PRICE_USDC = 0.02;
+const DISCOVER_DESCRIPTION = 'Google Discover Feed Intelligence: capture mobile geo-specific feed articles by country + category with source, snippet, image, ranking, and publish metadata.';
 
 const MAPS_OUTPUT_SCHEMA = {
   input: {
@@ -95,15 +98,42 @@ serviceRouter.get('/run', async (c) => {
     return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
   }
 
+  const country = c.req.query('country');
+  const category = c.req.query('category') || 'general';
+  const isDiscoverMode = Boolean(country && !c.req.query('query') && !c.req.query('location'));
+
   const payment = extractPayment(c);
   if (!payment) {
+    if (isDiscoverMode) {
+      return c.json(
+        build402Response('/api/run', DISCOVER_DESCRIPTION, DISCOVER_PRICE_USDC, walletAddress, {
+          input: {
+            country: 'string (required, Discover mode) — one of US, DE, FR, ES, GB, PL',
+            category: 'string (optional, default: general) — feed category/topic',
+            limit: 'number (optional, default: 20, max: 50)',
+          },
+          output: {
+            country: 'string',
+            category: 'string',
+            timestamp: 'ISO 8601 string',
+            discover_feed: 'DiscoverItem[]',
+            metadata: '{ feedLength, scrapedAt, proxyCountry, proxyCarrier }',
+            proxy: '{ country, carrier, type }',
+            payment: '{ txHash, network, amount, verified }',
+          },
+        }),
+        402,
+      );
+    }
+
     return c.json(
       build402Response('/api/run', MAPS_DESCRIPTION, MAPS_PRICE_USDC, walletAddress, MAPS_OUTPUT_SCHEMA),
       402,
     );
   }
 
-  const verification = await verifyPayment(payment, walletAddress, MAPS_PRICE_USDC);
+  const expectedPrice = isDiscoverMode ? DISCOVER_PRICE_USDC : MAPS_PRICE_USDC;
+  const verification = await verifyPayment(payment, walletAddress, expectedPrice);
   if (!verification.valid) {
     return c.json({
       error: 'Payment verification failed',
@@ -116,6 +146,43 @@ serviceRouter.get('/run', async (c) => {
   if (!checkProxyRateLimit(clientIp)) {
     c.header('Retry-After', '60');
     return c.json({ error: 'Proxy rate limit exceeded. Max 20 requests/min to protect proxy quota.', retryAfter: 60 }, 429);
+  }
+
+  if (isDiscoverMode) {
+    const supportedCountries = new Set(['US', 'DE', 'FR', 'ES', 'GB', 'PL']);
+    const normalizedCountry = (country || '').toUpperCase();
+    if (!supportedCountries.has(normalizedCountry)) {
+      return c.json({ error: 'Invalid country. Supported: US, DE, FR, ES, GB, PL' }, 400);
+    }
+
+    const limit = Math.min(Math.max(parseInt(c.req.query('limit') || '20') || 20, 1), 50);
+
+    try {
+      const proxy = getProxy();
+      const result = await scrapeGoogleDiscover(normalizedCountry, category, limit);
+
+      c.header('X-Payment-Settled', 'true');
+      c.header('X-Payment-TxHash', payment.txHash);
+
+      return c.json({
+        ...result,
+        proxy: {
+          country: proxy.country || normalizedCountry,
+          carrier: process.env.PROXY_CARRIER || 'unknown',
+          type: 'mobile',
+        },
+        payment: {
+          txHash: payment.txHash,
+          amount: verification.amount,
+          verified: true,
+        },
+      });
+    } catch (err: any) {
+      return c.json({
+        error: 'Google Discover scrape failed',
+        message: err?.message || String(err),
+      }, 502);
+    }
   }
 
   const query = c.req.query('query');
