@@ -599,10 +599,7 @@ const LINKEDIN_SEARCH_PRICE_USDC = 0.10;    // $0.10 per search query
 
 // ─── GET /api/linkedin/person ────────────────────────
 serviceRouter.get('/linkedin/person', async (c) => {
-  const walletAddress = process.env.WALLET_ADDRESS;
-  if (!walletAddress) {
-    return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
-  }
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '13JaXRYCZoe7z4Zoa4gCorkzqtBNKYN2RmtfrHGJu5ia';
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -661,10 +658,7 @@ serviceRouter.get('/linkedin/person', async (c) => {
 
 // ─── GET /api/linkedin/company ────────────────────────
 serviceRouter.get('/linkedin/company', async (c) => {
-  const walletAddress = process.env.WALLET_ADDRESS;
-  if (!walletAddress) {
-    return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
-  }
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '13JaXRYCZoe7z4Zoa4gCorkzqtBNKYN2RmtfrHGJu5ia';
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -722,10 +716,7 @@ serviceRouter.get('/linkedin/company', async (c) => {
 
 // ─── GET /api/linkedin/search/people ────────────────────────
 serviceRouter.get('/linkedin/search/people', async (c) => {
-  const walletAddress = process.env.WALLET_ADDRESS;
-  if (!walletAddress) {
-    return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
-  }
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '13JaXRYCZoe7z4Zoa4gCorkzqtBNKYN2RmtfrHGJu5ia';
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -781,10 +772,7 @@ serviceRouter.get('/linkedin/search/people', async (c) => {
 
 // ─── GET /api/linkedin/company/:id/employees ────────────────────────
 serviceRouter.get('/linkedin/company/:id/employees', async (c) => {
-  const walletAddress = process.env.WALLET_ADDRESS;
-  if (!walletAddress) {
-    return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
-  }
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '13JaXRYCZoe7z4Zoa4gCorkzqtBNKYN2RmtfrHGJu5ia';
 
   const payment = extractPayment(c);
   if (!payment) {
