@@ -98,10 +98,38 @@ serviceRouter.get('/run', async (c) => {
     return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
   }
 
+  const runType = (c.req.query('type') || '').toLowerCase();
+  const isPredictionMode = ['signal', 'arbitrage', 'sentiment', 'trending'].includes(runType);
+
   const payment = extractPayment(c);
   if (!payment) {
+    const predictionSchema = {
+      input: {
+        type: 'signal | arbitrage | sentiment | trending',
+        market: 'string (optional)',
+        topic: 'string (optional)',
+        country: 'string (optional)',
+      },
+      output: {
+        timestamp: 'ISO string',
+        odds: 'polymarket/kalshi/metaculus normalized objects',
+        sentiment: 'platform sentiment summary + sample volume',
+        signals: 'arbitrage + divergence flags with confidence',
+        proxy: '{ country, type }',
+        payment: '{ txHash, network, amount, settled }',
+      },
+    } as const;
+
     return c.json(
-      build402Response('/api/run', MAPS_DESCRIPTION, MAPS_PRICE_USDC, walletAddress, MAPS_OUTPUT_SCHEMA),
+      build402Response(
+        '/api/run',
+        isPredictionMode
+          ? 'Prediction market signal aggregator with cross-market odds and proxy-backed sentiment.'
+          : MAPS_DESCRIPTION,
+        isPredictionMode ? 0.05 : MAPS_PRICE_USDC,
+        walletAddress,
+        isPredictionMode ? predictionSchema : MAPS_OUTPUT_SCHEMA,
+      ),
       402,
     );
   }
