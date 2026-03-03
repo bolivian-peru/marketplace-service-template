@@ -1,100 +1,140 @@
 {
-  "metadata": {
-    "source": "airbnb.com",
-    "endpoint": "https://www.airbnb.com/s/New-York--NY/homes",
-    "method": "HTML search page extraction",
-    "params": {
-      "destination": "New York, NY",
-      "checkin": "2026-03-10",
-      "checkout": "2026-03-15",
-      "adults": 2
-    },
-    "fetchedAt": "2026-02-26T13:51:18Z",
-    "proxyIp": "172.56.168.66",
-    "proxyProvider": "Proxies.sx T-Mobile US mobile",
-    "listingsExtracted": 29,
-    "extractionNote": "44 StaySearchResult entries found in page JS, 29 unique after dedup"
-  },
-  "listingSummaries": [
+  "country": "US",
+  "category": "crypto",
+  "discover_feed": [
     {
-      "listingId": "2027023659",
-      "url": "https://www.airbnb.com/rooms/2027023659",
-      "rating": "4.9 (317)",
-      "priceFor5Nights": "$851 for 5 nights",
-      "priceDisplay": "$851",
-      "dataSource": "Airbnb search page StaySearchResult component"
+      "position": 1,
+      "title": "What Are Cryptocurrencies and Why Should You Care? - Consumer Reports",
+      "source": "Google News",
+      "url": "https://news.google.com/rss/articles/CBMitgFBVV95cUxNOUtSNkR4VlA1Vld4aE80SzZrbndiZjFRNWo3c1V0bmVCVGVYeU8wVkE1MkZ6OWw4QkgzeFNiVWloTkRVTTdsRDNxV014WEIycnU2bE1fTTBTcnlhdnRzeHpTLTdBMDk2UTl1cU9ZM3B6MWx4c3hVYmVyN2JYM0tlTWYtdVl0MW8tdlltOXcyVzdYb0VQbEdXdWFUM3ZyUFFWTDdYLVQ1UkNIaDB1bFN5RlpHUjdlZw?oc=5",
+      "snippet": "<a href=\"https://news.google.com/rss/articles/CBMitgFBVV95cUxNOUtSNkR4VlA1Vld4aE80SzZrbndiZjFRNWo3c1V0bmVCVGVYeU8wVkE1MkZ6OWw4QkgzeFNiVWloTkRVTTdsRDNxV014WEIycnU2bE1fTTBTcnlhdnRzeHpTLTdBMDk2UTl1cU9ZM3B6MWx4c3hVYmVyN2JYM0tlTWYtdVl0MW8tdlltOXcyVzdYb0VQbEdXdWFUM3ZyUFFWTDdYLVQ1UkNIaDB1bFN5RlpHUjdlZw?oc=",
+      "publishedAt": "Tue, 24 Feb 2026 18:57:16 GMT",
+      "category": "crypto",
+      "contentType": "article",
+      "imageUrl": "",
+      "engagement": {
+        "hasVideoPreview": false,
+        "format": "article"
+      }
     },
     {
-      "listingId": "801378680",
-      "url": "https://www.airbnb.com/rooms/801378680",
-      "rating": "4.97 (375)",
-      "priceFor5Nights": null,
-      "priceDisplay": null,
-      "dataSource": "Airbnb search page StaySearchResult component"
+      "position": 2,
+      "title": "Crypto stock surges after surprising new acquisition - thestreet.com",
+      "source": "Google News",
+      "url": "https://news.google.com/rss/articles/CBMilAFBVV95cUxNWDh6M0RvOTJNM2F4b3JyOXFIX0l4YTJBQW1NZnVrWUY4OVViQ0FsQ18ydlY5SXlYMDIyb3dnRm5VWkdMZzJEb1VWby11YmxuMGJJamhzODNkbllBd0UwbzJEWlBXMlQtc2dYMlRDZjNZT2JubFFwYWk3ZDlEcHRBMWl4U05URHR1N3pMa05XRXdIZy1q?oc=5",
+      "snippet": "<a href=\"https://news.google.com/rss/articles/CBMilAFBVV95cUxNWDh6M0RvOTJNM2F4b3JyOXFIX0l4YTJBQW1NZnVrWUY4OVViQ0FsQ18ydlY5SXlYMDIyb3dnRm5VWkdMZzJEb1VWby11YmxuMGJJamhzODNkbllBd0UwbzJEWlBXMlQtc2dYMlRDZjNZT2JubFFwYWk3ZDlEcHRBMWl4U05URHR1N3pMa05XRXdIZy1q?oc=5\" target=\"_blank\">Crypto stock surges after s",
+      "publishedAt": "Tue, 24 Feb 2026 19:09:25 GMT",
+      "category": "crypto",
+      "contentType": "article",
+      "imageUrl": "",
+      "engagement": {
+        "hasVideoPreview": false,
+        "format": "article"
+      }
     },
     {
-      "listingId": "2322612075",
-      "url": "https://www.airbnb.com/rooms/2322612075",
-      "rating": "4.62 (1129)",
-      "priceFor5Nights": "$1,095 for 5 nights",
-      "priceDisplay": "$1,095",
-      "dataSource": "Airbnb search page StaySearchResult component"
+      "position": 3,
+      "title": "Best Crypto Faucets 2026: Earn Free Bitcoin, Ethereum, and More - Business Insider",
+      "source": "Google News",
+      "url": "https://news.google.com/rss/articles/CBMid0FVX3lxTE56WkE3enlraVVSS1ZjZEVUUnJZWHAtTnA2a0p3RjJIUXpza3g3TnJvS1NTaGk3TngtbXNqSUo4Mm1vWm9sMTFDaTdWdml6MFRPUm54R1NEQ3pjSzdHekkyUGdtNktWb25DUTR3UC1KdTUxbVdTeml3?oc=5",
+      "snippet": "<a href=\"https://news.google.com/rss/articles/CBMid0FVX3lxTE56WkE3enlraVVSS1ZjZEVUUnJZWHAtTnA2a0p3RjJIUXpza3g3TnJvS1NTaGk3TngtbXNqSUo4Mm1vWm9sMTFDaTdWdml6MFRPUm54R1NEQ3pjSzdHekkyUGdtNktWb25DUTR3UC1KdTUxbVdTeml3?oc=5\" target=\"_blank\">Best Crypto Faucets 2026: Earn Free Bitcoin, Ethereum, and More</a>",
+      "publishedAt": "Tue, 24 Feb 2026 20:22:00 GMT",
+      "category": "crypto",
+      "contentType": "article",
+      "imageUrl": "",
+      "engagement": {
+        "hasVideoPreview": false,
+        "format": "article"
+      }
     },
     {
-      "listingId": "2146521584",
-      "url": "https://www.airbnb.com/rooms/2146521584",
-      "rating": "4.76 (568)",
-      "priceFor5Nights": null,
-      "priceDisplay": null,
-      "dataSource": "Airbnb search page StaySearchResult component"
+      "position": 4,
+      "title": "The Winklevoss Twins\u2019 Crypto Company Is in Crisis After the Bitcoin Crash - Futurism",
+      "source": "Google News",
+      "url": "https://news.google.com/rss/articles/CBMidkFVX3lxTE9leW95US1PMHBkVnRlWm9wMmlXYi1nRzFFVnhXODI2OWJCN2J3UXB2WXphNWRJZVZOMFpkLUNPMF9jcW5aak5DUWFhTEg4MjdUZ1AyQ2NUVE5aWXZlM1RQZVA5bGI3S3lTcncyOWNGcHFKR1BBV2c?oc=5",
+      "snippet": "<a href=\"https://news.google.com/rss/articles/CBMidkFVX3lxTE9leW95US1PMHBkVnRlWm9wMmlXYi1nRzFFVnhXODI2OWJCN2J3UXB2WXphNWRJZVZOMFpkLUNPMF9jcW5aak5DUWFhTEg4MjdUZ1AyQ2NUVE5aWXZlM1RQZVA5bGI3S3lTcncyOWNGcHFKR1BBV2c?oc=5\" target=\"_blank\">The Winklevoss Twins\u2019 Crypto Company Is in Crisis After the Bitcoin ",
+      "publishedAt": "Tue, 24 Feb 2026 20:07:18 GMT",
+      "category": "crypto",
+      "contentType": "article",
+      "imageUrl": "",
+      "engagement": {
+        "hasVideoPreview": false,
+        "format": "article"
+      }
     },
     {
-      "listingId": "414986416",
-      "url": "https://www.airbnb.com/rooms/414986416",
-      "rating": "4.9 (280)",
-      "priceFor5Nights": null,
-      "priceDisplay": null,
-      "dataSource": "Airbnb search page StaySearchResult component"
+      "position": 5,
+      "title": "Permissibility is the real prize for banks in crypto bill - American Banker",
+      "source": "Google News",
+      "url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxNTUtZeElzTXpwVUtNWno4TDNiNmJ6SEcyNEVsSUY0Tk1GVjZfUnNwSHBHZlFsdUJ4QS1kOWZFZ2ZJVlZUcWtfYU1jZ19ZNk1OT0VLQmpyY25ZVVVtTFhrRWRfbEVuanZ0MXhmTlZtWUM5cllxd3FUcDJVLVhHTWpOWERKYnc5ZXNnSGdkdnNTamtoWTBuZDNoWg?oc=5",
+      "snippet": "<a href=\"https://news.google.com/rss/articles/CBMimAFBVV95cUxNTUtZeElzTXpwVUtNWno4TDNiNmJ6SEcyNEVsSUY0Tk1GVjZfUnNwSHBHZlFsdUJ4QS1kOWZFZ2ZJVlZUcWtfYU1jZ19ZNk1OT0VLQmpyY25ZVVVtTFhrRWRfbEVuanZ0MXhmTlZtWUM5cllxd3FUcDJVLVhHTWpOWERKYnc5ZXNnSGdkdnNTamtoWTBuZDNoWg?oc=5\" target=\"_blank\">Permissibility is the",
+      "publishedAt": "Tue, 24 Feb 2026 11:00:00 GMT",
+      "category": "crypto",
+      "contentType": "article",
+      "imageUrl": "",
+      "engagement": {
+        "hasVideoPreview": false,
+        "format": "article"
+      }
     },
     {
-      "listingId": "1596354668",
-      "url": "https://www.airbnb.com/rooms/1596354668",
-      "rating": "4.52 (238)",
-      "priceFor5Nights": null,
-      "priceDisplay": null,
-      "dataSource": "Airbnb search page StaySearchResult component"
+      "position": 6,
+      "title": "Bitcoin price falls to $63,000 over tariff worries and tech selloff - Yahoo Finance UK",
+      "source": "Google News",
+      "url": "https://news.google.com/rss/articles/CBMilAFBVV95cUxQOVR0ZzEzbnFkc1BBU2JVV21velFvdnVfWWZCWHU0bl9WZ2RRYzRiZ25OR1RrZGhGbkpmbFdIdklCdjZZTXl3aDRjanp5WXM0eGRnNWRZOFJ2cGMxR1lqUG5YSl9UcHF5amtGNGNxVzF0a0hJOUZrdWZRRTZqUmcyT29QNnhyMVp0NVdSRVFKZzVfVV9D?oc=5",
+      "snippet": "<a href=\"https://news.google.com/rss/articles/CBMilAFBVV95cUxQOVR0ZzEzbnFkc1BBU2JVV21velFvdnVfWWZCWHU0bl9WZ2RRYzRiZ25OR1RrZGhGbkpmbFdIdklCdjZZTXl3aDRjanp5WXM0eGRnNWRZOFJ2cGMxR1lqUG5YSl9UcHF5amtGNGNxVzF0a0hJOUZrdWZRRTZqUmcyT29QNnhyMVp0NVdSRVFKZzVfVV9D?oc=5\" target=\"_blank\">Bitcoin price falls to $63,",
+      "publishedAt": "Tue, 24 Feb 2026 12:22:37 GMT",
+      "category": "crypto",
+      "contentType": "article",
+      "imageUrl": "",
+      "engagement": {
+        "hasVideoPreview": false,
+        "format": "article"
+      }
     },
     {
-      "listingId": "2389454677",
-      "url": "https://www.airbnb.com/rooms/2389454677",
-      "rating": "4.57 (111)",
-      "priceFor5Nights": "$866 for 5 nights",
-      "priceDisplay": null,
-      "dataSource": "Airbnb search page StaySearchResult component"
+      "position": 7,
+      "title": "Better Buy: Bitcoin vs. Ethereum - The Motley Fool",
+      "source": "Google News",
+      "url": "https://news.google.com/rss/articles/CBMifkFVX3lxTFB6eTdEb0tEZ2hNdGxUazZSZHJzaWtnM0N6NUZvMk5wYjI3OU5oR2prdXdQaTZiS0FsNEQ1c3p5U2hKRHl6WTJxaElNcHA2WUF6ZTZvbUNaR09sOW1PWnBTeWJxM3FLUWlDd3FXTktoSWw3R3pPbDBBdUFWTy1VZw?oc=5",
+      "snippet": "<a href=\"https://news.google.com/rss/articles/CBMifkFVX3lxTFB6eTdEb0tEZ2hNdGxUazZSZHJzaWtnM0N6NUZvMk5wYjI3OU5oR2prdXdQaTZiS0FsNEQ1c3p5U2hKRHl6WTJxaElNcHA2WUF6ZTZvbUNaR09sOW1PWnBTeWJxM3FLUWlDd3FXTktoSWw3R3pPbDBBdUFWTy1VZw?oc=5\" target=\"_blank\">Better Buy: Bitcoin vs. Ethereum</a>&nbsp;&nbsp;<font col",
+      "publishedAt": "Tue, 24 Feb 2026 10:25:00 GMT",
+      "category": "crypto",
+      "contentType": "article",
+      "imageUrl": "",
+      "engagement": {
+        "hasVideoPreview": false,
+        "format": "article"
+      }
     },
     {
-      "listingId": "2003449921",
-      "url": "https://www.airbnb.com/rooms/2003449921",
-      "rating": "4.87 (239)",
-      "priceFor5Nights": null,
-      "priceDisplay": null,
-      "dataSource": "Airbnb search page StaySearchResult component"
-    },
-    {
-      "listingId": "2426509811",
-      "url": "https://www.airbnb.com/rooms/2426509811",
-      "rating": null,
-      "priceFor5Nights": "$1,769 for 5 nights",
-      "priceDisplay": "$1,769",
-      "dataSource": "Airbnb search page StaySearchResult component"
-    },
-    {
-      "listingId": "1617652818",
-      "url": "https://www.airbnb.com/rooms/1617652818",
-      "rating": "4.91 (125)",
-      "priceFor5Nights": null,
-      "priceDisplay": null,
-      "dataSource": "Airbnb search page StaySearchResult component"
+      "position": 8,
+      "title": "Bitcoin's Quantum Rigidity Is Ethereum's Biggest Bull Case (Cryptocurrency:ETH-USD) - Seeking Alpha",
+      "source": "Google News",
+      "url": "https://news.google.com/rss/articles/CBMingFBVV95cUxNajdodXJ2a0RNVFV6TTdmWFh0c20zTHdaSzZ1YXg1NWRqTXBYbkJ0d0d5WmFnbi1sUTNWYlBBV3VoVmZDcGJ1UUVJejgtMzNHNENFbWo2X0pmaHBsaGNpNm1HTThyeEhPekhZLTlqNmZxNDZHRGdnd05TcDlEN3dnbVVMa2wxdHZmWVdUQThyYndlLWhjX3VzcFRNMldIdw?oc=5",
+      "snippet": "<a href=\"https://news.google.com/rss/articles/CBMingFBVV95cUxNajdodXJ2a0RNVFV6TTdmWFh0c20zTHdaSzZ1YXg1NWRqTXBYbkJ0d0d5WmFnbi1sUTNWYlBBV3VoVmZDcGJ1UUVJejgtMzNHNENFbWo2X0pmaHBsaGNpNm1HTThyeEhPekhZLTlqNmZxNDZHRGdnd05TcDlEN3dnbVVMa2wxdHZmWVdUQThyYndlLWhjX3VzcFRNMldIdw?oc=5\" target=\"_blank\">Bitcoin's Qua",
+      "publishedAt": "Tue, 24 Feb 2026 14:29:27 GMT",
+      "category": "crypto",
+      "contentType": "article",
+      "imageUrl": "",
+      "engagement": {
+        "hasVideoPreview": false,
+        "format": "article"
+      }
     }
-  ]
+  ],
+  "metadata": {
+    "feedLength": 8,
+    "scrapedAt": "2026-02-24T21:30:17.256702+00:00",
+    "proxyCountry": "US",
+    "proxyIp": "172.56.169.60"
+  },
+  "_proof_meta": {
+    "proxy_ip": "172.56.169.60",
+    "proxy_carrier": "T-Mobile USA (mobile residential)",
+    "proxy_tx_hash": "0xc655e656981acec60320149aaf98ecf8c2f03e52db36c0f1f5581054861f3c68",
+    "proxy_chain": "Base",
+    "proxy_cost_usd": "0.40",
+    "collected_at": "2026-02-24T21:30:17.256722+00:00"
+  }
 }

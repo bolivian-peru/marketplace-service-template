@@ -10,6 +10,7 @@
  *   GET /api/reddit/*  (Reddit Intelligence)
  *   GET /api/instagram/* (Instagram Intelligence + AI Vision)
  *   GET /api/linkedin/* (LinkedIn Enrichment)
+ *   GET /api/discover  (Google Discover Feed Intelligence)
  */
 
 import { Hono } from 'hono';
@@ -29,6 +30,7 @@ import {
 } from './scrapers/linkedin-enrichment';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
+import { getDiscoverFeed } from './scrapers/google-discover-scraper';
 
 export const serviceRouter = new Hono();
 
@@ -1436,5 +1438,76 @@ serviceRouter.get('/airbnb/market-stats', async (c) => {
     });
   } catch (err: any) {
     return c.json({ error: 'Airbnb market stats failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GOOGLE DISCOVER FEED INTELLIGENCE (Bounty #52) ─
+// GET /api/discover?country=US&category=technology
+
+const DISCOVER_PRICE = 0.005;
+const DISCOVER_SCHEMA = {
+  input: {
+    country: 'string — ISO 3166-1 alpha-2 country code (default: "US")',
+    category: '"technology" | "science" | "business" | "entertainment" | "sports" | "health" | "world" | "news" (default: "news")',
+  },
+  output: {
+    country: 'string',
+    category: 'string',
+    discover_feed: [{
+      position: 'number — rank in feed',
+      title: 'string — article/content title',
+      source: 'string — publisher name',
+      sourceUrl: 'string — publisher homepage URL',
+      url: 'string — article URL',
+      snippet: 'string — article description snippet',
+      imageUrl: 'string — thumbnail image URL',
+      contentType: '"article" | "video" | "web_story"',
+      publishedAt: 'string — ISO 8601 timestamp',
+      category: 'string',
+      engagement: '{ hasVideoPreview: boolean, format: string }',
+    }],
+    metadata: '{ feedLength: number, scrapedAt: string, proxyCountry: string }',
+    payment: '{ txHash: string, network: string, amount: number, settled: boolean }',
+  },
+};
+
+serviceRouter.get('/discover', async (c) => {
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/discover', 'Fetch Google Discover / Google News trending feed: top stories, topics, AI-curated articles by country and category via mobile proxy', DISCOVER_PRICE, walletAddress, DISCOVER_SCHEMA), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, DISCOVER_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const country = (c.req.query('country') || 'US').toUpperCase().slice(0, 2);
+  const category = (c.req.query('category') || 'news').toLowerCase();
+
+  const VALID_CATEGORIES = ['technology', 'science', 'business', 'entertainment', 'sports', 'health', 'world', 'news'];
+  if (!VALID_CATEGORIES.includes(category)) {
+    return c.json({ error: `Invalid category. Must be one of: ${VALID_CATEGORIES.join(', ')}` }, 400);
+  }
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const result = await getDiscoverFeed(country, category, proxyFetch);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      meta: { proxy: { ip, country: proxy.country, type: 'mobile' } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    if (err?.message?.includes('captcha') || err?.message?.includes('blocked')) {
+      return c.json({ error: 'captcha_detected', message: 'Google is blocking this request. Try again in a few minutes.' }, 503);
+    }
+    return c.json({ error: 'Google Discover fetch failed', message: err?.message || String(err) }, 502);
   }
 });
