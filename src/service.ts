@@ -606,53 +606,34 @@ serviceRouter.get('/linkedin/person', async (c) => {
     return c.json(
       build402Response('/api/linkedin/person', 'LinkedIn Person Profile Enrichment', LINKEDIN_PERSON_PRICE_USDC, walletAddress, {
         input: { url: 'string — LinkedIn profile URL (required)' },
-        output: { person: 'LinkedInPerson — name, headline, company, education, skills', meta: 'proxy info' },
+        output: { person: 'LinkedInPerson — name, headline, company, experience, education, skills' },
       }),
       402,
     );
   }
 
   const verification = await verifyPayment(payment, walletAddress, LINKEDIN_PERSON_PRICE_USDC);
-  if (!verification.valid) {
-    return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
-  }
+  if (!verification.valid) return c.json({ error: 'Payment verification failed' }, 402);
 
   const url = c.req.query('url');
-  if (!url) {
-    return c.json({ error: 'Missing required parameter: url', example: '/api/linkedin/person?url=linkedin.com/in/username' }, 400);
-  }
+  if (!url) return c.json({ error: 'Missing parameter: url' }, 400);
 
-  // Extract public ID from URL
-  const publicIdMatch = url.match(/linkedin\.com\/in\/([^\/\?]+)/);
-  if (!publicIdMatch) {
-    return c.json({ error: 'Invalid LinkedIn profile URL', example: 'linkedin.com/in/username' }, 400);
-  }
+  const username = url.match(/linkedin\.com\/in\/([^\/\?]+)/)?.[1];
+  if (!username) return c.json({ error: 'Invalid LinkedIn profile URL' }, 400);
 
   try {
     const proxy = getProxy();
-    const person = await scrapeLinkedInPerson(publicIdMatch[1]);
-
-    if (!person) {
-      return c.json({ error: 'Failed to scrape profile. Profile may be private or LinkedIn blocked the request.' }, 502);
-    }
+    const cookies = process.env.LINKEDIN_COOKIES || '';
+    const scraper = new LinkedInScraper(cookies);
+    const person = await scraper.getPersonProfile(username);
 
     c.header('X-Payment-Settled', 'true');
-    c.header('X-Payment-TxHash', payment.txHash);
-
     return c.json({
-      person: {
-        ...person,
-        meta: { proxy: { country: proxy.country, type: 'mobile' } },
-      },
-      payment: {
-        txHash: payment.txHash,
-        network: payment.network,
-        amount: verification.amount,
-        settled: true,
-      },
+      person: { ...person, meta: { proxy: { country: proxy.country, type: 'mobile' } } },
+      payment: { txHash: payment.txHash, settled: true },
     });
   } catch (err: any) {
-    return c.json({ error: 'Profile fetch failed', message: err?.message || String(err) }, 502);
+    return c.json({ error: 'LinkedIn profile fetch failed', message: err.message }, 502);
   }
 });
 
@@ -665,52 +646,32 @@ serviceRouter.get('/linkedin/company', async (c) => {
     return c.json(
       build402Response('/api/linkedin/company', 'LinkedIn Company Profile Enrichment', LINKEDIN_COMPANY_PRICE_USDC, walletAddress, {
         input: { url: 'string — LinkedIn company URL (required)' },
-        output: { company: 'LinkedInCompany — name, description, industry, employees', meta: 'proxy info' },
+        output: { company: 'LinkedInCompany — name, description, industry, employees' },
       }),
       402,
     );
   }
 
   const verification = await verifyPayment(payment, walletAddress, LINKEDIN_COMPANY_PRICE_USDC);
-  if (!verification.valid) {
-    return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
-  }
+  if (!verification.valid) return c.json({ error: 'Payment verification failed' }, 402);
 
   const url = c.req.query('url');
-  if (!url) {
-    return c.json({ error: 'Missing required parameter: url', example: '/api/linkedin/company?url=linkedin.com/company/name' }, 400);
-  }
-
-  const companyIdMatch = url.match(/linkedin\.com\/company\/([^\/\?]+)/);
-  if (!companyIdMatch) {
-    return c.json({ error: 'Invalid LinkedIn company URL', example: 'linkedin.com/company/name' }, 400);
-  }
+  const companyId = url?.match(/linkedin\.com\/company\/([^\/\?]+)/)?.[1];
+  if (!companyId) return c.json({ error: 'Invalid LinkedIn company URL' }, 400);
 
   try {
     const proxy = getProxy();
-    const company = await scrapeLinkedInCompany(companyIdMatch[1]);
-
-    if (!company) {
-      return c.json({ error: 'Failed to scrape company. Company may not exist or LinkedIn blocked the request.' }, 502);
-    }
+    const cookies = process.env.LINKEDIN_COOKIES || '';
+    const scraper = new LinkedInScraper(cookies);
+    const company = await scraper.getCompanyProfile(companyId);
 
     c.header('X-Payment-Settled', 'true');
-    c.header('X-Payment-TxHash', payment.txHash);
-
     return c.json({
-      company: {
-        ...company,
-        meta: { proxy: { country: proxy.country, type: 'mobile' } },
-      },
-      payment: {
-        txHash: payment.txHash,
-        network: payment.network,
-        amount: verification.amount,
-        settled: true,
-      },
+      company: { ...company, meta: { proxy: { country: proxy.country, type: 'mobile' } } },
+      payment: { txHash: payment.txHash, settled: true },
     });
   } catch (err: any) {
-    return c.json({ error: 'Company fetch failed', message: err?.message || String(err) }, 502);
+    return c.json({ error: 'LinkedIn company fetch failed', message: err.message }, 502);
   }
 });
 
