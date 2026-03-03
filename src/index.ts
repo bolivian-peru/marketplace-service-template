@@ -61,27 +61,39 @@ setInterval(() => {
 
 // ─── ROUTES ─────────────────────────────────────────
 
-app.get('/health', (c) => c.json({
-  status: 'healthy',
-  service: process.env.SERVICE_NAME || 'marketplace-service',
-  version: '1.0.0',
-  timestamp: new Date().toISOString(),
-  endpoints: [
-    '/api/run',
-    '/api/details',
-    '/api/jobs',
-    '/api/research',
-    '/api/trending',
-    '/api/reviews/search',
-    '/api/reviews/:place_id',
-    '/api/reviews/summary/:place_id',
-    '/api/business/:place_id',
-    '/api/airbnb/search',
-    '/api/airbnb/listing/:id',
-    '/api/airbnb/reviews/:listing_id',
-    '/api/airbnb/market-stats',
-  ],
-}));
+app.get('/health', (c) => {
+  const walletConfigured = Boolean(process.env.WALLET_ADDRESS);
+  const proxyConfigured = Boolean(process.env.PROXY_HOST && process.env.PROXY_USER && process.env.PROXY_PASS);
+
+  return c.json({
+    status: 'healthy',
+    service: process.env.SERVICE_NAME || 'marketplace-service',
+    version: '1.0.0',
+    uptimeSeconds: Math.floor(process.uptime()),
+    timestamp: new Date().toISOString(),
+    checks: {
+      proxy: proxyConfigured ? 'configured' : 'missing_credentials',
+      payment: walletConfigured ? 'configured' : 'missing_wallet',
+      predictionRoute: 'mounted',
+    },
+    endpoints: [
+      '/api/run',
+      '/api/details',
+      '/api/jobs',
+      '/api/research',
+      '/api/trending',
+      '/api/prediction',
+      '/api/reviews/search',
+      '/api/reviews/:place_id',
+      '/api/reviews/summary/:place_id',
+      '/api/business/:place_id',
+      '/api/airbnb/search',
+      '/api/airbnb/listing/:id',
+      '/api/airbnb/reviews/:listing_id',
+      '/api/airbnb/market-stats'
+    ],
+  });
+});
 
 app.get('/', (c) => c.json({
   name: process.env.SERVICE_NAME || 'marketplace-service-hub',
