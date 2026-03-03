@@ -1,0 +1,57 @@
+{
+  "listings": [
+    {
+      "id": "12345678",
+      "title": "Modern Apartment with Pool Access",
+      "type": "Entire rental unit",
+      "price_per_night": 1250000,
+      "total_price": null,
+      "currency": "IDR",
+      "rating": 4.85,
+      "reviews_count": 142,
+      "superhost": true,
+      "bedrooms": 1,
+      "bathrooms": 1,
+      "max_guests": 2,
+      "occupancy_estimate_pct": 78,
+      "revenue_potential_monthly": 29250000,
+      "revenue_potential_annual": 351000000,
+      "amenities": ["Wifi", "Pool", "Kitchen", "Air conditioning"],
+      "images": ["https://a0.muscache.com/im/pictures/sample1.jpg"],
+      "url": "https://www.airbnb.com/rooms/12345678",
+      "lat": -6.1751,
+      "lng": 106.865
+    },
+    {
+      "id": "87654321",
+      "title": "Cozy Studio near Central Park Jakarta",
+      "type": "Entire rental unit",
+      "price_per_night": 850000,
+      "total_price": null,
+      "currency": "IDR",
+      "rating": 4.6,
+      "reviews_count": 56,
+      "superhost": false,
+      "bedrooms": 0,
+      "bathrooms": 1,
+      "max_guests": 2,
+      "occupancy_estimate_pct": 62,
+      "revenue_potential_monthly": 15810000,
+      "revenue_potential_annual": 189720000,
+      "amenities": ["Wifi", "Gym", "Kitchen"],
+      "images": ["https://a0.muscache.com/im/pictures/sample2.jpg"],
+      "url": "https://www.airbnb.com/rooms/87654321",
+      "lat": -6.168,
+      "lng": 106.789
+    }
+  ],
+  "meta": {
+    "location": "Jakarta, Indonesia",
+    "count": 2,
+    "proxy": {
+      "ip": "100.91.53.54",
+      "country": "US",
+      "type": "mobile"
+    }
+  }
+}

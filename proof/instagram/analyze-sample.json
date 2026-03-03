@@ -1,0 +1,30 @@
+{
+  "profile": {
+    "username": "traveljane",
+    "full_name": "Jane Smith",
+    "followers": 125000,
+    "engagement_rate": 3.2
+  },
+  "ai_analysis": {
+    "account_type": {
+      "primary": "influencer",
+      "niche": "travel_lifestyle",
+      "confidence": 0.94
+    },
+    "content_themes": {
+      "top_themes": ["travel", "luxury", "photography"],
+      "brand_safety_score": 95
+    },
+    "sentiment": {
+      "overall": "positive"
+    },
+    "authenticity": {
+      "score": 92,
+      "verdict": "authentic"
+    },
+    "model_used": "gpt-4o-vision"
+  },
+  "meta": {
+    "proxy": { "country": "US", "type": "mobile" }
+  }
+}

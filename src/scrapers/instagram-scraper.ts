@@ -360,3 +360,49 @@ export async function auditProfile(username: string): Promise<{ profile: Instagr
   const full = await analyzeProfile(username);
   return { profile: full.profile, authenticity: full.ai_analysis.authenticity };
 }
+
+export interface InstagramDiscoveryResult {
+  username: string;
+  full_name: string;
+  profile_url: string;
+  followers?: string;
+  niche?: string;
+}
+
+/**
+ * Discover Instagram accounts by niche/topic using Google Search fallback
+ */
+export async function discoverInstagramAccounts(query: string, limit: number = 10): Promise<InstagramDiscoveryResult[]> {
+  const searchUrl = `https://www.google.com/search?q=site:instagram.com+${encodeURIComponent(query)}`;
+  
+  const r = await fetch(searchUrl, {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
+    }
+  });
+
+  if (!r.ok) throw new Error(`Google Search failed with status ${r.status}`);
+  const html = await r.text();
+  
+  const results: InstagramDiscoveryResult[] = [];
+  const matches = html.matchAll(/instagram\.com\/([a-zA-Z0-9._]+)/g);
+  const seen = new Set<string>();
+
+  for (const match of matches) {
+    const username = match[1];
+    if (seen.has(username) || ['p', 'reels', 'explore', 'stories'].includes(username)) continue;
+    seen.add(username);
+    
+    results.push({
+      username,
+      full_name: username,
+      profile_url: `https://www.instagram.com/${username}/`,
+      niche: query
+    });
+
+    if (results.length >= limit) break;
+  }
+
+  return results;
+}
+
