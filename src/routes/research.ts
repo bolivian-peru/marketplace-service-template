@@ -30,7 +30,9 @@ import type {
 
 // Constants
 
-const WALLET_ADDRESS = process.env.WALLET_ADDRESS ?? '';
+function getWalletAddress(): string {
+  return process.env.WALLET_ADDRESS ?? '';
+}
 
 const PRICE_SINGLE = 0.10;
 const PRICE_MULTI = 0.50;
@@ -123,11 +125,21 @@ function checkRateLimit(ip: string): { allowed: boolean; retryAfter: number } {
   return { allowed: true, retryAfter: 0 };
 }
 
-function parseCountry(input: unknown): string {
-  if (typeof input !== 'string') return 'US';
+function parseCountry(input: unknown): { country: string; error?: string } {
+  if (input === undefined || input === null || input === '') {
+    return { country: 'US' };
+  }
+
+  if (typeof input !== 'string') {
+    return { country: '', error: 'country must be a 2-letter ISO code (e.g. US)' };
+  }
+
   const normalized = input.trim().toUpperCase();
-  if (!/^[A-Z]{2}$/.test(normalized)) return 'US';
-  return normalized;
+  if (!/^[A-Z]{2}$/.test(normalized)) {
+    return { country: '', error: 'country must be a 2-letter ISO code (e.g. US)' };
+  }
+
+  return { country: normalized };
 }
 
 function sanitizeTopic(input: unknown): string | null {
@@ -155,13 +167,20 @@ function parsePlatforms(input: unknown): { platforms: Platform[]; error?: string
     return { platforms: [], error: `Too many platforms requested. Max ${SUPPORTED_PLATFORMS.length}` };
   }
 
-  const normalized = input
-    .map((p) => {
-      if (typeof p !== 'string') return '';
-      const key = p.trim().toLowerCase();
-      return PLATFORM_ALIASES[key] ?? key;
-    })
-    .filter((p): p is Platform => SUPPORTED_PLATFORMS.includes(p as Platform));
+  const normalized: Platform[] = [];
+  for (const p of input) {
+    if (typeof p !== 'string') {
+      return { platforms: [], error: 'platforms entries must be strings' };
+    }
+
+    const key = p.trim().toLowerCase();
+    const mapped = (PLATFORM_ALIASES[key] ?? key) as Platform;
+    if (!SUPPORTED_PLATFORMS.includes(mapped)) {
+      return { platforms: [], error: `Unsupported platform: ${p}` };
+    }
+
+    normalized.push(mapped);
+  }
 
   const unique = Array.from(new Set(normalized));
 
@@ -200,7 +219,8 @@ async function getProxyExitIp(): Promise<string | null> {
 export const researchRouter = new Hono();
 
 researchRouter.post('/', async (c) => {
-  if (!WALLET_ADDRESS) {
+  const walletAddress = getWalletAddress();
+  if (!walletAddress) {
     return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
   }
 
@@ -233,7 +253,7 @@ researchRouter.post('/', async (c) => {
   const payment = extractPayment(c);
   if (!payment) {
     return c.json(
-      build402Response('/api/research', DESCRIPTION, PRICE_MULTI, WALLET_ADDRESS, OUTPUT_SCHEMA),
+      build402Response('/api/research', DESCRIPTION, PRICE_MULTI, walletAddress, OUTPUT_SCHEMA),
       402,
     );
   }
@@ -269,16 +289,23 @@ researchRouter.post('/', async (c) => {
   if (!Number.isFinite(rawDays)) {
     return c.json({ error: 'days must be a valid number' }, 400);
   }
-  const days = Math.min(Math.max(Math.floor(rawDays), 1), MAX_DAYS);
+  const days = Math.floor(rawDays);
+  if (days < 1 || days > MAX_DAYS) {
+    return c.json({ error: `days must be between 1 and ${MAX_DAYS}` }, 400);
+  }
 
-  const country = parseCountry(body.country);
+  const countryResult = parseCountry(body.country);
+  if (countryResult.error) {
+    return c.json({ error: countryResult.error }, 400);
+  }
+  const country = countryResult.country;
 
   // 4 platforms = full report, 2-3 = multi, 1 = single
   const price = platforms.length >= 4 ? PRICE_FULL : platforms.length >= 2 ? PRICE_MULTI : PRICE_SINGLE;
 
   let verification: Awaited<ReturnType<typeof verifyPayment>>;
   try {
-    verification = await verifyPayment(payment, WALLET_ADDRESS, price);
+    verification = await verifyPayment(payment, walletAddress, price);
   } catch (error) {
     console.error('[research] Payment verification error:', error);
     return c.json({ error: 'Payment verification temporarily unavailable' }, 502);
