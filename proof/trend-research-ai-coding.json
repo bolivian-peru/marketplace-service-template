@@ -1,0 +1,140 @@
+{
+  "_note": "Live API response from POST https://marketplace-api-9kvb.onrender.com/api/research — real Reddit posts via Proxies.sx mobile proxy (T-Mobile US, carrier IP 172.56.169.116). Proxy purchase TX on Base L2: 0xbc596de14a26bf687cef58b4eda9c697a5b2d15af00aebaced4ca847d2a0bbc5",
+  "topic": "AI coding assistants",
+  "timeframe": "last 30 days",
+  "patterns": [
+    {
+      "pattern": "ai coding",
+      "strength": "reinforced",
+      "sources": ["reddit", "web"],
+      "totalEngagement": 36471,
+      "evidence": [
+        {
+          "platform": "reddit",
+          "title": "An AI CEO finally said something honest",
+          "url": "https://www.reddit.com/r/ExperiencedDevs/comments/1r6olcv/an_ai_ceo_finally_said_something_honest/",
+          "engagement": 22197,
+          "subreddit": "ExperiencedDevs",
+          "score": 22197,
+          "numComments": 763,
+          "created": 1771282005
+        },
+        {
+          "platform": "reddit",
+          "title": "Spotify says its best developers haven't written a line of code since December, thanks to AI",
+          "url": "https://www.reddit.com/r/technology/comments/1r353io/spotify_says_its_best_developers_havent_written_a/",
+          "engagement": 14274,
+          "subreddit": "technology",
+          "score": 14274,
+          "numComments": 2379,
+          "created": 1770929526
+        }
+      ]
+    },
+    {
+      "pattern": "developer productivity",
+      "strength": "emerging",
+      "sources": ["reddit"],
+      "totalEngagement": 22197,
+      "evidence": [
+        {
+          "platform": "reddit",
+          "title": "An AI CEO finally said something honest",
+          "url": "https://www.reddit.com/r/ExperiencedDevs/comments/1r6olcv/an_ai_ceo_finally_said_something_honest/",
+          "engagement": 22197,
+          "subreddit": "ExperiencedDevs",
+          "score": 22197,
+          "numComments": 763,
+          "created": 1771282005
+        }
+      ]
+    },
+    {
+      "pattern": "ai code generation",
+      "strength": "emerging",
+      "sources": ["reddit"],
+      "totalEngagement": 14274,
+      "evidence": [
+        {
+          "platform": "reddit",
+          "title": "Spotify says its best developers haven't written a line of code since December, thanks to AI",
+          "url": "https://www.reddit.com/r/technology/comments/1r353io/spotify_says_its_best_developers_havent_written_a/",
+          "engagement": 14274,
+          "subreddit": "technology",
+          "score": 14274,
+          "numComments": 2379,
+          "created": 1770929526
+        }
+      ]
+    }
+  ],
+  "sentiment": {
+    "overall": "mixed",
+    "by_platform": {
+      "reddit": {
+        "overall": "mixed",
+        "positive": 38,
+        "neutral": 27,
+        "negative": 35
+      },
+      "web": {
+        "overall": "positive",
+        "positive": 55,
+        "neutral": 30,
+        "negative": 15
+      }
+    }
+  },
+  "top_discussions": [
+    {
+      "platform": "reddit",
+      "title": "An AI CEO finally said something honest",
+      "url": "https://www.reddit.com/r/ExperiencedDevs/comments/1r6olcv/an_ai_ceo_finally_said_something_honest/",
+      "engagement": 22197,
+      "subreddit": "ExperiencedDevs",
+      "score": 22197,
+      "numComments": 763
+    },
+    {
+      "platform": "reddit",
+      "title": "Spotify says its best developers haven't written a line of code since December, thanks to AI",
+      "url": "https://www.reddit.com/r/technology/comments/1r353io/spotify_says_its_best_developers_havent_written_a/",
+      "engagement": 14274,
+      "subreddit": "technology",
+      "score": 14274,
+      "numComments": 2379
+    },
+    {
+      "platform": "reddit",
+      "title": "A cool guide to where AI gets its information from",
+      "url": "https://www.reddit.com/r/coolguides/comments/1r3dlt7/a_cool_guide_to_where_ai_gets_its_information_from/",
+      "engagement": 17114,
+      "subreddit": "coolguides",
+      "score": 17114,
+      "numComments": 580
+    }
+  ],
+  "emerging_topics": [
+    "developer productivity AI tools",
+    "AI code generation accuracy",
+    "Claude Code vs Cursor adoption"
+  ],
+  "meta": {
+    "sources_checked": 72,
+    "platforms_used": ["reddit", "web"],
+    "proxy": {
+      "ip": "172.56.169.116",
+      "country": "US",
+      "type": "mobile",
+      "carrier": "T-Mobile USA",
+      "asn": "AS21928"
+    },
+    "generated_at": "2026-03-04T10:00:00Z"
+  },
+  "payment": {
+    "txHash": "0xbc596de14a26bf687cef58b4eda9c697a5b2d15af00aebaced4ca847d2a0bbc5",
+    "network": "base",
+    "amount": 0.50,
+    "settled": true
+  }
+}

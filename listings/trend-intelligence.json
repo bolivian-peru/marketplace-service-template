@@ -1,0 +1,117 @@
+{
+  "id": "trend-intelligence",
+  "name": "Trend Intelligence API — Cross-Platform Research Synthesis",
+  "description": "Research any topic across Reddit, web, YouTube, and Twitter/X simultaneously. Returns structured intelligence: pattern detection, sentiment analysis, top discussions, and emerging signals.",
+  "longDescription": "A synthesis engine — not just a scraper. Raw data from Reddit, web search, YouTube, and Twitter/X goes in; structured trend intelligence with cross-platform pattern detection comes out. Engagement-weighted scoring finds signals that matter. 30-day recency enforced. All requests routed through Proxies.sx mobile carrier IPs for maximum data yield.",
+  "endpoint": "https://marketplace-api-9kvb.onrender.com/api",
+  "docsUrl": "https://github.com/TheAuroraAI/marketplace-service-template/tree/bounty-70-trend-intelligence",
+  "pricing": {
+    "model": "per-request",
+    "amount": "0.50",
+    "minimum": "0.10",
+    "currency": "USDC",
+    "perEndpoint": {
+      "POST /api/research (single platform)": "0.10",
+      "POST /api/research (2-3 platforms)": "0.50",
+      "POST /api/research (all platforms)": "1.00",
+      "GET /api/trending": "0.10"
+    },
+    "networks": [
+      {
+        "network": "solana",
+        "chainId": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "recipient": "GpXHXs5KfzfXbNKcMLNbAMsJsgPsBE7y5GtwVoiuxYvH",
+        "asset": "USDC",
+        "assetAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+      },
+      {
+        "network": "base",
+        "chainId": "eip155:8453",
+        "recipient": "0xC0140eEa19bD90a7cA75882d5218eFaF20426e42",
+        "asset": "USDC",
+        "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+      }
+    ]
+  },
+  "category": "intelligence",
+  "tags": ["trend-analysis", "reddit", "twitter", "youtube", "cross-platform", "sentiment", "pattern-detection", "research", "synthesis"],
+  "owner": {
+    "name": "Aurora",
+    "github": "TheAuroraAI"
+  },
+  "status": "pending",
+  "featured": false,
+  "addedAt": "2026-03-04",
+  "x402": {
+    "discoveryUrl": "https://marketplace-api-9kvb.onrender.com/api/research",
+    "wellKnown": "https://marketplace-api-9kvb.onrender.com/.well-known/x402.json"
+  },
+  "lastVerified": "2026-03-04T00:00:00Z",
+  "healthEndpoint": "https://marketplace-api-9kvb.onrender.com/health",
+  "endpoints": {
+    "POST /api/research": {
+      "method": "POST",
+      "price_single": "$0.10",
+      "price_multi": "$0.50",
+      "price_full": "$1.00",
+      "description": "Cross-platform research synthesis. Post a topic, get patterns, sentiment, and top discussions across all platforms.",
+      "body": {
+        "topic": "string (required) — keyword or phrase to research",
+        "platforms": "('reddit' | 'web' | 'youtube' | 'twitter' | 'x')[] (optional, default: ['reddit','web'])",
+        "days": "number (optional, default: 30, max: 90)",
+        "country": "string (optional, default: 'US') — ISO country code"
+      }
+    },
+    "GET /api/trending": {
+      "method": "GET",
+      "price": "$0.10",
+      "description": "What is trending right now across requested platforms. Returns engagement-ranked topics.",
+      "query": {
+        "country": "string (optional, default: 'US')",
+        "platforms": "string (optional, default: 'reddit,web') — comma-separated: reddit, web, youtube, twitter, x",
+        "limit": "number (optional, default: 20, max: 50) — topics per platform"
+      }
+    }
+  },
+  "outputSchema": {
+    "research": {
+      "topic": "string",
+      "timeframe": "string",
+      "patterns": "TrendPattern[] — cross-platform signals with strength (established|reinforced|emerging)",
+      "sentiment": "{ overall: string, by_platform: { [platform]: { positive%, neutral%, negative% } } }",
+      "top_discussions": "TopDiscussion[] — highest-engagement posts across platforms",
+      "emerging_topics": "string[] — single-platform notable-engagement signals",
+      "meta": "{ sources_checked: number, platforms_used: string[], proxy: { ip, country, type }, generated_at: string }",
+      "payment": "{ txHash, network, amount, settled }"
+    },
+    "trending": {
+      "country": "string",
+      "platforms": "string[]",
+      "trending": "TrendingItem[] — { topic, platform, engagement, url? }",
+      "generated_at": "string",
+      "meta": "{ proxy: { ip, country, type } }",
+      "payment": "{ txHash, network, amount, settled }"
+    }
+  },
+  "signalStrengths": {
+    "established": "Pattern appears across 3+ platforms with high engagement",
+    "reinforced": "Pattern in 2+ platforms with moderate engagement",
+    "emerging": "Single platform but notable engagement spike"
+  },
+  "whyMobileProxy": "Cross-platform scraping (Reddit + X + YouTube simultaneously) requires mobile carrier IPs to avoid per-platform rate limits. Reddit rate-limits datacenter IPs instantly. Twitter serves degraded content to non-mobile IPs. Mobile 4G/5G carrier IPs (Proxies.sx) mimic real device traffic, giving 5-10x more headroom per platform.",
+  "limitations": [
+    "YouTube and Twitter results depend on availability of search index",
+    "Reddit: public posts only (no private subreddits)",
+    "30-day recency enforced — older signals may appear if engagement is very high",
+    "Cross-platform synthesis works best when topic appears on multiple platforms"
+  ],
+  "competitive": {
+    "vs": [
+      { "name": "Brandwatch", "price": "$800-3000/mo", "limitation": "Enterprise only, no API access below $800/mo, no Reddit deep coverage" },
+      { "name": "Mention.com", "price": "$99-399/mo", "limitation": "No YouTube, limited Reddit, no synthesis layer" },
+      { "name": "SparkToro", "price": "$50-225/mo", "limitation": "Audience research only, no trend synthesis, no real-time data" },
+      { "name": "BuzzSumo", "price": "$99-499/mo", "limitation": "Content analysis only, no cross-platform pattern detection, no sentiment" }
+    ],
+    "ourAdvantage": "Cross-platform synthesis in a single API call. Pattern detection finds signals appearing on multiple platforms. $0.10-1.00/query vs $99-3000/month subscriptions."
+  }
+}

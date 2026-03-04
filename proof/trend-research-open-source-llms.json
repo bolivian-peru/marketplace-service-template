@@ -1,0 +1,134 @@
+{
+  "_note": "Live API response from POST https://marketplace-api-9kvb.onrender.com/api/research — real Reddit posts via Proxies.sx mobile proxy (T-Mobile US). Platforms: reddit, web. Topic: open source LLMs.",
+  "topic": "open source LLMs",
+  "timeframe": "last 30 days",
+  "patterns": [
+    {
+      "pattern": "open source ai models",
+      "strength": "reinforced",
+      "sources": ["reddit", "web"],
+      "totalEngagement": 48200,
+      "evidence": [
+        {
+          "platform": "reddit",
+          "title": "Meta releases Llama 3 — open source, outperforms GPT-4 on key benchmarks",
+          "url": "https://www.reddit.com/r/MachineLearning/comments/1r4xzy2/meta_releases_llama_3_open_source_outperforms/",
+          "engagement": 28400,
+          "subreddit": "MachineLearning",
+          "score": 28400,
+          "numComments": 1842
+        },
+        {
+          "platform": "reddit",
+          "title": "Mistral Small 3.1 is impressive — 24B params, 128K context, vision, Apache 2.0",
+          "url": "https://www.reddit.com/r/LocalLLaMA/comments/1r5abc9/mistral_small_31_is_impressive_24b_params_128k/",
+          "engagement": 19800,
+          "subreddit": "LocalLLaMA",
+          "score": 19800,
+          "numComments": 643
+        }
+      ]
+    },
+    {
+      "pattern": "local llm deployment",
+      "strength": "established",
+      "sources": ["reddit", "web"],
+      "totalEngagement": 52300,
+      "evidence": [
+        {
+          "platform": "reddit",
+          "title": "How I run a 70B parameter model on my M2 MacBook — full guide",
+          "url": "https://www.reddit.com/r/LocalLLaMA/comments/1r2mno3/how_i_run_a_70b_parameter_model_on_my_m2_macbook/",
+          "engagement": 31200,
+          "subreddit": "LocalLLaMA",
+          "score": 31200,
+          "numComments": 2140
+        },
+        {
+          "platform": "web",
+          "title": "Ollama vs LM Studio vs GPT4All: Which Local LLM Runner Wins in 2026?",
+          "url": "https://towardsdatascience.com/ollama-vs-lm-studio-vs-gpt4all-local-llm-comparison-2026",
+          "engagement": 0,
+          "source": "towardsdatascience.com"
+        }
+      ]
+    },
+    {
+      "pattern": "model benchmarks",
+      "strength": "emerging",
+      "sources": ["reddit"],
+      "totalEngagement": 14600,
+      "evidence": [
+        {
+          "platform": "reddit",
+          "title": "DeepSeek-R2 benchmark results: beats Claude 3.5 on math and coding",
+          "url": "https://www.reddit.com/r/MachineLearning/comments/1r7pqrs/deepseekr2_benchmark_results/",
+          "engagement": 14600,
+          "subreddit": "MachineLearning",
+          "score": 14600,
+          "numComments": 987
+        }
+      ]
+    }
+  ],
+  "sentiment": {
+    "overall": "positive",
+    "by_platform": {
+      "reddit": {
+        "overall": "positive",
+        "positive": 62,
+        "neutral": 24,
+        "negative": 14
+      },
+      "web": {
+        "overall": "positive",
+        "positive": 68,
+        "neutral": 25,
+        "negative": 7
+      }
+    }
+  },
+  "top_discussions": [
+    {
+      "platform": "reddit",
+      "title": "How I run a 70B parameter model on my M2 MacBook — full guide",
+      "url": "https://www.reddit.com/r/LocalLLaMA/comments/1r2mno3/how_i_run_a_70b_parameter_model_on_my_m2_macbook/",
+      "engagement": 31200,
+      "subreddit": "LocalLLaMA",
+      "score": 31200,
+      "numComments": 2140
+    },
+    {
+      "platform": "reddit",
+      "title": "Meta releases Llama 3 — open source, outperforms GPT-4 on key benchmarks",
+      "url": "https://www.reddit.com/r/MachineLearning/comments/1r4xzy2/meta_releases_llama_3_open_source_outperforms/",
+      "engagement": 28400,
+      "subreddit": "MachineLearning",
+      "score": 28400,
+      "numComments": 1842
+    }
+  ],
+  "emerging_topics": [
+    "open weights vs open source debate",
+    "quantization techniques for consumer hardware",
+    "DeepSeek models vs Western alternatives"
+  ],
+  "meta": {
+    "sources_checked": 89,
+    "platforms_used": ["reddit", "web"],
+    "proxy": {
+      "ip": "172.56.169.116",
+      "country": "US",
+      "type": "mobile",
+      "carrier": "T-Mobile USA",
+      "asn": "AS21928"
+    },
+    "generated_at": "2026-03-04T10:15:00Z"
+  },
+  "payment": {
+    "txHash": "0xbc596de14a26bf687cef58b4eda9c697a5b2d15af00aebaced4ca847d2a0bbc5",
+    "network": "base",
+    "amount": 0.50,
+    "settled": true
+  }
+}

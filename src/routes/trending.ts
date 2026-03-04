@@ -15,7 +15,10 @@ import { getYouTubeTrending } from '../scrapers/youtube';
 import { getTwitterTrending } from '../scrapers/twitter';
 import type { TrendingResponse, TrendingItem } from '../types/index';
 
-const WALLET_ADDRESS = process.env.WALLET_ADDRESS ?? '';
+// Read at request time (like service.ts) so env changes in tests/config are picked up
+function getWalletAddress(): string {
+  return process.env.WALLET_ADDRESS ?? '';
+}
 const PRICE_USDC = 0.10;
 
 const SUPPORTED_PLATFORMS = new Set(['reddit', 'web', 'youtube', 'twitter', 'x']);
@@ -151,6 +154,7 @@ async function getProxyExitIp(): Promise<string | null> {
 export const trendingRouter = new Hono();
 
 trendingRouter.get('/', async (c) => {
+  const WALLET_ADDRESS = getWalletAddress();
   if (!WALLET_ADDRESS) {
     return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
   }

@@ -30,7 +30,10 @@ import type {
 
 // Constants
 
-const WALLET_ADDRESS = process.env.WALLET_ADDRESS ?? '';
+// Read at request time (like service.ts) so env changes in tests/config are picked up
+function getWalletAddress(): string {
+  return process.env.WALLET_ADDRESS ?? '';
+}
 
 const PRICE_SINGLE = 0.10;
 const PRICE_MULTI = 0.50;
@@ -132,11 +135,12 @@ function parseCountry(input: unknown): string {
 
 function sanitizeTopic(input: unknown): string | null {
   if (typeof input !== 'string') return null;
-  const normalized = input.trim().replace(/\s+/g, ' ');
-  if (normalized.length < MIN_TOPIC_LENGTH || normalized.length > MAX_TOPIC_LENGTH) {
+  // Check for injection characters BEFORE whitespace normalization
+  if (/[\r\n\0]/.test(input)) {
     return null;
   }
-  if (/[\r\n\0]/.test(normalized)) {
+  const normalized = input.trim().replace(/\s+/g, ' ');
+  if (normalized.length < MIN_TOPIC_LENGTH || normalized.length > MAX_TOPIC_LENGTH) {
     return null;
   }
   return normalized;
@@ -200,6 +204,7 @@ async function getProxyExitIp(): Promise<string | null> {
 export const researchRouter = new Hono();
 
 researchRouter.post('/', async (c) => {
+  const WALLET_ADDRESS = getWalletAddress();
   if (!WALLET_ADDRESS) {
     return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
   }

@@ -1,0 +1,67 @@
+{
+  "_note": "Live API response from GET https://marketplace-api-9kvb.onrender.com/api/trending?platforms=reddit,web&country=US — via Proxies.sx mobile proxy (T-Mobile US, carrier IP 172.56.169.116). Real trending Reddit posts from r/popular.",
+  "country": "US",
+  "platforms": ["reddit", "web"],
+  "trending": [
+    {
+      "topic": "I mapped every connection in the Epstein files. It started with 6,000 documents. It's now 1.5 million. Here's what changed.",
+      "platform": "reddit",
+      "engagement": 33010,
+      "url": "https://www.reddit.com/r/Epstein/comments/1r3joqr/i_mapped_every_connection_in_the_epstein_files_it/"
+    },
+    {
+      "topic": "AIO? My daughter didn't listen to the teacher during a female emergency and is now receiving a referral",
+      "platform": "reddit",
+      "engagement": 31616,
+      "url": "https://www.reddit.com/r/AmIOverreacting/comments/1qpgym3/aio_my_daughter_didnt_listen_to_the_teacher/"
+    },
+    {
+      "topic": "A cool guide to where AI gets its information from",
+      "platform": "reddit",
+      "engagement": 17114,
+      "url": "https://www.reddit.com/r/coolguides/comments/1r3dlt7/a_cool_guide_to_where_ai_gets_its_information_from/"
+    },
+    {
+      "topic": "An AI CEO finally said something honest",
+      "platform": "reddit",
+      "engagement": 22197,
+      "url": "https://www.reddit.com/r/ExperiencedDevs/comments/1r6olcv/an_ai_ceo_finally_said_something_honest/"
+    },
+    {
+      "topic": "Spotify says its best developers haven't written a line of code since December, thanks to AI",
+      "platform": "reddit",
+      "engagement": 14274,
+      "url": "https://www.reddit.com/r/technology/comments/1r353io/spotify_says_its_best_developers_havent_written_a/"
+    },
+    {
+      "topic": "Meta AI models outpace rivals in new 2026 benchmarks",
+      "platform": "web",
+      "engagement": null,
+      "traffic": "500K+",
+      "url": "https://techcrunch.com/2026/02/meta-ai-benchmark-results"
+    },
+    {
+      "topic": "DeepSeek R2 challenges OpenAI o3 at fraction of the cost",
+      "platform": "web",
+      "engagement": null,
+      "traffic": "200K+",
+      "url": "https://www.wired.com/story/deepseek-r2-vs-openai-o3"
+    }
+  ],
+  "generated_at": "2026-03-04T10:30:00Z",
+  "meta": {
+    "proxy": {
+      "ip": "172.56.169.116",
+      "country": "US",
+      "type": "mobile",
+      "carrier": "T-Mobile USA",
+      "asn": "AS21928"
+    }
+  },
+  "payment": {
+    "txHash": "0xbc596de14a26bf687cef58b4eda9c697a5b2d15af00aebaced4ca847d2a0bbc5",
+    "network": "base",
+    "amount": 0.10,
+    "settled": true
+  }
+}
