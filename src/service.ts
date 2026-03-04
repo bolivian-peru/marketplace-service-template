@@ -28,7 +28,7 @@ import {
   findCompanyEmployees 
 } from './scrapers/linkedin-enrichment';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
-import { searchAmazon, scrapeProduct, scrapeBestsellers } from './scrapers/amazon-scraper';
+import { searchAmazon, scrapeProduct, scrapeBestsellers, scrapeReviews } from './scrapers/amazon-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
 
 export const serviceRouter = new Hono();
@@ -1445,6 +1445,7 @@ serviceRouter.get('/airbnb/market-stats', async (c) => {
 const AMAZON_SEARCH_PRICE = 0.02;
 const AMAZON_PRODUCT_PRICE = 0.02;
 const AMAZON_BSR_PRICE = 0.02;
+const AMAZON_REVIEWS_PRICE = 0.02;
 
 // GET /api/amazon/search
 serviceRouter.get('/amazon/search', async (c) => {
@@ -1562,5 +1563,51 @@ serviceRouter.get('/amazon/bestsellers', async (c) => {
     });
   } catch (err: any) {
     return c.json({ error: 'Amazon bestsellers fetch failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// GET /api/amazon/reviews/:asin
+serviceRouter.get('/amazon/reviews/:asin', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/amazon/reviews/:asin', 'Amazon product reviews — title, body, rating, author, verified status', AMAZON_REVIEWS_PRICE, walletAddress, {
+      input: {
+        asin: 'string (path) — Amazon Standard Identification Number',
+        marketplace: 'string (optional, default: US)',
+        sort: 'string (optional, default: recent) — recent | helpful',
+        limit: 'number (optional, default: 10, max: 50)',
+      },
+      output: { reviews: 'AmazonReview[] — title, body, rating, author, date, verified_purchase, helpful_votes' },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, AMAZON_REVIEWS_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const asin = c.req.param('asin');
+  if (!asin || !/^[A-Z0-9]{10}$/.test(asin.toUpperCase())) {
+    return c.json({ error: 'Invalid ASIN. Must be 10 alphanumeric characters.' }, 400);
+  }
+
+  const marketplace = (c.req.query('marketplace') || 'US').toUpperCase();
+  const sort = c.req.query('sort') || 'recent';
+  const limit = Math.min(Math.max(parseInt(c.req.query('limit') || '10') || 10, 1), 50);
+
+  try {
+    const proxy = getProxy();
+    const reviews = await scrapeReviews(asin.toUpperCase(), marketplace, sort, limit);
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+    return c.json({
+      asin: asin.toUpperCase(),
+      reviews,
+      meta: { marketplace, sort, count: reviews.length, proxy: { country: proxy.country, type: 'mobile' } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Amazon reviews fetch failed', message: err?.message || String(err) }, 502);
   }
 });
