@@ -18,20 +18,38 @@ function toNum(v: any): number | undefined {
   return Number.isFinite(n) ? n : undefined;
 }
 
-export async function fetchPolymarketOdds(limit = 10): Promise<OddsPoint[]> {
-  const url = `https://gamma-api.polymarket.com/events?active=true&closed=false&limit=${Math.max(1, Math.min(limit, 50))}`;
+function keywordMatch(text: string, query?: string) {
+  if (!query) return true;
+  const stop = new Set(['the', 'and', 'or', 'in', 'on', 'for', 'to', 'of', 'by', 'will', 'market', 'markets']);
+  const qs = query
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter(Boolean)
+    .filter(k => !stop.has(k))
+    .filter(k => k.length >= 3)
+    .slice(0, 6);
+  if (!qs.length) return true;
+  const t = text.toLowerCase();
+  const matches = qs.filter(k => t.includes(k));
+  return matches.length >= Math.min(2, qs.length);
+}
+
+export async function fetchPolymarketOdds(limit = 10, query?: string): Promise<OddsPoint[]> {
+  const url = `https://gamma-api.polymarket.com/events?active=true&closed=false&limit=${Math.max(1, Math.min(limit * 5, 100))}`;
   const r = await fetch(url, { headers: { accept: 'application/json' } });
   if (!r.ok) throw new Error(`polymarket_http_${r.status}`);
   const data = await r.json() as any[];
 
   const out: OddsPoint[] = [];
   for (const e of data ?? []) {
+    const title = String(e?.title ?? e?.question ?? 'unknown');
+    if (!keywordMatch(title, query)) continue;
     const yes = toNum(e?.outcomes?.[0]?.price ?? e?.markets?.[0]?.outcomes?.[0]?.price);
     const no = toNum(e?.outcomes?.[1]?.price ?? e?.markets?.[0]?.outcomes?.[1]?.price);
     out.push({
       source: 'polymarket',
       marketId: String(e?.id ?? e?.slug ?? e?.ticker ?? 'unknown'),
-      title: String(e?.title ?? e?.question ?? 'unknown'),
+      title,
       yes,
       no,
       volume24h: toNum(e?.volume24hr ?? e?.volumeNum),
@@ -42,8 +60,8 @@ export async function fetchPolymarketOdds(limit = 10): Promise<OddsPoint[]> {
   return out;
 }
 
-export async function fetchKalshiOdds(limit = 10): Promise<OddsPoint[]> {
-  const url = `https://api.elections.kalshi.com/trade-api/v2/events?status=open&limit=${Math.max(1, Math.min(limit, 50))}`;
+export async function fetchKalshiOdds(limit = 10, query?: string): Promise<OddsPoint[]> {
+  const url = `https://api.elections.kalshi.com/trade-api/v2/events?status=open&limit=${Math.max(1, Math.min(limit * 5, 100))}`;
   const r = await fetch(url, { headers: { accept: 'application/json' } });
   if (!r.ok) throw new Error(`kalshi_http_${r.status}`);
   const data = await r.json() as any;
@@ -51,12 +69,14 @@ export async function fetchKalshiOdds(limit = 10): Promise<OddsPoint[]> {
   const out: OddsPoint[] = [];
   for (const e of data?.events ?? []) {
     const m = e?.markets?.[0];
+    const title = String(e?.title ?? m?.title ?? 'unknown');
+    if (!keywordMatch(title, query)) continue;
     const yes = toNum(m?.yes_bid ?? m?.yes_ask ?? m?.last_price);
     const no = yes !== undefined ? 1 - yes : undefined;
     out.push({
       source: 'kalshi',
       marketId: String(m?.ticker ?? e?.event_ticker ?? e?.id ?? 'unknown'),
-      title: String(e?.title ?? m?.title ?? 'unknown'),
+      title,
       yes,
       no,
       volume24h: toNum(m?.volume),
@@ -67,19 +87,21 @@ export async function fetchKalshiOdds(limit = 10): Promise<OddsPoint[]> {
   return out;
 }
 
-export async function fetchMetaculusForecasts(limit = 10): Promise<OddsPoint[]> {
-  const url = `https://www.metaculus.com/api2/questions/?status=open&limit=${Math.max(1, Math.min(limit, 50))}`;
+export async function fetchMetaculusForecasts(limit = 10, query?: string): Promise<OddsPoint[]> {
+  const url = `https://www.metaculus.com/api2/questions/?status=open&limit=${Math.max(1, Math.min(limit * 5, 100))}`;
   const r = await fetch(url, { headers: { accept: 'application/json' } });
   if (!r.ok) throw new Error(`metaculus_http_${r.status}`);
   const data = await r.json() as any;
 
   const out: OddsPoint[] = [];
   for (const q of data?.results ?? []) {
+    const title = String(q?.title ?? 'unknown');
+    if (!keywordMatch(title, query)) continue;
     const median = toNum(q?.community_prediction?.full?.q2 ?? q?.community_prediction?.q2);
     out.push({
       source: 'metaculus',
       marketId: String(q?.id ?? 'unknown'),
-      title: String(q?.title ?? 'unknown'),
+      title,
       median,
       forecasters: toNum(q?.nr_forecasters),
       url: q?.page_url ? `https://www.metaculus.com${q.page_url}` : undefined,

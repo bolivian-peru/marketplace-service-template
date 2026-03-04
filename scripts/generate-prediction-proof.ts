@@ -2,13 +2,13 @@ import { writeFileSync, mkdirSync } from 'fs';
 import { fetchPolymarketOdds, fetchKalshiOdds, fetchMetaculusForecasts, fetchRedditSentiment, fetchXSentiment, classifySentiment } from '../src/scrapers/prediction-markets.ts';
 
 async function run() {
-  const market = 'us-presidential-election-2028';
-  const topic = 'bitcoin';
+  const market = 'bitcoin';
+  const topic = 'trump';
 
   const [polymarket, kalshi, metaculus, reddit, xPosts] = await Promise.all([
-    fetchPolymarketOdds(10).catch(() => []),
-    fetchKalshiOdds(10).catch(() => []),
-    fetchMetaculusForecasts(10).catch(() => []),
+    fetchPolymarketOdds(20, market).catch(() => []),
+    fetchKalshiOdds(20, market).catch(() => []),
+    fetchMetaculusForecasts(20, market).catch(() => []),
     fetchRedditSentiment(topic, 20).catch(() => []),
     fetchXSentiment(topic, 20).catch(() => []),
   ]);

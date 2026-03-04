@@ -150,9 +150,9 @@ serviceRouter.get('/run', async (c) => {
     const topic = c.req.query('topic') || market;
 
     const [polymarket, kalshi, metaculus, reddit, xPosts] = await Promise.all([
-      fetchPolymarketOdds(10).catch(() => []),
-      fetchKalshiOdds(10).catch(() => []),
-      fetchMetaculusForecasts(10).catch(() => []),
+      fetchPolymarketOdds(10, market).catch(() => []),
+      fetchKalshiOdds(10, market).catch(() => []),
+      fetchMetaculusForecasts(10, market).catch(() => []),
       fetchRedditSentiment(topic, 20).catch(() => []),
       fetchXSentiment(topic, 20).catch(() => []),
     ]);
