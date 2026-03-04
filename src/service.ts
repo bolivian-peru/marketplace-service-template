@@ -30,6 +30,7 @@ import {
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
 import { fetchAdvertiserAds, fetchDisplayAds, fetchSearchAds, normalizeCountry } from './scrapers/ad-intelligence-scraper';
+import { scrapeMobileSERP } from './scrapers/serp-tracker';
 
 export const serviceRouter = new Hono();
 
@@ -44,6 +45,8 @@ const MAPS_PRICE_USDC = 0.005;
 const MAPS_DESCRIPTION = 'Extract structured business data from Google Maps: name, address, phone, website, email, hours, ratings, reviews, categories, and geocoordinates. Search by category + location with full pagination.';
 const AD_INTEL_PRICE_USDC = 0.03;
 const AD_INTEL_DESCRIPTION = 'Mobile Ad Verification & Creative Intelligence: search ads, display ad capture, and advertiser lookup from real mobile proxy traffic.';
+const SERP_PRICE_USDC = 0.02;
+const SERP_DESCRIPTION = 'Google SERP + AI Search Scraper via mobile proxies: organic results, ads, People Also Ask, featured snippets, AI overviews, map pack, and related searches.';
 
 const MAPS_OUTPUT_SCHEMA = {
   input: {
@@ -94,6 +97,32 @@ const AD_OUTPUT_SCHEMA = {
   },
 };
 
+const SERP_OUTPUT_SCHEMA = {
+  input: {
+    type: 'serp | ai_overview (required for SERP mode)',
+    query: 'string (required)',
+    country: 'ISO country code (optional, default: us)',
+    language: 'ISO language code (optional, default: en)',
+    location: 'string (optional, appended to query)',
+    pages: 'number (optional, default: 1, max: 3)',
+  },
+  output: {
+    query: 'string',
+    country: 'string',
+    language: 'string',
+    totalResults: 'string | null',
+    organic: 'OrganicResult[]',
+    ads: 'AdResult[]',
+    peopleAlsoAsk: 'PeopleAlsoAsk[]',
+    featuredSnippet: 'FeaturedSnippet | null',
+    aiOverview: 'AiOverview | null',
+    mapPack: 'MapPackResult[]',
+    relatedSearches: 'string[]',
+    proxy: '{ country: string, type: "mobile" }',
+    payment: '{ txHash, network, amount, settled }',
+  },
+};
+
 async function getProxyExitIp(): Promise<string | null> {
   try {
     const r = await proxyFetch('https://api.ipify.org?format=json', {
@@ -117,9 +146,10 @@ serviceRouter.get('/run', async (c) => {
 
   const mode = (c.req.query('type') || 'maps').trim().toLowerCase();
   const isAdMode = mode === 'search_ads' || mode === 'display_ads' || mode === 'advertiser';
-  const price = isAdMode ? AD_INTEL_PRICE_USDC : MAPS_PRICE_USDC;
-  const description = isAdMode ? AD_INTEL_DESCRIPTION : MAPS_DESCRIPTION;
-  const outputSchema = isAdMode ? AD_OUTPUT_SCHEMA : MAPS_OUTPUT_SCHEMA;
+  const isSerpMode = mode === 'serp' || mode === 'ai_overview';
+  const price = isAdMode ? AD_INTEL_PRICE_USDC : isSerpMode ? SERP_PRICE_USDC : MAPS_PRICE_USDC;
+  const description = isAdMode ? AD_INTEL_DESCRIPTION : isSerpMode ? SERP_DESCRIPTION : MAPS_DESCRIPTION;
+  const outputSchema = isAdMode ? AD_OUTPUT_SCHEMA : isSerpMode ? SERP_OUTPUT_SCHEMA : MAPS_OUTPUT_SCHEMA;
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -185,6 +215,96 @@ serviceRouter.get('/run', async (c) => {
 
       return c.json({
         ...result,
+        proxy: { country: proxy.country, type: 'mobile' },
+        payment: {
+          txHash: payment.txHash,
+          network: payment.network,
+          amount: verification.amount,
+          settled: true,
+        },
+      });
+    }
+
+    if (isSerpMode) {
+      const query = c.req.query('query');
+      if (!query) {
+        return c.json({
+          error: 'Missing required parameter: query',
+          example: '/api/run?type=serp&query=best+vpn&country=us&language=en&pages=1',
+        }, 400);
+      }
+
+      const country = (c.req.query('country') || 'us').trim().toLowerCase();
+      const language = (c.req.query('language') || 'en').trim().toLowerCase();
+      const location = c.req.query('location')?.trim() || undefined;
+      const pages = Math.min(Math.max(parseInt(c.req.query('pages') || '1') || 1, 1), 3);
+
+      const organic: any[] = [];
+      const ads: any[] = [];
+      const peopleAlsoAsk: any[] = [];
+      const relatedSearches = new Set<string>();
+      let featuredSnippet: any = null;
+      let aiOverview: any = null;
+      let mapPack: any[] = [];
+      let knowledgePanel: any = null;
+      let totalResults: string | null = null;
+
+      for (let page = 0; page < pages; page++) {
+        const serp = await scrapeMobileSERP(query, country, language, location, page * 10);
+        if (!totalResults && serp.totalResults) totalResults = serp.totalResults;
+        if (!featuredSnippet && serp.featuredSnippet) featuredSnippet = serp.featuredSnippet;
+        if (!aiOverview && serp.aiOverview) aiOverview = serp.aiOverview;
+        if (!knowledgePanel && serp.knowledgePanel) knowledgePanel = serp.knowledgePanel;
+        if (!mapPack.length && serp.mapPack.length) mapPack = serp.mapPack;
+
+        organic.push(...serp.organic.map((item) => ({ ...item, page: page + 1 })));
+        ads.push(...serp.ads.map((item) => ({ ...item, page: page + 1 })));
+        peopleAlsoAsk.push(...serp.peopleAlsoAsk);
+        serp.relatedSearches.forEach((item) => relatedSearches.add(item));
+      }
+
+      c.header('X-Payment-Settled', 'true');
+      c.header('X-Payment-TxHash', payment.txHash);
+
+      if (mode === 'ai_overview') {
+        return c.json({
+          type: 'ai_overview',
+          query,
+          country,
+          language,
+          location: location || null,
+          aiOverview,
+          featuredSnippet,
+          supportingOrganicResults: organic.slice(0, 5),
+          peopleAlsoAsk: peopleAlsoAsk.slice(0, 8),
+          relatedSearches: Array.from(relatedSearches).slice(0, 10),
+          totalResults,
+          proxy: { country: proxy.country, type: 'mobile' },
+          payment: {
+            txHash: payment.txHash,
+            network: payment.network,
+            amount: verification.amount,
+            settled: true,
+          },
+        });
+      }
+
+      return c.json({
+        type: 'serp',
+        query,
+        country,
+        language,
+        location: location || null,
+        pages,
+        totalResults,
+        organic,
+        ads,
+        peopleAlsoAsk,
+        featuredSnippet,
+        aiOverview,
+        mapPack,
+        knowledgePanel,
+        relatedSearches: Array.from(relatedSearches),
         proxy: { country: proxy.country, type: 'mobile' },
         payment: {
           txHash: payment.txHash,
