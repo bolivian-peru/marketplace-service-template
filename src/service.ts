@@ -29,6 +29,7 @@ import {
 } from './scrapers/linkedin-enrichment';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
+import { getAppStoreData, SUPPORTED_APP_COUNTRIES } from './scrapers/app-store-scraper';
 
 export const serviceRouter = new Hono();
 
@@ -41,6 +42,9 @@ const PRICE_USDC = 0.005;
 const DESCRIPTION = 'Job Market Intelligence API (Indeed/LinkedIn): title, company, location, salary, date, link, remote + proxy exit metadata.';
 const MAPS_PRICE_USDC = 0.005;
 const MAPS_DESCRIPTION = 'Extract structured business data from Google Maps: name, address, phone, website, email, hours, ratings, reviews, categories, and geocoordinates. Search by category + location with full pagination.';
+const APP_STORE_PRICE_USDC = 0.02;
+const APP_STORE_DESCRIPTION = 'App Store Intelligence API: rankings, app metadata + reviews, keyword search, and trending apps for Apple App Store and Google Play.';
+const APP_STORE_TYPES = new Set(['rankings', 'app', 'search', 'trending']);
 
 const MAPS_OUTPUT_SCHEMA = {
   input: {
@@ -74,6 +78,27 @@ const MAPS_OUTPUT_SCHEMA = {
   },
 };
 
+const APP_STORE_OUTPUT_SCHEMA = {
+  input: {
+    type: '"rankings" | "app" | "search" | "trending" (required)',
+    store: '"apple" | "google" (required)',
+    country: `string — one of ${SUPPORTED_APP_COUNTRIES.join(', ')} (required)`,
+    category: 'string (optional; rankings/trending, default: games)',
+    appId: 'string (required when type=app)',
+    query: 'string (required when type=search)',
+    limit: 'number (optional, default 20, max 50)',
+  },
+  output: {
+    rankings: 'AppRankingItem[] (rankings/trending)',
+    app: 'AppRankingItem (app details)',
+    reviews: 'AppReview[] (app details)',
+    results: 'AppRankingItem[] (search)',
+    metadata: '{ totalRanked|totalResults, scrapedAt, source }',
+    proxy: '{ country: string, type: "mobile" }',
+    payment: '{ txHash, network, amount, settled }',
+  },
+};
+
 async function getProxyExitIp(): Promise<string | null> {
   try {
     const r = await proxyFetch('https://api.ipify.org?format=json', {
@@ -95,15 +120,32 @@ serviceRouter.get('/run', async (c) => {
     return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
   }
 
+  const requestedType = (c.req.query('type') || 'maps').toLowerCase();
+  const isMapsRequest = requestedType === 'maps';
+  const isAppStoreRequest = APP_STORE_TYPES.has(requestedType);
+
+  if (!isMapsRequest && !isAppStoreRequest) {
+    return c.json({
+      error: 'Invalid type. Use maps (default), rankings, app, search, or trending',
+    }, 400);
+  }
+
   const payment = extractPayment(c);
   if (!payment) {
     return c.json(
-      build402Response('/api/run', MAPS_DESCRIPTION, MAPS_PRICE_USDC, walletAddress, MAPS_OUTPUT_SCHEMA),
+      build402Response(
+        '/api/run',
+        isAppStoreRequest ? APP_STORE_DESCRIPTION : MAPS_DESCRIPTION,
+        isAppStoreRequest ? APP_STORE_PRICE_USDC : MAPS_PRICE_USDC,
+        walletAddress,
+        isAppStoreRequest ? APP_STORE_OUTPUT_SCHEMA : MAPS_OUTPUT_SCHEMA,
+      ),
       402,
     );
   }
 
-  const verification = await verifyPayment(payment, walletAddress, MAPS_PRICE_USDC);
+  const expectedPrice = isAppStoreRequest ? APP_STORE_PRICE_USDC : MAPS_PRICE_USDC;
+  const verification = await verifyPayment(payment, walletAddress, expectedPrice);
   if (!verification.valid) {
     return c.json({
       error: 'Payment verification failed',
@@ -116,6 +158,74 @@ serviceRouter.get('/run', async (c) => {
   if (!checkProxyRateLimit(clientIp)) {
     c.header('Retry-After', '60');
     return c.json({ error: 'Proxy rate limit exceeded. Max 20 requests/min to protect proxy quota.', retryAfter: 60 }, 429);
+  }
+
+  if (isAppStoreRequest) {
+    const store = (c.req.query('store') || '').toLowerCase();
+    if (store !== 'apple' && store !== 'google') {
+      return c.json({ error: 'Missing or invalid store. Use store=apple or store=google.' }, 400);
+    }
+
+    const country = (c.req.query('country') || 'US').toUpperCase();
+    if (!SUPPORTED_APP_COUNTRIES.includes(country as any)) {
+      return c.json({
+        error: `Unsupported country: ${country}. Supported countries: ${SUPPORTED_APP_COUNTRIES.join(', ')}`,
+      }, 400);
+    }
+
+    const limitRaw = c.req.query('limit');
+    let limit = 20;
+    if (limitRaw) {
+      const parsed = parseInt(limitRaw, 10);
+      if (!Number.isFinite(parsed) || parsed < 1 || parsed > 50) {
+        return c.json({ error: 'Invalid limit. Use an integer between 1 and 50.' }, 400);
+      }
+      limit = parsed;
+    }
+
+    const category = c.req.query('category') || 'games';
+    const appId = c.req.query('appId') || undefined;
+    const query = c.req.query('query') || undefined;
+
+    if (requestedType === 'app' && !appId) {
+      return c.json({ error: 'Missing required parameter: appId for type=app' }, 400);
+    }
+
+    if (requestedType === 'search' && !query) {
+      return c.json({ error: 'Missing required parameter: query for type=search' }, 400);
+    }
+
+    try {
+      const proxy = getProxy();
+      const result = await getAppStoreData({
+        type: requestedType as 'rankings' | 'app' | 'search' | 'trending',
+        store,
+        country,
+        category,
+        appId,
+        query,
+        limit,
+      });
+
+      c.header('X-Payment-Settled', 'true');
+      c.header('X-Payment-TxHash', payment.txHash);
+
+      return c.json({
+        ...result,
+        proxy: { country: proxy.country, type: 'mobile' },
+        payment: {
+          txHash: payment.txHash,
+          network: payment.network,
+          amount: verification.amount,
+          settled: true,
+        },
+      });
+    } catch (err: any) {
+      return c.json({
+        error: 'App store intelligence execution failed',
+        message: err?.message || String(err),
+      }, 502);
+    }
   }
 
   const query = c.req.query('query');
