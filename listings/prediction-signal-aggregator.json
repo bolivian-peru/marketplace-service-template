@@ -3,7 +3,7 @@
   "name": "Prediction Market Signal Aggregator",
   "description": "Cross-platform prediction market odds + proxy-backed social sentiment with arbitrage/divergence signals.",
   "longDescription": "Aggregates Polymarket, Kalshi, and Metaculus data, then combines proxy-backed social sentiment to detect pricing divergence and potential arbitrage opportunities. Designed for AI agents that need reliable, structured market signal data with x402 micropayments.",
-  "endpoint": "https://YOUR_DEPLOYMENT_URL/api/prediction",
+  "endpoint": "https://feeling-instrumentation-praise-secret.trycloudflare.com/api/prediction",
   "docsUrl": "https://github.com/Samfresh-ai/marketplace-service-template/tree/feat/bounty-55-signal-aggregator",
   "pricing": {
     "model": "per-request",
@@ -66,7 +66,7 @@
   "featured": false,
   "addedAt": "2026-03-03",
   "x402": {
-    "discoveryUrl": "https://YOUR_DEPLOYMENT_URL/api/prediction?type=signal&market=us-election",
-    "wellKnown": "https://YOUR_DEPLOYMENT_URL/.well-known/x402.json"
+    "discoveryUrl": "https://feeling-instrumentation-praise-secret.trycloudflare.com/api/prediction?type=signal&market=us-election"
+    "wellKnown": "https://feeling-instrumentation-praise-secret.trycloudflare.com/.well-known/x402.json"
   }
 }
