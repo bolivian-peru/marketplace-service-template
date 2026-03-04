@@ -1,1 +1,47 @@
-{"status":402,"message":"Payment required","resource":"/api/prediction","description":"Prediction market signal aggregator with cross-market spread + proxy-backed social sentiment.","price":{"amount":"0.05","currency":"USDC","minimumAmount":"0.05"},"networks":[{"network":"solana","chainId":"solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp","recipient":"6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv","asset":"USDC","assetAddress":"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"},{"network":"base","chainId":"eip155:8453","recipient":"0xF8cD900794245fc36CBE65be9afc23CDF5103042","asset":"USDC","assetAddress":"0x833589fcd6edb6e08f4c7c32d4f71b54bda02913"}],"headers":{"required":["Payment-Signature"],"optional":["X-Payment-Network"],"format":"Payment-Signature: <transaction_hash>"},"outputSchema":{"input":{"type":"signal | arbitrage | sentiment | trending","market":"string (optional)","topic":"string (optional)","country":"string (optional)"},"output":{"timestamp":"ISO string","odds":"polymarket/kalshi/metaculus normalized objects","sentiment":"platform sentiment summary + sample volume","signals":"arbitrage + divergence flags with confidence","proxy":"{ country, type }","payment":"{ txHash, network, amount, settled }"}}}
+{
+  "type": "arbitrage",
+  "market": "us-presidential-election-2028",
+  "timestamp": "2026-03-04T02:13:12.832Z",
+  "odds": {
+    "polymarket": {
+      "source": "polymarket",
+      "marketId": "16167",
+      "title": "MicroStrategy sells any Bitcoin by ___ ?",
+      "volume24h": 16445.350059999997,
+      "url": "https://polymarket.com/event/microstrategy-sell-any-bitcoin-in-2025"
+    },
+    "kalshi": {
+      "source": "kalshi",
+      "marketId": "KXELONMARS-99",
+      "title": "Will Elon Musk visit Mars in his lifetime?"
+    },
+    "metaculus": null
+  },
+  "sentiment": {
+    "reddit": {
+      "positive": 0,
+      "negative": 0,
+      "neutral": 0,
+      "volume": 0
+    },
+    "redditSamples": [],
+    "x": {
+      "positive": 0,
+      "negative": 0,
+      "neutral": 0,
+      "volume": 0
+    },
+    "xSamples": []
+  },
+  "signals": {
+    "arbitrage": {
+      "detected": false,
+      "spread": 0,
+      "confidence": 0.4
+    }
+  },
+  "payment": {
+    "mode": "proof-local",
+    "note": "Data-mode sample (not 402 scaffold)"
+  }
+}

@@ -99,7 +99,12 @@ export type SentimentSample = {
 export async function fetchRedditSentiment(topic: string, limit = 20): Promise<SentimentSample[]> {
   const q = encodeURIComponent(topic.trim());
   const url = `https://www.reddit.com/search.json?q=${q}&sort=new&limit=${Math.max(1, Math.min(limit, 50))}`;
-  const r = await proxyFetch(url, { timeoutMs: 20000, maxRetries: 2, headers: { 'User-Agent': 'Mozilla/5.0' } });
+  let r: Response;
+  try {
+    r = await proxyFetch(url, { timeoutMs: 20000, maxRetries: 2, headers: { 'User-Agent': 'Mozilla/5.0' } });
+  } catch {
+    r = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0', accept: 'application/json' } });
+  }
   if (!r.ok) throw new Error(`reddit_http_${r.status}`);
   const data = await r.json() as any;
 
@@ -116,6 +121,36 @@ export async function fetchRedditSentiment(topic: string, limit = 20): Promise<S
       url: d?.permalink ? `https://reddit.com${d.permalink}` : undefined,
     });
   }
+  return out;
+}
+
+export async function fetchXSentiment(topic: string, limit = 20): Promise<SentimentSample[]> {
+  const q = encodeURIComponent(topic.trim());
+  const rssUrl = `https://nitter.net/search/rss?f=tweets&q=${q}`;
+  let r: Response;
+  try {
+    r = await proxyFetch(rssUrl, { timeoutMs: 20000, maxRetries: 2, headers: { 'User-Agent': 'Mozilla/5.0' } });
+  } catch {
+    r = await fetch(rssUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+  }
+  if (!r.ok) throw new Error(`x_rss_http_${r.status}`);
+
+  const xml = await r.text();
+  const items = xml.split('<item>').slice(1, 1 + Math.max(1, Math.min(limit, 50)));
+  const out: SentimentSample[] = [];
+
+  for (const item of items) {
+    const title = (item.match(/<title>([\s\S]*?)<\/title>/)?.[1] || '').replace(/<!\[CDATA\[|\]\]>/g, '').trim();
+    const link = (item.match(/<link>([\s\S]*?)<\/link>/)?.[1] || '').trim();
+    if (!title) continue;
+    out.push({
+      platform: 'x',
+      text: title.slice(0, 500),
+      score: 1,
+      url: link || undefined,
+    });
+  }
+
   return out;
 }
 
