@@ -120,15 +120,23 @@ export type SentimentSample = {
 
 export async function fetchRedditSentiment(topic: string, limit = 20): Promise<SentimentSample[]> {
   const q = encodeURIComponent(topic.trim());
-  const url = `https://www.reddit.com/search.json?q=${q}&sort=new&limit=${Math.max(1, Math.min(limit, 50))}`;
-  let r: Response;
-  try {
-    r = await proxyFetch(url, { timeoutMs: 20000, maxRetries: 2, headers: { 'User-Agent': 'Mozilla/5.0' } });
-  } catch {
-    r = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0', accept: 'application/json' } });
+  const urls = [
+    `https://www.reddit.com/search.json?q=${q}&sort=new&limit=${Math.max(1, Math.min(limit, 50))}`,
+    `https://r.jina.ai/http://www.reddit.com/search.json?q=${q}&sort=new&limit=${Math.max(1, Math.min(limit, 50))}`,
+  ];
+
+  let data: any = null;
+  for (const url of urls) {
+    try {
+      const r = await proxyFetch(url, { timeoutMs: 20000, maxRetries: 2, headers: { 'User-Agent': 'Mozilla/5.0' } });
+      if (!r.ok) continue;
+      const text = await r.text();
+      data = text.trim().startsWith('{') ? JSON.parse(text) : null;
+      if (data) break;
+    } catch {
+      // continue
+    }
   }
-  if (!r.ok) throw new Error(`reddit_http_${r.status}`);
-  const data = await r.json() as any;
 
   const out: SentimentSample[] = [];
   for (const c of data?.data?.children ?? []) {
@@ -148,16 +156,24 @@ export async function fetchRedditSentiment(topic: string, limit = 20): Promise<S
 
 export async function fetchXSentiment(topic: string, limit = 20): Promise<SentimentSample[]> {
   const q = encodeURIComponent(topic.trim());
-  const rssUrl = `https://nitter.net/search/rss?f=tweets&q=${q}`;
-  let r: Response;
-  try {
-    r = await proxyFetch(rssUrl, { timeoutMs: 20000, maxRetries: 2, headers: { 'User-Agent': 'Mozilla/5.0' } });
-  } catch {
-    r = await fetch(rssUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } });
-  }
-  if (!r.ok) throw new Error(`x_rss_http_${r.status}`);
+  const rssUrls = [
+    `https://nitter.net/search/rss?f=tweets&q=${q}`,
+    `https://nitter.poast.org/search/rss?f=tweets&q=${q}`,
+    `https://r.jina.ai/http://nitter.net/search/rss?f=tweets&q=${q}`,
+  ];
 
-  const xml = await r.text();
+  let xml = '';
+  for (const rssUrl of rssUrls) {
+    try {
+      const r = await proxyFetch(rssUrl, { timeoutMs: 20000, maxRetries: 2, headers: { 'User-Agent': 'Mozilla/5.0' } });
+      if (!r.ok) continue;
+      const txt = await r.text();
+      if (txt.includes('<item>')) { xml = txt; break; }
+    } catch {
+      // continue
+    }
+  }
+
   const items = xml.split('<item>').slice(1, 1 + Math.max(1, Math.min(limit, 50)));
   const out: SentimentSample[] = [];
 
