@@ -1,0 +1,57 @@
+{
+  "type": "signal",
+  "market": "us election",
+  "timestamp": "2026-03-04T00:57:46.970Z",
+  "odds": {
+    "polymarket": {
+      "yes": 0,
+      "no": 1,
+      "volume24h": 24.259824,
+      "liquidity": 4187.70286,
+      "title": "UK election called by...?",
+      "slug": "uk-election-called-by"
+    },
+    "kalshi": null,
+    "metaculus": null
+  },
+  "sentiment": {
+    "twitter": {
+      "positive": 0,
+      "negative": 0,
+      "neutral": 0,
+      "volume": 0,
+      "trending": false,
+      "topTweets": []
+    },
+    "reddit": {
+      "positive": 0,
+      "negative": 0,
+      "neutral": 1,
+      "volume": 0,
+      "topSubreddits": []
+    },
+    "tiktok": {
+      "relatedVideos": 0,
+      "totalViews": 0,
+      "sentiment": "neutral"
+    }
+  },
+  "signals": {
+    "arbitrage": {
+      "detected": false,
+      "spread": 0,
+      "direction": "Insufficient cross-market data",
+      "confidence": 0
+    },
+    "sentimentDivergence": {
+      "detected": false,
+      "description": "Social sentiment and market pricing are roughly aligned",
+      "magnitude": "low"
+    },
+    "volumeSpike": {
+      "detected": false,
+      "baseline24h": 24.259824,
+      "threshold": 1000000
+    }
+  }
+}

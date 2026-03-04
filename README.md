@@ -61,6 +61,10 @@ curl http://localhost:3000/
 
 curl "http://localhost:3000/api/run?query=plumbers&location=Austin+TX"
 # → 402 with payment instructions (this is correct!)
+
+# Prediction signal mode (Bounty #55)
+curl "http://localhost:3000/api/run?type=signal&market=us+presidential+election+2028"
+# → 402 with prediction schema + price
 ```
 
 ## Edit One File

@@ -29,6 +29,7 @@ import {
 } from './scrapers/linkedin-enrichment';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
+import { getPredictionSignal, getArbitrageOpportunities, getTopicSentiment, getTrendingPredictionSignals } from './scrapers/prediction-scraper';
 
 export const serviceRouter = new Hono();
 
@@ -74,6 +75,29 @@ const MAPS_OUTPUT_SCHEMA = {
   },
 };
 
+const PREDICTION_PRICE_USDC = 0.05;
+const PREDICTION_TYPES = new Set(['signal', 'arbitrage', 'sentiment', 'trending']);
+const PREDICTION_DESCRIPTION = 'Prediction market signal API: aggregate Polymarket + Kalshi odds with social sentiment from X/Reddit/TikTok to detect arbitrage and divergence.';
+const PREDICTION_OUTPUT_SCHEMA = {
+  input: {
+    type: '"signal" | "arbitrage" | "sentiment" | "trending" (required)',
+    market: 'string (required for signal, optional for arbitrage)',
+    topic: 'string (required for sentiment)',
+    limit: 'number (optional for trending, default 5, max 10)',
+  },
+  output: {
+    type: 'signal | arbitrage | sentiment | trending',
+    timestamp: 'ISO timestamp',
+    odds: 'polymarket + kalshi + optional metaculus snapshot (signal only)',
+    sentiment: 'twitter/reddit/tiktok sentiment object (signal/sentiment)',
+    signals: 'arbitrage + sentiment divergence + volume spike metadata (signal)',
+    opportunities: 'arbitrage[] (arbitrage type)',
+    markets: 'divergence-ranked market list (trending type)',
+    proxy: '{ country: string, type: "mobile" }',
+    payment: '{ txHash, network, amount, settled }',
+  },
+};
+
 async function getProxyExitIp(): Promise<string | null> {
   try {
     const r = await proxyFetch('https://api.ipify.org?format=json', {
@@ -95,15 +119,31 @@ serviceRouter.get('/run', async (c) => {
     return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
   }
 
+  const requestedType = (c.req.query('type') || 'maps').toLowerCase();
+  const isPredictionRequest = PREDICTION_TYPES.has(requestedType);
+
+  if (!isPredictionRequest && c.req.query('type') && requestedType !== 'maps') {
+    return c.json({
+      error: 'Invalid type. Use maps (default), signal, arbitrage, sentiment, or trending',
+    }, 400);
+  }
+
   const payment = extractPayment(c);
   if (!payment) {
     return c.json(
-      build402Response('/api/run', MAPS_DESCRIPTION, MAPS_PRICE_USDC, walletAddress, MAPS_OUTPUT_SCHEMA),
+      build402Response(
+        '/api/run',
+        isPredictionRequest ? PREDICTION_DESCRIPTION : MAPS_DESCRIPTION,
+        isPredictionRequest ? PREDICTION_PRICE_USDC : MAPS_PRICE_USDC,
+        walletAddress,
+        isPredictionRequest ? PREDICTION_OUTPUT_SCHEMA : MAPS_OUTPUT_SCHEMA,
+      ),
       402,
     );
   }
 
-  const verification = await verifyPayment(payment, walletAddress, MAPS_PRICE_USDC);
+  const expectedPrice = isPredictionRequest ? PREDICTION_PRICE_USDC : MAPS_PRICE_USDC;
+  const verification = await verifyPayment(payment, walletAddress, expectedPrice);
   if (!verification.valid) {
     return c.json({
       error: 'Payment verification failed',
@@ -116,6 +156,51 @@ serviceRouter.get('/run', async (c) => {
   if (!checkProxyRateLimit(clientIp)) {
     c.header('Retry-After', '60');
     return c.json({ error: 'Proxy rate limit exceeded. Max 20 requests/min to protect proxy quota.', retryAfter: 60 }, 429);
+  }
+
+  if (isPredictionRequest) {
+    try {
+      const proxy = getProxy();
+      let result: unknown;
+
+      if (requestedType === 'signal') {
+        const market = c.req.query('market');
+        if (!market) return c.json({ error: 'Missing required parameter: market for type=signal' }, 400);
+        result = await getPredictionSignal(market);
+      } else if (requestedType === 'arbitrage') {
+        const marketHint = c.req.query('market') || undefined;
+        result = await getArbitrageOpportunities(marketHint);
+      } else if (requestedType === 'sentiment') {
+        const topic = c.req.query('topic');
+        if (!topic) return c.json({ error: 'Missing required parameter: topic for type=sentiment' }, 400);
+        result = await getTopicSentiment(topic);
+      } else {
+        const parsedLimit = Number(c.req.query('limit') || '5');
+        if (!Number.isFinite(parsedLimit) || parsedLimit < 1 || parsedLimit > 10) {
+          return c.json({ error: 'Invalid limit for type=trending. Use 1-10.' }, 400);
+        }
+        result = await getTrendingPredictionSignals(Math.floor(parsedLimit));
+      }
+
+      c.header('X-Payment-Settled', 'true');
+      c.header('X-Payment-TxHash', payment.txHash);
+
+      return c.json({
+        ...((result as object) || {}),
+        proxy: { country: proxy.country, type: 'mobile' },
+        payment: {
+          txHash: payment.txHash,
+          network: payment.network,
+          amount: verification.amount,
+          settled: true,
+        },
+      });
+    } catch (err: any) {
+      return c.json({
+        error: 'Prediction signal execution failed',
+        message: err?.message || String(err),
+      }, 502);
+    }
   }
 
   const query = c.req.query('query');
