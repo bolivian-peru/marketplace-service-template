@@ -76,6 +76,10 @@ app.get('/health', (c) => c.json({
     '/api/reviews/:place_id',
     '/api/reviews/summary/:place_id',
     '/api/business/:place_id',
+    '/api/amazon/product/:asin',
+    '/api/amazon/search',
+    '/api/amazon/bestsellers',
+    '/api/amazon/reviews/:asin',
     '/api/airbnb/search',
     '/api/airbnb/listing/:id',
     '/api/airbnb/reviews/:listing_id',
@@ -91,6 +95,10 @@ app.get('/', (c) => c.json({
     { method: 'GET', path: '/api/run', description: 'Google Maps Lead Generator — search businesses by category + location', price: '0.005 USDC' },
     { method: 'GET', path: '/api/details', description: 'Google Maps Place Details — detailed business info by Place ID', price: '0.005 USDC' },
     { method: 'GET', path: '/api/jobs', description: 'Get job listings (Indeed/LinkedIn) with salary + date + proxy metadata' },
+    { method: 'GET', path: '/api/amazon/product/:asin', description: 'Amazon product intelligence by ASIN (price, BSR, buy box)', price: '0.005 USDC' },
+    { method: 'GET', path: '/api/amazon/search', description: 'Amazon product search by keyword + marketplace', price: '0.01 USDC' },
+    { method: 'GET', path: '/api/amazon/bestsellers', description: 'Amazon bestsellers by category + marketplace', price: '0.01 USDC' },
+    { method: 'GET', path: '/api/amazon/reviews/:asin', description: 'Amazon reviews extraction by ASIN', price: '0.02 USDC' },
     { method: 'GET', path: '/api/reviews/search', description: 'Search businesses by query + location', price: '0.01 USDC' },
     { method: 'GET', path: '/api/reviews/:place_id', description: 'Fetch Google reviews by Place ID', price: '0.02 USDC' },
     { method: 'GET', path: '/api/business/:place_id', description: 'Get business details + review summary', price: '0.01 USDC' },
@@ -128,7 +136,7 @@ app.get('/', (c) => c.json({
 
 app.route('/api', serviceRouter);
 
-app.notFound((c) => c.json({ error: 'Not found', endpoints: ['/', '/health', '/api/run', '/api/details', '/api/jobs', '/api/reviews/search', '/api/reviews/:place_id', '/api/business/:place_id', '/api/reviews/summary/:place_id'] }, 404));
+app.notFound((c) => c.json({ error: 'Not found', endpoints: ['/', '/health', '/api/run', '/api/details', '/api/jobs', '/api/amazon/product/:asin', '/api/amazon/search', '/api/amazon/bestsellers', '/api/amazon/reviews/:asin', '/api/reviews/search', '/api/reviews/:place_id', '/api/business/:place_id', '/api/reviews/summary/:place_id'] }, 404));
 
 app.onError((err, c) => {
   console.error(`[ERROR] ${err.message}`);
