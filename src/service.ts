@@ -29,6 +29,7 @@ import {
 } from './scrapers/linkedin-enrichment';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
+import { fetchAdvertiserAds, fetchDisplayAds, fetchSearchAds, normalizeCountry } from './scrapers/ad-intelligence-scraper';
 
 export const serviceRouter = new Hono();
 
@@ -41,6 +42,8 @@ const PRICE_USDC = 0.005;
 const DESCRIPTION = 'Job Market Intelligence API (Indeed/LinkedIn): title, company, location, salary, date, link, remote + proxy exit metadata.';
 const MAPS_PRICE_USDC = 0.005;
 const MAPS_DESCRIPTION = 'Extract structured business data from Google Maps: name, address, phone, website, email, hours, ratings, reviews, categories, and geocoordinates. Search by category + location with full pagination.';
+const AD_INTEL_PRICE_USDC = 0.03;
+const AD_INTEL_DESCRIPTION = 'Mobile Ad Verification & Creative Intelligence: search ads, display ad capture, and advertiser lookup from real mobile proxy traffic.';
 
 const MAPS_OUTPUT_SCHEMA = {
   input: {
@@ -74,6 +77,23 @@ const MAPS_OUTPUT_SCHEMA = {
   },
 };
 
+const AD_OUTPUT_SCHEMA = {
+  input: {
+    type: 'search_ads | display_ads | advertiser (required for ad intelligence mode)',
+    query: 'string (required for search_ads)',
+    url: 'string (required for display_ads)',
+    domain: 'string (required for advertiser)',
+    country: 'US | DE | FR | ES | GB | PL (optional, default: US)',
+  },
+  output: {
+    type: 'search_ads | display_ads | advertiser',
+    ads: 'Ad records for requested mode',
+    total_ads: 'number',
+    proxy: '{ country: string, type: "mobile" }',
+    payment: '{ txHash, network, amount, settled }',
+  },
+};
+
 async function getProxyExitIp(): Promise<string | null> {
   try {
     const r = await proxyFetch('https://api.ipify.org?format=json', {
@@ -95,15 +115,21 @@ serviceRouter.get('/run', async (c) => {
     return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
   }
 
+  const mode = (c.req.query('type') || 'maps').trim().toLowerCase();
+  const isAdMode = mode === 'search_ads' || mode === 'display_ads' || mode === 'advertiser';
+  const price = isAdMode ? AD_INTEL_PRICE_USDC : MAPS_PRICE_USDC;
+  const description = isAdMode ? AD_INTEL_DESCRIPTION : MAPS_DESCRIPTION;
+  const outputSchema = isAdMode ? AD_OUTPUT_SCHEMA : MAPS_OUTPUT_SCHEMA;
+
   const payment = extractPayment(c);
   if (!payment) {
     return c.json(
-      build402Response('/api/run', MAPS_DESCRIPTION, MAPS_PRICE_USDC, walletAddress, MAPS_OUTPUT_SCHEMA),
+      build402Response('/api/run', description, price, walletAddress, outputSchema),
       402,
     );
   }
 
-  const verification = await verifyPayment(payment, walletAddress, MAPS_PRICE_USDC);
+  const verification = await verifyPayment(payment, walletAddress, price);
   if (!verification.valid) {
     return c.json({
       error: 'Payment verification failed',
@@ -118,40 +144,88 @@ serviceRouter.get('/run', async (c) => {
     return c.json({ error: 'Proxy rate limit exceeded. Max 20 requests/min to protect proxy quota.', retryAfter: 60 }, 429);
   }
 
-  const query = c.req.query('query');
-  const location = c.req.query('location');
-  const limitParam = c.req.query('limit');
-  const pageToken = c.req.query('pageToken');
-
-  if (!query) {
-    return c.json({
-      error: 'Missing required parameter: query',
-      hint: 'Provide a search query like ?query=plumbers&location=Austin+TX',
-      example: '/api/run?query=restaurants&location=New+York+City&limit=20',
-    }, 400);
-  }
-
-  if (!location) {
-    return c.json({
-      error: 'Missing required parameter: location',
-      hint: 'Provide a location like ?query=plumbers&location=Austin+TX',
-      example: '/api/run?query=restaurants&location=New+York+City&limit=20',
-    }, 400);
-  }
-
-  let limit = 20;
-  if (limitParam) {
-    const parsed = parseInt(limitParam);
-    if (isNaN(parsed) || parsed < 1) {
-      return c.json({ error: 'Invalid limit parameter: must be a positive integer' }, 400);
-    }
-    limit = Math.min(parsed, 100);
-  }
-
-  const startIndex = pageToken ? parseInt(pageToken) || 0 : 0;
-
   try {
     const proxy = getProxy();
+
+    if (isAdMode) {
+      const country = normalizeCountry(c.req.query('country'));
+      let result: any;
+
+      if (mode === 'search_ads') {
+        const query = c.req.query('query');
+        if (!query) {
+          return c.json({
+            error: 'Missing required parameter: query',
+            example: '/api/run?type=search_ads&query=best+vpn&country=US',
+          }, 400);
+        }
+        result = await fetchSearchAds(query, country);
+      } else if (mode === 'display_ads') {
+        const url = c.req.query('url');
+        if (!url) {
+          return c.json({
+            error: 'Missing required parameter: url',
+            example: '/api/run?type=display_ads&url=https://techcrunch.com&country=DE',
+          }, 400);
+        }
+        result = await fetchDisplayAds(url, country);
+      } else {
+        const domain = c.req.query('domain');
+        if (!domain) {
+          return c.json({
+            error: 'Missing required parameter: domain',
+            example: '/api/run?type=advertiser&domain=nordvpn.com&country=US',
+          }, 400);
+        }
+        result = await fetchAdvertiserAds(domain, country);
+      }
+
+      c.header('X-Payment-Settled', 'true');
+      c.header('X-Payment-TxHash', payment.txHash);
+
+      return c.json({
+        ...result,
+        proxy: { country: proxy.country, type: 'mobile' },
+        payment: {
+          txHash: payment.txHash,
+          network: payment.network,
+          amount: verification.amount,
+          settled: true,
+        },
+      });
+    }
+
+    const query = c.req.query('query');
+    const location = c.req.query('location');
+    const limitParam = c.req.query('limit');
+    const pageToken = c.req.query('pageToken');
+
+    if (!query) {
+      return c.json({
+        error: 'Missing required parameter: query',
+        hint: 'Provide a search query like ?query=plumbers&location=Austin+TX',
+        example: '/api/run?query=restaurants&location=New+York+City&limit=20',
+      }, 400);
+    }
+
+    if (!location) {
+      return c.json({
+        error: 'Missing required parameter: location',
+        hint: 'Provide a location like ?query=plumbers&location=Austin+TX',
+        example: '/api/run?query=restaurants&location=New+York+City&limit=20',
+      }, 400);
+    }
+
+    let limit = 20;
+    if (limitParam) {
+      const parsed = parseInt(limitParam);
+      if (isNaN(parsed) || parsed < 1) {
+        return c.json({ error: 'Invalid limit parameter: must be a positive integer' }, 400);
+      }
+      limit = Math.min(parsed, 100);
+    }
+
+    const startIndex = pageToken ? parseInt(pageToken) || 0 : 0;
     const result = await scrapeGoogleMaps(query, location, limit, startIndex);
 
     c.header('X-Payment-Settled', 'true');
@@ -168,10 +242,14 @@ serviceRouter.get('/run', async (c) => {
       },
     });
   } catch (err: any) {
+    if (typeof err?.message === 'string' && err.message.includes('Unsupported country')) {
+      return c.json({ error: err.message }, 400);
+    }
+
     return c.json({
       error: 'Service execution failed',
       message: err.message,
-      hint: 'Google Maps may be temporarily blocking requests. Try again in a few minutes.',
+      hint: 'Request failed via proxy upstream. Try again in a few minutes.',
     }, 502);
   }
 });
