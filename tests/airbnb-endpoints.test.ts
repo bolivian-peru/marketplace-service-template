@@ -4,6 +4,7 @@ import app from '../src/index';
 const TEST_WALLET = '0x1111111111111111111111111111111111111111';
 const USDC_BASE = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913';
 const TRANSFER_TOPIC = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
+const USDC_AMOUNT_0_01 = '0x0000000000000000000000000000000000000000000000000000000000002710';
 const USDC_AMOUNT_0_02 = '0x0000000000000000000000000000000000000000000000000000000000004e20';
 const USDC_AMOUNT_0_05 = '0x000000000000000000000000000000000000000000000000000000000000c350';
 
@@ -36,6 +37,40 @@ function airbnbSearchHtml(): string {
       <div>$220 per night</div>
       <div>4.7 (120 reviews)</div>
       <img src="https://a0.muscache.com/im/pictures/sample-2.jpg" />
+    </body></html>
+  `;
+}
+
+function airbnbListingHtml(): string {
+  return `
+    <html><body>
+      <script type="application/ld+json">{"name":"Oceanfront Studio in South Beach","description":"Walk to the beach and enjoy ocean views.","aggregateRating":{"ratingValue":"4.92","reviewCount":"234"}}</script>
+      <div data-testid="listing-type">Entire apartment</div>
+      <div>$189 per night</div>
+      <div>Hosted by Maria</div>
+      <div>1 bedroom · 1 bathroom · 4 guests</div>
+      <div>Superhost</div>
+      <img src="https://a0.muscache.com/im/pictures/sample-1.jpg" />
+      <div>Check-in: 3:00 PM</div>
+      <div>Checkout: 11:00 AM</div>
+    </body></html>
+  `;
+}
+
+function airbnbReviewsHtml(): string {
+  return `
+    <html><body>
+      data-testid="pdp-review"
+      <h3 class="review-author">Alex</h3>
+      <div>January 2026</div>
+      <div>5 out of 5 stars</div>
+      <span data-testid="pdp-review-text">Great stay, very clean and close to the beach.</span>
+      <span>Response from host: Thanks for staying with us!</span>
+      data-testid="pdp-review"
+      <h3 class="review-author">Jordan</h3>
+      <div>December 2025</div>
+      <div>4 out of 5 stars</div>
+      <span data-testid="pdp-review-text">Good location and smooth check-in.</span>
     </body></html>
   `;
 }
@@ -84,6 +119,20 @@ function installFetchMock(usdcAmountHex: string): string[] {
 
     if (url.startsWith('https://www.airbnb.com/s/')) {
       return new Response(airbnbSearchHtml(), {
+        status: 200,
+        headers: { 'Content-Type': 'text/html' },
+      });
+    }
+
+    if (url.startsWith('https://www.airbnb.com/rooms/12345678/reviews')) {
+      return new Response(airbnbReviewsHtml(), {
+        status: 200,
+        headers: { 'Content-Type': 'text/html' },
+      });
+    }
+
+    if (url.startsWith('https://www.airbnb.com/rooms/12345678')) {
+      return new Response(airbnbListingHtml(), {
         status: 200,
         headers: { 'Content-Type': 'text/html' },
       });
@@ -148,6 +197,68 @@ describe('Airbnb endpoints', () => {
     expect(body.results[0].price_per_night).toBe(189);
     expect(body.market_overview.avg_daily_rate).toBeGreaterThan(0);
     expect(body.payment.txHash).toBe(txHash);
+  });
+
+  test('GET /api/airbnb/listing/:id returns 402 when payment is missing', async () => {
+    const res = await app.fetch(new Request('http://localhost/api/airbnb/listing/12345678'));
+
+    expect(res.status).toBe(402);
+    const body = await res.json() as any;
+    expect(body.resource).toBe('/api/airbnb/listing/:id');
+  });
+
+  test('GET /api/airbnb/listing/:id returns listing details for paid request', async () => {
+    installFetchMock(USDC_AMOUNT_0_01);
+    const txHash = nextBaseTxHash();
+
+    const res = await app.fetch(new Request('http://localhost/api/airbnb/listing/12345678', {
+      headers: {
+        'X-Payment-Signature': txHash,
+        'X-Payment-Network': 'base',
+      },
+    }));
+
+    expect(res.status).toBe(200);
+    const body = await res.json() as any;
+    expect(body.listing.id).toBe('12345678');
+    expect(body.listing.title).toContain('Oceanfront Studio');
+    expect(body.listing.host.name).toContain('Maria');
+    expect(body.payment.txHash).toBe(txHash);
+  });
+
+  test('GET /api/airbnb/reviews/:listing_id returns 402 when payment is missing', async () => {
+    const res = await app.fetch(new Request('http://localhost/api/airbnb/reviews/12345678'));
+
+    expect(res.status).toBe(402);
+    const body = await res.json() as any;
+    expect(body.resource).toBe('/api/airbnb/reviews/:listing_id');
+  });
+
+  test('GET /api/airbnb/reviews/:listing_id returns reviews for paid request', async () => {
+    installFetchMock(USDC_AMOUNT_0_01);
+    const txHash = nextBaseTxHash();
+
+    const res = await app.fetch(new Request('http://localhost/api/airbnb/reviews/12345678?limit=2', {
+      headers: {
+        'X-Payment-Signature': txHash,
+        'X-Payment-Network': 'base',
+      },
+    }));
+
+    expect(res.status).toBe(200);
+    const body = await res.json() as any;
+    expect(Array.isArray(body.reviews)).toBe(true);
+    expect(body.reviews.length).toBe(2);
+    expect(body.reviews[0].author).toBe('Alex');
+    expect(body.payment.txHash).toBe(txHash);
+  });
+
+  test('GET /api/airbnb/market-stats returns 402 when payment is missing', async () => {
+    const res = await app.fetch(new Request('http://localhost/api/airbnb/market-stats?location=Miami+Beach'));
+
+    expect(res.status).toBe(402);
+    const body = await res.json() as any;
+    expect(body.resource).toBe('/api/airbnb/market-stats');
   });
 
   test('GET /api/airbnb/market-stats returns computed occupancy + revenue fields', async () => {
