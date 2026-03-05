@@ -1273,6 +1273,8 @@ serviceRouter.get('/airbnb/search', async (c) => {
         checkin: 'string (optional) — YYYY-MM-DD',
         checkout: 'string (optional) — YYYY-MM-DD',
         guests: 'number (optional, default: 1)',
+        priceMin: 'number (optional) — minimum nightly price',
+        priceMax: 'number (optional) — maximum nightly price',
         limit: 'number (optional, default: 20, max: 50)',
       },
       output: {
@@ -1290,18 +1292,38 @@ serviceRouter.get('/airbnb/search', async (c) => {
   const checkin = c.req.query('checkin') || undefined;
   const checkout = c.req.query('checkout') || undefined;
   const guests = parseInt(c.req.query('guests') || '1') || 1;
+  const priceMinRaw = c.req.query('priceMin');
+  const priceMaxRaw = c.req.query('priceMax');
+  const priceMin = priceMinRaw ? parseInt(priceMinRaw) : undefined;
+  const priceMax = priceMaxRaw ? parseInt(priceMaxRaw) : undefined;
   const limit = Math.min(Math.max(parseInt(c.req.query('limit') || '20') || 20, 1), 50);
 
   try {
     const proxy = getProxy();
     const ip = await getProxyExitIp();
-    const results = await searchAirbnb(location, checkin, checkout, guests, limit);
+    const results = await searchAirbnb(location, { checkin, checkout, guests, priceMin, priceMax, limit });
 
     c.header('X-Payment-Settled', 'true');
     c.header('X-Payment-TxHash', payment.txHash);
 
+    const marketOverview = {
+      avg_daily_rate: results.length > 0
+        ? Math.round(results.filter((r) => r.price_per_night !== null).reduce((a, b) => a + (b.price_per_night || 0), 0) /
+          Math.max(1, results.filter((r) => r.price_per_night !== null).length))
+        : null,
+      median_daily_rate: (() => {
+        const prices = results.map((r) => r.price_per_night).filter((p): p is number => p !== null).sort((a, b) => a - b);
+        return prices.length > 0 ? prices[Math.floor(prices.length / 2)] : null;
+      })(),
+      total_listings: results.length,
+      avg_occupancy_estimate: null as number | null,
+    };
+
     return c.json({
+      location,
+      results,
       listings: results,
+      market_overview: marketOverview,
       meta: { location, checkin, checkout, guests, count: results.length, proxy: { ip, country: proxy.country, type: 'mobile' } },
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
@@ -1407,7 +1429,7 @@ serviceRouter.get('/airbnb/market-stats', async (c) => {
         checkout: 'string (optional) — YYYY-MM-DD',
       },
       output: {
-        stats: '{ averageDailyRate, medianPrice, priceDistribution, superhostPercentage, totalListings, averageRating }',
+        stats: '{ avg_daily_rate, median_daily_rate, price_distribution, superhost_pct, total_listings, avg_rating, avg_occupancy_estimate, monthly_revenue_potential }',
       },
     }), 402);
   }

@@ -62,6 +62,8 @@ export interface MarketStats {
   total_listings: number;
   avg_rating: number | null;
   superhost_pct: number | null;
+  avg_occupancy_estimate: number | null;
+  monthly_revenue_potential: number | null;
   price_distribution: {
     under_100: number;
     range_100_200: number;
@@ -70,6 +72,15 @@ export interface MarketStats {
     over_500: number;
   };
   property_types: Record<string, number>;
+}
+
+export interface SearchAirbnbOptions {
+  checkin?: string;
+  checkout?: string;
+  guests?: number;
+  priceMin?: number;
+  priceMax?: number;
+  limit?: number;
 }
 
 // ─── HELPERS ────────────────────────────────────────
@@ -149,10 +160,6 @@ async function fetchAirbnbApi(path: string, params: Record<string, string> = {})
 
 function parseListingFromHtml(html: string): AirbnbListing[] {
   const listings: AirbnbListing[] = [];
-
-  // Airbnb embeds listing data in a JSON script tag
-  const jsonMatch = html.match(/<!--(.*?)-->/s);
-  const dataScript = extractBetween(html, 'data-deferred-state-0="', '"');
 
   // Try to find listing data in the page's embedded JSON
   // Look for the StaySearchResults data
@@ -278,30 +285,31 @@ function parseListingData(listing: any, pricing?: any): AirbnbListing {
   };
 }
 
-export async function searchAirbnb(
-  location: string,
-  checkin?: string,
-  checkout?: string,
-  guests: number = 2,
-  priceMin?: number,
-  priceMax?: number,
-  limit: number = 20,
-): Promise<AirbnbListing[]> {
+export async function searchAirbnb(location: string, options: SearchAirbnbOptions = {}): Promise<AirbnbListing[]> {
+  const {
+    checkin,
+    checkout,
+    guests = 2,
+    priceMin,
+    priceMax,
+    limit = 20,
+  } = options;
+
   // Build search URL
-  let url = `${AIRBNB_BASE}/s/${encodeURIComponent(location)}/homes`;
+  const url = `${AIRBNB_BASE}/s/${encodeURIComponent(location)}/homes`;
   const params = new URLSearchParams();
   if (checkin) params.set('checkin', checkin);
   if (checkout) params.set('checkout', checkout);
   params.set('adults', String(Math.max(1, guests)));
-  if (priceMin) params.set('price_min', String(priceMin));
-  if (priceMax) params.set('price_max', String(priceMax));
+  if (priceMin !== undefined) params.set('price_min', String(priceMin));
+  if (priceMax !== undefined) params.set('price_max', String(priceMax));
   params.set('search_type', 'filter_change');
 
   const fullUrl = `${url}?${params.toString()}`;
   const html = await fetchAirbnbPage(fullUrl);
   const listings = parseListingFromHtml(html);
 
-  return listings.slice(0, limit);
+  return listings.slice(0, Math.max(1, limit));
 }
 
 // ─── LISTING DETAIL SCRAPER ─────────────────────────
@@ -525,7 +533,7 @@ export async function getMarketStats(
   checkout?: string,
 ): Promise<MarketStats> {
   // Fetch a large set of listings to compute stats
-  const listings = await searchAirbnb(location, checkin, checkout, 2, undefined, undefined, 100);
+  const listings = await searchAirbnb(location, { checkin, checkout, guests: 2, limit: 100 });
 
   const prices = listings.map(l => l.price_per_night).filter((p): p is number => p !== null && p > 0);
   const ratings = listings.map(l => l.rating).filter((r): r is number => r !== null);
@@ -564,6 +572,23 @@ export async function getMarketStats(
     propertyTypes[t] = (propertyTypes[t] || 0) + 1;
   }
 
+  // Occupancy estimate heuristic (bounded 35-90%)
+  const reviewDensity = listings
+    .map((l) => l.reviews_count)
+    .filter((n): n is number => typeof n === 'number' && n >= 0);
+  const avgReviews = reviewDensity.length > 0
+    ? reviewDensity.reduce((a, b) => a + b, 0) / reviewDensity.length
+    : 0;
+  const ratingFactor = avgRating ? Math.min(1.15, Math.max(0.85, avgRating / 4.6)) : 1;
+  const demandSignal = Math.min(1, avgReviews / 120);
+  const occupancy = Math.round((35 + demandSignal * 45) * ratingFactor);
+  const avgOccupancyEstimate = listings.length > 0 ? Math.min(90, Math.max(35, occupancy)) : null;
+
+  // Monthly revenue potential = ADR * occupancy * 30 nights
+  const monthlyRevenuePotential = avg !== null && avgOccupancyEstimate !== null
+    ? Math.round(avg * (avgOccupancyEstimate / 100) * 30)
+    : null;
+
   return {
     location,
     avg_daily_rate: avg,
@@ -571,6 +596,8 @@ export async function getMarketStats(
     total_listings: listings.length,
     avg_rating: avgRating,
     superhost_pct: superhostPct,
+    avg_occupancy_estimate: avgOccupancyEstimate,
+    monthly_revenue_potential: monthlyRevenuePotential,
     price_distribution: priceDistribution,
     property_types: propertyTypes,
   };
