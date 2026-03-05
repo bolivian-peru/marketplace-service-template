@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "updatedAt": "2026-02-15",
-  "count": 6,
+  "count": 7,
   "services": [
     {
       "id": "proxies-sx-mobile",
@@ -174,6 +174,34 @@
       "status": "active",
       "featured": false,
       "detailsFile": "prediction-market-aggregator.json"
+    },
+    {
+      "id": "real-estate-intelligence",
+      "name": "Real Estate Listing Intelligence API",
+      "description": "Zillow listing intelligence with property search, comps, and ZIP market analytics via x402 micropayments.",
+      "endpoint": "https://marketplace-api-9kvb.onrender.com/api/realestate",
+      "docsUrl": "https://github.com/Samfresh-ai/marketplace-service-template/tree/feat/bounty-79-realestate",
+      "pricing": {
+        "model": "per-request",
+        "amount": "0.01",
+        "minimum": "0.01",
+        "currency": "USDC"
+      },
+      "category": "scraper",
+      "tags": [
+        "real-estate",
+        "zillow",
+        "pricing",
+        "market-data",
+        "comps"
+      ],
+      "owner": {
+        "name": "Samfresh-ai",
+        "github": "Samfresh-ai"
+      },
+      "status": "active",
+      "featured": false,
+      "detailsFile": "real-estate-intelligence.json"
     }
   ],
   "networks": {
