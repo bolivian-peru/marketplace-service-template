@@ -61,11 +61,20 @@ setInterval(() => {
 
 // ─── ROUTES ─────────────────────────────────────────
 
-app.get('/health', (c) => c.json({
+app.get('/health', (c) => {
+  const proxyConfigured = Boolean(process.env.PROXY_HOST && process.env.PROXY_HTTP_PORT && process.env.PROXY_USER && process.env.PROXY_PASS);
+  const walletConfigured = Boolean(process.env.WALLET_ADDRESS);
+
+  return c.json({
   status: 'healthy',
   service: process.env.SERVICE_NAME || 'marketplace-service',
   version: '1.0.0',
   timestamp: new Date().toISOString(),
+  checks: {
+    proxy: proxyConfigured ? 'ok' : 'missing_credentials',
+    target: 'unknown',
+    payment: walletConfigured ? 'configured' : 'missing_wallet',
+  },
   endpoints: [
     '/api/run',
     '/api/details',
@@ -80,8 +89,13 @@ app.get('/health', (c) => c.json({
     '/api/airbnb/listing/:id',
     '/api/airbnb/reviews/:listing_id',
     '/api/airbnb/market-stats',
+    '/api/realestate/search',
+    '/api/realestate/property/:zpid',
+    '/api/realestate/comps/:zpid',
+    '/api/realestate/market',
   ],
-}));
+  });
+});
 
 app.get('/', (c) => c.json({
   name: process.env.SERVICE_NAME || 'marketplace-service-hub',
@@ -128,7 +142,7 @@ app.get('/', (c) => c.json({
 
 app.route('/api', serviceRouter);
 
-app.notFound((c) => c.json({ error: 'Not found', endpoints: ['/', '/health', '/api/run', '/api/details', '/api/jobs', '/api/reviews/search', '/api/reviews/:place_id', '/api/business/:place_id', '/api/reviews/summary/:place_id'] }, 404));
+app.notFound((c) => c.json({ error: 'Not found', endpoints: ['/', '/health', '/api/run', '/api/details', '/api/jobs', '/api/reviews/search', '/api/reviews/:place_id', '/api/business/:place_id', '/api/reviews/summary/:place_id', '/api/realestate/search', '/api/realestate/property/:zpid', '/api/realestate/comps/:zpid', '/api/realestate/market'] }, 404));
 
 app.onError((err, c) => {
   console.error(`[ERROR] ${err.message}`);
