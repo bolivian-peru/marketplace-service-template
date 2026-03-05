@@ -1,0 +1,24 @@
+{
+  "id": "food-delivery-intelligence",
+  "name": "Food Delivery Price Intelligence API",
+  "description": "Search restaurants, extract menu prices, and compare delivery offers across Uber Eats and DoorDash via x402 micropayments.",
+  "endpoint": "https://marketplace-api-9kvb.onrender.com/api/food",
+  "pricing": {
+    "model": "per-request",
+    "endpoints": [
+      { "path": "/api/food/search", "price": "$0.01", "unit": "per request" },
+      { "path": "/api/food/restaurant/:id", "price": "$0.02", "unit": "per request" },
+      { "path": "/api/food/menu/:restaurant_id", "price": "$0.02", "unit": "per request" },
+      { "path": "/api/food/compare", "price": "$0.03", "unit": "per request" }
+    ],
+    "currency": "USDC"
+  },
+  "category": "scraper",
+  "tags": ["food-delivery", "ubereats", "doordash", "menu-prices", "pricing-intelligence"],
+  "owner": {
+    "name": "Samfresh-ai",
+    "github": "Samfresh-ai"
+  },
+  "status": "pending",
+  "featured": false
+}
