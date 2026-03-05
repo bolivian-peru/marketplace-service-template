@@ -29,6 +29,7 @@ import {
 } from './scrapers/linkedin-enrichment';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
+import { getComparableSales, getMarketData, getPropertyByZpid, normalizeType, searchProperties } from './scrapers/realestate-scraper';
 
 export const serviceRouter = new Hono();
 
@@ -1436,5 +1437,198 @@ serviceRouter.get('/airbnb/market-stats', async (c) => {
     });
   } catch (err: any) {
     return c.json({ error: 'Airbnb market stats failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ═══════════════════════════════════════════════════════
+// ─── REAL ESTATE LISTING INTELLIGENCE API (Bounty #79)
+// ═══════════════════════════════════════════════════════
+
+const REALESTATE_PRICE_USDC = 0.005;
+
+function parsePositiveInt(value: string | undefined): number | undefined {
+  if (value === undefined) return undefined;
+  const parsed = parseInt(value, 10);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : NaN;
+}
+
+function validateZip(zip: string | undefined): boolean {
+  return !!zip && /^\d{5}$/.test(zip);
+}
+
+serviceRouter.get('/realestate/property/:zpid', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/realestate/property/:zpid', 'Get real estate property details by Zillow Property ID (zpid)', REALESTATE_PRICE_USDC, walletAddress, {
+      input: { zpid: 'string (required, URL path)' },
+      output: { property: 'PropertyDetails — includes property details, price_history, zestimate' },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, REALESTATE_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const zpid = c.req.param('zpid');
+  if (!zpid) return c.json({ error: 'Missing required parameter: zpid' }, 400);
+
+  try {
+    const property = await getPropertyByZpid(zpid);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      property,
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Property fetch failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+serviceRouter.get('/realestate/search', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/realestate/search', 'Search real estate listings by zip, type, price range, bedrooms', REALESTATE_PRICE_USDC, walletAddress, {
+      input: {
+        zip: 'string (required, 5 digits)',
+        type: 'house | condo | townhouse | multi_family | land (optional)',
+        min_price: 'number (optional)',
+        max_price: 'number (optional)',
+        bedrooms: 'number (optional)',
+        limit: 'number (optional, default 10, max 50)',
+      },
+      output: { listings: 'PropertyDetails[]', total: 'number' },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, REALESTATE_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const zip = c.req.query('zip');
+  if (!validateZip(zip)) return c.json({ error: 'Invalid zip parameter: must be 5 digits' }, 400);
+  const zipValue = zip as string;
+
+  const typeRaw = c.req.query('type');
+  const type = normalizeType(typeRaw);
+  if (typeRaw && !type) return c.json({ error: 'Invalid type parameter. Use: house, condo, townhouse, multi_family, land' }, 400);
+
+  const minPrice = parsePositiveInt(c.req.query('min_price'));
+  const maxPrice = parsePositiveInt(c.req.query('max_price'));
+  const bedrooms = parsePositiveInt(c.req.query('bedrooms'));
+  const limit = parsePositiveInt(c.req.query('limit'));
+
+  if (Number.isNaN(minPrice) || Number.isNaN(maxPrice) || Number.isNaN(bedrooms) || Number.isNaN(limit)) {
+    return c.json({ error: 'Invalid numeric parameter. min_price, max_price, bedrooms, and limit must be positive integers' }, 400);
+  }
+  if (typeof minPrice === 'number' && typeof maxPrice === 'number' && minPrice > maxPrice) {
+    return c.json({ error: 'Invalid price range: min_price cannot be greater than max_price' }, 400);
+  }
+
+  try {
+    const result = await searchProperties({
+      zip: zipValue,
+      type,
+      min_price: minPrice,
+      max_price: maxPrice,
+      bedrooms,
+      limit,
+    });
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Real estate search failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+serviceRouter.get('/realestate/market', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/realestate/market', 'Get market intelligence by zip and property type', REALESTATE_PRICE_USDC, walletAddress, {
+      input: {
+        zip: 'string (required, 5 digits)',
+        type: 'house | condo | townhouse | multi_family | land (optional)',
+      },
+      output: { market: 'MarketSnapshot' },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, REALESTATE_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const zip = c.req.query('zip');
+  if (!validateZip(zip)) return c.json({ error: 'Invalid zip parameter: must be 5 digits' }, 400);
+  const zipValue = zip as string;
+
+  const typeRaw = c.req.query('type');
+  const type = normalizeType(typeRaw);
+  if (typeRaw && !type) return c.json({ error: 'Invalid type parameter. Use: house, condo, townhouse, multi_family, land' }, 400);
+
+  try {
+    const market = await getMarketData(zipValue, type);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      market,
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Market intelligence fetch failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+serviceRouter.get('/realestate/comps/:zpid', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/realestate/comps/:zpid', 'Get comparable sold homes for a property', REALESTATE_PRICE_USDC, walletAddress, {
+      input: {
+        zpid: 'string (required, URL path)',
+        zip: 'string (optional, 5 digits)',
+      },
+      output: { comps: 'PropertyComp[]' },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, REALESTATE_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const zpid = c.req.param('zpid');
+  if (!zpid) return c.json({ error: 'Missing required parameter: zpid' }, 400);
+
+  const zip = c.req.query('zip');
+  if (zip && !validateZip(zip)) return c.json({ error: 'Invalid zip parameter: must be 5 digits' }, 400);
+
+  try {
+    const comps = await getComparableSales(zpid, zip);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      comps,
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Comparable sales fetch failed', message: err?.message || String(err) }, 502);
   }
 });

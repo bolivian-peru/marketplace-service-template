@@ -80,6 +80,10 @@ app.get('/health', (c) => c.json({
     '/api/airbnb/listing/:id',
     '/api/airbnb/reviews/:listing_id',
     '/api/airbnb/market-stats',
+    '/api/realestate/property/:zpid',
+    '/api/realestate/search',
+    '/api/realestate/market',
+    '/api/realestate/comps/:zpid',
   ],
 }));
 
@@ -95,6 +99,10 @@ app.get('/', (c) => c.json({
     { method: 'GET', path: '/api/reviews/:place_id', description: 'Fetch Google reviews by Place ID', price: '0.02 USDC' },
     { method: 'GET', path: '/api/business/:place_id', description: 'Get business details + review summary', price: '0.01 USDC' },
     { method: 'GET', path: '/api/reviews/summary/:place_id', description: 'Get review summary stats', price: '0.005 USDC' },
+    { method: 'GET', path: '/api/realestate/property/:zpid', description: 'Get property details including zestimate + price history', price: '0.005 USDC' },
+    { method: 'GET', path: '/api/realestate/search', description: 'Search listings by zip/type/min_price/max_price/bedrooms', price: '0.005 USDC' },
+    { method: 'GET', path: '/api/realestate/market', description: 'Market snapshot by ZIP: pricing, inventory, DOM, YoY changes', price: '0.005 USDC' },
+    { method: 'GET', path: '/api/realestate/comps/:zpid', description: 'Comparable sales for subject property', price: '0.005 USDC' },
   ],
   pricing: {
     amount: process.env.PRICE_USDC || '0.005',
@@ -128,7 +136,7 @@ app.get('/', (c) => c.json({
 
 app.route('/api', serviceRouter);
 
-app.notFound((c) => c.json({ error: 'Not found', endpoints: ['/', '/health', '/api/run', '/api/details', '/api/jobs', '/api/reviews/search', '/api/reviews/:place_id', '/api/business/:place_id', '/api/reviews/summary/:place_id'] }, 404));
+app.notFound((c) => c.json({ error: 'Not found', endpoints: ['/', '/health', '/api/run', '/api/details', '/api/jobs', '/api/reviews/search', '/api/reviews/:place_id', '/api/business/:place_id', '/api/reviews/summary/:place_id', '/api/realestate/property/:zpid', '/api/realestate/search', '/api/realestate/market', '/api/realestate/comps/:zpid'] }, 404));
 
 app.onError((err, c) => {
   console.error(`[ERROR] ${err.message}`);
