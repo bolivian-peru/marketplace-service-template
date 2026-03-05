@@ -21,7 +21,7 @@ import { scrapeGoogleMaps, extractDetailedBusiness } from './scrapers/maps-scrap
 import { researchRouter } from './routes/research';
 import { trendingRouter } from './routes/trending';
 import { predictionRouter } from './routes/prediction-signals';
-import { fetchPolymarketOdds, fetchKalshiOdds, fetchMetaculusForecasts, fetchRedditSentiment, fetchXSentiment, classifySentiment } from './scrapers/prediction-markets';
+import { fetchPolymarketOdds, fetchKalshiOdds, fetchMetaculusForecasts, fetchRedditSentiment, fetchXSentiment, fetchTikTokSentiment, classifySentiment } from './scrapers/prediction-markets';
 import { searchAirbnb, getListingDetail, getListingReviews, getMarketStats } from './scrapers/airbnb-scraper';
 import { 
   scrapeLinkedInPerson, 
@@ -149,16 +149,18 @@ serviceRouter.get('/run', async (c) => {
     const market = c.req.query('market') || 'us-election';
     const topic = c.req.query('topic') || market;
 
-    const [polymarket, kalshi, metaculus, reddit, xPosts] = await Promise.all([
+    const [polymarket, kalshi, metaculus, reddit, xPosts, tiktokPosts] = await Promise.all([
       fetchPolymarketOdds(10, market).catch(() => []),
       fetchKalshiOdds(10, market).catch(() => []),
       fetchMetaculusForecasts(10, market).catch(() => []),
       fetchRedditSentiment(topic, 20).catch(() => []),
       fetchXSentiment(topic, 20).catch(() => []),
+      fetchTikTokSentiment(topic, 20).catch(() => []),
     ]);
 
     const social = classifySentiment(reddit);
     const xSentiment = classifySentiment(xPosts);
+    const tiktokSentiment = classifySentiment(tiktokPosts);
     const pYes = polymarket[0]?.yes;
     const kYes = kalshi[0]?.yes;
     const spread = pYes !== undefined && kYes !== undefined ? Number(Math.abs(pYes - kYes).toFixed(4)) : 0;
@@ -182,6 +184,8 @@ serviceRouter.get('/run', async (c) => {
         redditSamples: reddit.slice(0, 5),
         x: xSentiment,
         xSamples: xPosts.slice(0, 5),
+        tiktok: tiktokSentiment,
+        tiktokSamples: tiktokPosts.slice(0, 5),
       },
       signals: {
         arbitrage: {

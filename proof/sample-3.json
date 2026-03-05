@@ -1,22 +1,161 @@
 {
   "type": "sentiment",
   "topic": "trump",
-  "timestamp": "2026-03-04T03:20:11.480Z",
+  "timestamp": "2026-03-05T16:18:14.969Z",
   "sentiment": {
     "reddit": {
-      "positive": 0,
+      "positive": 0.15,
       "negative": 0,
-      "neutral": 0,
-      "volume": 0
+      "neutral": 0.85,
+      "volume": 20
     },
-    "redditSamples": [],
+    "redditSamples": [
+      {
+        "platform": "reddit",
+        "text": "[Politics] - Chris Mason: Trump belittles Starmer with 'no Churchill' jibe but can the special relationship recover?",
+        "score": 1,
+        "author": "AutoNewsAdmin",
+        "url": "https://reddit.com/r/BBCauto/comments/1rlli7y/politics_chris_mason_trump_belittles_starmer_with/"
+      },
+      {
+        "platform": "reddit",
+        "text": "[National] - A rift between Spain and Trump widens over Spanish opposition to the Iran war | NPR",
+        "score": 1,
+        "author": "AutoNewspaperAdmin",
+        "url": "https://reddit.com/r/AutoNewspaper/comments/1rllhsf/national_a_rift_between_spain_and_trump_widens/"
+      },
+      {
+        "platform": "reddit",
+        "text": "In Refusing to Impeach Trump, Congress Has Failed the American People and the World",
+        "score": 1,
+        "author": "Saytonleon",
+        "url": "https://reddit.com/r/u_Saytonleon/comments/1rllhmm/in_refusing_to_impeach_trump_congress_has_failed/"
+      },
+      {
+        "platform": "reddit",
+        "text": "i got caught fake fasting. as you all know this month is ramadan and like all closet ex-muslims i have to pretend to fast. this was actually my first month as an ex-muslim so i am new to this, all of people in this sub said that we should sneak snacks into our room and eat a bite there but i can't even afford to buy it so the only oppurtunity i get is to eat in school.\n\nso when i got to school i would use the money they give me to buy food and eat with my non-muslim friends. my mom knows this so",
+        "score": 5,
+        "author": "zekeosko",
+        "url": "https://reddit.com/r/exmuslim/comments/1rllhg5/i_got_caught_fake_fasting/"
+      },
+      {
+        "platform": "reddit",
+        "text": "Either George Lucas was a prophet, or Trump is just a copycat? Militarize ICE, then institute the draft again to fill ranks in the standing military, then force them to face each other in a Constitutional crisis. Who would think to create this chaos?",
+        "score": 2,
+        "author": "anecdotal_skeleton",
+        "url": "https://reddit.com/r/Trumpvirus/comments/1rllh69/either_george_lucas_was_a_prophet_or_trump_is/"
+      },
+      {
+        "platform": "reddit",
+        "text": "🇺🇸 Thêm một chiến thắng oanh liệt cho TT Trump !! Với 53 phiếu chống và 47 phiếu thuận, Thượng Viện Mỹ hôm qua, 04/03/2026, đã bác bỏ một nghị quyết nhằm hạn chế quyền hạn của tổng thống Donald Trump trong việc tiến hành cuộc chiến ở Iran. \n\nTrước đó, hồi tháng 1, trước khi xung đột bùng nổ, thượng nghị sĩ đảng Dân Chủ Tim Kaine đã đề xuất nghị quyết nhằm “rút các lực lượng vũ trang Mỹ khỏi những cuộc chiến chống lại nước Cộng Hòa Hồi Giáo Iran mà chưa được Quốc Hội cho phép”.\n\n\\_\\_\\_\\_\\_\\_\\_\\",
+        "score": 1,
+        "author": "KTran_206",
+        "url": "https://reddit.com/r/VietnamToanCau/comments/1rllgtc/thêm_một_chiến_thắng_oanh_liệt_cho_tt_trump/"
+      },
+      {
+        "platform": "reddit",
+        "text": "States led by New York sue to block Trump’s latest tariffs, calling them an illegal end-run around Supreme Court",
+        "score": 22,
+        "author": "Puginator",
+        "url": "https://reddit.com/r/politics/comments/1rllgc2/states_led_by_new_york_sue_to_block_trumps_latest/"
+      },
+      {
+        "platform": "reddit",
+        "text": "Nothing could stop the demolition",
+        "score": 1,
+        "author": "CrawfordFreya5471",
+        "url": "https://reddit.com/r/soccermemes/comments/1rllg8e/nothing_could_stop_the_demolition/"
+      },
+      {
+        "platform": "reddit",
+        "text": "Voting for war with these bags of dicks. If they [redacted] tomorrow, no one would shed a tear. making semi-daily memes to cope with the national mudpie- #109",
+        "score": 15,
+        "author": "LesCousinsDangereux1",
+        "url": "https://reddit.com/r/IThinkYouShouldLeave/comments/1rllg68/voting_for_war_with_these_bags_of_dicks_if_they/"
+      },
+      {
+        "platform": "reddit",
+        "text": "Makes you wonder how much President Pedophile pocketed and has to give back secretly. US judge orders refunds for more than $130bn in illegal Trump tariffs https://www.theguardian.com/business/2026/mar/05/trump-tariff-refunds-supreme-court?CMP=share_btn_url",
+        "score": 3,
+        "author": "redditispedoland",
+        "url": "https://reddit.com/r/Trumpvirus/comments/1rllg5h/makes_you_wonder_how_much_president_pedophile/"
+      }
+    ],
     "x": {
       "positive": 0,
       "negative": 0,
       "neutral": 0,
       "volume": 0
     },
-    "xSamples": []
+    "xSamples": [],
+    "tiktok": {
+      "positive": 0,
+      "negative": 0,
+      "neutral": 1,
+      "volume": 10
+    },
+    "tiktokSamples": [
+      {
+        "platform": "tiktok",
+        "text": "President Donald J Trump (@realdonaldtrump) | TikTok",
+        "score": 1,
+        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.tiktok.com%2F%40realdonaldtrump&amp;rut=8b11c3d0d2798d1517d7f49253075c89407cbb87c970a5c3b3d0d4569d0511dc"
+      },
+      {
+        "platform": "tiktok",
+        "text": "#trump - TikTok",
+        "score": 1,
+        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.tiktok.com%2Ftag%2FTrump&amp;rut=a25b24c9440e032920e57051afa4ec40849528a007623cb03da97397461759b3"
+      },
+      {
+        "platform": "tiktok",
+        "text": "I SAVED TIKTOK! | tiktok | TikTok",
+        "score": 1,
+        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.tiktok.com%2F%40realdonaldtrump%2Fvideo%2F7558116309083475230&amp;rut=27e77929ca7cd07c01bd7206ad20bdcf423b3a62d308a26d2ed399e23e703cfd"
+      },
+      {
+        "platform": "tiktok",
+        "text": "Team Trump (@teamtrump) | TikTok",
+        "score": 1,
+        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.tiktok.com%2F%40teamtrump&amp;rut=8c8706c14a08e2da7169a1cba8583601ecffb922391dd545f6ee8b2f5b5c3814"
+      },
+      {
+        "platform": "tiktok",
+        "text": "President Donald J Trump on TikTok",
+        "score": 1,
+        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.tiktok.com%2F%40realdonaldtrump%2Fvideo%2F7600543092462112030&amp;rut=d37a18df341b5efc4d69f3ad1a5bc0dfaa59ff44922f84bf97f6051e9562e4c5"
+      },
+      {
+        "platform": "tiktok",
+        "text": "TIME TO LIVE THE AMERICAN DREAM - TikTok",
+        "score": 1,
+        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.tiktok.com%2F%40realdonaldtrump%2Fvideo%2F7433546039254142250&amp;rut=754bb5ac75bf2ce6830ae32b7376e08dbf21b37dff2b4d34a45f44e54686e449"
+      },
+      {
+        "platform": "tiktok",
+        "text": "THANK YOU MEGYN KELLY, GREAT HONOR! - TikTok",
+        "score": 1,
+        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.tiktok.com%2F%40realdonaldtrump%2Fvideo%2F7433682490071452970&amp;rut=9bcf5af14c1c9a44826a388d8cb30cd839cc28d0e04ee360339b8cc52984bf36"
+      },
+      {
+        "platform": "tiktok",
+        "text": "President Donald J Trump on TikTok",
+        "score": 1,
+        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.tiktok.com%2F%40realdonaldtrump%2Fvideo%2F7427944558576667935&amp;rut=88b78d687dea03a20beb4be85531742f57abb88711fbc0e20dd00831ba608175"
+      },
+      {
+        "platform": "tiktok",
+        "text": "TODAY IS THE DAY — GET OUT AND VOTE! | TikTok",
+        "score": 1,
+        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.tiktok.com%2F%40realdonaldtrump%2Fvideo%2F7433870905635409198&amp;rut=1e4584b9325a7f6ecb050e164b70bb0e1db6a185c4e6f7397693261507c1a7c4"
+      },
+      {
+        "platform": "tiktok",
+        "text": "President Donald J Trump (@realdonaldtrump)&#x27;s video of ... - TikTok",
+        "score": 1,
+        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.tiktok.com%2F%40realdonaldtrump%2Fvideo%2F7432033408731155743&amp;rut=d7a55482e66209e71fcdec84babc9ef35ff8c7dc80600ba75c363fcb43ee7b9c"
+      }
+    ]
   },
   "payment": {
     "mode": "proof-local",

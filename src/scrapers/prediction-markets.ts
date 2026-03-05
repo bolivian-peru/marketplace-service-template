@@ -61,30 +61,64 @@ export async function fetchPolymarketOdds(limit = 10, query?: string): Promise<O
 }
 
 export async function fetchKalshiOdds(limit = 10, query?: string): Promise<OddsPoint[]> {
-  const url = `https://api.elections.kalshi.com/trade-api/v2/events?status=open&limit=${Math.max(1, Math.min(limit * 5, 100))}`;
-  const r = await fetch(url, { headers: { accept: 'application/json' } });
-  if (!r.ok) throw new Error(`kalshi_http_${r.status}`);
-  const data = await r.json() as any;
+  const max = Math.max(1, Math.min(limit * 8, 200));
+  const urls = [
+    `https://api.elections.kalshi.com/trade-api/v2/markets?status=open&limit=${max}`,
+    `https://api.elections.kalshi.com/trade-api/v2/events?status=open&limit=${max}`,
+  ];
 
   const out: OddsPoint[] = [];
-  for (const e of data?.events ?? []) {
-    const m = e?.markets?.[0];
-    const title = String(e?.title ?? m?.title ?? 'unknown');
-    if (!keywordMatch(title, query)) continue;
-    const yes = toNum(m?.yes_bid ?? m?.yes_ask ?? m?.last_price);
-    const no = yes !== undefined ? 1 - yes : undefined;
-    out.push({
-      source: 'kalshi',
-      marketId: String(m?.ticker ?? e?.event_ticker ?? e?.id ?? 'unknown'),
-      title,
-      yes,
-      no,
-      volume24h: toNum(m?.volume),
-      liquidity: toNum(m?.open_interest),
-      url: m?.ticker ? `https://kalshi.com/markets/${m.ticker}` : undefined,
-    });
+
+  for (const url of urls) {
+    const r = await fetch(url, { headers: { accept: 'application/json' } });
+    if (!r.ok) continue;
+    const data = await r.json() as any;
+
+    if (Array.isArray(data?.markets)) {
+      for (const m of data.markets) {
+        const title = String(m?.title ?? m?.subtitle ?? m?.ticker ?? 'unknown');
+        if (!keywordMatch(title, query)) continue;
+        const yesRaw = toNum(m?.yes_ask ?? m?.yes_bid ?? m?.last_price ?? m?.last_price_yes);
+        const yes = yesRaw !== undefined && yesRaw > 1 ? yesRaw / 100 : yesRaw;
+        const no = yes !== undefined ? Number((1 - yes).toFixed(4)) : undefined;
+        out.push({
+          source: 'kalshi',
+          marketId: String(m?.ticker ?? m?.id ?? 'unknown'),
+          title,
+          yes,
+          no,
+          volume24h: toNum(m?.volume_24h ?? m?.volume),
+          liquidity: toNum(m?.open_interest),
+          url: m?.ticker ? `https://kalshi.com/markets/${m.ticker}` : undefined,
+        });
+      }
+    }
+
+    if (!out.length && Array.isArray(data?.events)) {
+      for (const e of data.events) {
+        const m = e?.markets?.[0];
+        const title = String(e?.title ?? m?.title ?? 'unknown');
+        if (!keywordMatch(title, query)) continue;
+        const yesRaw = toNum(m?.yes_bid ?? m?.yes_ask ?? m?.last_price);
+        const yes = yesRaw !== undefined && yesRaw > 1 ? yesRaw / 100 : yesRaw;
+        const no = yes !== undefined ? Number((1 - yes).toFixed(4)) : undefined;
+        out.push({
+          source: 'kalshi',
+          marketId: String(m?.ticker ?? e?.event_ticker ?? e?.id ?? 'unknown'),
+          title,
+          yes,
+          no,
+          volume24h: toNum(m?.volume),
+          liquidity: toNum(m?.open_interest),
+          url: m?.ticker ? `https://kalshi.com/markets/${m.ticker}` : undefined,
+        });
+      }
+    }
+
+    if (out.length) break;
   }
-  return out;
+
+  return out.slice(0, limit);
 }
 
 export async function fetchMetaculusForecasts(limit = 10, query?: string): Promise<OddsPoint[]> {
@@ -111,7 +145,7 @@ export async function fetchMetaculusForecasts(limit = 10, query?: string): Promi
 }
 
 export type SentimentSample = {
-  platform: 'reddit' | 'x';
+  platform: 'reddit' | 'x' | 'tiktok';
   text: string;
   score: number;
   author?: string;
@@ -128,7 +162,7 @@ export async function fetchRedditSentiment(topic: string, limit = 20): Promise<S
   let data: any = null;
   for (const url of urls) {
     try {
-      const r = await proxyFetch(url, { timeoutMs: 20000, maxRetries: 2, headers: { 'User-Agent': 'Mozilla/5.0' } });
+      const r = await proxyFetch(url, { timeoutMs: 20000, maxRetries: 2, headers: { 'User-Agent': 'reddit-signal-bot/1.0' } });
       if (!r.ok) continue;
       const text = await r.text();
       data = text.trim().startsWith('{') ? JSON.parse(text) : null;
@@ -154,6 +188,41 @@ export async function fetchRedditSentiment(topic: string, limit = 20): Promise<S
   return out;
 }
 
+async function fetchDuckDuckGoSamples(topic: string, site: string, platform: 'x' | 'reddit' | 'tiktok', limit = 20): Promise<SentimentSample[]> {
+  const q = encodeURIComponent(`${topic} site:${site}`);
+  const url = `https://html.duckduckgo.com/html/?q=${q}`;
+
+  let html = '';
+  try {
+    const r = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0', 'Accept-Language': 'en-US,en;q=0.9' } });
+    if (r.ok) html = await r.text();
+  } catch {
+    // noop
+  }
+
+  if (!html) {
+    const r = await proxyFetch(url, {
+      timeoutMs: 20000,
+      maxRetries: 2,
+      headers: { 'User-Agent': 'Mozilla/5.0', 'Accept-Language': 'en-US,en;q=0.9' },
+    });
+    if (!r.ok) return [];
+    html = await r.text();
+  }
+
+  const out: SentimentSample[] = [];
+  const regex = /<a[^>]*class="[^"]*result__a[^"]*"[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/g;
+  let m: RegExpExecArray | null;
+  while ((m = regex.exec(html)) && out.length < Math.max(1, Math.min(limit, 50))) {
+    const href = m[1] || '';
+    const text = (m[2] || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    if (!text) continue;
+    out.push({ platform, text: text.slice(0, 500), score: 1, url: href || undefined });
+  }
+
+  return out;
+}
+
 export async function fetchXSentiment(topic: string, limit = 20): Promise<SentimentSample[]> {
   const q = encodeURIComponent(topic.trim());
   const rssUrls = [
@@ -174,22 +243,26 @@ export async function fetchXSentiment(topic: string, limit = 20): Promise<Sentim
     }
   }
 
-  const items = xml.split('<item>').slice(1, 1 + Math.max(1, Math.min(limit, 50)));
   const out: SentimentSample[] = [];
+  if (xml) {
+    const items = xml.split('<item>').slice(1, 1 + Math.max(1, Math.min(limit, 50)));
+    for (const item of items) {
+      const title = (item.match(/<title>([\s\S]*?)<\/title>/)?.[1] || '').replace(/<!\[CDATA\[|\]\]>/g, '').trim();
+      const link = (item.match(/<link>([\s\S]*?)<\/link>/)?.[1] || '').trim();
+      if (!title) continue;
+      out.push({ platform: 'x', text: title.slice(0, 500), score: 1, url: link || undefined });
+    }
+  }
 
-  for (const item of items) {
-    const title = (item.match(/<title>([\s\S]*?)<\/title>/)?.[1] || '').replace(/<!\[CDATA\[|\]\]>/g, '').trim();
-    const link = (item.match(/<link>([\s\S]*?)<\/link>/)?.[1] || '').trim();
-    if (!title) continue;
-    out.push({
-      platform: 'x',
-      text: title.slice(0, 500),
-      score: 1,
-      url: link || undefined,
-    });
+  if (!out.length) {
+    return fetchDuckDuckGoSamples(topic, 'x.com', 'x', limit);
   }
 
   return out;
+}
+
+export async function fetchTikTokSentiment(topic: string, limit = 20): Promise<SentimentSample[]> {
+  return fetchDuckDuckGoSamples(topic, 'tiktok.com', 'tiktok', limit);
 }
 
 export function classifySentiment(samples: SentimentSample[]) {

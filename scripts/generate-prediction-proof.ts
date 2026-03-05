@@ -1,20 +1,22 @@
 import { writeFileSync, mkdirSync } from 'fs';
-import { fetchPolymarketOdds, fetchKalshiOdds, fetchMetaculusForecasts, fetchRedditSentiment, fetchXSentiment, classifySentiment } from '../src/scrapers/prediction-markets.ts';
+import { fetchPolymarketOdds, fetchKalshiOdds, fetchMetaculusForecasts, fetchRedditSentiment, fetchXSentiment, fetchTikTokSentiment, classifySentiment } from '../src/scrapers/prediction-markets.ts';
 
 async function run() {
-  const market = 'bitcoin';
+  const market = 'election';
   const topic = 'trump';
 
-  const [polymarket, kalshi, metaculus, reddit, xPosts] = await Promise.all([
+  const [polymarket, kalshi, metaculus, reddit, xPosts, tiktokPosts] = await Promise.all([
     fetchPolymarketOdds(20, market).catch(() => []),
     fetchKalshiOdds(20, market).catch(() => []),
     fetchMetaculusForecasts(20, market).catch(() => []),
     fetchRedditSentiment(topic, 20).catch(() => []),
     fetchXSentiment(topic, 20).catch(() => []),
+    fetchTikTokSentiment(topic, 20).catch(() => []),
   ]);
 
   const redditSent = classifySentiment(reddit);
   const xSent = classifySentiment(xPosts);
+  const tiktokSent = classifySentiment(tiktokPosts);
   const pYes = polymarket[0]?.yes;
   const kYes = kalshi[0]?.yes;
   const spread = pYes !== undefined && kYes !== undefined ? Math.abs(pYes - kYes) : 0;
@@ -32,6 +34,8 @@ async function run() {
       redditSamples: reddit.slice(0, 5),
       x: xSent,
       xSamples: xPosts.slice(0, 5),
+      tiktok: tiktokSent,
+      tiktokSamples: tiktokPosts.slice(0, 5),
     },
   };
 
@@ -69,6 +73,8 @@ async function run() {
       redditSamples: reddit.slice(0, 10),
       x: xSent,
       xSamples: xPosts.slice(0, 10),
+      tiktok: tiktokSent,
+      tiktokSamples: tiktokPosts.slice(0, 10),
     },
     payment: { mode: 'proof-local', note: 'Data-mode sample (not 402 scaffold)' },
   };

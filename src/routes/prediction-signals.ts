@@ -7,6 +7,7 @@ import {
   fetchPolymarketOdds,
   fetchRedditSentiment,
   fetchXSentiment,
+  fetchTikTokSentiment,
   classifySentiment,
 } from '../scrapers/prediction-markets';
 
@@ -50,16 +51,18 @@ predictionRouter.get('/', async (c) => {
   const market = c.req.query('market') || 'us-election';
   const topic = c.req.query('topic') || market;
 
-  const [polymarket, kalshi, metaculus, reddit, xPosts] = await Promise.all([
+  const [polymarket, kalshi, metaculus, reddit, xPosts, tiktokPosts] = await Promise.all([
     fetchPolymarketOdds(10, market).catch(() => []),
     fetchKalshiOdds(10, market).catch(() => []),
     fetchMetaculusForecasts(10, market).catch(() => []),
     fetchRedditSentiment(topic, 20).catch(() => []),
     fetchXSentiment(topic, 20).catch(() => []),
+    fetchTikTokSentiment(topic, 20).catch(() => []),
   ]);
 
   const social = classifySentiment(reddit);
   const xSentiment = classifySentiment(xPosts);
+  const tiktokSentiment = classifySentiment(tiktokPosts);
 
   const pYes = polymarket[0]?.yes;
   const kYes = kalshi[0]?.yes;
@@ -82,6 +85,8 @@ predictionRouter.get('/', async (c) => {
       redditSamples: reddit.slice(0, 5),
       x: xSentiment,
       xSamples: xPosts.slice(0, 5),
+      tiktok: tiktokSentiment,
+      tiktokSamples: tiktokPosts.slice(0, 5),
     },
     signals: {
       arbitrage: {
