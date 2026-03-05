@@ -790,3 +790,147 @@ serviceRouter.get('/linkedin/company/:id/employees', async (c) => {
     return c.json({ error: 'Employee search failed', message: err?.message || String(err) }, 502);
   }
 });
+
+// ─── FOOD DELIVERY PRICE INTELLIGENCE ROUTES (Bounty #76) ───────────────────
+
+const FOOD_SEARCH_PRICE_USDC = 0.01;
+const FOOD_MENU_PRICE_USDC = 0.015;
+const FOOD_COMPARE_PRICE_USDC = 0.02;
+
+// GET /food/search?query=pizza&location=New+York — Search restaurants across DoorDash/UberEats/Grubhub
+serviceRouter.get('/food/search', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(
+      build402Response('/api/food/search', 'Search restaurants across DoorDash, UberEats, Grubhub with price comparison', FOOD_SEARCH_PRICE_USDC, walletAddress, {
+        input: { query: 'string — Food/cuisine search term (required)', location: 'string — City or address (required)' },
+        output: { restaurants: 'Restaurant[]', platforms: 'string[]', totalFound: 'number' },
+      }),
+      402,
+    );
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, FOOD_SEARCH_PRICE_USDC);
+  if (!verification.valid) {
+    return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+  }
+
+  const query = c.req.query('query');
+  const location = c.req.query('location');
+
+  if (!query || !location) {
+    return c.json({ error: 'Missing required params: query and location' }, 400);
+  }
+
+  try {
+    const result = await searchRestaurants(query, location, proxyFetch);
+    const proxy = getProxy();
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      meta: { proxy: { carrier: proxy.carrier, country: proxy.country, type: proxy.type } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Food delivery search failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// GET /food/menu?url=<doordash|ubereats|grubhub URL> — Get menu prices from a restaurant URL
+serviceRouter.get('/food/menu', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(
+      build402Response('/api/food/menu', 'Get menu prices from a DoorDash, UberEats, or Grubhub restaurant URL', FOOD_MENU_PRICE_USDC, walletAddress, {
+        input: { url: 'string — DoorDash, UberEats, or Grubhub restaurant URL (required)' },
+        output: { platform: 'string', items: 'MenuItem[]', totalItems: 'number' },
+      }),
+      402,
+    );
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, FOOD_MENU_PRICE_USDC);
+  if (!verification.valid) {
+    return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+  }
+
+  const url = c.req.query('url');
+  if (!url) return c.json({ error: 'Missing required param: url' }, 400);
+
+  // SSRF protection: only allow known food delivery domains
+  const lower = url.toLowerCase();
+  const allowed = ['doordash.com', 'ubereats.com', 'grubhub.com'];
+  if (!allowed.some((d) => lower.includes(d))) {
+    return c.json({ error: 'URL must be from doordash.com, ubereats.com, or grubhub.com' }, 400);
+  }
+
+  try {
+    const result = await getMenuPrices(url, proxyFetch);
+    const proxy = getProxy();
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      meta: { proxy: { carrier: proxy.carrier, country: proxy.country, type: proxy.type } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Menu fetch failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// GET /food/compare?query=sushi&location=Chicago — Compare prices across all platforms
+serviceRouter.get('/food/compare', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(
+      build402Response('/api/food/compare', 'Compare food delivery prices across DoorDash, UberEats, Grubhub', FOOD_COMPARE_PRICE_USDC, walletAddress, {
+        input: { query: 'string — Food/cuisine to compare (required)', location: 'string — City or address (required)' },
+        output: { comparison: 'ComparisonResult', restaurants: 'Restaurant[]', summary: 'object' },
+      }),
+      402,
+    );
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, FOOD_COMPARE_PRICE_USDC);
+  if (!verification.valid) {
+    return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+  }
+
+  const query = c.req.query('query');
+  const location = c.req.query('location');
+
+  if (!query || !location) {
+    return c.json({ error: 'Missing required params: query and location' }, 400);
+  }
+
+  try {
+    const result = await comparePrices(query, location, proxyFetch);
+    const proxy = getProxy();
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      meta: { proxy: { carrier: proxy.carrier, country: proxy.country, type: proxy.type } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Price comparison failed', message: err?.message || String(err) }, 502);
+  }
+});
