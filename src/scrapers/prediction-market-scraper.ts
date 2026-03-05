@@ -148,7 +148,7 @@ async function fetchPolymarketOdds(marketSlug: string): Promise<MarketOdds | nul
   try {
     // Search for market by slug/title
     const searchUrl = `${GAMMA_API}/markets?active=true&limit=10&order=volume24hr&ascending=false`;
-    const resp = await fetch(searchUrl, {
+    const resp = await proxyFetch(searchUrl, {
       headers: { 'Accept': 'application/json', 'User-Agent': 'Mozilla/5.0' },
     });
     if (!resp.ok) return null;
@@ -187,7 +187,7 @@ async function fetchPolymarketOdds(marketSlug: string): Promise<MarketOdds | nul
 
 export async function fetchPolymarketActive(): Promise<Array<{ slug: string; question: string; yes: number; volume24h: number; liquidity: number }>> {
   try {
-    const resp = await fetch(`${GAMMA_API}/markets?active=true&limit=50&order=volume24hr&ascending=false`, {
+    const resp = await proxyFetch(`${GAMMA_API}/markets?active=true&limit=50&order=volume24hr&ascending=false`, {
       headers: { 'Accept': 'application/json', 'User-Agent': 'Mozilla/5.0' },
     });
     if (!resp.ok) return [];
@@ -219,7 +219,7 @@ const KALSHI_BASE = 'https://api.elections.kalshi.com/trade-api/v2';
 async function fetchKalshiOdds(ticker: string): Promise<KalshiOdds | null> {
   try {
     // Search markets
-    const resp = await fetch(`${KALSHI_BASE}/markets?status=open&limit=20&search=${encodeURIComponent(ticker)}`, {
+    const resp = await proxyFetch(`${KALSHI_BASE}/markets?status=open&limit=20&search=${encodeURIComponent(ticker)}`, {
       headers: {
         'Accept': 'application/json',
         'User-Agent': 'Mozilla/5.0',
@@ -244,7 +244,7 @@ async function fetchKalshiOdds(ticker: string): Promise<KalshiOdds | null> {
 
 export async function fetchKalshiActive(): Promise<Array<{ ticker: string; title: string; yes: number; volume24h: number }>> {
   try {
-    const resp = await fetch(`${KALSHI_BASE}/markets?status=open&limit=50`, {
+    const resp = await proxyFetch(`${KALSHI_BASE}/markets?status=open&limit=50`, {
       headers: { 'Accept': 'application/json', 'User-Agent': 'Mozilla/5.0' },
     });
     if (!resp.ok) return [];
@@ -267,7 +267,7 @@ const METACULUS_BASE = 'https://www.metaculus.com/api2';
 
 async function fetchMetaculusOdds(query: string): Promise<MetaculusOdds | null> {
   try {
-    const resp = await fetch(
+    const resp = await proxyFetch(
       `${METACULUS_BASE}/questions/?search=${encodeURIComponent(query)}&status=open&limit=5&order_by=-activity`,
       {
         headers: {
