@@ -1,10 +1,19 @@
 /**
  * X/Twitter Intelligence Scraper
  * ────────────────────────────────
- * Primary:  Twitter v2 API (requires TWITTER_BEARER_TOKEN env var)
- * Fallback: Twitter Syndication API (profile timelines, no auth)
+ * Scraping strategy (NO official API subscription required):
  *
- * Supports: tweet search, user profiles, user timelines, trending topics
+ * 1. Guest Token Auth — Uses the public app bearer token to obtain a
+ *    short-lived guest token via POST /1.1/guest/activate.json.
+ *    All requests route through Proxies.sx mobile proxies.
+ *
+ * 2. Syndication API — Twitter's public timeline/profile endpoint used
+ *    by embedded tweet cards. No auth needed, proxy-routed.
+ *
+ * 3. Trends24 — Third-party trending aggregator, proxy-routed HTML scrape.
+ *
+ * Mobile proxies are critical: X's detection system gives mobile carrier IPs
+ * 5-10× more generous rate limits than datacenter/residential IPs.
  */
 
 // ─── TYPES ──────────────────────────────────────────
@@ -16,14 +25,16 @@ export type ProxyFetchFn = (
 
 export interface TweetResult {
   id: string;
-  author: { handle: string; name: string; verified: boolean };
+  author: { handle: string; name: string; verified: boolean; followers?: number };
   text: string;
   created_at: string;
   likes: number;
   retweets: number;
   replies: number;
+  views: number;
   url: string;
   hashtags: string[];
+  media: string[];
 }
 
 export interface TrendingTopic {
@@ -59,18 +70,72 @@ export interface ThreadTweet {
 
 // ─── CONSTANTS ──────────────────────────────────────
 
-const TWITTER_V2_BASE = 'https://api.twitter.com/2';
+/** Public bearer token embedded in the X/Twitter web and mobile apps. */
+const PUBLIC_APP_BEARER =
+  'AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I6BeUge7Gi0%3DEUifiRBkKG5E2XYQLpKOxGxZnUnOE9h6';
+
+const TWITTER_API_BASE = 'https://api.twitter.com';
 const SYNDICATION_BASE = 'https://syndication.twitter.com';
 const DEFAULT_TIMEOUT_MS = 20_000;
+const GUEST_TOKEN_TTL_MS = 15 * 60 * 1000; // 15 minutes
 const MAX_QUERY_LEN = 512;
 const MAX_HANDLE_LEN = 50;
 const MAX_TWEET_ID_LEN = 30;
 
-// ─── UTILITIES ──────────────────────────────────────
+// ─── GUEST TOKEN CACHE ──────────────────────────────
 
-function getBearerToken(): string | null {
-  return process.env.TWITTER_BEARER_TOKEN ?? null;
+interface GuestTokenEntry {
+  token: string;
+  expiresAt: number;
 }
+
+// Module-level cache — tokens are shared across requests within a process lifetime
+const guestTokenCache = new Map<string, GuestTokenEntry>();
+
+async function getGuestToken(proxyFetch: ProxyFetchFn): Promise<string> {
+  const cacheKey = 'default';
+  const cached = guestTokenCache.get(cacheKey);
+  if (cached && Date.now() < cached.expiresAt) {
+    return cached.token;
+  }
+
+  const resp = await proxyFetch(`${TWITTER_API_BASE}/1.1/guest/activate.json`, {
+    method: 'POST',
+    maxRetries: 3,
+    timeoutMs: DEFAULT_TIMEOUT_MS,
+    headers: {
+      Authorization: `Bearer ${PUBLIC_APP_BEARER}`,
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'User-Agent': 'TwitterAndroid/10.21.0-release.0 (310210000-r-0) ONEPLUS+A3003/9 (OnePlus;ONEPLUS+A3003;OnePlus;OnePlus3;0;;1;2016)',
+      'x-twitter-active-user': 'yes',
+      'x-twitter-client-language': 'en',
+    },
+  });
+
+  if (!resp.ok) {
+    throw new Error(`Guest token activation HTTP ${resp.status}: ${await resp.text().then(t => t.slice(0, 200))}`);
+  }
+
+  const body = await resp.json() as { guest_token?: string };
+  const token = body.guest_token;
+  if (!token) throw new Error('No guest_token in activation response');
+
+  guestTokenCache.set(cacheKey, { token, expiresAt: Date.now() + GUEST_TOKEN_TTL_MS });
+  return token;
+}
+
+function buildGuestHeaders(guestToken: string): Record<string, string> {
+  return {
+    Authorization: `Bearer ${PUBLIC_APP_BEARER}`,
+    'x-guest-token': guestToken,
+    'User-Agent': 'TwitterAndroid/10.21.0-release.0 (310210000-r-0) ONEPLUS+A3003/9 (OnePlus;ONEPLUS+A3003;OnePlus;OnePlus3;0;;1;2016)',
+    'x-twitter-active-user': 'yes',
+    'x-twitter-client-language': 'en',
+    'Content-Type': 'application/json',
+  };
+}
+
+// ─── UTILITIES ──────────────────────────────────────
 
 function sanitize(value: string | null | undefined, maxLen: number): string {
   if (!value) return '';
@@ -95,79 +160,126 @@ function normalizeDate(raw: string | undefined): string {
   }
 }
 
-// ─── TWITTER V2 API HELPERS ─────────────────────────
+// ─── TWITTER V1.1 / GRAPHQL TYPES ───────────────────
 
-interface V2Tweet {
-  id: string;
-  text: string;
+interface LegacyTweet {
+  id_str?: string;
+  full_text?: string;
   created_at?: string;
-  author_id?: string;
-  public_metrics?: { like_count?: number; retweet_count?: number; reply_count?: number };
-  entities?: { hashtags?: Array<{ tag: string }> };
-  conversation_id?: string;
-}
-
-interface V2User {
-  id: string;
-  name: string;
-  username: string;
-  description?: string;
-  location?: string;
-  public_metrics?: { followers_count?: number; following_count?: number; tweet_count?: number };
-  verified?: boolean;
-  created_at?: string;
-  profile_image_url?: string;
-}
-
-async function v2Fetch(
-  path: string,
-  _proxyFetch: ProxyFetchFn | undefined,
-): Promise<Response> {
-  const token = getBearerToken();
-  if (!token) throw new Error('TWITTER_BEARER_TOKEN not set');
-  return fetch(`${TWITTER_V2_BASE}${path}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'User-Agent': 'v2TweetSearchJS',
-    },
-    signal: AbortSignal.timeout(DEFAULT_TIMEOUT_MS),
-  });
-}
-
-function tweetToResult(tweet: V2Tweet, authorMap: Map<string, V2User>): TweetResult {
-  const user = authorMap.get(tweet.author_id ?? '');
-  const handle = sanitize(user?.username, 50);
-  const name = sanitize(user?.name, 100);
-  const text = sanitize(tweet.text, 1000);
-  const hashtagsFromEntities = (tweet.entities?.hashtags ?? []).map(h => h.tag);
-  const hashtags = hashtagsFromEntities.length ? hashtagsFromEntities : extractHashtags(text);
-  return {
-    id: tweet.id,
-    author: { handle, name, verified: user?.verified ?? false },
-    text,
-    created_at: normalizeDate(tweet.created_at),
-    likes: safeInt(tweet.public_metrics?.like_count),
-    retweets: safeInt(tweet.public_metrics?.retweet_count),
-    replies: safeInt(tweet.public_metrics?.reply_count),
-    url: handle ? `https://x.com/${handle}/status/${tweet.id}` : `https://x.com/i/status/${tweet.id}`,
-    hashtags,
+  favorite_count?: number | string;
+  retweet_count?: number | string;
+  reply_count?: number | string;
+  bookmark_count?: number | string;
+  view_count_state?: string;
+  views_count?: number | string;
+  user_id_str?: string;
+  user?: LegacyUser;
+  entities?: {
+    hashtags?: Array<{ text: string }>;
+    media?: Array<{ media_url_https?: string; type?: string }>;
+  };
+  extended_entities?: {
+    media?: Array<{ media_url_https?: string; type?: string }>;
   };
 }
 
-// ─── SYNDICATION API HELPERS ─────────────────────────
+interface LegacyUser {
+  id_str?: string;
+  screen_name?: string;
+  name?: string;
+  description?: string;
+  location?: string;
+  followers_count?: number;
+  friends_count?: number;
+  statuses_count?: number;
+  verified?: boolean;
+  is_blue_verified?: boolean;
+  created_at?: string;
+  profile_image_url_https?: string;
+  profile_banner_url?: string;
+}
+
+function legacyTweetToResult(tweet: LegacyTweet, user: LegacyUser | null): TweetResult {
+  const handle = sanitize(user?.screen_name, 50);
+  const id = tweet.id_str ?? '';
+  const text = sanitize(tweet.full_text, 1000);
+  const hashtagsFromEntities = (tweet.entities?.hashtags ?? []).map(h => h.text);
+  const hashtags = hashtagsFromEntities.length ? hashtagsFromEntities : extractHashtags(text);
+  const media = (tweet.extended_entities?.media ?? tweet.entities?.media ?? [])
+    .filter(m => m.media_url_https)
+    .map(m => m.media_url_https as string)
+    .slice(0, 4);
+
+  return {
+    id,
+    author: {
+      handle,
+      name: sanitize(user?.name, 100),
+      verified: Boolean(user?.verified || user?.is_blue_verified),
+      followers: safeInt(user?.followers_count),
+    },
+    text,
+    created_at: normalizeDate(tweet.created_at),
+    likes: safeInt(tweet.favorite_count),
+    retweets: safeInt(tweet.retweet_count),
+    replies: safeInt(tweet.reply_count),
+    views: safeInt(tweet.views_count),
+    url: handle ? `https://x.com/${handle}/status/${id}` : `https://x.com/i/status/${id}`,
+    hashtags,
+    media,
+  };
+}
+
+// ─── GRAPHQL SEARCH HELPER ────────────────────────────
+
+interface GraphQLTweetEntry {
+  entryId?: string;
+  content?: {
+    itemContent?: {
+      tweet_results?: {
+        result?: {
+          core?: { user_results?: { result?: { legacy?: LegacyUser } } };
+          legacy?: LegacyTweet;
+          views?: { count?: string };
+        };
+      };
+    };
+  };
+}
+
+function parseGraphQLEntries(entries: GraphQLTweetEntry[]): TweetResult[] {
+  const results: TweetResult[] = [];
+  for (const entry of entries) {
+    const result = entry.content?.itemContent?.tweet_results?.result;
+    if (!result?.legacy) continue;
+    const tweet = result.legacy;
+    const user = result.core?.user_results?.result?.legacy ?? null;
+    const viewCount = safeInt(result.views?.count);
+    const parsed = legacyTweetToResult({ ...tweet, views_count: viewCount }, user);
+    if (parsed.id) results.push(parsed);
+  }
+  return results;
+}
+
+// ─── SYNDICATION API HELPER ──────────────────────────
+
+interface SyndicationTimeline {
+  tweets: LegacyTweet[];
+  user: LegacyUser | null;
+}
 
 async function syndicationProfileTimeline(
   handle: string,
   count: number,
   proxyFetch: ProxyFetchFn,
-): Promise<{ tweets: V2Tweet[]; user: V2User | null }> {
+): Promise<SyndicationTimeline> {
   const url = `${SYNDICATION_BASE}/srv/timeline-profile/screen-name/${encodeURIComponent(handle)}?count=${count}`;
   const resp = await proxyFetch(url, {
     maxRetries: 2,
     timeoutMs: DEFAULT_TIMEOUT_MS,
     headers: {
       Accept: 'text/html,application/xhtml+xml',
-      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
     },
   });
   if (!resp.ok) throw new Error(`Syndication HTTP ${resp.status}`);
@@ -178,52 +290,20 @@ async function syndicationProfileTimeline(
   const pageProps = (data.props as Record<string, unknown>)?.pageProps as Record<string, unknown>;
   const entries: Array<Record<string, unknown>> =
     ((pageProps?.timeline as Record<string, unknown>)?.entries as Array<Record<string, unknown>>) ?? [];
-  const userRaw = pageProps?.profile as Record<string, unknown> | null;
+  const userRaw = pageProps?.profile as LegacyUser | null;
 
-  const tweets: V2Tweet[] = entries
-    .map(e => (e.content as Record<string, unknown>)?.tweet as Record<string, unknown>)
-    .filter(Boolean)
-    .map(t => ({
-      id: String(t.id_str ?? t.id ?? ''),
-      text: sanitize(t.full_text as string, 1000),
-      created_at: normalizeDate(t.created_at as string),
-      author_id: String((t.user as Record<string, unknown>)?.id_str ?? ''),
-      public_metrics: {
-        like_count: safeInt(t.favorite_count),
-        retweet_count: safeInt(t.retweet_count),
-        reply_count: safeInt(t.reply_count),
-      },
-    }));
+  const tweets: LegacyTweet[] = entries
+    .map(e => (e.content as Record<string, unknown>)?.tweet as LegacyTweet)
+    .filter(Boolean);
 
-  let user: V2User | null = null;
-  if (userRaw) {
-    user = {
-      id: String(userRaw.id_str ?? ''),
-      name: sanitize(userRaw.name as string, 100),
-      username: sanitize(userRaw.screen_name as string, 50),
-      description: sanitize(userRaw.description as string, 500),
-      location: sanitize(userRaw.location as string, 200),
-      public_metrics: {
-        followers_count: safeInt(userRaw.followers_count),
-        following_count: safeInt(userRaw.friends_count),
-        tweet_count: safeInt(userRaw.statuses_count),
-      },
-      verified: Boolean(userRaw.verified ?? false),
-      created_at: normalizeDate(userRaw.created_at as string),
-      profile_image_url: sanitize(
-        ((userRaw.profile_image_url_https as string) ?? '').replace('_normal', '_400x400'),
-        500,
-      ),
-    };
-  }
-  return { tweets, user };
+  return { tweets, user: userRaw };
 }
 
 // ─── PUBLIC API FUNCTIONS ───────────────────────────
 
 /**
  * Search tweets by keyword, hashtag, or query string.
- * Requires TWITTER_BEARER_TOKEN env var (Twitter v2 API).
+ * Uses guest token auth + Proxies.sx mobile proxies — no official API subscription.
  */
 export async function searchTweets(
   query: string,
@@ -233,33 +313,76 @@ export async function searchTweets(
 ): Promise<TweetResult[]> {
   const q = sanitize(query, MAX_QUERY_LEN);
   if (!q) return [];
-  const n = Math.min(Math.max(safeInt(limit) || 20, 10), 100);
-  // Map legacy 'top'|'latest' aliases to v2 API sort_order values
-  const sortOrder = (sort === 'relevancy' || sort === 'top') ? 'relevancy' : 'recency';
+  const n = Math.min(Math.max(safeInt(limit) || 20, 10), 50);
+  const sortMode = (sort === 'relevancy' || sort === 'top') ? 'Top' : 'Latest';
 
-  const params = new URLSearchParams({
-    query: `${q} -is:retweet lang:en`,
-    max_results: String(n),
-    sort_order: sortOrder,
-    'tweet.fields': 'created_at,author_id,public_metrics,entities',
-    expansions: 'author_id',
-    'user.fields': 'name,username,verified,public_metrics',
+  const guestToken = await getGuestToken(proxyFetch);
+
+  // Twitter's internal search GraphQL endpoint (same as used by the web app)
+  const variables = JSON.stringify({
+    rawQuery: `${q} -is:retweet lang:en`,
+    count: n,
+    querySource: 'typed_query',
+    product: sortMode,
   });
-  const resp = await v2Fetch(`/tweets/search/recent?${params}`, proxyFetch);
+  const features = JSON.stringify({
+    rweb_lists_timeline_redesign_enabled: true,
+    responsive_web_graphql_exclude_directive_enabled: true,
+    verified_phone_label_enabled: false,
+    creator_subscriptions_tweet_preview_api_enabled: true,
+    responsive_web_graphql_timeline_navigation_enabled: true,
+    responsive_web_graphql_skip_user_profile_image_extensions_enabled: false,
+    tweetypie_unmention_optimization_enabled: true,
+    responsive_web_edit_tweet_api_enabled: true,
+    graphql_is_translatable_rweb_tweet_is_translatable_enabled: true,
+    view_counts_everywhere_api_enabled: true,
+    longform_notetweets_consumption_enabled: true,
+    tweet_awards_web_tipping_enabled: false,
+    freedom_of_speech_not_reach_fetch_enabled: true,
+    standardized_nudges_misinfo: true,
+    tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled: false,
+    interactive_text_enabled: true,
+    responsive_web_text_conversations_enabled: false,
+    longform_notetweets_rich_text_read_enabled: true,
+    responsive_web_enhance_cards_enabled: false,
+  });
+
+  const url = `${TWITTER_API_BASE}/graphql/nK1dw4oV3k4w5TdtcAdSww/SearchTimeline?variables=${encodeURIComponent(variables)}&features=${encodeURIComponent(features)}`;
+
+  const resp = await proxyFetch(url, {
+    maxRetries: 2,
+    timeoutMs: DEFAULT_TIMEOUT_MS,
+    headers: buildGuestHeaders(guestToken),
+  });
+
   if (!resp.ok) {
-    const errText = await resp.text().then(t => t.slice(0, 200));
-    throw new Error(`Twitter v2 search HTTP ${resp.status}: ${errText}`);
+    const errText = await resp.text().then(t => t.slice(0, 300));
+    throw new Error(`Twitter GraphQL search HTTP ${resp.status}: ${errText}`);
   }
-  const body = await resp.json() as { data?: V2Tweet[]; includes?: { users?: V2User[] } };
-  const tweets = body.data ?? [];
-  const users = body.includes?.users ?? [];
-  const userMap = new Map<string, V2User>(users.map(u => [u.id, u]));
-  return tweets.map(t => tweetToResult(t, userMap));
+
+  const body = await resp.json() as {
+    data?: {
+      search_by_raw_query?: {
+        search_timeline?: {
+          timeline?: { instructions?: Array<{ entries?: GraphQLTweetEntry[] }> };
+        };
+      };
+    };
+  };
+
+  const instructions = body.data?.search_by_raw_query?.search_timeline?.timeline?.instructions ?? [];
+  const allEntries: GraphQLTweetEntry[] = [];
+  for (const inst of instructions) {
+    if (inst.entries) allEntries.push(...inst.entries);
+  }
+
+  const results = parseGraphQLEntries(allEntries);
+  return results.slice(0, n);
 }
 
 /**
  * Get trending topics on X/Twitter.
- * Uses Trends24 (aggregates Twitter trending data, publicly accessible).
+ * Uses Trends24 (aggregates Twitter trending data, publicly accessible) via proxy.
  */
 export async function getTrending(
   country: string,
@@ -279,7 +402,7 @@ export async function getTrending(
     timeoutMs: DEFAULT_TIMEOUT_MS,
     headers: {
       Accept: 'text/html',
-      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
     },
   });
   if (!resp.ok) throw new Error(`Trends24 HTTP ${resp.status}`);
@@ -303,7 +426,7 @@ export async function getTrending(
 
 /**
  * Get X/Twitter user profile.
- * Uses Twitter v2 API (if token set) or Syndication API fallback.
+ * Uses Twitter v1.1 user/show endpoint with guest token, proxy-routed.
  */
 export async function getUserProfile(
   handle: string,
@@ -312,54 +435,65 @@ export async function getUserProfile(
   const h = sanitize(handle, MAX_HANDLE_LEN).replace(/^@/, '');
   if (!h) throw new Error('Invalid handle');
 
-  const token = getBearerToken();
-  if (token) {
-    const params = new URLSearchParams({
-      'user.fields': 'description,location,public_metrics,verified,created_at,profile_image_url',
+  // Try v1.1 users/show (guest token approach)
+  try {
+    const guestToken = await getGuestToken(proxyFetch);
+    const url = `${TWITTER_API_BASE}/1.1/users/show.json?screen_name=${encodeURIComponent(h)}&include_entities=false`;
+    const resp = await proxyFetch(url, {
+      maxRetries: 2,
+      timeoutMs: DEFAULT_TIMEOUT_MS,
+      headers: buildGuestHeaders(guestToken),
     });
-    const resp = await v2Fetch(`/users/by/username/${encodeURIComponent(h)}?${params}`, proxyFetch);
+
     if (resp.ok) {
-      const body = await resp.json() as { data?: V2User };
-      const u = body.data;
-      if (u) {
+      const u = await resp.json() as LegacyUser;
+      if (u.screen_name) {
         return {
-          handle: sanitize(u.username, 50),
+          handle: sanitize(u.screen_name, 50),
           name: sanitize(u.name, 100),
           bio: sanitize(u.description, 500),
           location: sanitize(u.location, 200),
-          followers: safeInt(u.public_metrics?.followers_count),
-          following: safeInt(u.public_metrics?.following_count),
-          tweets_count: safeInt(u.public_metrics?.tweet_count),
-          verified: u.verified ?? false,
+          followers: safeInt(u.followers_count),
+          following: safeInt(u.friends_count),
+          tweets_count: safeInt(u.statuses_count),
+          verified: Boolean(u.verified || u.is_blue_verified),
           joined: normalizeDate(u.created_at),
-          profile_image: sanitize(u.profile_image_url, 500),
-          banner_image: '',
+          profile_image: sanitize(
+            (u.profile_image_url_https ?? '').replace('_normal', '_400x400'),
+            500,
+          ),
+          banner_image: sanitize(u.profile_banner_url, 500),
         };
       }
     }
+  } catch {
+    // Fall through to syndication
   }
 
-  // Fallback: Syndication API (no auth required)
+  // Fallback: Syndication API (no auth required, proxy-routed)
   const { user } = await syndicationProfileTimeline(h, 1, proxyFetch);
   if (!user) throw new Error(`Profile not found for @${h}`);
   return {
-    handle: sanitize(user.username, 50),
+    handle: sanitize(user.screen_name, 50),
     name: sanitize(user.name, 100),
     bio: sanitize(user.description, 500),
     location: sanitize(user.location, 200),
-    followers: safeInt(user.public_metrics?.followers_count),
-    following: safeInt(user.public_metrics?.following_count),
-    tweets_count: safeInt(user.public_metrics?.tweet_count),
-    verified: user.verified ?? false,
+    followers: safeInt(user.followers_count),
+    following: safeInt(user.friends_count),
+    tweets_count: safeInt(user.statuses_count),
+    verified: Boolean(user.verified || user.is_blue_verified),
     joined: normalizeDate(user.created_at),
-    profile_image: sanitize(user.profile_image_url, 500),
-    banner_image: '',
+    profile_image: sanitize(
+      ((user.profile_image_url_https as string) ?? '').replace('_normal', '_400x400'),
+      500,
+    ),
+    banner_image: sanitize(user.profile_banner_url, 500),
   };
 }
 
 /**
  * Get recent tweets from a specific user.
- * Uses Twitter Syndication API (no auth required) with v2 fallback.
+ * Uses Twitter Syndication API (no auth, proxy-routed) with v1.1 fallback.
  */
 export async function getUserTweets(
   handle: string,
@@ -370,35 +504,35 @@ export async function getUserTweets(
   if (!h) return [];
   const n = Math.min(Math.max(safeInt(limit) || 20, 1), 100);
 
-  // Syndication API works without auth
+  // Syndication API — works without auth, route through proxy
   try {
     const { tweets, user } = await syndicationProfileTimeline(h, n, proxyFetch);
-    const authorMap = new Map<string, V2User>(user ? [[user.id, user]] : []);
-    return tweets.slice(0, n).map(t => tweetToResult(t, authorMap));
+    return tweets.slice(0, n).map(t => legacyTweetToResult(t, user));
   } catch {
-    // Fallback to v2 API
-    const token = getBearerToken();
-    if (!token) throw new Error('Syndication unavailable; set TWITTER_BEARER_TOKEN for v2 fallback');
-    const userResp = await v2Fetch(`/users/by/username/${encodeURIComponent(h)}`, proxyFetch);
-    if (!userResp.ok) throw new Error(`User lookup HTTP ${userResp.status}`);
-    const { data: userData } = await userResp.json() as { data?: V2User };
-    if (!userData) throw new Error(`User @${h} not found`);
+    // Fallback: v1.1 statuses/user_timeline with guest token
+    const guestToken = await getGuestToken(proxyFetch);
     const params = new URLSearchParams({
-      max_results: String(Math.min(n, 100)),
-      'tweet.fields': 'created_at,public_metrics,entities',
-      exclude: 'retweets,replies',
+      screen_name: h,
+      count: String(Math.min(n, 200)),
+      tweet_mode: 'extended',
+      exclude_replies: 'true',
+      include_rts: 'false',
     });
-    const tweetsResp = await v2Fetch(`/users/${userData.id}/tweets?${params}`, proxyFetch);
-    if (!tweetsResp.ok) throw new Error(`User tweets HTTP ${tweetsResp.status}`);
-    const body = await tweetsResp.json() as { data?: V2Tweet[] };
-    const authorMap = new Map([[userData.id, userData]]);
-    return (body.data ?? []).slice(0, n).map(t => tweetToResult(t, authorMap));
+    const url = `${TWITTER_API_BASE}/1.1/statuses/user_timeline.json?${params}`;
+    const resp = await proxyFetch(url, {
+      maxRetries: 2,
+      timeoutMs: DEFAULT_TIMEOUT_MS,
+      headers: buildGuestHeaders(guestToken),
+    });
+    if (!resp.ok) throw new Error(`User timeline HTTP ${resp.status}`);
+    const body = await resp.json() as LegacyTweet[];
+    return body.slice(0, n).map(t => legacyTweetToResult(t, t.user ?? null));
   }
 }
 
 /**
  * Get full thread/conversation from a tweet ID.
- * Requires TWITTER_BEARER_TOKEN for v2 API access.
+ * Uses v1.1 statuses/lookup with guest token, proxy-routed.
  */
 export async function getThread(
   tweetId: string,
@@ -407,42 +541,53 @@ export async function getThread(
   const tid = sanitize(tweetId, MAX_TWEET_ID_LEN).replace(/[^0-9]/g, '');
   if (!tid) throw new Error('Invalid tweet ID');
 
-  const tweetParams = new URLSearchParams({
-    'tweet.fields': 'created_at,author_id,conversation_id,public_metrics',
-    expansions: 'author_id',
-    'user.fields': 'name,username',
+  const guestToken = await getGuestToken(proxyFetch);
+  const params = new URLSearchParams({
+    id: tid,
+    tweet_mode: 'extended',
+    include_entities: 'true',
   });
-  const origResp = await v2Fetch(`/tweets/${tid}?${tweetParams}`, proxyFetch);
-  if (!origResp.ok) throw new Error(`Tweet lookup HTTP ${origResp.status}`);
-  const origBody = await origResp.json() as { data?: V2Tweet; includes?: { users?: V2User[] } };
-  const origTweet = origBody.data;
-  if (!origTweet) throw new Error('Tweet not found');
-  const users = origBody.includes?.users ?? [];
-  const userMap = new Map<string, V2User>(users.map(u => [u.id, u]));
-
-  const conversationId = origTweet.conversation_id ?? tid;
-  const threadParams = new URLSearchParams({
-    query: `conversation_id:${conversationId}`,
-    max_results: '100',
-    'tweet.fields': 'created_at,author_id,public_metrics',
-    expansions: 'author_id',
-    'user.fields': 'name,username',
+  const url = `${TWITTER_API_BASE}/1.1/statuses/show.json?${params}`;
+  const resp = await proxyFetch(url, {
+    maxRetries: 2,
+    timeoutMs: DEFAULT_TIMEOUT_MS,
+    headers: buildGuestHeaders(guestToken),
   });
-  const thread: ThreadTweet[] = [];
-  const addToThread = (t: V2Tweet): void => {
-    const r = tweetToResult(t, userMap);
-    thread.push({ id: r.id, author: r.author, text: r.text, created_at: r.created_at, likes: r.likes, retweets: r.retweets, replies: r.replies });
-  };
-  addToThread(origTweet);
+  if (!resp.ok) throw new Error(`Tweet lookup HTTP ${resp.status}`);
 
-  const threadResp = await v2Fetch(`/tweets/search/recent?${threadParams}`, proxyFetch);
-  if (threadResp.ok) {
-    const threadBody = await threadResp.json() as { data?: V2Tweet[]; includes?: { users?: V2User[] } };
-    (threadBody.includes?.users ?? []).forEach(u => userMap.set(u.id, u));
-    for (const t of (threadBody.data ?? [])) {
-      if (t.id === tid) continue;
-      addToThread(t);
+  const tweet = await resp.json() as LegacyTweet;
+  const result = legacyTweetToResult(tweet, tweet.user ?? null);
+
+  // Get conversation replies via search
+  const replies: ThreadTweet[] = [];
+  try {
+    const convQuery = `conversation_id:${tid}`;
+    const replyResults = await searchTweets(convQuery, 'recency', 20, proxyFetch);
+    for (const r of replyResults) {
+      if (r.id === tid) continue;
+      replies.push({
+        id: r.id,
+        author: { handle: r.author.handle, name: r.author.name },
+        text: r.text,
+        created_at: r.created_at,
+        likes: r.likes,
+        retweets: r.retweets,
+        replies: r.replies,
+      });
     }
+  } catch {
+    // Thread search unavailable, return original tweet only
   }
-  return thread;
+
+  const original: ThreadTweet = {
+    id: result.id,
+    author: { handle: result.author.handle, name: result.author.name },
+    text: result.text,
+    created_at: result.created_at,
+    likes: result.likes,
+    retweets: result.retweets,
+    replies: result.replies,
+  };
+
+  return [original, ...replies];
 }

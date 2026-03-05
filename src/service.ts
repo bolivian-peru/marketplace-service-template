@@ -28,7 +28,7 @@ import {
   findCompanyEmployees 
 } from './scrapers/linkedin-enrichment';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
-import { searchTweets, getTrending, getUserProfile, getUserTweets, getThread } from './scrapers/x-twitter-scraper';
+import { searchTweets, getTrending as getXTrending, getUserProfile, getUserTweets, getThread } from './scrapers/x-twitter-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
 
 export const serviceRouter = new Hono();
@@ -1523,7 +1523,7 @@ serviceRouter.get('/x/trending', async (c) => {
   try {
     const proxy = getProxy();
     const ip = await getProxyExitIp();
-    const topics = await getTrending(country, proxyFetch);
+    const topics = await getXTrending(country, proxyFetch);
 
     c.header('X-Payment-Settled', 'true');
     c.header('X-Payment-TxHash', payment.txHash);
