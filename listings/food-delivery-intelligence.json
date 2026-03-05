@@ -2,6 +2,7 @@
   "id": "food-delivery-intelligence",
   "name": "Food Delivery Price Intelligence API",
   "description": "Search restaurants, extract menu prices, and compare delivery offers across Uber Eats and DoorDash via x402 micropayments.",
+  "longDescription": "Mobile-first food delivery intelligence for agents and data teams. Pull restaurant search results, menu pricing, and cross-platform comparison using carrier-grade proxy routing and pay-per-request settlement.",
   "endpoint": "https://marketplace-api-9kvb.onrender.com/api/food",
   "pricing": {
     "model": "per-request",
@@ -11,8 +12,17 @@
       { "path": "/api/food/menu/:restaurant_id", "price": "$0.02", "unit": "per request" },
       { "path": "/api/food/compare", "price": "$0.03", "unit": "per request" }
     ],
+    "comparison": "Bright Data and enterprise food-delivery datasets typically require monthly commitments and account setup. This service is pay-as-you-go ($0.01-$0.03) and directly callable by AI agents over x402 without subscription overhead.",
     "currency": "USDC"
   },
+  "whyMobileProxy": "Uber Eats and DoorDash personalize storefront and availability by geo/device reputation. Datacenter traffic is throttled or challenged; mobile carrier IPs mimic real app traffic and improve data completeness for localized pricing, delivery windows, and promotions.",
+  "sampleOutput": "See proof/sample-1.json, proof/sample-2.json, proof/sample-3.json",
+  "limitations": [
+    "Platform markup changes may require parser updates",
+    "High-volume scraping should paginate and respect rate limits",
+    "Menu extraction is richest on Uber Eats flow"
+  ],
+  "uptime": "Pending deployment verification",
   "category": "scraper",
   "tags": ["food-delivery", "ubereats", "doordash", "menu-prices", "pricing-intelligence"],
   "owner": {
