@@ -45,18 +45,48 @@ function parsePrice(text: string): number | null {
   return m ? (parseInt(m[1].replace(/,/g, '')) || null) : null;
 }
 
+
+
+async function fetchViaZenRows(url: string): Promise<string | null> {
+  const apiKey = process.env.ZENROWS_API_KEY;
+  if (!apiKey) return null;
+
+  const endpoint = new URL('https://api.zenrows.com/v1/');
+  endpoint.searchParams.set('apikey', apiKey);
+  endpoint.searchParams.set('url', url);
+  endpoint.searchParams.set('js_render', 'true');
+  endpoint.searchParams.set('premium_proxy', 'true');
+  endpoint.searchParams.set('proxy_country', (process.env.PROXY_COUNTRY || 'us').toLowerCase());
+
+  const r = await fetch(endpoint.toString(), {
+    headers: { 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' },
+  });
+
+  if (!r.ok) return null;
+  const html = await r.text();
+  if (!html || html.length < 500) return null;
+  return html;
+}
 async function fetchZillowPage(url: string): Promise<string> {
   const r = await proxyFetch(url, { maxRetries: 2, timeoutMs: 25_000, headers: {
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
     'Accept-Language': 'en-US,en;q=0.9', 'Cache-Control': 'no-cache',
   }});
   if (!r.ok) {
-    if (r.status === 403) throw new Error('Zillow blocked request — proxy IP flagged.');
     if (r.status === 404) throw new Error('Property not found.');
+
+    const zenRowsHtml = await fetchViaZenRows(url);
+    if (zenRowsHtml) return zenRowsHtml;
+
+    if (r.status === 403) throw new Error('Zillow blocked request — proxy IP flagged.');
     throw new Error('Zillow returned ' + r.status);
   }
   const html = await r.text();
-  if (html.includes('px-captcha')) throw new Error('Zillow CAPTCHA triggered.');
+  if (html.includes('px-captcha')) {
+    const zenRowsHtml = await fetchViaZenRows(url);
+    if (zenRowsHtml) return zenRowsHtml;
+    throw new Error('Zillow CAPTCHA triggered.');
+  }
   return html;
 }
 
