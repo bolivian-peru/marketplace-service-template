@@ -10,12 +10,24 @@ import { proxyFetch, getProxy } from './proxy';
 import { extractPayment, verifyPayment, build402Response } from './payment';
 import { scrapeIndeed, scrapeLinkedIn, type JobListing } from './scrapers/job-scraper';
 import { fetchReviews, fetchBusinessDetails, fetchReviewSummary, searchBusinesses } from './scrapers/reviews';
+import {
+  buildSignalPayload,
+  buildArbitragePayload,
+  buildSentimentPayload,
+  buildTrendingPayload,
+  type FullSignalResponse,
+  type ArbitrageResponse,
+  type SentimentResponse,
+  type TrendingResponse,
+} from './scrapers/prediction-market';
 
 export const serviceRouter = new Hono();
 
 const SERVICE_NAME = 'job-market-intelligence';
 const PRICE_USDC = 0.005;
 const DESCRIPTION = 'Job Market Intelligence API (Indeed/LinkedIn): title, company, location, salary, date, link, remote + proxy exit metadata.';
+const PREDICTION_PRICE_USDC = 0.05;
+const PREDICTION_DESCRIPTION = 'Prediction market signal aggregator (Polymarket + Kalshi + Metaculus + social sentiment from X/Reddit/TikTok).';
 
 async function getProxyExitIp(): Promise<string | null> {
   try {
@@ -31,6 +43,94 @@ async function getProxyExitIp(): Promise<string | null> {
     return null;
   }
 }
+
+serviceRouter.get('/run', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(
+      build402Response(
+        '/api/run',
+        PREDICTION_DESCRIPTION,
+        PREDICTION_PRICE_USDC,
+        walletAddress,
+        {
+          input: {
+            type: '"signal" | "arbitrage" | "sentiment" | "trending" (required)',
+            market: 'string (required for type=signal)',
+            topic: 'string (optional for type=sentiment/arbitrage)',
+            country: 'string (optional, default: US)',
+          },
+          output: {
+            signal: '{ odds, sentiment, signals, proxy }',
+            arbitrage: '{ opportunities[] }',
+            sentiment: '{ twitter, reddit, tiktok }',
+            trending: '{ markets[] with divergence and spread }',
+          },
+        },
+      ),
+      402,
+    );
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, PREDICTION_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const type = (c.req.query('type') || 'signal').toLowerCase();
+  const market = c.req.query('market') || '';
+  const topic = c.req.query('topic') || '';
+  const country = c.req.query('country') || 'US';
+
+  try {
+    let payload: FullSignalResponse | ArbitrageResponse | SentimentResponse | TrendingResponse;
+
+    if (type === 'signal') {
+      if (!market) {
+        return c.json({
+          error: 'Missing required parameter: market for type=signal',
+          example: '/api/run?type=signal&market=us-presidential-election-2028',
+        }, 400);
+      }
+      payload = await buildSignalPayload({ market, topic: topic || market, country });
+    } else if (type === 'arbitrage') {
+      payload = await buildArbitragePayload({ topic, country });
+    } else if (type === 'sentiment') {
+      const resolvedTopic = topic || market;
+      if (!resolvedTopic) {
+        return c.json({
+          error: 'Missing required parameter: topic (or market) for type=sentiment',
+          example: '/api/run?type=sentiment&topic=bitcoin+etf&country=US',
+        }, 400);
+      }
+      payload = await buildSentimentPayload({ topic: resolvedTopic, country });
+    } else if (type === 'trending') {
+      payload = await buildTrendingPayload({ country });
+    } else {
+      return c.json({
+        error: 'Invalid type. Use one of: signal, arbitrage, sentiment, trending',
+        example: '/api/run?type=signal&market=us-presidential-election-2028',
+      }, 400);
+    }
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    const payloadObject = payload as unknown as Record<string, unknown>;
+
+    return c.json({
+      ...payloadObject,
+      payment: {
+        txHash: payment.txHash,
+        amount: verification.amount ?? PREDICTION_PRICE_USDC,
+        verified: true,
+      },
+    });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    return c.json({ error: 'Prediction signal generation failed', message }, 502);
+  }
+});
 
 serviceRouter.get('/jobs', async (c) => {
   const walletAddress = '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
