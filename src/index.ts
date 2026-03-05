@@ -66,14 +66,15 @@ app.get('/health', (c) => c.json({
   service: process.env.SERVICE_NAME || 'marketplace-service',
   version: '1.0.0',
   timestamp: new Date().toISOString(),
-  endpoints: ['/api/jobs', '/api/reviews/search', '/api/reviews/:place_id', '/api/reviews/summary/:place_id', '/api/business/:place_id'],
+  endpoints: ['/api/run', '/api/jobs', '/api/reviews/search', '/api/reviews/:place_id', '/api/reviews/summary/:place_id', '/api/business/:place_id'],
 }));
 
 app.get('/', (c) => c.json({
   name: process.env.SERVICE_NAME || 'job-market-intelligence',
-  description: process.env.SERVICE_DESCRIPTION || 'Job Market Intelligence API (Indeed/LinkedIn)',
+  description: process.env.SERVICE_DESCRIPTION || 'Marketplace intelligence APIs with x402 + mobile proxy routing',
   version: '1.0.0',
   endpoints: [
+    { method: 'GET', path: '/api/run', description: 'TikTok trend intelligence (type=trending|hashtag|creator|sound)', price: '0.02 USDC' },
     { method: 'GET', path: '/api/jobs', description: 'Get job listings (Indeed/LinkedIn) with salary + date + proxy metadata' },
     { method: 'GET', path: '/api/reviews/search', description: 'Search businesses by query + location', price: '0.01 USDC' },
     { method: 'GET', path: '/api/reviews/:place_id', description: 'Fetch Google reviews by Place ID', price: '0.02 USDC' },
@@ -112,7 +113,7 @@ app.get('/', (c) => c.json({
 
 app.route('/api', serviceRouter);
 
-app.notFound((c) => c.json({ error: 'Not found', endpoints: ['/', '/health', '/api/jobs', '/api/reviews/search', '/api/reviews/:place_id', '/api/business/:place_id', '/api/reviews/summary/:place_id'] }, 404));
+app.notFound((c) => c.json({ error: 'Not found', endpoints: ['/', '/health', '/api/run', '/api/jobs', '/api/reviews/search', '/api/reviews/:place_id', '/api/business/:place_id', '/api/reviews/summary/:place_id'] }, 404));
 
 app.onError((err, c) => {
   console.error(`[ERROR] ${err.message}`);

@@ -10,12 +10,22 @@ import { proxyFetch, getProxy } from './proxy';
 import { extractPayment, verifyPayment, build402Response } from './payment';
 import { scrapeIndeed, scrapeLinkedIn, type JobListing } from './scrapers/job-scraper';
 import { fetchReviews, fetchBusinessDetails, fetchReviewSummary, searchBusinesses } from './scrapers/reviews';
+import {
+  TIKTOK_SUPPORTED_COUNTRIES,
+  getTikTokTrending,
+  getTikTokHashtagTrend,
+  getTikTokCreatorInsight,
+  getTikTokSoundInsight,
+  normalizeTikTokCountry,
+} from './scrapers/tiktok-intelligence';
 
 export const serviceRouter = new Hono();
 
 const SERVICE_NAME = 'job-market-intelligence';
 const PRICE_USDC = 0.005;
 const DESCRIPTION = 'Job Market Intelligence API (Indeed/LinkedIn): title, company, location, salary, date, link, remote + proxy exit metadata.';
+const TIKTOK_PRICE_USDC = 0.02;
+const TIKTOK_DESCRIPTION = 'TikTok trend intelligence via mobile proxy: trending videos, hashtags, sounds, and creator insights by country.';
 
 async function getProxyExitIp(): Promise<string | null> {
   try {
@@ -31,6 +41,147 @@ async function getProxyExitIp(): Promise<string | null> {
     return null;
   }
 }
+
+serviceRouter.get('/run', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(
+      build402Response(
+        '/api/run',
+        TIKTOK_DESCRIPTION,
+        TIKTOK_PRICE_USDC,
+        walletAddress,
+        {
+          input: {
+            type: '"trending" | "hashtag" | "creator" | "sound" (required)',
+            country: `country code (optional, default "US"). Supported: ${TIKTOK_SUPPORTED_COUNTRIES.join(', ')}`,
+            limit: 'number (optional, default: 5, max: 10)',
+            tag: 'string (required when type=hashtag)',
+            username: 'string (required when type=creator, e.g. @charlidamelio)',
+            id: 'string (required when type=sound)',
+          },
+          output: {
+            type: 'string',
+            country: 'string',
+            timestamp: 'ISO-8601 string',
+            data: 'typed payload by mode',
+            proxy: '{ country, carrier, host, type:"mobile" }',
+            payment: '{ txHash, network, amount, verified }',
+          },
+        },
+      ),
+      402,
+    );
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, TIKTOK_PRICE_USDC);
+  if (!verification.valid) {
+    return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+  }
+
+  const type = (c.req.query('type') || '').toLowerCase();
+  if (!['trending', 'hashtag', 'creator', 'sound'].includes(type)) {
+    return c.json({
+      error: 'Invalid type parameter. Use: trending, hashtag, creator, sound',
+      example: '/api/run?type=trending&country=US',
+    }, 400);
+  }
+
+  const country = normalizeTikTokCountry(c.req.query('country'));
+  const limit = Math.min(Math.max(parseInt(c.req.query('limit') || '5') || 5, 1), 10);
+
+  try {
+    const proxy = getProxy();
+
+    let data: Record<string, unknown>;
+
+    if (type === 'trending') {
+      data = await getTikTokTrending(country, limit);
+    } else if (type === 'hashtag') {
+      const tag = c.req.query('tag');
+      if (!tag) return c.json({ error: 'Missing required parameter: tag' }, 400);
+
+      const result = await getTikTokHashtagTrend(country, tag, limit);
+      if (!result.hashtag) {
+        return c.json({
+          error: `Hashtag not found in current ${country} trending set`,
+          requested: tag,
+          alternatives: result.alternatives,
+        }, 404);
+      }
+
+      data = {
+        hashtag: result.hashtag,
+        alternatives: result.alternatives,
+      };
+    } else if (type === 'creator') {
+      const username = c.req.query('username');
+      if (!username) return c.json({ error: 'Missing required parameter: username' }, 400);
+
+      const result = await getTikTokCreatorInsight(country, username, limit);
+      if (!result.creator) {
+        return c.json({
+          error: `Creator not found in current ${country} trending set`,
+          requested: username,
+          alternatives: result.alternatives,
+        }, 404);
+      }
+
+      data = {
+        creator: result.creator,
+        alternatives: result.alternatives,
+      };
+    } else {
+      const id = c.req.query('id');
+      if (!id) return c.json({ error: 'Missing required parameter: id' }, 400);
+
+      const result = await getTikTokSoundInsight(country, id, limit);
+      if (!result.sound) {
+        return c.json({
+          error: `Sound not found in current ${country} trending set`,
+          requested: id,
+          alternatives: result.alternatives,
+        }, 404);
+      }
+
+      data = {
+        sound: result.sound,
+        alternatives: result.alternatives,
+      };
+    }
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      type,
+      country,
+      timestamp: new Date().toISOString(),
+      data,
+      proxy: {
+        country: proxy.country || country,
+        carrier: proxy.host,
+        host: proxy.host,
+        type: 'mobile',
+      },
+      payment: {
+        txHash: payment.txHash,
+        network: payment.network,
+        amount: verification.amount,
+        verified: true,
+      },
+    });
+  } catch (err: any) {
+    return c.json({
+      error: 'TikTok intelligence scrape failed',
+      message: err?.message || String(err),
+      hint: 'TikTok can throttle aggressively. Retry with a new paid request.',
+    }, 502);
+  }
+});
 
 serviceRouter.get('/jobs', async (c) => {
   const walletAddress = '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
