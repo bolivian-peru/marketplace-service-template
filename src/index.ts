@@ -80,6 +80,10 @@ app.get('/health', (c) => c.json({
     '/api/airbnb/listing/:id',
     '/api/airbnb/reviews/:listing_id',
     '/api/airbnb/market-stats',
+    '/api/marketplace/search',
+    '/api/marketplace/listing/:id',
+    '/api/marketplace/categories',
+    '/api/marketplace/new',
   ],
 }));
 
@@ -128,7 +132,7 @@ app.get('/', (c) => c.json({
 
 app.route('/api', serviceRouter);
 
-app.notFound((c) => c.json({ error: 'Not found', endpoints: ['/', '/health', '/api/run', '/api/details', '/api/jobs', '/api/reviews/search', '/api/reviews/:place_id', '/api/business/:place_id', '/api/reviews/summary/:place_id'] }, 404));
+app.notFound((c) => c.json({ error: 'Not found', endpoints: ['/', '/health', '/api/run', '/api/details', '/api/jobs', '/api/reviews/search', '/api/reviews/:place_id', '/api/business/:place_id', '/api/reviews/summary/:place_id', '/api/marketplace/search', '/api/marketplace/listing/:id', '/api/marketplace/categories', '/api/marketplace/new'] }, 404));
 
 app.onError((err, c) => {
   console.error(`[ERROR] ${err.message}`);

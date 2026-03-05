@@ -29,6 +29,12 @@ import {
 } from './scrapers/linkedin-enrichment';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
+import {
+  searchMarketplace,
+  getListingDetail as getFBListing,
+  getCategories,
+  getNewListings,
+} from './scrapers/facebook-marketplace-scraper';
 
 export const serviceRouter = new Hono();
 
@@ -1436,5 +1442,189 @@ serviceRouter.get('/airbnb/market-stats', async (c) => {
     });
   } catch (err: any) {
     return c.json({ error: 'Airbnb market stats failed', message: err?.message || String(err) }, 502);
+  }
+});
+// ─── FACEBOOK MARKETPLACE ROUTES (Bounty #75) ────────────────────────────────
+
+const FB_SOLANA_WALLET = process.env.SOLANA_WALLET_ADDRESS || 'GpXHXs5KfzfXbNKcMLNbAMsJsgPsBE7y5GtwVoiuxYvH';
+const FB_SEARCH_PRICE = 0.02;   // $0.02 per search
+const FB_LISTING_PRICE = 0.01;  // $0.01 per listing detail
+const FB_CATS_PRICE = 0.005;    // $0.005 per categories fetch
+const FB_NEW_PRICE = 0.03;      // $0.03 per new listings monitor
+
+// ─── GET /api/marketplace/search ───────────────────
+
+serviceRouter.get('/marketplace/search', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/marketplace/search', 'Search Facebook Marketplace listings by keyword, location, price range', FB_SEARCH_PRICE, FB_SOLANA_WALLET, {
+      input: {
+        query: 'string (required) — search keyword (e.g. "iphone 15")',
+        location: 'string (required) — city name (e.g. "New York", "Los Angeles")',
+        radius: 'string (optional, default: "50mi") — search radius e.g. "25mi", "10km"',
+        min_price: 'number (optional) — minimum price in USD',
+        max_price: 'number (optional) — maximum price in USD',
+        cursor: 'string (optional) — pagination cursor from previous response',
+        limit: 'number (optional, default: 24, max: 50) — results per page',
+      },
+      output: {
+        results: 'MarketplaceListing[] — id, title, price, currency, location, condition, description, category, seller, images, listingUrl, postedAt, isDeliveryAvailable',
+        totalFound: 'number',
+        cursor: 'string | null — use for next page',
+        location: 'string — resolved location name',
+        searchQuery: 'string',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, FB_SOLANA_WALLET, FB_SEARCH_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const query = c.req.query('query');
+  const location = c.req.query('location');
+  if (!query) return c.json({ error: 'Missing required parameter: query' }, 400);
+  if (!location) return c.json({ error: 'Missing required parameter: location' }, 400);
+
+  const minPrice = c.req.query('min_price') ? parseFloat(c.req.query('min_price')!) : undefined;
+  const maxPrice = c.req.query('max_price') ? parseFloat(c.req.query('max_price')!) : undefined;
+  const cursor = c.req.query('cursor') || undefined;
+  const limitStr = c.req.query('limit');
+  const limit = limitStr ? Math.min(parseInt(limitStr), 50) : 24;
+
+  if (minPrice !== undefined && isNaN(minPrice)) return c.json({ error: 'Invalid min_price: must be a number' }, 400);
+  if (maxPrice !== undefined && isNaN(maxPrice)) return c.json({ error: 'Invalid max_price: must be a number' }, 400);
+
+  try {
+    const proxy = getProxy();
+    const result = await searchMarketplace({ query, location, radius: c.req.query('radius'), minPrice, maxPrice, cursor, limit });
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      meta: { proxy: { country: proxy.country, type: 'mobile' } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Marketplace search failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/marketplace/listing/:id ──────────────
+
+serviceRouter.get('/marketplace/listing/:id', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/marketplace/listing/:id', 'Get Facebook Marketplace listing details: title, price, description, seller info, photos', FB_LISTING_PRICE, FB_SOLANA_WALLET, {
+      input: { id: 'string (required) — numeric Facebook listing ID (in URL path)' },
+      output: {
+        listing: 'MarketplaceListing — full listing details including seller, description, all images, condition, category',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, FB_SOLANA_WALLET, FB_LISTING_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const listingId = c.req.param('id');
+  if (!listingId) return c.json({ error: 'Missing listing ID in URL path' }, 400);
+
+  try {
+    const proxy = getProxy();
+    const listing = await getFBListing(listingId);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      listing,
+      meta: { proxy: { country: proxy.country, type: 'mobile' } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Listing fetch failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/marketplace/categories ───────────────
+
+serviceRouter.get('/marketplace/categories', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/marketplace/categories', 'List all Facebook Marketplace categories with IDs and browse URLs', FB_CATS_PRICE, FB_SOLANA_WALLET, {
+      input: { location: 'string (optional) — location context (categories are location-independent)' },
+      output: {
+        categories: 'MarketplaceCategory[] — id, name, icon, listingCount, url',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, FB_SOLANA_WALLET, FB_CATS_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const proxy = getProxy();
+  const categories = getCategories();
+
+  c.header('X-Payment-Settled', 'true');
+  c.header('X-Payment-TxHash', payment.txHash);
+
+  return c.json({
+    categories,
+    totalCategories: categories.length,
+    meta: { proxy: { country: proxy.country, type: 'mobile' } },
+    payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+  });
+});
+
+// ─── GET /api/marketplace/new ───────────────────────
+
+serviceRouter.get('/marketplace/new', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/marketplace/new', 'Monitor new Facebook Marketplace listings in real-time: get listings posted within a time window', FB_NEW_PRICE, FB_SOLANA_WALLET, {
+      input: {
+        query: 'string (required) — keyword to monitor',
+        location: 'string (required) — city to monitor',
+        since: 'string (optional, default: "1h") — time window: "30m", "1h", "6h", "24h", "1d"',
+      },
+      output: {
+        newListings: 'MarketplaceListing[] — listings posted within the since window',
+        since: 'string — time window used',
+        location: 'string',
+        query: 'string',
+        count: 'number',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, FB_SOLANA_WALLET, FB_NEW_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const query = c.req.query('query');
+  const location = c.req.query('location');
+  if (!query) return c.json({ error: 'Missing required parameter: query' }, 400);
+  if (!location) return c.json({ error: 'Missing required parameter: location' }, 400);
+
+  const since = c.req.query('since') || '1h';
+
+  try {
+    const proxy = getProxy();
+    const newListings = await getNewListings(query, location, since);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      newListings,
+      since,
+      location,
+      query,
+      count: newListings.length,
+      meta: { proxy: { country: proxy.country, type: 'mobile' } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'New listings monitor failed', message: err?.message || String(err) }, 502);
   }
 });
