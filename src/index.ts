@@ -72,6 +72,11 @@ app.get('/health', (c) => c.json({
     '/api/jobs',
     '/api/research',
     '/api/trending',
+    '/api/x/search',
+    '/api/x/trending',
+    '/api/x/user/:handle',
+    '/api/x/user/:handle/tweets',
+    '/api/x/thread/:tweet_id',
     '/api/reviews/search',
     '/api/reviews/:place_id',
     '/api/reviews/summary/:place_id',
@@ -91,6 +96,11 @@ app.get('/', (c) => c.json({
     { method: 'GET', path: '/api/run', description: 'Google Maps Lead Generator — search businesses by category + location', price: '0.005 USDC' },
     { method: 'GET', path: '/api/details', description: 'Google Maps Place Details — detailed business info by Place ID', price: '0.005 USDC' },
     { method: 'GET', path: '/api/jobs', description: 'Get job listings (Indeed/LinkedIn) with salary + date + proxy metadata' },
+    { method: 'GET', path: '/api/x/search', description: 'Search X/Twitter posts by keyword/hashtag', price: '0.01 USDC' },
+    { method: 'GET', path: '/api/x/trending', description: 'Trending X/Twitter topics by country', price: '0.005 USDC' },
+    { method: 'GET', path: '/api/x/user/:handle', description: 'X/Twitter user profile by handle', price: '0.01 USDC' },
+    { method: 'GET', path: '/api/x/user/:handle/tweets', description: 'Recent tweets for a handle', price: '0.01 USDC' },
+    { method: 'GET', path: '/api/x/thread/:tweet_id', description: 'Extract tweet thread context by tweet ID', price: '0.02 USDC' },
     { method: 'GET', path: '/api/reviews/search', description: 'Search businesses by query + location', price: '0.01 USDC' },
     { method: 'GET', path: '/api/reviews/:place_id', description: 'Fetch Google reviews by Place ID', price: '0.02 USDC' },
     { method: 'GET', path: '/api/business/:place_id', description: 'Get business details + review summary', price: '0.01 USDC' },
@@ -128,7 +138,7 @@ app.get('/', (c) => c.json({
 
 app.route('/api', serviceRouter);
 
-app.notFound((c) => c.json({ error: 'Not found', endpoints: ['/', '/health', '/api/run', '/api/details', '/api/jobs', '/api/reviews/search', '/api/reviews/:place_id', '/api/business/:place_id', '/api/reviews/summary/:place_id'] }, 404));
+app.notFound((c) => c.json({ error: 'Not found', endpoints: ['/', '/health', '/api/run', '/api/details', '/api/jobs', '/api/x/search', '/api/x/trending', '/api/x/user/:handle', '/api/x/user/:handle/tweets', '/api/x/thread/:tweet_id', '/api/reviews/search', '/api/reviews/:place_id', '/api/business/:place_id', '/api/reviews/summary/:place_id'] }, 404));
 
 app.onError((err, c) => {
   console.error(`[ERROR] ${err.message}`);
