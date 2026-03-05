@@ -1,10 +1,10 @@
 {
   "id": "facebook-marketplace-monitor",
   "name": "Facebook Marketplace Monitor API",
-  "description": "Search, monitor, and extract Facebook Marketplace listings via mobile carrier proxies. Keyword search, listing details, category browsing, and real-time new listing alerts.",
-  "longDescription": "A complete Facebook Marketplace intelligence API built on mobile proxy infrastructure. Search listings by keyword and location with price filters, retrieve full listing details including seller info and photos, browse all marketplace categories, and monitor for new listings in real-time. Routes all requests through 4G/5G carrier IPs — the only IP type Facebook trusts for marketplace access. Powers B2B price monitoring, competitor analysis, and automated deal alerting.",
+  "description": "Search, monitor, and extract Facebook Marketplace listings via mobile carrier proxies. Keyword search, listing details, category browsing, and new listing tracking.",
+  "longDescription": "A Facebook Marketplace intelligence API for agent workflows: search listings by keyword/location, retrieve listing details, browse categories, and detect newly posted listings in a defined window.",
   "endpoint": "https://marketplace-api-9kvb.onrender.com/api",
-  "docsUrl": "https://github.com/TheAuroraAI/marketplace-service-template/tree/bounty-75-facebook-marketplace",
+  "docsUrl": "https://github.com/Samfresh-ai/marketplace-service-template/tree/feat/bounty-75-marketplace",
   "pricing": {
     "model": "per-request",
     "amount": "0.02",
@@ -16,24 +16,32 @@
       "/api/marketplace/categories": "0.005",
       "/api/marketplace/new": "0.03"
     },
+    "comparison": "Most Facebook Marketplace data providers require subscriptions and account setup. This service is x402 pay-per-request, making it easier for one-off agent tasks and small-volume automation.",
     "networks": [
       {
         "network": "base",
         "token": "USDC",
-        "address": "0xC0140eEa19bD90a7cA75882d5218eFaF20426e42"
+        "address": "0xF8cD900794245fc36CBE65be9afc23CDF5103042"
       },
       {
         "network": "solana",
         "token": "USDC",
-        "address": "GpXHXs5KfzfXbNKcMLNbAMsJsgPsBE7y5GtwVoiuxYvH"
+        "address": "72f37C6skHfwTmDik7j5BN1Ro2F4JDR9XT9n8645HpeV"
       }
     ]
   },
+  "whyMobileProxy": "Facebook aggressively challenges non-consumer traffic. Mobile carrier IPs provide better pass rates for marketplace pages and location-specific listing retrieval than standard datacenter routes.",
+  "sampleOutput": "See proof/sample-1.json, proof/sample-2.json, proof/sample-3.json",
+  "limitations": [
+    "Results depend on location and active marketplace inventory",
+    "Some listing details may be partial when Facebook serves lightweight previews",
+    "Aggressive burst traffic can trigger temporary anti-bot friction"
+  ],
   "categories": ["marketplace", "scraping", "e-commerce", "monitoring"],
   "tags": ["facebook", "marketplace", "listings", "price-monitoring", "mobile-proxy"],
   "provider": {
-    "name": "Aurora AI",
-    "url": "https://github.com/TheAuroraAI"
+    "name": "Samfresh-ai",
+    "url": "https://github.com/Samfresh-ai"
   },
   "endpoints": [
     {
