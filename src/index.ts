@@ -84,6 +84,10 @@ app.get('/health', (c) => c.json({
     '/api/realestate/search',
     '/api/realestate/market',
     '/api/realestate/comps/:zpid',
+    '/api/realestate/property/:zpid',
+    '/api/realestate/search',
+    '/api/realestate/market',
+    '/api/realestate/comps/:zpid',
   ],
 }));
 
@@ -99,6 +103,10 @@ app.get('/', (c) => c.json({
     { method: 'GET', path: '/api/reviews/:place_id', description: 'Fetch Google reviews by Place ID', price: '0.02 USDC' },
     { method: 'GET', path: '/api/business/:place_id', description: 'Get business details + review summary', price: '0.01 USDC' },
     { method: 'GET', path: '/api/reviews/summary/:place_id', description: 'Get review summary stats', price: '0.005 USDC' },
+    { method: 'GET', path: '/api/realestate/property/:zpid', description: 'Get property details, zestimate, and price history', price: '0.005 USDC' },
+    { method: 'GET', path: '/api/realestate/search', description: 'Search listings by zip/type/min_price/max_price/bedrooms', price: '0.005 USDC' },
+    { method: 'GET', path: '/api/realestate/market', description: 'Get real estate market snapshot by zip/type', price: '0.005 USDC' },
+    { method: 'GET', path: '/api/realestate/comps/:zpid', description: 'Get comparable sold homes for a subject property', price: '0.005 USDC' },
     { method: 'GET', path: '/api/realestate/property/:zpid', description: 'Get property details including zestimate + price history', price: '0.005 USDC' },
     { method: 'GET', path: '/api/realestate/search', description: 'Search listings by zip/type/min_price/max_price/bedrooms', price: '0.005 USDC' },
     { method: 'GET', path: '/api/realestate/market', description: 'Market snapshot by ZIP: pricing, inventory, DOM, YoY changes', price: '0.005 USDC' },
