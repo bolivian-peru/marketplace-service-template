@@ -1,0 +1,45 @@
+{
+  "name": "Facebook Marketplace Monitor API",
+  "description": "Search and monitor Facebook Marketplace listings by keyword/location/price with mobile-proxy routing and x402 micropayments.",
+  "version": "1.0.0",
+  "price": {
+    "search": 0.01,
+    "listing": 0.005,
+    "new": 0.02
+  },
+  "endpoints": [
+    {
+      "path": "/api/marketplace/search",
+      "method": "GET",
+      "price": 0.01,
+      "description": "Search listings by keyword, location, category, and price range",
+      "params": ["query", "location?", "category?", "radius?", "min_price?", "max_price?", "limit?"]
+    },
+    {
+      "path": "/api/marketplace/listing/:id",
+      "method": "GET",
+      "price": 0.005,
+      "description": "Fetch listing detail by Marketplace listing ID",
+      "params": ["id"]
+    },
+    {
+      "path": "/api/marketplace/categories",
+      "method": "GET",
+      "price": 0,
+      "description": "List Marketplace categories (location-aware best effort)",
+      "params": ["location?"]
+    },
+    {
+      "path": "/api/marketplace/new",
+      "method": "GET",
+      "price": 0.02,
+      "description": "Monitor newly posted listings within a timeframe",
+      "params": ["query", "since?", "location?", "limit?"]
+    }
+  ],
+  "wallet": "6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv",
+  "bounty": {
+    "issue": "https://github.com/bolivian-peru/marketplace-service-template/issues/75",
+    "amount": "$75 in $SX token"
+  }
+}

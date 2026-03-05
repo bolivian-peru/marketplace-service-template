@@ -9,6 +9,7 @@
  *   GET /api/airbnb/*  (Airbnb Market Intelligence)
  *   GET /api/reddit/*  (Reddit Intelligence)
  *   GET /api/instagram/* (Instagram Intelligence + AI Vision)
+ *   GET /api/marketplace/* (Facebook Marketplace Monitor)
  *   GET /api/linkedin/* (LinkedIn Enrichment)
  */
 
@@ -29,6 +30,12 @@ import {
 } from './scrapers/linkedin-enrichment';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
+import {
+  searchMarketplace,
+  getMarketplaceListing,
+  listMarketplaceCategories,
+  monitorNewMarketplaceListings,
+} from './scrapers/facebook-marketplace';
 
 export const serviceRouter = new Hono();
 
@@ -547,6 +554,222 @@ serviceRouter.get('/business/:place_id', async (c) => {
     });
   } catch (err: any) {
     return c.json({ error: 'Business details fetch failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ═══════════════════════════════════════════════════════
+// ─── FACEBOOK MARKETPLACE MONITOR API (Bounty #75) ────
+// ═══════════════════════════════════════════════════════
+
+const MARKETPLACE_SEARCH_PRICE_USDC = 0.01;
+const MARKETPLACE_LISTING_PRICE_USDC = 0.005;
+const MARKETPLACE_NEW_PRICE_USDC = 0.02;
+
+// ─── GET /api/marketplace/search ─────────────────────
+
+serviceRouter.get('/marketplace/search', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/marketplace/search', 'Search Facebook Marketplace listings by keyword/location/price filters', MARKETPLACE_SEARCH_PRICE_USDC, walletAddress, {
+      input: {
+        query: 'string (required)',
+        location: 'string (optional)',
+        category: 'string (optional)',
+        radius: 'string (optional, e.g. 25mi)',
+        min_price: 'number (optional)',
+        max_price: 'number (optional)',
+        limit: 'number (optional, default 20, max 50)',
+      },
+      output: {
+        results: 'MarketplaceListing[]',
+        meta: '{ query, total_results, proxy, filters }',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, MARKETPLACE_SEARCH_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const query = c.req.query('query');
+  if (!query) {
+    return c.json({
+      error: 'Missing required parameter: query',
+      example: '/api/marketplace/search?query=iphone+15&location=New+York&min_price=500&max_price=1000',
+    }, 400);
+  }
+
+  const minPriceRaw = c.req.query('min_price');
+  const maxPriceRaw = c.req.query('max_price');
+  const minPrice = minPriceRaw !== undefined ? Number.parseFloat(minPriceRaw) : undefined;
+  const maxPrice = maxPriceRaw !== undefined ? Number.parseFloat(maxPriceRaw) : undefined;
+
+  if (minPriceRaw !== undefined && !Number.isFinite(minPrice)) {
+    return c.json({ error: 'Invalid min_price parameter: must be a number' }, 400);
+  }
+
+  if (maxPriceRaw !== undefined && !Number.isFinite(maxPrice)) {
+    return c.json({ error: 'Invalid max_price parameter: must be a number' }, 400);
+  }
+
+  if (minPrice !== undefined && maxPrice !== undefined && minPrice > maxPrice) {
+    return c.json({ error: 'Invalid price range: min_price cannot be greater than max_price' }, 400);
+  }
+
+  const limit = Math.min(Math.max(parseInt(c.req.query('limit') || '20') || 20, 1), 50);
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const results = await searchMarketplace({
+      query,
+      location: c.req.query('location') || undefined,
+      category: c.req.query('category') || undefined,
+      radius: c.req.query('radius') || undefined,
+      minPrice,
+      maxPrice,
+      limit,
+    });
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      results,
+      meta: {
+        query,
+        total_results: results.length,
+        filters: {
+          location: c.req.query('location') || null,
+          category: c.req.query('category') || null,
+          radius: c.req.query('radius') || null,
+          min_price: minPrice ?? null,
+          max_price: maxPrice ?? null,
+        },
+        proxy: { ip, country: proxy.country, carrier: process.env.PROXY_CARRIER || null, type: 'mobile' },
+      },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Marketplace search failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/marketplace/listing/:id ───────────────
+
+serviceRouter.get('/marketplace/listing/:id', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/marketplace/listing/:id', 'Get Facebook Marketplace listing details by listing ID', MARKETPLACE_LISTING_PRICE_USDC, walletAddress, {
+      input: { id: 'string (required) — marketplace listing ID' },
+      output: { listing: 'MarketplaceListing' },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, MARKETPLACE_LISTING_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const listingId = c.req.param('id');
+  if (!listingId) return c.json({ error: 'Missing listing ID in URL path' }, 400);
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const listing = await getMarketplaceListing(listingId);
+
+    if (!listing) {
+      return c.json({ error: 'Listing not found or inaccessible' }, 404);
+    }
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      listing,
+      meta: { proxy: { ip, country: proxy.country, carrier: process.env.PROXY_CARRIER || null, type: 'mobile' } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Marketplace listing fetch failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/marketplace/categories ────────────────
+
+serviceRouter.get('/marketplace/categories', async (c) => {
+  try {
+    const categories = await listMarketplaceCategories(c.req.query('location') || undefined);
+    return c.json({
+      categories,
+      meta: {
+        location: c.req.query('location') || null,
+        total_categories: categories.length,
+      },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Marketplace categories fetch failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/marketplace/new ───────────────────────
+
+serviceRouter.get('/marketplace/new', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/marketplace/new', 'Monitor newly posted Facebook Marketplace listings within a rolling time window', MARKETPLACE_NEW_PRICE_USDC, walletAddress, {
+      input: {
+        query: 'string (required)',
+        since: 'string (optional, default: 1h, format: 15m|1h|2d)',
+        location: 'string (optional)',
+        limit: 'number (optional, default 30, max 50)',
+      },
+      output: { results: 'MarketplaceListing[]', meta: '{ query, since, new_count, proxy }' },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, MARKETPLACE_NEW_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const query = c.req.query('query');
+  if (!query) {
+    return c.json({ error: 'Missing required parameter: query', example: '/api/marketplace/new?query=iphone&since=1h' }, 400);
+  }
+
+  const since = c.req.query('since') || '1h';
+  if (!/^\d+\s*[smhdw]$/i.test(since)) {
+    return c.json({ error: 'Invalid since parameter. Use formats like 30m, 1h, 2d, 1w' }, 400);
+  }
+
+  const limit = Math.min(Math.max(parseInt(c.req.query('limit') || '30') || 30, 1), 50);
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const results = await monitorNewMarketplaceListings(query, since, c.req.query('location') || undefined, limit);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      results,
+      meta: {
+        query,
+        since,
+        new_count: results.length,
+        proxy: { ip, country: proxy.country, carrier: process.env.PROXY_CARRIER || null, type: 'mobile' },
+      },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Marketplace monitor failed', message: err?.message || String(err) }, 502);
   }
 });
 
