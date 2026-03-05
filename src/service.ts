@@ -594,6 +594,7 @@ serviceRouter.get('/linkedin/person', async (c) => {
 
   try {
     const proxy = getProxy();
+    const ip = await getProxyExitIp();
     const person = await scrapeLinkedInPerson(publicIdMatch[1]);
 
     if (!person) {
@@ -606,7 +607,7 @@ serviceRouter.get('/linkedin/person', async (c) => {
     return c.json({
       person: {
         ...person,
-        meta: { proxy: { country: proxy.country, type: 'mobile' } },
+        meta: { proxy: { ip: ip || undefined, country: proxy.country, carrier: process.env.PROXY_CARRIER || 'mobile', type: 'mobile' } },
       },
       payment: {
         txHash: payment.txHash,
@@ -632,7 +633,7 @@ serviceRouter.get('/linkedin/company', async (c) => {
     return c.json(
       build402Response('/api/linkedin/company', 'LinkedIn Company Profile Enrichment', LINKEDIN_COMPANY_PRICE_USDC, walletAddress, {
         input: { url: 'string — LinkedIn company URL (required)' },
-        output: { company: 'LinkedInCompany — name, description, industry, employees', meta: 'proxy info' },
+        output: { company: 'LinkedInCompany — name, description, industry, employees, growth rate, job openings, tech signals', meta: 'proxy info' },
       }),
       402,
     );
@@ -655,6 +656,7 @@ serviceRouter.get('/linkedin/company', async (c) => {
 
   try {
     const proxy = getProxy();
+    const ip = await getProxyExitIp();
     const company = await scrapeLinkedInCompany(companyIdMatch[1]);
 
     if (!company) {
@@ -667,7 +669,7 @@ serviceRouter.get('/linkedin/company', async (c) => {
     return c.json({
       company: {
         ...company,
-        meta: { proxy: { country: proxy.country, type: 'mobile' } },
+        meta: { proxy: { ip: ip || undefined, country: proxy.country, carrier: process.env.PROXY_CARRIER || 'mobile', type: 'mobile' } },
       },
       payment: {
         txHash: payment.txHash,
@@ -696,7 +698,7 @@ serviceRouter.get('/linkedin/search/people', async (c) => {
           title: 'string — Job title (required)',
           location: 'string — Location (optional)',
           industry: 'string — Industry (optional)',
-          limit: 'number — Max results (default: 10, max: 20)'
+          limit: 'number — Max results (default: 10, max: 10)'
         },
         output: { results: 'LinkedInSearchResult[]', meta: 'proxy info' },
       }),
@@ -716,10 +718,11 @@ serviceRouter.get('/linkedin/search/people', async (c) => {
 
   const location = c.req.query('location');
   const industry = c.req.query('industry');
-  const limit = Math.min(Math.max(parseInt(c.req.query('limit') || '10') || 10, 1), 20);
+  const limit = Math.min(Math.max(parseInt(c.req.query('limit') || '10') || 10, 1), 10);
 
   try {
     const proxy = getProxy();
+    const ip = await getProxyExitIp();
     const results = await searchLinkedInPeople(title, location || undefined, industry || undefined, limit);
 
     c.header('X-Payment-Settled', 'true');
@@ -727,7 +730,7 @@ serviceRouter.get('/linkedin/search/people', async (c) => {
 
     return c.json({
       results,
-      meta: { proxy: { country: proxy.country, type: 'mobile' } },
+      meta: { proxy: { ip: ip || undefined, country: proxy.country, carrier: process.env.PROXY_CARRIER || 'mobile', type: 'mobile' } },
       payment: {
         txHash: payment.txHash,
         network: payment.network,
@@ -754,7 +757,7 @@ serviceRouter.get('/linkedin/company/:id/employees', async (c) => {
         input: { 
           id: 'string — LinkedIn company ID (in URL path)',
           title: 'string — Job title filter (optional)',
-          limit: 'number — Max results (default: 10, max: 20)'
+          limit: 'number — Max results (default: 10, max: 10)'
         },
         output: { results: 'LinkedInSearchResult[]', meta: 'proxy info' },
       }),
@@ -773,10 +776,11 @@ serviceRouter.get('/linkedin/company/:id/employees', async (c) => {
   }
 
   const title = c.req.query('title') || undefined;
-  const limit = Math.min(Math.max(parseInt(c.req.query('limit') || '10') || 10, 1), 20);
+  const limit = Math.min(Math.max(parseInt(c.req.query('limit') || '10') || 10, 1), 10);
 
   try {
     const proxy = getProxy();
+    const ip = await getProxyExitIp();
     const results = await findCompanyEmployees(companyId, title, limit);
 
     c.header('X-Payment-Settled', 'true');
@@ -784,7 +788,7 @@ serviceRouter.get('/linkedin/company/:id/employees', async (c) => {
 
     return c.json({
       results,
-      meta: { proxy: { country: proxy.country, type: 'mobile' } },
+      meta: { proxy: { ip: ip || undefined, country: proxy.country, carrier: process.env.PROXY_CARRIER || 'mobile', type: 'mobile' } },
       payment: {
         txHash: payment.txHash,
         network: payment.network,
