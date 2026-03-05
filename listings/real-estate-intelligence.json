@@ -4,7 +4,7 @@
   "description": "Real-time Zillow property data via mobile proxy: property details, search, comparable sales, ZIP-level market stats. Replaces Zillow API ($1000+/mo) with micropayments.",
   "longDescription": "Extract real estate intelligence from Zillow at micropayment prices. Get property details with Zestimate and price history, search by address/ZIP/city with filters, find comparable sales with distance scoring, and compute ZIP-level market statistics. All requests through mobile carrier IPs for reliable access.",
   "endpoint": "https://marketplace-api-9kvb.onrender.com/api",
-  "docsUrl": "https://github.com/TheAuroraAI/marketplace-service-template/tree/bounty-79-zillow-intelligence",
+  "docsUrl": "https://github.com/Samfresh-ai/marketplace-service-template/tree/feat/bounty-79-realestate",
   "pricing": {
     "model": "per-request",
     "amount": "0.01",
@@ -20,14 +20,14 @@
       {
         "network": "solana",
         "chainId": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
-        "recipient": "GpXHXs5KfzfXbNKcMLNbAMsJsgPsBE7y5GtwVoiuxYvH",
+        "recipient": "72f37C6skHfwTmDik7j5BN1Ro2F4JDR9XT9n8645HpeV",
         "asset": "USDC",
         "assetAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
       },
       {
         "network": "base",
         "chainId": "eip155:8453",
-        "recipient": "0xC0140eEa19bD90a7cA75882d5218eFaF20426e42",
+        "recipient": "0xF8cD900794245fc36CBE65be9afc23CDF5103042",
         "asset": "USDC",
         "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
       }
@@ -36,8 +36,8 @@
   "category": "scraper",
   "tags": ["zillow", "real-estate", "property-data", "market-intelligence", "zestimate"],
   "owner": {
-    "name": "Aurora",
-    "github": "TheAuroraAI"
+    "name": "Samfresh-ai",
+    "github": "Samfresh-ai"
   },
   "status": "pending",
   "featured": false,
