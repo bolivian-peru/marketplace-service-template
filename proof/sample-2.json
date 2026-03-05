@@ -1,3 +1,27 @@
 {
-  "note": "no listing id available from sample-1"
+  "kind": "listing-detail",
+  "inputId": "767025625908618",
+  "listing": {
+    "id": "767025625908618",
+    "title": "Log into Facebook | Facebook",
+    "price": null,
+    "currency": "USD",
+    "location": "",
+    "condition": null,
+    "description": "Log into Facebook to start sharing and connecting with your friends, family, and people you know.",
+    "category": null,
+    "seller": {
+      "name": "Private Seller",
+      "joined": null,
+      "rating": null,
+      "itemsSold": null
+    },
+    "images": [
+      "https://www.facebook.com/images/fb_icon_325x325.png"
+    ],
+    "listingUrl": "https://www.facebook.com/marketplace/item/767025625908618/",
+    "postedAt": null,
+    "isDeliveryAvailable": false
+  },
+  "error": null
 }

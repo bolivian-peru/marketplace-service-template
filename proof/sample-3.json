@@ -1,7 +1,15 @@
 {
+  "kind": "search-and-new",
   "query": "iphone",
   "location": "new york",
-  "since": "24h",
-  "resultCount": 0,
-  "data": []
+  "searchResultCount": 0,
+  "recentCount": 0,
+  "search": {
+    "results": [],
+    "totalFound": 0,
+    "cursor": null,
+    "location": "New York, NY",
+    "searchQuery": "iphone"
+  },
+  "recent": []
 }

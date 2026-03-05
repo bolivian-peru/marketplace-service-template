@@ -1,12 +1,146 @@
 {
-  "query": "iphone",
-  "location": "new york",
-  "resultCount": 0,
-  "data": {
-    "results": [],
-    "totalFound": 0,
-    "cursor": null,
-    "location": "New York, NY",
-    "searchQuery": "iphone"
-  }
+  "kind": "categories",
+  "total": 20,
+  "categories": [
+    {
+      "id": "vehicles",
+      "name": "Vehicles",
+      "icon": "🚗",
+      "listingCount": null,
+      "url": "https://www.facebook.com/marketplace/category/vehicles/"
+    },
+    {
+      "id": "electronics",
+      "name": "Electronics",
+      "icon": "📱",
+      "listingCount": null,
+      "url": "https://www.facebook.com/marketplace/category/electronics/"
+    },
+    {
+      "id": "apparel",
+      "name": "Clothing & Accessories",
+      "icon": "👗",
+      "listingCount": null,
+      "url": "https://www.facebook.com/marketplace/category/apparel/"
+    },
+    {
+      "id": "furniture",
+      "name": "Furniture",
+      "icon": "🛋️",
+      "listingCount": null,
+      "url": "https://www.facebook.com/marketplace/category/furniture/"
+    },
+    {
+      "id": "home_goods",
+      "name": "Home & Garden",
+      "icon": "🏡",
+      "listingCount": null,
+      "url": "https://www.facebook.com/marketplace/category/home-goods/"
+    },
+    {
+      "id": "sporting_goods",
+      "name": "Sporting Goods",
+      "icon": "⚽",
+      "listingCount": null,
+      "url": "https://www.facebook.com/marketplace/category/sporting-goods/"
+    },
+    {
+      "id": "tools",
+      "name": "Tools & Equipment",
+      "icon": "🔧",
+      "listingCount": null,
+      "url": "https://www.facebook.com/marketplace/category/tools/"
+    },
+    {
+      "id": "toys",
+      "name": "Toys & Games",
+      "icon": "🎮",
+      "listingCount": null,
+      "url": "https://www.facebook.com/marketplace/category/toys/"
+    },
+    {
+      "id": "books",
+      "name": "Books & Music",
+      "icon": "📚",
+      "listingCount": null,
+      "url": "https://www.facebook.com/marketplace/category/books/"
+    },
+    {
+      "id": "pets",
+      "name": "Pet Supplies",
+      "icon": "🐾",
+      "listingCount": null,
+      "url": "https://www.facebook.com/marketplace/category/pet-supplies/"
+    },
+    {
+      "id": "baby_kids",
+      "name": "Baby & Kids",
+      "icon": "👶",
+      "listingCount": null,
+      "url": "https://www.facebook.com/marketplace/category/baby-kids/"
+    },
+    {
+      "id": "jewelry",
+      "name": "Jewelry",
+      "icon": "💍",
+      "listingCount": null,
+      "url": "https://www.facebook.com/marketplace/category/jewelry/"
+    },
+    {
+      "id": "bags",
+      "name": "Bags & Luggage",
+      "icon": "👜",
+      "listingCount": null,
+      "url": "https://www.facebook.com/marketplace/category/bags/"
+    },
+    {
+      "id": "beauty",
+      "name": "Health & Beauty",
+      "icon": "💄",
+      "listingCount": null,
+      "url": "https://www.facebook.com/marketplace/category/health-beauty/"
+    },
+    {
+      "id": "office",
+      "name": "Office Supplies",
+      "icon": "📎",
+      "listingCount": null,
+      "url": "https://www.facebook.com/marketplace/category/office-supplies/"
+    },
+    {
+      "id": "free",
+      "name": "Free Stuff",
+      "icon": "🆓",
+      "listingCount": null,
+      "url": "https://www.facebook.com/marketplace/category/free/"
+    },
+    {
+      "id": "antiques",
+      "name": "Antiques & Collectibles",
+      "icon": "🏺",
+      "listingCount": null,
+      "url": "https://www.facebook.com/marketplace/category/antiques/"
+    },
+    {
+      "id": "musical",
+      "name": "Musical Instruments",
+      "icon": "🎸",
+      "listingCount": null,
+      "url": "https://www.facebook.com/marketplace/category/musical-instruments/"
+    },
+    {
+      "id": "garden",
+      "name": "Garden & Outdoor",
+      "icon": "🌱",
+      "listingCount": null,
+      "url": "https://www.facebook.com/marketplace/category/garden/"
+    },
+    {
+      "id": "classifieds",
+      "name": "Classifieds",
+      "icon": "📋",
+      "listingCount": null,
+      "url": "https://www.facebook.com/marketplace/category/classifieds/"
+    }
+  ]
 }

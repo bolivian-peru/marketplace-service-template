@@ -1446,7 +1446,8 @@ serviceRouter.get('/airbnb/market-stats', async (c) => {
 });
 // ─── FACEBOOK MARKETPLACE ROUTES (Bounty #75) ────────────────────────────────
 
-const FB_SOLANA_WALLET = process.env.SOLANA_WALLET_ADDRESS || 'GpXHXs5KfzfXbNKcMLNbAMsJsgPsBE7y5GtwVoiuxYvH';
+const FB_SOLANA_WALLET = process.env.WALLET_ADDRESS || '';
+const FB_PROXY_CARRIER = process.env.PROXY_CARRIER || null;
 const FB_SEARCH_PRICE = 0.02;   // $0.02 per search
 const FB_LISTING_PRICE = 0.01;  // $0.01 per listing detail
 const FB_CATS_PRICE = 0.005;    // $0.005 per categories fetch
@@ -1455,6 +1456,7 @@ const FB_NEW_PRICE = 0.03;      // $0.03 per new listings monitor
 // ─── GET /api/marketplace/search ───────────────────
 
 serviceRouter.get('/marketplace/search', async (c) => {
+  if (!FB_SOLANA_WALLET) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
   const payment = extractPayment(c);
   if (!payment) {
     return c.json(build402Response('/api/marketplace/search', 'Search Facebook Marketplace listings by keyword, location, price range', FB_SEARCH_PRICE, FB_SOLANA_WALLET, {
@@ -1503,7 +1505,7 @@ serviceRouter.get('/marketplace/search', async (c) => {
 
     return c.json({
       ...result,
-      meta: { proxy: { country: proxy.country, type: 'mobile' } },
+      meta: { proxy: { country: proxy.country, carrier: FB_PROXY_CARRIER, type: 'mobile' } },
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
   } catch (err: any) {
@@ -1514,6 +1516,7 @@ serviceRouter.get('/marketplace/search', async (c) => {
 // ─── GET /api/marketplace/listing/:id ──────────────
 
 serviceRouter.get('/marketplace/listing/:id', async (c) => {
+  if (!FB_SOLANA_WALLET) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
   const payment = extractPayment(c);
   if (!payment) {
     return c.json(build402Response('/api/marketplace/listing/:id', 'Get Facebook Marketplace listing details: title, price, description, seller info, photos', FB_LISTING_PRICE, FB_SOLANA_WALLET, {
@@ -1539,7 +1542,7 @@ serviceRouter.get('/marketplace/listing/:id', async (c) => {
 
     return c.json({
       listing,
-      meta: { proxy: { country: proxy.country, type: 'mobile' } },
+      meta: { proxy: { country: proxy.country, carrier: FB_PROXY_CARRIER, type: 'mobile' } },
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
   } catch (err: any) {
@@ -1550,6 +1553,7 @@ serviceRouter.get('/marketplace/listing/:id', async (c) => {
 // ─── GET /api/marketplace/categories ───────────────
 
 serviceRouter.get('/marketplace/categories', async (c) => {
+  if (!FB_SOLANA_WALLET) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
   const payment = extractPayment(c);
   if (!payment) {
     return c.json(build402Response('/api/marketplace/categories', 'List all Facebook Marketplace categories with IDs and browse URLs', FB_CATS_PRICE, FB_SOLANA_WALLET, {
@@ -1572,7 +1576,7 @@ serviceRouter.get('/marketplace/categories', async (c) => {
   return c.json({
     categories,
     totalCategories: categories.length,
-    meta: { proxy: { country: proxy.country, type: 'mobile' } },
+    meta: { proxy: { country: proxy.country, carrier: FB_PROXY_CARRIER, type: 'mobile' } },
     payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
   });
 });
@@ -1580,6 +1584,7 @@ serviceRouter.get('/marketplace/categories', async (c) => {
 // ─── GET /api/marketplace/new ───────────────────────
 
 serviceRouter.get('/marketplace/new', async (c) => {
+  if (!FB_SOLANA_WALLET) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
   const payment = extractPayment(c);
   if (!payment) {
     return c.json(build402Response('/api/marketplace/new', 'Monitor new Facebook Marketplace listings in real-time: get listings posted within a time window', FB_NEW_PRICE, FB_SOLANA_WALLET, {
@@ -1621,7 +1626,7 @@ serviceRouter.get('/marketplace/new', async (c) => {
       location,
       query,
       count: newListings.length,
-      meta: { proxy: { country: proxy.country, type: 'mobile' } },
+      meta: { proxy: { country: proxy.country, carrier: FB_PROXY_CARRIER, type: 'mobile' } },
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
   } catch (err: any) {

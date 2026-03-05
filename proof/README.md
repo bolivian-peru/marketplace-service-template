@@ -1,14 +1,14 @@
 # Proof — Bounty #75 (Facebook Marketplace)
 
-Generated via live proxy-backed scraper runs.
+Generated via live proxy-backed runs using the branch implementation.
 
-- Timestamp (UTC): 2026-03-05T06:54:06Z
-- Proxy exit IP: 31.59.20.176
-- Proxy auth mode: username/password
+- Timestamp (UTC): 2026-03-05T16:09:04Z
+- Proxy auth: username/password
+- Proxy carrier: Webshare-Free
 
 ## Samples
-1. `sample-1.json` — marketplace search (`query=iphone`, `location=new york`, price filters)
-2. `sample-2.json` — listing detail lookup from sample-1 result (or note if none returned)
-3. `sample-3.json` — new listings monitor (`since=24h`)
+1. `sample-1.json` — category listing output (non-empty structured payload)
+2. `sample-2.json` — listing detail fetch attempt via mobile-proxy path
+3. `sample-3.json` — search + new-listings monitor output for `iphone` in `new york`
 
-All samples are raw outputs from the implementation in `src/scrapers/facebook-marketplace-scraper.ts`.
+All outputs are raw from `src/scrapers/facebook-marketplace-scraper.ts`.
