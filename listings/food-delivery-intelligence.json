@@ -4,6 +4,7 @@
   "description": "Search restaurants, extract menu prices, and compare delivery offers across Uber Eats and DoorDash via x402 micropayments.",
   "longDescription": "Mobile-first food delivery intelligence for agents and data teams. Pull restaurant search results, menu pricing, and cross-platform comparison using carrier-grade proxy routing and pay-per-request settlement.",
   "endpoint": "https://marketplace-api-9kvb.onrender.com/api/food",
+  "docsUrl": "https://github.com/bolivian-peru/marketplace-service-template",
   "pricing": {
     "model": "per-request",
     "endpoints": [
@@ -13,7 +14,19 @@
       { "path": "/api/food/compare", "price": "$0.03", "unit": "per request" }
     ],
     "comparison": "Bright Data and enterprise food-delivery datasets typically require monthly commitments and account setup. This service is pay-as-you-go ($0.01-$0.03) and directly callable by AI agents over x402 without subscription overhead.",
-    "currency": "USDC"
+    "currency": "USDC",
+    "networks": [
+      {
+        "network": "base",
+        "token": "USDC",
+        "recipient": "0xF8cD900794245fc36CBE65be9afc23CDF5103042"
+      },
+      {
+        "network": "solana",
+        "token": "USDC",
+        "recipient": "72f37C6skHfwTmDik7j5BN1Ro2F4JDR9XT9n8645HpeV"
+      }
+    ]
   },
   "whyMobileProxy": "Uber Eats and DoorDash personalize storefront and availability by geo/device reputation. Datacenter traffic is throttled or challenged; mobile carrier IPs mimic real app traffic and improve data completeness for localized pricing, delivery windows, and promotions.",
   "sampleOutput": "See proof/sample-1.json, proof/sample-2.json, proof/sample-3.json",

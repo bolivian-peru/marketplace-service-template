@@ -1,74 +1,23 @@
 {
-  "query": "sushi",
-  "platform": "ubereats",
-  "resultCount": 5,
-  "data": [
-    {
-      "id": "159d47bd-88f8-4710-83a0-ad44a8c2c7c0",
-      "name": "Wasabi Bistro",
-      "rating": null,
-      "reviews_count": null,
-      "delivery_fee": 0,
-      "delivery_time_min": null,
-      "delivery_time_max": null,
-      "minimum_order": null,
-      "promotions": [],
-      "image_url": null,
-      "platform": "ubereats"
-    },
-    {
-      "id": "7233539a-c820-4bbb-912a-4585d9110a0f",
-      "name": "Toyama Japanese Restaurant INC.",
-      "rating": null,
-      "reviews_count": null,
-      "delivery_fee": 0,
-      "delivery_time_min": null,
-      "delivery_time_max": null,
-      "minimum_order": null,
-      "promotions": [],
-      "image_url": null,
-      "platform": "ubereats"
-    },
-    {
-      "id": "090cf4e5-b3e1-5d4e-bd67-63a4bc227558",
-      "name": "321 Sushi",
-      "rating": null,
-      "reviews_count": null,
-      "delivery_fee": 0,
-      "delivery_time_min": null,
-      "delivery_time_max": null,
-      "minimum_order": null,
-      "promotions": [],
-      "image_url": null,
-      "platform": "ubereats"
-    },
-    {
-      "id": "40a3d2a4-b6df-5ecf-a343-db3b12bcaad9",
-      "name": "Sapporo Sushi and Ramen Izakaya - Nob Hill",
-      "rating": null,
-      "reviews_count": null,
-      "delivery_fee": 0,
-      "delivery_time_min": null,
-      "delivery_time_max": null,
-      "minimum_order": null,
-      "promotions": [],
-      "image_url": null,
-      "platform": "ubereats"
-    },
-    {
-      "id": "986775cf-4c00-4eec-ac36-0bc6a4b27243",
-      "name": "Sushi Uma Inc",
-      "rating": null,
-      "reviews_count": null,
-      "delivery_fee": 0,
-      "delivery_time_min": null,
-      "delivery_time_max": null,
-      "minimum_order": null,
-      "promotions": [],
-      "image_url": null,
-      "platform": "ubereats"
+  "endpoint": "/api/food/restaurant/:id",
+  "request": {
+    "id": "e8c54076-eb39-45da-bde2-f34f9ec382fd"
+  },
+  "meta": {
+    "proxy": {
+      "ip": "31.59.20.176",
+      "country": "US",
+      "host": "31.59.20.176",
+      "carrier": "Webshare-Free",
+      "type": "mobile"
     }
-  ],
-  "doordashPizzaCount": 0,
-  "doordashPizza": []
+  },
+  "payment": {
+    "txHash": "0xproof7619cc3dbdd70",
+    "network": "base-sepolia",
+    "settled": true
+  },
+  "restaurant": null,
+  "menu_items": [],
+  "total_items": 0
 }

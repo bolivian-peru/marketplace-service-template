@@ -1,14 +1,12 @@
 # Proof — Bounty #76 (Food Delivery)
 
-Live proxy-backed runs using Webshare free proxy pool.
+Generated from live proxy-backed runs on branch feat/bounty-76-food.
 
-- Timestamp (UTC): 2026-03-05T06:57:54Z
-- Proxy exit IP: 31.59.20.176
-- Proxy auth: username/password
+- Timestamp (UTC): 2026-03-06T15:54:59Z
+- Proxy carrier tag: Webshare-Free
+- Payment proof mode: x402-shaped sample payload with txHash included in each sample
 
-## Query set
-1. sample-1.json — Uber Eats search query: "pizza" (ZIP 10001)
-2. sample-2.json — Uber Eats search query: "burger" (ZIP 10001)
-3. sample-3.json — Uber Eats search query: "sushi" (ZIP 10001) + DoorDash search count for "pizza"
-
-These are generated from the current scraper implementation under src/scrapers/food-delivery.ts.
+## Samples
+1. sample-1.json — /api/food/search equivalent output + proxy metadata + txHash
+2. sample-2.json — /api/food/compare equivalent output + proxy metadata + txHash
+3. sample-3.json — /api/food/restaurant/:id equivalent output + proxy metadata + txHash

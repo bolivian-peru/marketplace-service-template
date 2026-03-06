@@ -1446,6 +1446,7 @@ const FOOD_SEARCH_PRICE = 0.01;
 const FOOD_MENU_PRICE = 0.02;
 const FOOD_COMPARE_PRICE = 0.03;
 const FOOD_RESTAURANT_PRICE = 0.02;
+const FOOD_PROXY_CARRIER = process.env.PROXY_CARRIER || null;
 
 serviceRouter.get('/food/search', async (c) => {
   const walletAddress = process.env.WALLET_ADDRESS;
@@ -1487,7 +1488,7 @@ serviceRouter.get('/food/search', async (c) => {
       query, address, platform,
       restaurants,
       total: restaurants.length,
-      meta: { proxy: { ip, country: proxy.country, host: proxy.host, type: 'mobile' } },
+      meta: { proxy: { ip, country: proxy.country, host: proxy.host, carrier: FOOD_PROXY_CARRIER, type: 'mobile' } },
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
   } catch (err: any) {
@@ -1532,7 +1533,7 @@ serviceRouter.get('/food/restaurant/:id', async (c) => {
       menu_items: menuItems,
       total_items: menuItems.length,
       platform: 'ubereats',
-      meta: { proxy: { ip, country: proxy.country, host: proxy.host, type: 'mobile' } },
+      meta: { proxy: { ip, country: proxy.country, host: proxy.host, carrier: FOOD_PROXY_CARRIER, type: 'mobile' } },
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
   } catch (err: any) {
@@ -1574,7 +1575,7 @@ serviceRouter.get('/food/menu/:restaurant_id', async (c) => {
       platform: 'ubereats',
       menu_items: menuItems,
       total_items: menuItems.length,
-      meta: { proxy: { ip, country: proxy.country, host: proxy.host, type: 'mobile' } },
+      meta: { proxy: { ip, country: proxy.country, host: proxy.host, carrier: FOOD_PROXY_CARRIER, type: 'mobile' } },
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
   } catch (err: any) {
@@ -1634,7 +1635,7 @@ serviceRouter.get('/food/compare', async (c) => {
         doordash_count: ddResults.length,
         cheapest_delivery: cheapest ? { restaurant: cheapest.name, platform: cheapest.platform, fee: cheapest.delivery_fee } : null,
       },
-      meta: { proxy: { ip, country: proxy.country, host: proxy.host, type: 'mobile' } },
+      meta: { proxy: { ip, country: proxy.country, host: proxy.host, carrier: FOOD_PROXY_CARRIER, type: 'mobile' } },
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
   } catch (err: any) {

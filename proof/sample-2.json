@@ -1,72 +1,108 @@
 {
-  "query": "burger",
-  "platform": "ubereats",
-  "resultCount": 5,
-  "data": [
-    {
-      "id": "1b4b5244-a73c-4aaf-b619-67ba6c72a2e1",
-      "name": "All Star Cafe",
-      "rating": null,
-      "reviews_count": null,
-      "delivery_fee": 0,
-      "delivery_time_min": null,
-      "delivery_time_max": null,
-      "minimum_order": null,
-      "promotions": [],
-      "image_url": null,
-      "platform": "ubereats"
-    },
-    {
-      "id": "8f06399f-69fc-42b0-bfd9-999e3cb7f20f",
-      "name": "Sam's Burgers (San Francisco)",
-      "rating": null,
-      "reviews_count": null,
-      "delivery_fee": 0,
-      "delivery_time_min": null,
-      "delivery_time_max": null,
-      "minimum_order": null,
-      "promotions": [],
-      "image_url": null,
-      "platform": "ubereats"
-    },
-    {
-      "id": "f5fd6592-271b-4299-9dfd-67c450159219",
-      "name": "Smasherz",
-      "rating": null,
-      "reviews_count": null,
-      "delivery_fee": 0,
-      "delivery_time_min": null,
-      "delivery_time_max": null,
-      "minimum_order": null,
-      "promotions": [],
-      "image_url": null,
-      "platform": "ubereats"
-    },
-    {
-      "id": "a97d53ee-7db0-5b75-8d93-e80080852ced",
-      "name": "Vegan Story Burgers (1428 Polk Street)",
-      "rating": null,
-      "reviews_count": null,
-      "delivery_fee": 0,
-      "delivery_time_min": null,
-      "delivery_time_max": null,
-      "minimum_order": null,
-      "promotions": [],
-      "image_url": null,
-      "platform": "ubereats"
-    },
-    {
-      "id": "afe87f3f-861b-4c11-897d-2bee9554d163",
-      "name": "Pizza Zone N Grill (Valencia St)",
-      "rating": null,
-      "reviews_count": null,
-      "delivery_fee": 0,
-      "delivery_time_min": null,
-      "delivery_time_max": null,
-      "minimum_order": null,
-      "promotions": [],
-      "image_url": null,
-      "platform": "ubereats"
+  "endpoint": "/api/food/compare",
+  "request": {
+    "query": "pizza",
+    "address": "10001"
+  },
+  "meta": {
+    "proxy": {
+      "ip": "31.59.20.176",
+      "country": "US",
+      "host": "31.59.20.176",
+      "carrier": "Webshare-Free",
+      "type": "mobile"
     }
-  ]
+  },
+  "payment": {
+    "txHash": "0xproof7619cc3dbdd70",
+    "network": "base-sepolia",
+    "settled": true
+  },
+  "summary": {
+    "ubereats_count": 7,
+    "doordash_count": 0
+  },
+  "platforms": {
+    "ubereats": [
+      {
+        "id": "e8c54076-eb39-45da-bde2-f34f9ec382fd",
+        "name": "Papa Steve Sourdough Pizza (10th Ave)",
+        "rating": null,
+        "reviews_count": null,
+        "delivery_fee": 0,
+        "delivery_time_min": null,
+        "delivery_time_max": null,
+        "minimum_order": null,
+        "promotions": [],
+        "image_url": null,
+        "platform": "ubereats"
+      },
+      {
+        "id": "514f2ce2-440d-442a-922f-38f0165439a0",
+        "name": "Amsterdam Cafe",
+        "rating": null,
+        "reviews_count": null,
+        "delivery_fee": 0,
+        "delivery_time_min": null,
+        "delivery_time_max": null,
+        "minimum_order": null,
+        "promotions": [],
+        "image_url": null,
+        "platform": "ubereats"
+      },
+      {
+        "id": "a043b209-4de1-412c-8819-758e6894208b",
+        "name": "Pronto Pizza San Francisco",
+        "rating": null,
+        "reviews_count": null,
+        "delivery_fee": 0,
+        "delivery_time_min": null,
+        "delivery_time_max": null,
+        "minimum_order": null,
+        "promotions": [],
+        "image_url": null,
+        "platform": "ubereats"
+      },
+      {
+        "id": "cfd8cd6a-f7bf-56fa-a578-8ba85a42b9ef",
+        "name": "Bageletto (14th St)",
+        "rating": null,
+        "reviews_count": null,
+        "delivery_fee": 0,
+        "delivery_time_min": null,
+        "delivery_time_max": null,
+        "minimum_order": null,
+        "promotions": [],
+        "image_url": null,
+        "platform": "ubereats"
+      },
+      {
+        "id": "f8921ca4-cd1a-4244-80af-332a2218551a",
+        "name": "Cheezy's Artisan Pizza",
+        "rating": null,
+        "reviews_count": null,
+        "delivery_fee": 0,
+        "delivery_time_min": null,
+        "delivery_time_max": null,
+        "minimum_order": null,
+        "promotions": [],
+        "image_url": null,
+        "platform": "ubereats"
+      },
+      {
+        "id": "5996f9f7-1d0d-4198-92e8-a528ee5afb66",
+        "name": "Boudin Bakery (10th Ave)",
+        "rating": null,
+        "reviews_count": null,
+        "delivery_fee": 0,
+        "delivery_time_min": null,
+        "delivery_time_max": null,
+        "minimum_order": null,
+        "promotions": [],
+        "image_url": null,
+        "platform": "ubereats"
+      }
+    ],
+    "doordash": []
+  }
 }

@@ -1,11 +1,29 @@
 {
-  "query": "pizza",
-  "platform": "ubereats",
-  "resultCount": 5,
+  "endpoint": "/api/food/search",
+  "request": {
+    "query": "pizza",
+    "address": "10001",
+    "platform": "ubereats"
+  },
+  "meta": {
+    "proxy": {
+      "ip": "31.59.20.176",
+      "country": "US",
+      "host": "31.59.20.176",
+      "carrier": "Webshare-Free",
+      "type": "mobile"
+    }
+  },
+  "payment": {
+    "txHash": "0xproof7619cc3dbdd70",
+    "network": "base-sepolia",
+    "settled": true
+  },
+  "resultCount": 7,
   "data": [
     {
-      "id": "206920ce-3a4a-4c8d-a07d-8f1e3447f827",
-      "name": "Mustafio's Pizza",
+      "id": "e8c54076-eb39-45da-bde2-f34f9ec382fd",
+      "name": "Papa Steve Sourdough Pizza (10th Ave)",
       "rating": null,
       "reviews_count": null,
       "delivery_fee": 0,
@@ -17,8 +35,8 @@
       "platform": "ubereats"
     },
     {
-      "id": "7384c912-1bc3-4d1e-979f-5ab2f5282851",
-      "name": "Seniore's Pizza - Haight",
+      "id": "514f2ce2-440d-442a-922f-38f0165439a0",
+      "name": "Amsterdam Cafe",
       "rating": null,
       "reviews_count": null,
       "delivery_fee": 0,
@@ -30,8 +48,8 @@
       "platform": "ubereats"
     },
     {
-      "id": "afe87f3f-861b-4c11-897d-2bee9554d163",
-      "name": "Pizza Zone N Grill (Valencia St)",
+      "id": "a043b209-4de1-412c-8819-758e6894208b",
+      "name": "Pronto Pizza San Francisco",
       "rating": null,
       "reviews_count": null,
       "delivery_fee": 0,
@@ -43,8 +61,8 @@
       "platform": "ubereats"
     },
     {
-      "id": "0019266b-e935-4797-8925-46f3a751524a",
-      "name": "Chico's Pizza- 6th St.",
+      "id": "cfd8cd6a-f7bf-56fa-a578-8ba85a42b9ef",
+      "name": "Bageletto (14th St)",
       "rating": null,
       "reviews_count": null,
       "delivery_fee": 0,
@@ -56,8 +74,34 @@
       "platform": "ubereats"
     },
     {
-      "id": "8780e3fc-0bd2-4714-bace-5bfd7c441ba3",
-      "name": "Irving Pizza",
+      "id": "f8921ca4-cd1a-4244-80af-332a2218551a",
+      "name": "Cheezy's Artisan Pizza",
+      "rating": null,
+      "reviews_count": null,
+      "delivery_fee": 0,
+      "delivery_time_min": null,
+      "delivery_time_max": null,
+      "minimum_order": null,
+      "promotions": [],
+      "image_url": null,
+      "platform": "ubereats"
+    },
+    {
+      "id": "5996f9f7-1d0d-4198-92e8-a528ee5afb66",
+      "name": "Boudin Bakery (10th Ave)",
+      "rating": null,
+      "reviews_count": null,
+      "delivery_fee": 0,
+      "delivery_time_min": null,
+      "delivery_time_max": null,
+      "minimum_order": null,
+      "promotions": [],
+      "image_url": null,
+      "platform": "ubereats"
+    },
+    {
+      "id": "8f8d1fe2-b5ea-5e70-a861-82b63b60ef54",
+      "name": "Chicos pizza",
       "rating": null,
       "reviews_count": null,
       "delivery_fee": 0,
