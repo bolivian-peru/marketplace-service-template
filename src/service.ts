@@ -1472,7 +1472,7 @@ serviceRouter.get('/realestate/property/:zpid', async (c) => {
     const property = await scrapeProperty(zpid);
     c.header('X-Payment-Settled', 'true');
     c.header('X-Payment-TxHash', payment.txHash);
-    return c.json({ ...property, meta: { proxy: { ip, country: proxy.country, carrier: 'T-Mobile', type: 'mobile' } }, payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
+    return c.json({ ...property, meta: { proxy: { ip, country: proxy.country, carrier: proxy.carrier, type: 'mobile' } }, payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
   } catch (err: any) { return c.json({ error: 'Property lookup failed', message: err?.message || String(err) }, 502); }
 });
 
@@ -1504,7 +1504,7 @@ serviceRouter.get('/realestate/search', async (c) => {
     const results = await searchZillow(query, { type: filterType, minPrice, maxPrice, beds, baths }, limit);
     c.header('X-Payment-Settled', 'true');
     c.header('X-Payment-TxHash', payment.txHash);
-    return c.json({ query, filters: { type: filterType || null, minPrice: minPrice || null, maxPrice: maxPrice || null, beds: beds || null, baths: baths || null }, results, totalResults: results.length, meta: { proxy: { ip, country: proxy.country, carrier: 'T-Mobile', type: 'mobile' } }, payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
+    return c.json({ query, filters: { type: filterType || null, minPrice: minPrice || null, maxPrice: maxPrice || null, beds: beds || null, baths: baths || null }, results, totalResults: results.length, meta: { proxy: { ip, country: proxy.country, carrier: proxy.carrier, type: 'mobile' } }, payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
   } catch (err: any) { return c.json({ error: 'Zillow search failed', message: err?.message || String(err) }, 502); }
 });
 
@@ -1531,7 +1531,7 @@ serviceRouter.get('/realestate/comps/:zpid', async (c) => {
     const comps = await getComparableSales(zpid, limit);
     c.header('X-Payment-Settled', 'true');
     c.header('X-Payment-TxHash', payment.txHash);
-    return c.json({ zpid, comps, totalComps: comps.length, meta: { proxy: { ip, country: proxy.country, carrier: 'T-Mobile', type: 'mobile' } }, payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
+    return c.json({ zpid, comps, totalComps: comps.length, meta: { proxy: { ip, country: proxy.country, carrier: proxy.carrier, type: 'mobile' } }, payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
   } catch (err: any) { return c.json({ error: 'Comps lookup failed', message: err?.message || String(err) }, 502); }
 });
 
@@ -1557,6 +1557,6 @@ serviceRouter.get('/realestate/market', async (c) => {
     const stats = await getMarketStatsByZip(zip);
     c.header('X-Payment-Settled', 'true');
     c.header('X-Payment-TxHash', payment.txHash);
-    return c.json({ ...stats, meta: { proxy: { ip, country: proxy.country, carrier: 'T-Mobile', type: 'mobile' } }, payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
+    return c.json({ ...stats, meta: { proxy: { ip, country: proxy.country, carrier: proxy.carrier, type: 'mobile' } }, payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
   } catch (err: any) { return c.json({ error: 'Market stats failed', message: err?.message || String(err) }, 502); }
 });
