@@ -13,7 +13,7 @@
     }
   },
   "payment": {
-    "txHash": "0xproof7519cc3e7318a",
+    "txHash": "0xproxy7519cc3f9ef39",
     "network": "base-sepolia",
     "settled": true
   },

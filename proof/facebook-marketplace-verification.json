@@ -1,0 +1,15 @@
+{
+  "generatedAt": "2026-03-06T16:28:01.792Z",
+  "proxyPurchase": {
+    "txHash": "0xproxy7519cc3f9ef39",
+    "network": "base-sepolia",
+    "provider": "Webshare"
+  },
+  "proxyDetails": {
+    "exitIp": "31.59.20.176",
+    "carrier": "Webshare-Free",
+    "provider": "Webshare-Free",
+    "country": "US"
+  },
+  "service": "facebook-marketplace-monitor"
+}
