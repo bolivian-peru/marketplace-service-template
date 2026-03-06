@@ -1,13 +1,13 @@
 {
   "type": "signal",
   "market": "election",
-  "timestamp": "2026-03-06T15:46:31.278Z",
+  "timestamp": "2026-03-06T16:26:45.105Z",
   "odds": {
     "polymarket": {
       "source": "polymarket",
       "marketId": "16423",
       "title": "UK election called by...?",
-      "volume24h": 449.57265900000004,
+      "volume24h": 17.662659,
       "url": "https://polymarket.com/event/uk-election-called-by"
     },
     "kalshi": {
@@ -26,124 +26,62 @@
   },
   "sentiment": {
     "reddit": {
-      "positive": 0.4,
-      "negative": 0.1,
-      "neutral": 0.5,
+      "positive": 0.2,
+      "negative": 0,
+      "neutral": 0.8,
       "volume": 20
     },
     "redditSamples": [
       {
         "platform": "reddit",
-        "text": "Not a Deal Breaker? Most of us have seen the reports on the Epstein/Trump file releases. The President, whom Epstein said was his best friend for many years, is not only mentioned thousands of times, but is accused in several FBI interviews with victims of assault. I don't know how all this will impact the American people or specifically US Catholics. \n\nBut I have a different, although related issue that is bothering me. Trump was adjudicated and found liable for sexual assault before the last e",
+        "text": "Life Insurance Premiums For Bondi And Patel Skyrocket As Insurance Companies Aware Trump Cannot Fire Them Given Their Epstein Knowledge",
         "score": 1,
-        "author": "DesertMonk888",
-        "url": "https://reddit.com/r/LeftCatholicism/comments/1rmhhhd/not_a_deal_breaker/"
+        "author": "WebguyCanada",
+        "url": "https://reddit.com/r/onionheadlines/comments/1rmijv6/life_insurance_premiums_for_bondi_and_patel/"
       },
       {
         "platform": "reddit",
-        "text": "[World] - Kurdish opposition mulls whether to trust Trump after Iran uprising call | Al Jazeera",
+        "text": "DOJ Releases FBI Files Detailing Trump's R*pe Allegations Amid Democrats' Investigation of Withheld Epstein Materials",
         "score": 1,
-        "author": "AutoNewspaperAdmin",
-        "url": "https://reddit.com/r/AutoNewspaper/comments/1rmhh1n/world_kurdish_opposition_mulls_whether_to_trust/"
+        "author": "novagridd",
+        "url": "https://reddit.com/r/USNEWS/comments/1rmijsb/doj_releases_fbi_files_detailing_trumps_rpe/"
       },
       {
         "platform": "reddit",
-        "text": "US companies denied refunds on Trump’s illegal tariffs",
+        "text": "how longer can he do this \"mass deportations now! these people are parasites!\" vs. \"actually my business partners need illegal immigrants\" dance before the immigration hawks start getting pissed also they call me graham platner because i just highlighted a stew peters tweet",
         "score": 2,
-        "author": "financialtimes",
-        "url": "https://reddit.com/r/politics/comments/1rmhgva/us_companies_denied_refunds_on_trumps_illegal/"
+        "author": "jacknifee",
+        "url": "https://reddit.com/r/YAPms/comments/1rmijmu/how_longer_can_he_do_this_mass_deportations_now/"
       },
       {
         "platform": "reddit",
-        "text": "Donald Trump Has Lit a Global Match Trump and his aides think the United States has global leverage that his predecessors refused to use. He seems to forget that other countries have leverage, too—and they’re intent on using it to stop him.",
+        "text": "川普 : 除了無條件投降，不會與伊朗達成任何協議",
         "score": 1,
-        "author": "Ok_Crazy1195",
-        "url": "https://reddit.com/r/u_Ok_Crazy1195/comments/1rmhgmi/donald_trump_has_lit_a_global_match/"
+        "author": "WayneBruce0789",
+        "url": "https://reddit.com/r/look_at_china_irl/comments/1rmijlw/川普_除了無條件投降不會與伊朗達成任何協議/"
       },
       {
         "platform": "reddit",
-        "text": "Wise words from the First Lady.",
+        "text": "Unpopular Opinion: Cutting Russian oil wasn't \"cowardly,\" it was a necessary move to save millions of Indian jobs from US tariffs.Ready to be cooked in comments but that's what I believe All these influencers on X calling Modi a \"coward\" for bowing to US pressure on Russian oil are completely missing the point.\nYes, losing the cheap oil hurts, and it might dent the \"Vishwaguru\" image( he can lose his large following). But Trump is slapping heavy tariffs on everyone right now, even America's clos",
         "score": 1,
-        "author": "godless_one",
-        "url": "https://reddit.com/r/MelaniaTrump/comments/1rmhghv/wise_words_from_the_first_lady/"
+        "author": "Business-Worry-6800",
+        "url": "https://reddit.com/r/IndianFocus/comments/1rmije7/unpopular_opinion_cutting_russian_oil_wasnt/"
       }
     ],
     "x": {
       "positive": 0,
       "negative": 0,
-      "neutral": 1,
-      "volume": 10
+      "neutral": 0,
+      "volume": 0
     },
-    "xSamples": [
-      {
-        "platform": "x",
-        "text": "Donald J. Trump (@realDonaldTrump) / Posts / X - Twitter",
-        "score": 1,
-        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fx.com%2FrealDonaldTrump&amp;rut=97ac1b22c38e572a0a3484e020f150bb10f5c86cea7ba6a23a435059c2eddfd6"
-      },
-      {
-        "platform": "x",
-        "text": "Donald J. Trump (@realDonaldTrump) on X",
-        "score": 1,
-        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fx.com%2FrealDonaldTrump%2Fstatus%2F2027651077865157033&amp;rut=5a3512a012976a156ed889c0174cc018151547e42cf517e6b9898ee32c7ad2d0"
-      },
-      {
-        "platform": "x",
-        "text": "Trump War Room (@TrumpWarRoom) / Posts / X",
-        "score": 1,
-        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fx.com%2FTrumpWarRoom&amp;rut=262ac2d5a8f266160df546edfca78810498deeea05141f725d4b03d62c823033"
-      },
-      {
-        "platform": "x",
-        "text": "The White House (@WhiteHouse) / Posts / X - Twitter",
-        "score": 1,
-        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fx.com%2FWhiteHouse&amp;rut=74bbf2e7becd293abdbc71730dc4a57bafa4749a71d11f22f15341bcbc4477e0"
-      },
-      {
-        "platform": "x",
-        "text": "To My Great Fellow Americans…",
-        "score": 1,
-        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fx.com%2FrealDonaldTrump%2Fstatus%2F1965947311718269341&amp;rut=d6c1afdcb41cf0132f448ddb94d0e8da62cbdab08f0adc049f114df36f3f9095"
-      }
-    ],
+    "xSamples": [],
     "tiktok": {
       "positive": 0,
       "negative": 0,
-      "neutral": 1,
-      "volume": 10
+      "neutral": 0,
+      "volume": 0
     },
-    "tiktokSamples": [
-      {
-        "platform": "tiktok",
-        "text": "President Donald J Trump (@realdonaldtrump) | TikTok",
-        "score": 1,
-        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.tiktok.com%2F%40realdonaldtrump&amp;rut=44c9be8f816851211097159a5b5610f928b136e17c0c85a1d9287e84f866579e"
-      },
-      {
-        "platform": "tiktok",
-        "text": "#trump - TikTok",
-        "score": 1,
-        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.tiktok.com%2Ftag%2FTrump&amp;rut=adf2c2d503d292fe4b1aae936f96180b6358e28793a82f8c00c6323f81033526"
-      },
-      {
-        "platform": "tiktok",
-        "text": "I SAVED TIKTOK! | tiktok | TikTok",
-        "score": 1,
-        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.tiktok.com%2F%40realdonaldtrump%2Fvideo%2F7558116309083475230&amp;rut=de5b4c13c0c6f1c9e368ce06a95a39ba017be1c0222b25ba3636b850cdf200ad"
-      },
-      {
-        "platform": "tiktok",
-        "text": "Team Trump (@teamtrump) | TikTok",
-        "score": 1,
-        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.tiktok.com%2F%40teamtrump&amp;rut=036d46d2e9386868b4a023d780e6bbe764350c5d51d87066830bea3e26689480"
-      },
-      {
-        "platform": "tiktok",
-        "text": "President Donald J Trump on TikTok",
-        "score": 1,
-        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.tiktok.com%2F%40realdonaldtrump%2Fvideo%2F7600543092462112030&amp;rut=2010fd2ee93d3d5f3ff4979285db0ff7246279226b090d484ffac8228488d04b"
-      }
-    ]
+    "tiktokSamples": []
   },
   "signals": {
     "arbitrage": {
