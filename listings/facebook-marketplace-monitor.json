@@ -4,7 +4,7 @@
   "description": "Search, monitor, and extract Facebook Marketplace listings via mobile carrier proxies. Keyword search, listing details, category browsing, and new listing tracking.",
   "longDescription": "A Facebook Marketplace intelligence API for agent workflows: search listings by keyword/location, retrieve listing details, browse categories, and detect newly posted listings in a defined window.",
   "endpoint": "https://marketplace-api-9kvb.onrender.com/api",
-  "docsUrl": "https://github.com/Samfresh-ai/marketplace-service-template/tree/feat/bounty-75-marketplace",
+  "docsUrl": "https://github.com/bolivian-peru/marketplace-service-template",
   "pricing": {
     "model": "per-request",
     "amount": "0.02",
@@ -21,12 +21,12 @@
       {
         "network": "base",
         "token": "USDC",
-        "address": "0xF8cD900794245fc36CBE65be9afc23CDF5103042"
+        "recipient": "0xF8cD900794245fc36CBE65be9afc23CDF5103042"
       },
       {
         "network": "solana",
         "token": "USDC",
-        "address": "72f37C6skHfwTmDik7j5BN1Ro2F4JDR9XT9n8645HpeV"
+        "recipient": "72f37C6skHfwTmDik7j5BN1Ro2F4JDR9XT9n8645HpeV"
       }
     ]
   },
@@ -37,8 +37,19 @@
     "Some listing details may be partial when Facebook serves lightweight previews",
     "Aggressive burst traffic can trigger temporary anti-bot friction"
   ],
-  "categories": ["marketplace", "scraping", "e-commerce", "monitoring"],
-  "tags": ["facebook", "marketplace", "listings", "price-monitoring", "mobile-proxy"],
+  "categories": [
+    "marketplace",
+    "scraping",
+    "e-commerce",
+    "monitoring"
+  ],
+  "tags": [
+    "facebook",
+    "marketplace",
+    "listings",
+    "price-monitoring",
+    "mobile-proxy"
+  ],
   "provider": {
     "name": "Samfresh-ai",
     "url": "https://github.com/Samfresh-ai"
@@ -49,12 +60,12 @@
       "method": "GET",
       "description": "Search Facebook Marketplace listings",
       "params": {
-        "query": "string (required) — search keyword",
-        "location": "string (required) — city name",
-        "radius": "string (optional) — search radius e.g. '25mi'",
-        "min_price": "number (optional) — minimum price USD",
-        "max_price": "number (optional) — maximum price USD",
-        "cursor": "string (optional) — pagination cursor",
+        "query": "string (required) \u2014 search keyword",
+        "location": "string (required) \u2014 city name",
+        "radius": "string (optional) \u2014 search radius e.g. '25mi'",
+        "min_price": "number (optional) \u2014 minimum price USD",
+        "max_price": "number (optional) \u2014 maximum price USD",
+        "cursor": "string (optional) \u2014 pagination cursor",
         "limit": "number (optional, max: 50)"
       },
       "price": "0.02 USDC"
@@ -64,7 +75,7 @@
       "method": "GET",
       "description": "Get full listing details by Facebook listing ID",
       "params": {
-        "id": "string (required) — numeric Facebook listing ID"
+        "id": "string (required) \u2014 numeric Facebook listing ID"
       },
       "price": "0.01 USDC"
     },
@@ -81,7 +92,7 @@
       "params": {
         "query": "string (required)",
         "location": "string (required)",
-        "since": "string (optional) — time window: '30m', '1h', '6h', '24h'"
+        "since": "string (optional) \u2014 time window: '30m', '1h', '6h', '24h'"
       },
       "price": "0.03 USDC"
     }

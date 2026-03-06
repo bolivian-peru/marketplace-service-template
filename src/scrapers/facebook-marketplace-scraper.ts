@@ -333,6 +333,112 @@ async function htmlMarketplaceSearch(
   return { items, cursor: null };
 }
 
+// ─── FALLBACK: DUCKDUCKGO LINK DISCOVERY ────────────
+
+async function duckduckgoMarketplaceSearch(
+  query: string,
+  location: string,
+  limit: number,
+): Promise<{ items: MarketplaceListing[]; cursor: null }> {
+  const ddgUrl = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(`${query} ${location} site:facebook.com/marketplace/item`)}`;
+
+  let html = '';
+  try {
+    const direct = await fetch(ddgUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0',
+        'Accept': 'text/html,application/xhtml+xml',
+        'Accept-Language': 'en-US,en;q=0.9',
+      },
+    });
+    if (direct.ok) html = await direct.text();
+  } catch {
+    // noop
+  }
+
+  if (!html) {
+    const resp = await proxyFetch(ddgUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0',
+        'Accept': 'text/html,application/xhtml+xml',
+        'Accept-Language': 'en-US,en;q=0.9',
+      },
+      timeoutMs: 30000,
+      maxRetries: 2,
+    });
+    if (!resp.ok) throw new Error(`DuckDuckGo fallback returned ${resp.status}`);
+    html = await resp.text();
+  }
+
+  const items: MarketplaceListing[] = [];
+  const regex = /<a[^>]*class="[^"]*result__a[^"]*"[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/g;
+  let m: RegExpExecArray | null;
+
+  while ((m = regex.exec(html)) && items.length < limit) {
+    const href = m[1] || '';
+    const title = cleanText((m[2] || '').replace(/<[^>]+>/g, ' '));
+
+    let rawUrl = href;
+    const uddg = href.match(/[?&]uddg=([^&]+)/)?.[1];
+    if (uddg) {
+      try { rawUrl = decodeURIComponent(uddg); } catch { /* noop */ }
+    }
+
+    const id = (rawUrl.match(/marketplace\/item\/(\d{10,20})/)?.[1])
+      || (href.match(/marketplace\/item\/(\d{10,20})/)?.[1]);
+
+    if (!id || !title) continue;
+
+    items.push({
+      id,
+      title,
+      price: null,
+      currency: 'USD',
+      location,
+      condition: null,
+      description: null,
+      category: null,
+      seller: { name: 'Private Seller', joined: null, rating: null, itemsSold: null },
+      images: [],
+      listingUrl: `https://www.facebook.com/marketplace/item/${id}/`,
+      postedAt: null,
+      isDeliveryAvailable: false,
+    });
+  }
+
+  // If anti-bot response prevented extraction, use jina mirror snapshot of DDG page.
+  if (!items.length) {
+    const jinaUrl = `https://r.jina.ai/http://html.duckduckgo.com/html/?q=${encodeURIComponent(`${query} ${location} site:facebook.com/marketplace/item`)}`;
+    const jr = await fetch(jinaUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+    if (jr.ok) {
+      const txt = await jr.text();
+      const ids = Array.from(new Set((txt.match(/marketplace\/item\/(\d{10,20})/g) || [])
+        .map((x) => x.match(/(\d{10,20})/)?.[1])
+        .filter(Boolean))) as string[];
+
+      for (const id of ids.slice(0, limit)) {
+        items.push({
+          id,
+          title: `Facebook Marketplace item ${id}`,
+          price: null,
+          currency: 'USD',
+          location,
+          condition: null,
+          description: null,
+          category: null,
+          seller: { name: 'Private Seller', joined: null, rating: null, itemsSold: null },
+          images: [],
+          listingUrl: `https://www.facebook.com/marketplace/item/${id}/`,
+          postedAt: null,
+          isDeliveryAvailable: false,
+        });
+      }
+    }
+  }
+
+  return { items, cursor: null };
+}
+
 // ─── LISTING DETAIL ─────────────────────────────────
 
 /**
@@ -443,6 +549,7 @@ export async function searchMarketplace(opts: SearchOptions): Promise<Marketplac
   let items: MarketplaceListing[] = [];
   let cursor: string | null = null;
 
+  let graphqlErr: any = null;
   try {
     // Primary: GraphQL API (same endpoint as mobile app)
     const result = await graphqlMarketplaceSearch(
@@ -451,14 +558,29 @@ export async function searchMarketplace(opts: SearchOptions): Promise<Marketplac
     );
     items = result.items.map(parseGraphQLListing).filter(Boolean) as MarketplaceListing[];
     cursor = result.cursor;
-  } catch (graphqlErr: any) {
-    // Fallback: HTML scraping
+  } catch (err: any) {
+    graphqlErr = err;
+  }
+
+  // Fallback if GraphQL failed OR returned empty set
+  if (!items.length) {
+    let htmlErr: any = null;
     try {
       const fallback = await htmlMarketplaceSearch(opts.query, coords.name);
       items = fallback.items;
       cursor = null;
-    } catch (htmlErr: any) {
-      throw new Error(`Both search methods failed. GraphQL: ${graphqlErr.message}. HTML: ${htmlErr.message}`);
+      if (!items.length) {
+        throw new Error('HTML fallback returned empty result set');
+      }
+    } catch (err: any) {
+      htmlErr = err;
+      try {
+        const ddg = await duckduckgoMarketplaceSearch(opts.query, coords.name, limit);
+        items = ddg.items;
+        cursor = null;
+      } catch (ddgErr: any) {
+        throw new Error(`All search methods failed. GraphQL: ${graphqlErr?.message || 'empty'}. HTML: ${htmlErr?.message || 'empty'}. DDG: ${ddgErr.message}`);
+      }
     }
   }
 

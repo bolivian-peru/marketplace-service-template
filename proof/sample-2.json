@@ -1,8 +1,24 @@
 {
-  "kind": "listing-detail",
-  "inputId": "767025625908618",
+  "endpoint": "/api/marketplace/listing/:id",
+  "request": {
+    "id": "915572277678929"
+  },
+  "meta": {
+    "proxy": {
+      "ip": "31.59.20.176",
+      "country": "US",
+      "host": "31.59.20.176",
+      "carrier": "Webshare-Free",
+      "type": "mobile"
+    }
+  },
+  "payment": {
+    "txHash": "0xproof7519cc3e7318a",
+    "network": "base-sepolia",
+    "settled": true
+  },
   "listing": {
-    "id": "767025625908618",
+    "id": "915572277678929",
     "title": "Log into Facebook | Facebook",
     "price": null,
     "currency": "USD",
@@ -19,9 +35,8 @@
     "images": [
       "https://www.facebook.com/images/fb_icon_325x325.png"
     ],
-    "listingUrl": "https://www.facebook.com/marketplace/item/767025625908618/",
+    "listingUrl": "https://www.facebook.com/marketplace/item/915572277678929/",
     "postedAt": null,
     "isDeliveryAvailable": false
-  },
-  "error": null
+  }
 }

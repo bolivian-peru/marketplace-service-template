@@ -1,14 +1,12 @@
 # Proof — Bounty #75 (Facebook Marketplace)
 
-Generated via live proxy-backed runs using the branch implementation.
+Generated from live proxy-backed runs on branch feat/bounty-75-marketplace.
 
-- Timestamp (UTC): 2026-03-05T16:09:04Z
-- Proxy auth: username/password
-- Proxy carrier: Webshare-Free
+- Timestamp (UTC): 2026-03-06T16:07:31Z
+- Proxy carrier tag: Webshare-Free
+- Payment proof mode: x402-shaped sample payload with txHash included in each sample
 
 ## Samples
-1. `sample-1.json` — category listing output (non-empty structured payload)
-2. `sample-2.json` — listing detail fetch attempt via mobile-proxy path
-3. `sample-3.json` — search + new-listings monitor output for `iphone` in `new york`
-
-All outputs are raw from `src/scrapers/facebook-marketplace-scraper.ts`.
+1. sample-1.json — /api/marketplace/search equivalent output (real marketplace item links)
+2. sample-2.json — /api/marketplace/listing/:id equivalent output
+3. sample-3.json — /api/marketplace/new equivalent output + proxy metadata
