@@ -1,10 +1,10 @@
 {
   "proxyPurchase": {
-    "txHash": null,
+    "txHash": "0xbc596de14a26bf687cef58b4eda9c697a5b2d15af00aebaced4ca847d2a0bbc5",
     "network": "base",
     "amountUSDC": 0.4,
-    "walletAddress": "0xc0140eea19bd90a7ca75882d5218efaf20426e42",
-    "verifyUrl": "N/A - mobile token proxy"
+    "walletAddress": "0xC0140eEa19bD90a7cA75882d5218eFaF20426e42",
+    "verifyUrl": "https://basescan.org/tx/0xbc596de14a26bf687cef58b4eda9c697a5b2d15af00aebaced4ca847d2a0bbc5"
   },
   "proxyDetails": {
     "provider": "Proxies.sx",
