@@ -1,184 +1,159 @@
 {
-  "metadata": {
-    "source": "airbnb.com",
-    "endpoint": "https://www.airbnb.com/api/v2/explore_tabs",
-    "params": {
-      "query": "New York",
-      "checkin": "2026-03-10",
-      "checkout": "2026-03-15",
-      "adults": 2,
-      "amenities": [
-        "superhost"
-      ],
-      "currency": "USD"
+  "type": "arbitrage",
+  "market": "election",
+  "timestamp": "2026-03-06T15:46:31.278Z",
+  "odds": {
+    "polymarket": {
+      "source": "polymarket",
+      "marketId": "16423",
+      "title": "UK election called by...?",
+      "volume24h": 449.57265900000004,
+      "url": "https://polymarket.com/event/uk-election-called-by"
     },
-    "fetchedAt": "2026-02-26T13:51:18Z",
-    "proxyIp": "172.56.168.66",
-    "proxyProvider": "Proxies.sx T-Mobile US mobile",
-    "searchResultCount": 10
-  },
-  "superhostListings": [
-    {
-      "listingId": "41295524",
-      "url": "https://www.airbnb.com/rooms/41295524",
-      "name": "Hotel like place - private patio and bathroom",
-      "roomType": "private_room",
-      "location": {
-        "city": "Brooklyn",
-        "publicAddress": "Brooklyn, NY, United States",
-        "coordinates": {
-          "lat": 40.67627,
-          "lng": -73.94137
-        }
-      },
-      "capacity": {
-        "guests": 2,
-        "bedrooms": 1,
-        "beds": 2
-      },
-      "rating": {
-        "stars": 5.0,
-        "reviews": 317
-      },
-      "priceDisplay": "$851",
-      "hostName": "Caio Julio",
-      "isSuperhost": true,
-      "canInstantBook": false
+    "kalshi": {
+      "source": "kalshi",
+      "marketId": "KXBRUVSEAT-35",
+      "title": "Will Andrew Tate's party win a seat in the next UK election?"
     },
-    {
-      "listingId": "5298896",
-      "url": "https://www.airbnb.com/rooms/5298896",
-      "name": "Unique NYC Loft - Guest Room",
-      "roomType": "private_room",
-      "location": {
-        "city": "New York",
-        "publicAddress": "New York, NY, United States",
-        "coordinates": {
-          "lat": 40.70419,
-          "lng": -74.01127
-        }
-      },
-      "capacity": {
-        "guests": 2,
-        "bedrooms": 1,
-        "beds": 1
-      },
-      "rating": {
-        "stars": 5.0,
-        "reviews": 375
-      },
-      "priceDisplay": null,
-      "hostName": "Luke",
-      "isSuperhost": true,
-      "canInstantBook": false
-    },
-    {
-      "listingId": "1070270537377163305",
-      "url": "https://www.airbnb.com/rooms/1070270537377163305",
-      "name": "One King room at Brooklyn - Newly Renovated!",
-      "roomType": "private_room",
-      "location": {
-        "city": "Brooklyn",
-        "publicAddress": "Brooklyn, NY, United States",
-        "coordinates": {
-          "lat": 40.690157186681645,
-          "lng": -73.98692196057979
-        }
-      },
-      "capacity": {
-        "guests": 2,
-        "bedrooms": 1,
-        "beds": 1
-      },
-      "rating": {
-        "stars": 5.0,
-        "reviews": 568
-      },
-      "priceDisplay": null,
-      "hostName": "Hilton Brooklyn New York City",
-      "isSuperhost": true,
-      "canInstantBook": false
-    },
-    {
-      "listingId": "21969733",
-      "url": "https://www.airbnb.com/rooms/21969733",
-      "name": "BRIGHT HOMEY AND COZY  MINUTES TO NEW YORK  CITY",
-      "roomType": "entire_home",
-      "location": {
-        "city": "Jersey City",
-        "publicAddress": "Jersey City, NJ, United States",
-        "coordinates": {
-          "lat": 40.7479,
-          "lng": -74.05105
-        }
-      },
-      "capacity": {
-        "guests": 6,
-        "bedrooms": 1,
-        "beds": 3
-      },
-      "rating": {
-        "stars": 5.0,
-        "reviews": 280
-      },
-      "priceDisplay": null,
-      "hostName": "Kenia",
-      "isSuperhost": true,
-      "canInstantBook": false
-    },
-    {
-      "listingId": "1522517030737496324",
-      "url": "https://www.airbnb.com/rooms/1522517030737496324",
-      "name": "Designers Upper East Side 2 Bedroom.",
-      "roomType": "entire_home",
-      "location": {
-        "city": "New York",
-        "publicAddress": "New York, NY, United States",
-        "coordinates": {
-          "lat": 40.7759,
-          "lng": -73.95394
-        }
-      },
-      "capacity": {
-        "guests": 4,
-        "bedrooms": 2,
-        "beds": 2
-      },
-      "rating": {
-        "stars": null,
-        "reviews": 0
-      },
-      "priceDisplay": "$1,769",
-      "hostName": "Tara",
-      "isSuperhost": true,
-      "canInstantBook": false
-    },
-    {
-      "listingId": "1108082653379426204",
-      "url": "https://www.airbnb.com/rooms/1108082653379426204",
-      "name": "Tropical Oasis | Times Square. Heated Pool",
-      "roomType": "private_room",
-      "location": {
-        "city": "New York",
-        "publicAddress": "New York, NY, United States",
-        "coordinates": {
-          "lat": 40.75575514804686,
-          "lng": -73.98740612160151
-        }
-      },
-      "capacity": {
-        "guests": 2,
-        "bedrooms": 1,
-        "beds": 1
-      },
-      "rating": {
-        "stars": 5.0,
-        "reviews": 239
-      },
-      "priceDisplay": null,
-      "hostName": "Margaritaville Resort Times Square NYC",
-      "isSuperhost": true,
-      "canInstantBook": false
+    "metaculus": {
+      "source": "metaculus",
+      "marketId": "41303",
+      "title": "Which party will win the most seats in the 2026 Colombian Chamber of Representatives election?",
+      "median": 0.862,
+      "forecasters": 17,
+      "url": "https://www.metaculus.com/questions/41303/"
     }
-  ]
+  },
+  "sentiment": {
+    "reddit": {
+      "positive": 0.4,
+      "negative": 0.1,
+      "neutral": 0.5,
+      "volume": 20
+    },
+    "redditSamples": [
+      {
+        "platform": "reddit",
+        "text": "Not a Deal Breaker? Most of us have seen the reports on the Epstein/Trump file releases. The President, whom Epstein said was his best friend for many years, is not only mentioned thousands of times, but is accused in several FBI interviews with victims of assault. I don't know how all this will impact the American people or specifically US Catholics. \n\nBut I have a different, although related issue that is bothering me. Trump was adjudicated and found liable for sexual assault before the last e",
+        "score": 1,
+        "author": "DesertMonk888",
+        "url": "https://reddit.com/r/LeftCatholicism/comments/1rmhhhd/not_a_deal_breaker/"
+      },
+      {
+        "platform": "reddit",
+        "text": "[World] - Kurdish opposition mulls whether to trust Trump after Iran uprising call | Al Jazeera",
+        "score": 1,
+        "author": "AutoNewspaperAdmin",
+        "url": "https://reddit.com/r/AutoNewspaper/comments/1rmhh1n/world_kurdish_opposition_mulls_whether_to_trust/"
+      },
+      {
+        "platform": "reddit",
+        "text": "US companies denied refunds on Trump’s illegal tariffs",
+        "score": 2,
+        "author": "financialtimes",
+        "url": "https://reddit.com/r/politics/comments/1rmhgva/us_companies_denied_refunds_on_trumps_illegal/"
+      },
+      {
+        "platform": "reddit",
+        "text": "Donald Trump Has Lit a Global Match Trump and his aides think the United States has global leverage that his predecessors refused to use. He seems to forget that other countries have leverage, too—and they’re intent on using it to stop him.",
+        "score": 1,
+        "author": "Ok_Crazy1195",
+        "url": "https://reddit.com/r/u_Ok_Crazy1195/comments/1rmhgmi/donald_trump_has_lit_a_global_match/"
+      },
+      {
+        "platform": "reddit",
+        "text": "Wise words from the First Lady.",
+        "score": 1,
+        "author": "godless_one",
+        "url": "https://reddit.com/r/MelaniaTrump/comments/1rmhghv/wise_words_from_the_first_lady/"
+      }
+    ],
+    "x": {
+      "positive": 0,
+      "negative": 0,
+      "neutral": 1,
+      "volume": 10
+    },
+    "xSamples": [
+      {
+        "platform": "x",
+        "text": "Donald J. Trump (@realDonaldTrump) / Posts / X - Twitter",
+        "score": 1,
+        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fx.com%2FrealDonaldTrump&amp;rut=97ac1b22c38e572a0a3484e020f150bb10f5c86cea7ba6a23a435059c2eddfd6"
+      },
+      {
+        "platform": "x",
+        "text": "Donald J. Trump (@realDonaldTrump) on X",
+        "score": 1,
+        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fx.com%2FrealDonaldTrump%2Fstatus%2F2027651077865157033&amp;rut=5a3512a012976a156ed889c0174cc018151547e42cf517e6b9898ee32c7ad2d0"
+      },
+      {
+        "platform": "x",
+        "text": "Trump War Room (@TrumpWarRoom) / Posts / X",
+        "score": 1,
+        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fx.com%2FTrumpWarRoom&amp;rut=262ac2d5a8f266160df546edfca78810498deeea05141f725d4b03d62c823033"
+      },
+      {
+        "platform": "x",
+        "text": "The White House (@WhiteHouse) / Posts / X - Twitter",
+        "score": 1,
+        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fx.com%2FWhiteHouse&amp;rut=74bbf2e7becd293abdbc71730dc4a57bafa4749a71d11f22f15341bcbc4477e0"
+      },
+      {
+        "platform": "x",
+        "text": "To My Great Fellow Americans…",
+        "score": 1,
+        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fx.com%2FrealDonaldTrump%2Fstatus%2F1965947311718269341&amp;rut=d6c1afdcb41cf0132f448ddb94d0e8da62cbdab08f0adc049f114df36f3f9095"
+      }
+    ],
+    "tiktok": {
+      "positive": 0,
+      "negative": 0,
+      "neutral": 1,
+      "volume": 10
+    },
+    "tiktokSamples": [
+      {
+        "platform": "tiktok",
+        "text": "President Donald J Trump (@realdonaldtrump) | TikTok",
+        "score": 1,
+        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.tiktok.com%2F%40realdonaldtrump&amp;rut=44c9be8f816851211097159a5b5610f928b136e17c0c85a1d9287e84f866579e"
+      },
+      {
+        "platform": "tiktok",
+        "text": "#trump - TikTok",
+        "score": 1,
+        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.tiktok.com%2Ftag%2FTrump&amp;rut=adf2c2d503d292fe4b1aae936f96180b6358e28793a82f8c00c6323f81033526"
+      },
+      {
+        "platform": "tiktok",
+        "text": "I SAVED TIKTOK! | tiktok | TikTok",
+        "score": 1,
+        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.tiktok.com%2F%40realdonaldtrump%2Fvideo%2F7558116309083475230&amp;rut=de5b4c13c0c6f1c9e368ce06a95a39ba017be1c0222b25ba3636b850cdf200ad"
+      },
+      {
+        "platform": "tiktok",
+        "text": "Team Trump (@teamtrump) | TikTok",
+        "score": 1,
+        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.tiktok.com%2F%40teamtrump&amp;rut=036d46d2e9386868b4a023d780e6bbe764350c5d51d87066830bea3e26689480"
+      },
+      {
+        "platform": "tiktok",
+        "text": "President Donald J Trump on TikTok",
+        "score": 1,
+        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.tiktok.com%2F%40realdonaldtrump%2Fvideo%2F7600543092462112030&amp;rut=2010fd2ee93d3d5f3ff4979285db0ff7246279226b090d484ffac8228488d04b"
+      }
+    ]
+  },
+  "signals": {
+    "arbitrage": {
+      "detected": false,
+      "spread": 0,
+      "confidence": 0.4
+    }
+  },
+  "payment": {
+    "mode": "proof-local",
+    "note": "Data-mode sample (not 402 scaffold)"
+  }
 }

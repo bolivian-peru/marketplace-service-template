@@ -1,0 +1,72 @@
+{
+  "id": "prediction-signal-aggregator",
+  "name": "Prediction Market Signal Aggregator",
+  "description": "Cross-platform prediction market odds + proxy-backed social sentiment with arbitrage/divergence signals.",
+  "longDescription": "Aggregates Polymarket, Kalshi, and Metaculus data, then combines proxy-backed social sentiment to detect pricing divergence and potential arbitrage opportunities. Designed for AI agents that need reliable, structured market signal data with x402 micropayments.",
+  "endpoint": "https://feeling-instrumentation-praise-secret.trycloudflare.com/api/prediction",
+  "docsUrl": "https://github.com/Samfresh-ai/marketplace-service-template/tree/feat/bounty-55-signal-aggregator",
+  "pricing": {
+    "model": "per-request",
+    "endpoints": [
+      { "path": "/api/prediction?type=signal&market=...", "price": "$0.05", "unit": "per request" },
+      { "path": "/api/prediction?type=arbitrage", "price": "$0.05", "unit": "per request" },
+      { "path": "/api/prediction?type=sentiment&topic=...", "price": "$0.05", "unit": "per request" },
+      { "path": "/api/prediction?type=trending", "price": "$0.05", "unit": "per request" }
+    ],
+    "comparison": "Traditional alternatives are either expensive subscriptions or fragmented tools. This service provides normalized cross-market + sentiment signal output with no subscription friction via x402.",
+    "currency": "USDC",
+    "networks": [
+      {
+        "network": "solana",
+        "chainId": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "recipient": "72f37C6skHfwTmDik7j5BN1Ro2F4JDR9XT9n8645HpeV",
+        "asset": "USDC",
+        "assetAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+      },
+      {
+        "network": "base",
+        "chainId": "eip155:8453",
+        "recipient": "0xF8cD900794245fc36CBE65be9afc23CDF5103042",
+        "asset": "USDC",
+        "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+      }
+    ]
+  },
+  "whyMobileProxy": "Social sentiment scraping (e.g., Reddit and similar anti-bot protected sources) is more reliable via mobile carrier IPs. This improves signal freshness and reduces block/challenge rates compared with datacenter-only scraping.",
+  "outputSchema": {
+    "input": {
+      "type": "signal | arbitrage | sentiment | trending",
+      "market": "string (optional)",
+      "topic": "string (optional)",
+      "country": "string (optional)"
+    },
+    "output": {
+      "type": "string",
+      "market": "string",
+      "timestamp": "ISO string",
+      "odds": "{ polymarket, kalshi, metaculus }",
+      "sentiment": "{ reddit, redditSamples, x }",
+      "signals": "{ arbitrage, sentimentDivergence }",
+      "proxy": "{ country, type }",
+      "payment": "{ txHash, network, amount, settled }"
+    }
+  },
+  "limitations": [
+    "v1 sentiment source is Reddit-first while X/TikTok are planned follow-ons",
+    "Signal confidence is heuristic in v1 and should be interpreted as directional",
+    "Metaculus integration may vary depending on upstream API response shape"
+  ],
+  "category": "data",
+  "tags": ["prediction-markets", "polymarket", "kalshi", "metaculus", "sentiment", "arbitrage", "x402"],
+  "owner": {
+    "name": "Sam",
+    "github": "Samfresh-ai"
+  },
+  "status": "pending",
+  "featured": false,
+  "addedAt": "2026-03-03",
+  "x402": {
+    "discoveryUrl": "https://feeling-instrumentation-praise-secret.trycloudflare.com/api/prediction?type=signal&market=us-election"
+    "wellKnown": "https://feeling-instrumentation-praise-secret.trycloudflare.com/.well-known/x402.json"
+  }
+}

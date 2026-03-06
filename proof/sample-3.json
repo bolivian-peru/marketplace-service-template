@@ -1,100 +1,225 @@
 {
-  "metadata": {
-    "source": "airbnb.com",
-    "endpoint": "https://www.airbnb.com/s/New-York--NY/homes",
-    "method": "HTML search page extraction",
-    "params": {
-      "destination": "New York, NY",
-      "checkin": "2026-03-10",
-      "checkout": "2026-03-15",
-      "adults": 2
+  "type": "sentiment",
+  "topic": "trump",
+  "timestamp": "2026-03-06T15:46:31.278Z",
+  "sentiment": {
+    "reddit": {
+      "positive": 0.4,
+      "negative": 0.1,
+      "neutral": 0.5,
+      "volume": 20
     },
-    "fetchedAt": "2026-02-26T13:51:18Z",
-    "proxyIp": "172.56.168.66",
-    "proxyProvider": "Proxies.sx T-Mobile US mobile",
-    "listingsExtracted": 29,
-    "extractionNote": "44 StaySearchResult entries found in page JS, 29 unique after dedup"
+    "redditSamples": [
+      {
+        "platform": "reddit",
+        "text": "Not a Deal Breaker? Most of us have seen the reports on the Epstein/Trump file releases. The President, whom Epstein said was his best friend for many years, is not only mentioned thousands of times, but is accused in several FBI interviews with victims of assault. I don't know how all this will impact the American people or specifically US Catholics. \n\nBut I have a different, although related issue that is bothering me. Trump was adjudicated and found liable for sexual assault before the last e",
+        "score": 1,
+        "author": "DesertMonk888",
+        "url": "https://reddit.com/r/LeftCatholicism/comments/1rmhhhd/not_a_deal_breaker/"
+      },
+      {
+        "platform": "reddit",
+        "text": "[World] - Kurdish opposition mulls whether to trust Trump after Iran uprising call | Al Jazeera",
+        "score": 1,
+        "author": "AutoNewspaperAdmin",
+        "url": "https://reddit.com/r/AutoNewspaper/comments/1rmhh1n/world_kurdish_opposition_mulls_whether_to_trust/"
+      },
+      {
+        "platform": "reddit",
+        "text": "US companies denied refunds on Trump’s illegal tariffs",
+        "score": 2,
+        "author": "financialtimes",
+        "url": "https://reddit.com/r/politics/comments/1rmhgva/us_companies_denied_refunds_on_trumps_illegal/"
+      },
+      {
+        "platform": "reddit",
+        "text": "Donald Trump Has Lit a Global Match Trump and his aides think the United States has global leverage that his predecessors refused to use. He seems to forget that other countries have leverage, too—and they’re intent on using it to stop him.",
+        "score": 1,
+        "author": "Ok_Crazy1195",
+        "url": "https://reddit.com/r/u_Ok_Crazy1195/comments/1rmhgmi/donald_trump_has_lit_a_global_match/"
+      },
+      {
+        "platform": "reddit",
+        "text": "Wise words from the First Lady.",
+        "score": 1,
+        "author": "godless_one",
+        "url": "https://reddit.com/r/MelaniaTrump/comments/1rmhghv/wise_words_from_the_first_lady/"
+      },
+      {
+        "platform": "reddit",
+        "text": "Trump’s illegal war with Iran has already taken a devastating human toll. It could also mean higher energy bills worldwide, while fossil fuel companies, traders and investors get rich.",
+        "score": 1,
+        "author": "crustose_lichen",
+        "url": "https://reddit.com/r/EatTheRich/comments/1rmhgf1/trumps_illegal_war_with_iran_has_already_taken_a/"
+      },
+      {
+        "platform": "reddit",
+        "text": "Fracking Killed Khamenei American military planners in the Pentagon have been [wargaming](https://www.theguardian.com/us-news/2026/mar/01/trump-us-iran-war-history) scenarios for attacking Iran more or less non-stop since 1979. One major reason president after president stopped short of launching an attack was the frightening realization that the Islamic Republic could always choose to [shut down the Strait of Hormuz](https://www.merip.org/1995/11/iran-and-the-virtual-reality-of-us-war-games/)—t",
+        "score": 1,
+        "author": "AmericanPurposeMag",
+        "url": "https://reddit.com/r/neoliberal/comments/1rmhg60/fracking_killed_khamenei/"
+      },
+      {
+        "platform": "reddit",
+        "text": "Cierra a trump supporter ? I just realized she was conservative . I didn’t realize she was . Do you think the rest of the group are trump supporters and conservative too?? \n\nI don’t why for the longest time I thought she was a liberal woman lmao",
+        "score": 1,
+        "author": "Historical-Body-3424",
+        "url": "https://reddit.com/r/Iluvsarahii/comments/1rmhfxa/cierra_a_trump_supporter/"
+      },
+      {
+        "platform": "reddit",
+        "text": "Pete Hegseth attacking the press for reporting on the deaths of American troops in Iran because it makes President Trump look bad.",
+        "score": 1,
+        "author": "uphatbrew",
+        "url": "https://reddit.com/r/LincolnProject/comments/1rmhfv7/pete_hegseth_attacking_the_press_for_reporting_on/"
+      },
+      {
+        "platform": "reddit",
+        "text": "Donald Trump 'made sick comment' offering to 'teach you [accuser] how little girls are supposed to be' before forcing oral sex with teen",
+        "score": 1,
+        "author": "TheMirrorUS",
+        "url": "https://reddit.com/r/UnderReportedNews/comments/1rmhfsm/donald_trump_made_sick_comment_offering_to_teach/"
+      }
+    ],
+    "x": {
+      "positive": 0,
+      "negative": 0,
+      "neutral": 1,
+      "volume": 10
+    },
+    "xSamples": [
+      {
+        "platform": "x",
+        "text": "Donald J. Trump (@realDonaldTrump) / Posts / X - Twitter",
+        "score": 1,
+        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fx.com%2FrealDonaldTrump&amp;rut=97ac1b22c38e572a0a3484e020f150bb10f5c86cea7ba6a23a435059c2eddfd6"
+      },
+      {
+        "platform": "x",
+        "text": "Donald J. Trump (@realDonaldTrump) on X",
+        "score": 1,
+        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fx.com%2FrealDonaldTrump%2Fstatus%2F2027651077865157033&amp;rut=5a3512a012976a156ed889c0174cc018151547e42cf517e6b9898ee32c7ad2d0"
+      },
+      {
+        "platform": "x",
+        "text": "Trump War Room (@TrumpWarRoom) / Posts / X",
+        "score": 1,
+        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fx.com%2FTrumpWarRoom&amp;rut=262ac2d5a8f266160df546edfca78810498deeea05141f725d4b03d62c823033"
+      },
+      {
+        "platform": "x",
+        "text": "The White House (@WhiteHouse) / Posts / X - Twitter",
+        "score": 1,
+        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fx.com%2FWhiteHouse&amp;rut=74bbf2e7becd293abdbc71730dc4a57bafa4749a71d11f22f15341bcbc4477e0"
+      },
+      {
+        "platform": "x",
+        "text": "To My Great Fellow Americans…",
+        "score": 1,
+        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fx.com%2FrealDonaldTrump%2Fstatus%2F1965947311718269341&amp;rut=d6c1afdcb41cf0132f448ddb94d0e8da62cbdab08f0adc049f114df36f3f9095"
+      },
+      {
+        "platform": "x",
+        "text": "President Donald J. Trump on the United States military combat ...",
+        "score": 1,
+        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fx.com%2FWhiteHouse%2Fstatus%2F2027654336138924410&amp;rut=1e1d548808bde66109d4db6fea0f031131bb9fb145462ac2d903d59a9801229e"
+      },
+      {
+        "platform": "x",
+        "text": "Commentary Donald J. Trump Posts From Truth Social",
+        "score": 1,
+        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fx.com%2FTrumpDailyPosts&amp;rut=d93fbc33ef36784b9f41c7d07b159abc7f3a825f22d4e3d8d5ede8c14ef2f07e"
+      },
+      {
+        "platform": "x",
+        "text": "THE TRUMP KENNEDY CENTER HONORS will be broadcast tonight, on CBS, and ...",
+        "score": 1,
+        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fx.com%2FrealDonaldTrump%2Fstatus%2F2003565251816554746&amp;rut=df3a1cb918c9649489d4ab89b35c2a9c8c452982668e44e21459d50169fdf74c"
+      },
+      {
+        "platform": "x",
+        "text": "Thank you @POTUS Trump for appointing me as the Special Envoy for the ...",
+        "score": 1,
+        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fx.com%2FSec_Noem%2Fstatus%2F2029647010002055467&amp;rut=38cbe93e1bb8790e94f0b474d6eff42b6d5d6506d8470e14fded93b957b8997d"
+      },
+      {
+        "platform": "x",
+        "text": "In a lengthy conversation just now, President Trump hit back at Tucker ...",
+        "score": 1,
+        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fx.com%2Fjonkarl%2Fstatus%2F2029650210125652143&amp;rut=cb5fea23e13757f2f3c8f74dc391a5304a3a828267b95a2aaa763479c136e4b4"
+      }
+    ],
+    "tiktok": {
+      "positive": 0,
+      "negative": 0,
+      "neutral": 1,
+      "volume": 10
+    },
+    "tiktokSamples": [
+      {
+        "platform": "tiktok",
+        "text": "President Donald J Trump (@realdonaldtrump) | TikTok",
+        "score": 1,
+        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.tiktok.com%2F%40realdonaldtrump&amp;rut=44c9be8f816851211097159a5b5610f928b136e17c0c85a1d9287e84f866579e"
+      },
+      {
+        "platform": "tiktok",
+        "text": "#trump - TikTok",
+        "score": 1,
+        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.tiktok.com%2Ftag%2FTrump&amp;rut=adf2c2d503d292fe4b1aae936f96180b6358e28793a82f8c00c6323f81033526"
+      },
+      {
+        "platform": "tiktok",
+        "text": "I SAVED TIKTOK! | tiktok | TikTok",
+        "score": 1,
+        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.tiktok.com%2F%40realdonaldtrump%2Fvideo%2F7558116309083475230&amp;rut=de5b4c13c0c6f1c9e368ce06a95a39ba017be1c0222b25ba3636b850cdf200ad"
+      },
+      {
+        "platform": "tiktok",
+        "text": "Team Trump (@teamtrump) | TikTok",
+        "score": 1,
+        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.tiktok.com%2F%40teamtrump&amp;rut=036d46d2e9386868b4a023d780e6bbe764350c5d51d87066830bea3e26689480"
+      },
+      {
+        "platform": "tiktok",
+        "text": "President Donald J Trump on TikTok",
+        "score": 1,
+        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.tiktok.com%2F%40realdonaldtrump%2Fvideo%2F7600543092462112030&amp;rut=2010fd2ee93d3d5f3ff4979285db0ff7246279226b090d484ffac8228488d04b"
+      },
+      {
+        "platform": "tiktok",
+        "text": "I HAVE THE BEST SECRETARY OF DEFENSE - TikTok",
+        "score": 1,
+        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.tiktok.com%2F%40realdonaldtrump%2Fvideo%2F7610569229460442398&amp;rut=cc443d30357f6dd108f6bae412a434183614ff35d5b1593bdaae588420778f32"
+      },
+      {
+        "platform": "tiktok",
+        "text": "TIME TO LIVE THE AMERICAN DREAM - TikTok",
+        "score": 1,
+        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.tiktok.com%2F%40realdonaldtrump%2Fvideo%2F7433546039254142250&amp;rut=bee052bba6ca9835977886b77907ec49a45f4cefca7c147a01892871df287c6f"
+      },
+      {
+        "platform": "tiktok",
+        "text": "THANK YOU MEGYN KELLY, GREAT HONOR! - TikTok",
+        "score": 1,
+        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.tiktok.com%2F%40realdonaldtrump%2Fvideo%2F7433682490071452970&amp;rut=c16fb7197455e200fe496ec13e4c0576d890d437337757c646256ccb7e77e2ca"
+      },
+      {
+        "platform": "tiktok",
+        "text": "President Donald J Trump on TikTok",
+        "score": 1,
+        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.tiktok.com%2F%40realdonaldtrump%2Fvideo%2F7427944558576667935&amp;rut=7ead73e313059d2b87575003077130399c95b67935326e9c1527ceb8a5e7b036"
+      },
+      {
+        "platform": "tiktok",
+        "text": "President Donald J Trump (@realdonaldtrump)&#x27;s video of ... - TikTok",
+        "score": 1,
+        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.tiktok.com%2F%40realdonaldtrump%2Fvideo%2F7432033408731155743&amp;rut=825453311cdf2fe95c0b027b5dfbfb6012627ff1376e20a3a5bfa57cd7c83791"
+      }
+    ]
   },
-  "listingSummaries": [
-    {
-      "listingId": "2027023659",
-      "url": "https://www.airbnb.com/rooms/2027023659",
-      "rating": "4.9 (317)",
-      "priceFor5Nights": "$851 for 5 nights",
-      "priceDisplay": "$851",
-      "dataSource": "Airbnb search page StaySearchResult component"
-    },
-    {
-      "listingId": "801378680",
-      "url": "https://www.airbnb.com/rooms/801378680",
-      "rating": "4.97 (375)",
-      "priceFor5Nights": null,
-      "priceDisplay": null,
-      "dataSource": "Airbnb search page StaySearchResult component"
-    },
-    {
-      "listingId": "2322612075",
-      "url": "https://www.airbnb.com/rooms/2322612075",
-      "rating": "4.62 (1129)",
-      "priceFor5Nights": "$1,095 for 5 nights",
-      "priceDisplay": "$1,095",
-      "dataSource": "Airbnb search page StaySearchResult component"
-    },
-    {
-      "listingId": "2146521584",
-      "url": "https://www.airbnb.com/rooms/2146521584",
-      "rating": "4.76 (568)",
-      "priceFor5Nights": null,
-      "priceDisplay": null,
-      "dataSource": "Airbnb search page StaySearchResult component"
-    },
-    {
-      "listingId": "414986416",
-      "url": "https://www.airbnb.com/rooms/414986416",
-      "rating": "4.9 (280)",
-      "priceFor5Nights": null,
-      "priceDisplay": null,
-      "dataSource": "Airbnb search page StaySearchResult component"
-    },
-    {
-      "listingId": "1596354668",
-      "url": "https://www.airbnb.com/rooms/1596354668",
-      "rating": "4.52 (238)",
-      "priceFor5Nights": null,
-      "priceDisplay": null,
-      "dataSource": "Airbnb search page StaySearchResult component"
-    },
-    {
-      "listingId": "2389454677",
-      "url": "https://www.airbnb.com/rooms/2389454677",
-      "rating": "4.57 (111)",
-      "priceFor5Nights": "$866 for 5 nights",
-      "priceDisplay": null,
-      "dataSource": "Airbnb search page StaySearchResult component"
-    },
-    {
-      "listingId": "2003449921",
-      "url": "https://www.airbnb.com/rooms/2003449921",
-      "rating": "4.87 (239)",
-      "priceFor5Nights": null,
-      "priceDisplay": null,
-      "dataSource": "Airbnb search page StaySearchResult component"
-    },
-    {
-      "listingId": "2426509811",
-      "url": "https://www.airbnb.com/rooms/2426509811",
-      "rating": null,
-      "priceFor5Nights": "$1,769 for 5 nights",
-      "priceDisplay": "$1,769",
-      "dataSource": "Airbnb search page StaySearchResult component"
-    },
-    {
-      "listingId": "1617652818",
-      "url": "https://www.airbnb.com/rooms/1617652818",
-      "rating": "4.91 (125)",
-      "priceFor5Nights": null,
-      "priceDisplay": null,
-      "dataSource": "Airbnb search page StaySearchResult component"
-    }
-  ]
+  "payment": {
+    "mode": "proof-local",
+    "note": "Data-mode sample (not 402 scaffold)"
+  }
 }

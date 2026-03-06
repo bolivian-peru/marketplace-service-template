@@ -20,6 +20,8 @@ import { fetchReviews, fetchBusinessDetails, fetchReviewSummary, searchBusinesse
 import { scrapeGoogleMaps, extractDetailedBusiness } from './scrapers/maps-scraper';
 import { researchRouter } from './routes/research';
 import { trendingRouter } from './routes/trending';
+import { predictionRouter } from './routes/prediction-signals';
+import { fetchPolymarketOdds, fetchKalshiOdds, fetchMetaculusForecasts, fetchRedditSentiment, fetchXSentiment, fetchTikTokSentiment, classifySentiment } from './scrapers/prediction-markets';
 import { searchAirbnb, getListingDetail, getListingReviews, getMarketStats } from './scrapers/airbnb-scraper';
 import { 
   scrapeLinkedInPerson, 
@@ -35,6 +37,7 @@ export const serviceRouter = new Hono();
 // ─── TREND INTELLIGENCE ROUTES (Bounty #70) ─────────
 serviceRouter.route('/research', researchRouter);
 serviceRouter.route('/trending', trendingRouter);
+serviceRouter.route('/prediction', predictionRouter);
 
 const SERVICE_NAME = 'job-market-intelligence';
 const PRICE_USDC = 0.005;
@@ -95,10 +98,38 @@ serviceRouter.get('/run', async (c) => {
     return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
   }
 
+  const runType = (c.req.query('type') || '').toLowerCase();
+  const isPredictionMode = ['signal', 'arbitrage', 'sentiment', 'trending'].includes(runType);
+
   const payment = extractPayment(c);
   if (!payment) {
+    const predictionSchema = {
+      input: {
+        type: 'signal | arbitrage | sentiment | trending',
+        market: 'string (optional)',
+        topic: 'string (optional)',
+        country: 'string (optional)',
+      },
+      output: {
+        timestamp: 'ISO string',
+        odds: 'polymarket/kalshi/metaculus normalized objects',
+        sentiment: 'platform sentiment summary + sample volume',
+        signals: 'arbitrage + divergence flags with confidence',
+        proxy: '{ country, type }',
+        payment: '{ txHash, network, amount, settled }',
+      },
+    } as const;
+
     return c.json(
-      build402Response('/api/run', MAPS_DESCRIPTION, MAPS_PRICE_USDC, walletAddress, MAPS_OUTPUT_SCHEMA),
+      build402Response(
+        '/api/run',
+        isPredictionMode
+          ? 'Prediction market signal aggregator with cross-market odds and proxy-backed sentiment.'
+          : MAPS_DESCRIPTION,
+        isPredictionMode ? 0.05 : MAPS_PRICE_USDC,
+        walletAddress,
+        isPredictionMode ? predictionSchema : MAPS_OUTPUT_SCHEMA,
+      ),
       402,
     );
   }
@@ -110,6 +141,71 @@ serviceRouter.get('/run', async (c) => {
       reason: verification.error,
       hint: 'Ensure the transaction is confirmed and sends the correct USDC amount to the recipient wallet.',
     }, 402);
+  }
+
+  // Issue #55 compatibility: support /api/run?type=signal|arbitrage|sentiment|trending
+  const type = (c.req.query('type') || '').toLowerCase();
+  if (type) {
+    const market = c.req.query('market') || 'us-election';
+    const topic = c.req.query('topic') || market;
+
+    const [polymarket, kalshi, metaculus, reddit, xPosts, tiktokPosts] = await Promise.all([
+      fetchPolymarketOdds(10, market).catch(() => []),
+      fetchKalshiOdds(10, market).catch(() => []),
+      fetchMetaculusForecasts(10, market).catch(() => []),
+      fetchRedditSentiment(topic, 20).catch(() => []),
+      fetchXSentiment(topic, 20).catch(() => []),
+      fetchTikTokSentiment(topic, 20).catch(() => []),
+    ]);
+
+    const social = classifySentiment(reddit);
+    const xSentiment = classifySentiment(xPosts);
+    const tiktokSentiment = classifySentiment(tiktokPosts);
+    const pYes = polymarket[0]?.yes;
+    const kYes = kalshi[0]?.yes;
+    const spread = pYes !== undefined && kYes !== undefined ? Number(Math.abs(pYes - kYes).toFixed(4)) : 0;
+    const bullish = social.positive - social.negative;
+    const divergence = pYes !== undefined ? Number((bullish - (pYes - 0.5)).toFixed(4)) : 0;
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      type,
+      market,
+      timestamp: new Date().toISOString(),
+      odds: {
+        polymarket: polymarket[0] ?? null,
+        kalshi: kalshi[0] ?? null,
+        metaculus: metaculus[0] ?? null,
+      },
+      sentiment: {
+        reddit: social,
+        redditSamples: reddit.slice(0, 5),
+        x: xSentiment,
+        xSamples: xPosts.slice(0, 5),
+        tiktok: tiktokSentiment,
+        tiktokSamples: tiktokPosts.slice(0, 5),
+      },
+      signals: {
+        arbitrage: {
+          detected: spread >= 0.03,
+          spread,
+          confidence: spread >= 0.05 ? 0.8 : spread >= 0.03 ? 0.65 : 0.4,
+        },
+        sentimentDivergence: {
+          detected: Math.abs(divergence) >= 0.08,
+          magnitude: Math.abs(divergence),
+        },
+      },
+      proxy: { country: getProxy().country, type: 'mobile' as const },
+      payment: {
+        txHash: payment.txHash,
+        network: payment.network,
+        amount: verification.amount,
+        settled: true,
+      },
+    });
   }
 
   const clientIp = c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
