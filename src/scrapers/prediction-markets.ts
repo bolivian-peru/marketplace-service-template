@@ -122,26 +122,71 @@ export async function fetchKalshiOdds(limit = 10, query?: string): Promise<OddsP
 }
 
 export async function fetchMetaculusForecasts(limit = 10, query?: string): Promise<OddsPoint[]> {
-  const url = `https://www.metaculus.com/api2/questions/?status=open&limit=${Math.max(1, Math.min(limit * 5, 100))}`;
-  const r = await fetch(url, { headers: { accept: 'application/json' } });
-  if (!r.ok) throw new Error(`metaculus_http_${r.status}`);
-  const data = await r.json() as any;
-
+  const max = Math.max(1, Math.min(limit * 5, 100));
   const out: OddsPoint[] = [];
-  for (const q of data?.results ?? []) {
-    const title = String(q?.title ?? 'unknown');
+
+  // Try official API first (may require auth on some environments).
+  try {
+    const url = `https://www.metaculus.com/api2/questions/?status=open&limit=${max}`;
+    const r = await fetch(url, { headers: { accept: 'application/json', 'User-Agent': 'Mozilla/5.0' } });
+    if (r.ok) {
+      const data = await r.json() as any;
+      for (const q of data?.results ?? []) {
+        const title = String(q?.title ?? 'unknown');
+        if (!keywordMatch(title, query)) continue;
+        const median = toNum(q?.community_prediction?.full?.q2 ?? q?.community_prediction?.q2);
+        out.push({
+          source: 'metaculus',
+          marketId: String(q?.id ?? 'unknown'),
+          title,
+          median,
+          forecasters: toNum(q?.nr_forecasters),
+          url: q?.page_url ? `https://www.metaculus.com${q.page_url}` : undefined,
+        });
+      }
+      if (out.length) return out.slice(0, limit);
+    }
+  } catch {
+    // fall through to HTML fallback
+  }
+
+  // Fallback: scrape public question feed via jina mirror to avoid auth wall.
+  const q = encodeURIComponent((query || 'election').trim());
+  const fallbackUrl = `https://r.jina.ai/http://www.metaculus.com/questions/?search=${q}`;
+  const fr = await fetch(fallbackUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+  if (!fr.ok) return [];
+  const txt = await fr.text();
+
+  // Parse markdown sections beginning with #### question title.
+  const blocks = txt.split('\n#### ').slice(1);
+  for (const b of blocks) {
+    if (out.length >= limit) break;
+    const lines = b.split('\n').map((x) => x.trim()).filter(Boolean);
+    const title = lines[0] || 'unknown';
     if (!keywordMatch(title, query)) continue;
-    const median = toNum(q?.community_prediction?.full?.q2 ?? q?.community_prediction?.q2);
+
+    const link = b.match(/\(http:\/\/www\.metaculus\.com\/questions\/(\d+)\/[^)]+\)/);
+    const forecastersMatch = b.match(/\*\*(\d[\d.,kK]*)\*\*\s+forecasters/i);
+    const pctMatch = b.match(/(\d{1,3}(?:\.\d+)?)%/);
+
+    let forecasters: number | undefined;
+    if (forecastersMatch) {
+      const raw = forecastersMatch[1].toLowerCase();
+      forecasters = raw.includes('k') ? Number(raw.replace('k', '')) * 1000 : Number(raw.replace(/,/g, ''));
+    }
+
+    const median = pctMatch ? Number(pctMatch[1]) / 100 : undefined;
     out.push({
       source: 'metaculus',
-      marketId: String(q?.id ?? 'unknown'),
+      marketId: link?.[1] || String(out.length + 1),
       title,
       median,
-      forecasters: toNum(q?.nr_forecasters),
-      url: q?.page_url ? `https://www.metaculus.com${q.page_url}` : undefined,
+      forecasters,
+      url: link ? `https://www.metaculus.com/questions/${link[1]}/` : undefined,
     });
   }
-  return out;
+
+  return out.slice(0, limit);
 }
 
 export type SentimentSample = {

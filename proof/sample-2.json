@@ -1,13 +1,13 @@
 {
   "type": "arbitrage",
   "market": "election",
-  "timestamp": "2026-03-05T16:18:14.967Z",
+  "timestamp": "2026-03-06T15:46:31.278Z",
   "odds": {
     "polymarket": {
       "source": "polymarket",
       "marketId": "16423",
       "title": "UK election called by...?",
-      "volume24h": 7.45,
+      "volume24h": 449.57265900000004,
       "url": "https://polymarket.com/event/uk-election-called-by"
     },
     "kalshi": {
@@ -15,59 +15,97 @@
       "marketId": "KXBRUVSEAT-35",
       "title": "Will Andrew Tate's party win a seat in the next UK election?"
     },
-    "metaculus": null
+    "metaculus": {
+      "source": "metaculus",
+      "marketId": "41303",
+      "title": "Which party will win the most seats in the 2026 Colombian Chamber of Representatives election?",
+      "median": 0.862,
+      "forecasters": 17,
+      "url": "https://www.metaculus.com/questions/41303/"
+    }
   },
   "sentiment": {
     "reddit": {
-      "positive": 0.15,
-      "negative": 0,
-      "neutral": 0.85,
+      "positive": 0.4,
+      "negative": 0.1,
+      "neutral": 0.5,
       "volume": 20
     },
     "redditSamples": [
       {
         "platform": "reddit",
-        "text": "[Politics] - Chris Mason: Trump belittles Starmer with 'no Churchill' jibe but can the special relationship recover?",
+        "text": "Not a Deal Breaker? Most of us have seen the reports on the Epstein/Trump file releases. The President, whom Epstein said was his best friend for many years, is not only mentioned thousands of times, but is accused in several FBI interviews with victims of assault. I don't know how all this will impact the American people or specifically US Catholics. \n\nBut I have a different, although related issue that is bothering me. Trump was adjudicated and found liable for sexual assault before the last e",
         "score": 1,
-        "author": "AutoNewsAdmin",
-        "url": "https://reddit.com/r/BBCauto/comments/1rlli7y/politics_chris_mason_trump_belittles_starmer_with/"
+        "author": "DesertMonk888",
+        "url": "https://reddit.com/r/LeftCatholicism/comments/1rmhhhd/not_a_deal_breaker/"
       },
       {
         "platform": "reddit",
-        "text": "[National] - A rift between Spain and Trump widens over Spanish opposition to the Iran war | NPR",
+        "text": "[World] - Kurdish opposition mulls whether to trust Trump after Iran uprising call | Al Jazeera",
         "score": 1,
         "author": "AutoNewspaperAdmin",
-        "url": "https://reddit.com/r/AutoNewspaper/comments/1rllhsf/national_a_rift_between_spain_and_trump_widens/"
+        "url": "https://reddit.com/r/AutoNewspaper/comments/1rmhh1n/world_kurdish_opposition_mulls_whether_to_trust/"
       },
       {
         "platform": "reddit",
-        "text": "In Refusing to Impeach Trump, Congress Has Failed the American People and the World",
-        "score": 1,
-        "author": "Saytonleon",
-        "url": "https://reddit.com/r/u_Saytonleon/comments/1rllhmm/in_refusing_to_impeach_trump_congress_has_failed/"
-      },
-      {
-        "platform": "reddit",
-        "text": "i got caught fake fasting. as you all know this month is ramadan and like all closet ex-muslims i have to pretend to fast. this was actually my first month as an ex-muslim so i am new to this, all of people in this sub said that we should sneak snacks into our room and eat a bite there but i can't even afford to buy it so the only oppurtunity i get is to eat in school.\n\nso when i got to school i would use the money they give me to buy food and eat with my non-muslim friends. my mom knows this so",
-        "score": 5,
-        "author": "zekeosko",
-        "url": "https://reddit.com/r/exmuslim/comments/1rllhg5/i_got_caught_fake_fasting/"
-      },
-      {
-        "platform": "reddit",
-        "text": "Either George Lucas was a prophet, or Trump is just a copycat? Militarize ICE, then institute the draft again to fill ranks in the standing military, then force them to face each other in a Constitutional crisis. Who would think to create this chaos?",
+        "text": "US companies denied refunds on Trump’s illegal tariffs",
         "score": 2,
-        "author": "anecdotal_skeleton",
-        "url": "https://reddit.com/r/Trumpvirus/comments/1rllh69/either_george_lucas_was_a_prophet_or_trump_is/"
+        "author": "financialtimes",
+        "url": "https://reddit.com/r/politics/comments/1rmhgva/us_companies_denied_refunds_on_trumps_illegal/"
+      },
+      {
+        "platform": "reddit",
+        "text": "Donald Trump Has Lit a Global Match Trump and his aides think the United States has global leverage that his predecessors refused to use. He seems to forget that other countries have leverage, too—and they’re intent on using it to stop him.",
+        "score": 1,
+        "author": "Ok_Crazy1195",
+        "url": "https://reddit.com/r/u_Ok_Crazy1195/comments/1rmhgmi/donald_trump_has_lit_a_global_match/"
+      },
+      {
+        "platform": "reddit",
+        "text": "Wise words from the First Lady.",
+        "score": 1,
+        "author": "godless_one",
+        "url": "https://reddit.com/r/MelaniaTrump/comments/1rmhghv/wise_words_from_the_first_lady/"
       }
     ],
     "x": {
       "positive": 0,
       "negative": 0,
-      "neutral": 0,
-      "volume": 0
+      "neutral": 1,
+      "volume": 10
     },
-    "xSamples": [],
+    "xSamples": [
+      {
+        "platform": "x",
+        "text": "Donald J. Trump (@realDonaldTrump) / Posts / X - Twitter",
+        "score": 1,
+        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fx.com%2FrealDonaldTrump&amp;rut=97ac1b22c38e572a0a3484e020f150bb10f5c86cea7ba6a23a435059c2eddfd6"
+      },
+      {
+        "platform": "x",
+        "text": "Donald J. Trump (@realDonaldTrump) on X",
+        "score": 1,
+        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fx.com%2FrealDonaldTrump%2Fstatus%2F2027651077865157033&amp;rut=5a3512a012976a156ed889c0174cc018151547e42cf517e6b9898ee32c7ad2d0"
+      },
+      {
+        "platform": "x",
+        "text": "Trump War Room (@TrumpWarRoom) / Posts / X",
+        "score": 1,
+        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fx.com%2FTrumpWarRoom&amp;rut=262ac2d5a8f266160df546edfca78810498deeea05141f725d4b03d62c823033"
+      },
+      {
+        "platform": "x",
+        "text": "The White House (@WhiteHouse) / Posts / X - Twitter",
+        "score": 1,
+        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fx.com%2FWhiteHouse&amp;rut=74bbf2e7becd293abdbc71730dc4a57bafa4749a71d11f22f15341bcbc4477e0"
+      },
+      {
+        "platform": "x",
+        "text": "To My Great Fellow Americans…",
+        "score": 1,
+        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fx.com%2FrealDonaldTrump%2Fstatus%2F1965947311718269341&amp;rut=d6c1afdcb41cf0132f448ddb94d0e8da62cbdab08f0adc049f114df36f3f9095"
+      }
+    ],
     "tiktok": {
       "positive": 0,
       "negative": 0,
@@ -79,31 +117,31 @@
         "platform": "tiktok",
         "text": "President Donald J Trump (@realdonaldtrump) | TikTok",
         "score": 1,
-        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.tiktok.com%2F%40realdonaldtrump&amp;rut=8b11c3d0d2798d1517d7f49253075c89407cbb87c970a5c3b3d0d4569d0511dc"
+        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.tiktok.com%2F%40realdonaldtrump&amp;rut=44c9be8f816851211097159a5b5610f928b136e17c0c85a1d9287e84f866579e"
       },
       {
         "platform": "tiktok",
         "text": "#trump - TikTok",
         "score": 1,
-        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.tiktok.com%2Ftag%2FTrump&amp;rut=a25b24c9440e032920e57051afa4ec40849528a007623cb03da97397461759b3"
+        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.tiktok.com%2Ftag%2FTrump&amp;rut=adf2c2d503d292fe4b1aae936f96180b6358e28793a82f8c00c6323f81033526"
       },
       {
         "platform": "tiktok",
         "text": "I SAVED TIKTOK! | tiktok | TikTok",
         "score": 1,
-        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.tiktok.com%2F%40realdonaldtrump%2Fvideo%2F7558116309083475230&amp;rut=27e77929ca7cd07c01bd7206ad20bdcf423b3a62d308a26d2ed399e23e703cfd"
+        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.tiktok.com%2F%40realdonaldtrump%2Fvideo%2F7558116309083475230&amp;rut=de5b4c13c0c6f1c9e368ce06a95a39ba017be1c0222b25ba3636b850cdf200ad"
       },
       {
         "platform": "tiktok",
         "text": "Team Trump (@teamtrump) | TikTok",
         "score": 1,
-        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.tiktok.com%2F%40teamtrump&amp;rut=8c8706c14a08e2da7169a1cba8583601ecffb922391dd545f6ee8b2f5b5c3814"
+        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.tiktok.com%2F%40teamtrump&amp;rut=036d46d2e9386868b4a023d780e6bbe764350c5d51d87066830bea3e26689480"
       },
       {
         "platform": "tiktok",
         "text": "President Donald J Trump on TikTok",
         "score": 1,
-        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.tiktok.com%2F%40realdonaldtrump%2Fvideo%2F7600543092462112030&amp;rut=d37a18df341b5efc4d69f3ad1a5bc0dfaa59ff44922f84bf97f6051e9562e4c5"
+        "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.tiktok.com%2F%40realdonaldtrump%2Fvideo%2F7600543092462112030&amp;rut=2010fd2ee93d3d5f3ff4979285db0ff7246279226b090d484ffac8228488d04b"
       }
     ]
   },
