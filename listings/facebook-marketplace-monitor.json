@@ -1,0 +1,81 @@
+{
+  "id": "facebook-marketplace-monitor",
+  "name": "Facebook Marketplace Monitor API",
+  "description": "Search, monitor, and extract Facebook Marketplace listings via mobile carrier proxies. Keyword search, listing details, category browsing, and real-time new listing alerts.",
+  "longDescription": "A complete Facebook Marketplace intelligence API built on mobile proxy infrastructure. Search listings by keyword and location with price filters, retrieve full listing details including seller info and photos, browse all marketplace categories, and monitor for new listings in real-time. Routes all requests through 4G/5G carrier IPs — the only IP type Facebook trusts for marketplace access. Powers B2B price monitoring, competitor analysis, and automated deal alerting.",
+  "endpoint": "https://marketplace-api-9kvb.onrender.com/api",
+  "docsUrl": "https://github.com/TheAuroraAI/marketplace-service-template/tree/bounty-75-facebook-marketplace",
+  "pricing": {
+    "model": "per-request",
+    "amount": "0.02",
+    "minimum": "0.005",
+    "currency": "USDC",
+    "perEndpoint": {
+      "/api/marketplace/search": "0.02",
+      "/api/marketplace/listing/:id": "0.01",
+      "/api/marketplace/categories": "0.005",
+      "/api/marketplace/new": "0.03"
+    },
+    "networks": [
+      {
+        "network": "base",
+        "token": "USDC",
+        "address": "0xC0140eEa19bD90a7cA75882d5218eFaF20426e42"
+      },
+      {
+        "network": "solana",
+        "token": "USDC",
+        "address": "GpXHXs5KfzfXbNKcMLNbAMsJsgPsBE7y5GtwVoiuxYvH"
+      }
+    ]
+  },
+  "categories": ["marketplace", "scraping", "e-commerce", "monitoring"],
+  "tags": ["facebook", "marketplace", "listings", "price-monitoring", "mobile-proxy"],
+  "provider": {
+    "name": "Aurora AI",
+    "url": "https://github.com/TheAuroraAI"
+  },
+  "endpoints": [
+    {
+      "path": "/api/marketplace/search",
+      "method": "GET",
+      "description": "Search Facebook Marketplace listings",
+      "params": {
+        "query": "string (required) — search keyword",
+        "location": "string (required) — city name",
+        "radius": "string (optional) — search radius e.g. '25mi'",
+        "min_price": "number (optional) — minimum price USD",
+        "max_price": "number (optional) — maximum price USD",
+        "cursor": "string (optional) — pagination cursor",
+        "limit": "number (optional, max: 50)"
+      },
+      "price": "0.02 USDC"
+    },
+    {
+      "path": "/api/marketplace/listing/:id",
+      "method": "GET",
+      "description": "Get full listing details by Facebook listing ID",
+      "params": {
+        "id": "string (required) — numeric Facebook listing ID"
+      },
+      "price": "0.01 USDC"
+    },
+    {
+      "path": "/api/marketplace/categories",
+      "method": "GET",
+      "description": "List all marketplace categories with browse URLs",
+      "price": "0.005 USDC"
+    },
+    {
+      "path": "/api/marketplace/new",
+      "method": "GET",
+      "description": "Monitor new listings matching a keyword/location",
+      "params": {
+        "query": "string (required)",
+        "location": "string (required)",
+        "since": "string (optional) — time window: '30m', '1h', '6h', '24h'"
+      },
+      "price": "0.03 USDC"
+    }
+  ]
+}

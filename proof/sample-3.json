@@ -1,100 +1,149 @@
 {
-  "metadata": {
-    "source": "airbnb.com",
-    "endpoint": "https://www.airbnb.com/s/New-York--NY/homes",
-    "method": "HTML search page extraction",
-    "params": {
-      "destination": "New York, NY",
-      "checkin": "2026-03-10",
-      "checkout": "2026-03-15",
-      "adults": 2
-    },
-    "fetchedAt": "2026-02-26T13:51:18Z",
-    "proxyIp": "172.56.168.66",
-    "proxyProvider": "Proxies.sx T-Mobile US mobile",
-    "listingsExtracted": 29,
-    "extractionNote": "44 StaySearchResult entries found in page JS, 29 unique after dedup"
+  "endpoint": "GET /api/marketplace/new",
+  "query": {
+    "query": "electronics",
+    "location": "Bay Area, CA",
+    "since": "1h"
   },
-  "listingSummaries": [
+  "newListings": [
     {
-      "listingId": "2027023659",
-      "url": "https://www.airbnb.com/rooms/2027023659",
-      "rating": "4.9 (317)",
-      "priceFor5Nights": "$851 for 5 nights",
-      "priceDisplay": "$851",
-      "dataSource": "Airbnb search page StaySearchResult component"
+      "id": "1268778788497680",
+      "title": "Laptop",
+      "price": 125.0,
+      "currency": "USD",
+      "priceFormatted": "$125",
+      "location": "San Francisco, CA",
+      "condition": null,
+      "description": null,
+      "category": null,
+      "seller": null,
+      "images": [
+        "https://scontent-atl3-1.xx.fbcdn.net/v/t39.84726-6/646713285_1405714147434297_9162669800776633468_n.jpg?stp=c0.152.261.261a_dst-jpg_p261x260_tt6&_nc_cat=101&ccb=1-7&_nc_sid=92e707&_nc_ohc=zy0FX8BXJzMQ7kNvwELF9Rh&_nc_oc=AdlgHi9RRfml9XB0DNlwkpFWGlWQ22_P3o46EcAHfDQzUIPXI1LXzrEpppth02oNeI0&_nc_zt=14&_nc_ht=scontent-atl3-1.xx&_nc_gid=A67NgdyhRztVJqcX11IaRA&_nc_ss=8&oh=00_AfyUV_-QKB74ztJx33rT4zQYgD8A-rg9md-SnHKm-BI-hg&oe=69AC1EEA"
+      ],
+      "listingUrl": "https://www.facebook.com/marketplace/item/1268778788497680",
+      "postedAt": null,
+      "isDeliveryAvailable": true,
+      "isSold": false,
+      "isPending": false
     },
     {
-      "listingId": "801378680",
-      "url": "https://www.airbnb.com/rooms/801378680",
-      "rating": "4.97 (375)",
-      "priceFor5Nights": null,
-      "priceDisplay": null,
-      "dataSource": "Airbnb search page StaySearchResult component"
+      "id": "1676727530397584",
+      "title": "ASUS Laptop L410 14\u201d",
+      "price": 140.0,
+      "currency": "USD",
+      "priceFormatted": "$140",
+      "location": "San Leandro, CA",
+      "condition": null,
+      "description": null,
+      "category": null,
+      "seller": null,
+      "images": [
+        "https://scontent-atl3-3.xx.fbcdn.net/v/t39.84726-6/569033757_821447080285628_2994294304764843512_n.jpg?stp=c0.43.261.261a_dst-jpg_p261x260_tt6&_nc_cat=105&ccb=1-7&_nc_sid=92e707&_nc_ohc=21ik4mDwxVYQ7kNvwHroWdm&_nc_oc=AdlAdclV65o9GAdtM_t7EG1xebKl-EQRZMYrDcr1jBQfpoBN9uLHFVbpEagJheJXT8E&_nc_zt=14&_nc_ht=scontent-atl3-3.xx&_nc_gid=A67NgdyhRztVJqcX11IaRA&_nc_ss=8&oh=00_Afz0qGTw7lYzH8tLT0rxHle3HV1NUU1qBiMVze7DwdkJNg&oe=69ABFC93"
+      ],
+      "listingUrl": "https://www.facebook.com/marketplace/item/1676727530397584",
+      "postedAt": null,
+      "isDeliveryAvailable": true,
+      "isSold": false,
+      "isPending": false
     },
     {
-      "listingId": "2322612075",
-      "url": "https://www.airbnb.com/rooms/2322612075",
-      "rating": "4.62 (1129)",
-      "priceFor5Nights": "$1,095 for 5 nights",
-      "priceDisplay": "$1,095",
-      "dataSource": "Airbnb search page StaySearchResult component"
+      "id": "1576449473560736",
+      "title": "Laptop",
+      "price": 100.0,
+      "currency": "USD",
+      "priceFormatted": "$100",
+      "location": "Antioch, CA",
+      "condition": null,
+      "description": null,
+      "category": null,
+      "seller": null,
+      "images": [
+        "https://scontent-atl3-1.xx.fbcdn.net/v/t39.84726-6/634200884_889102563727977_7769645380736958968_n.jpg?stp=c0.151.261.261a_dst-jpg_p261x260_tt6&_nc_cat=100&ccb=1-7&_nc_sid=92e707&_nc_ohc=V8xNVmkzJRMQ7kNvwHLEfwm&_nc_oc=AdnaFR2BhMyFo4T6XgtQBvd-SJJLJf2R4kgZHyf92Q9B5LftVe0qjoblc_WIoGlaI9Y&_nc_zt=14&_nc_ht=scontent-atl3-1.xx&_nc_gid=A67NgdyhRztVJqcX11IaRA&_nc_ss=8&oh=00_AfypaL5HeTscjYbRmjykCDGL6ewQgNqtQRHvQu1FAPmlUg&oe=69AC2A6C"
+      ],
+      "listingUrl": "https://www.facebook.com/marketplace/item/1576449473560736",
+      "postedAt": null,
+      "isDeliveryAvailable": true,
+      "isSold": false,
+      "isPending": false
     },
     {
-      "listingId": "2146521584",
-      "url": "https://www.airbnb.com/rooms/2146521584",
-      "rating": "4.76 (568)",
-      "priceFor5Nights": null,
-      "priceDisplay": null,
-      "dataSource": "Airbnb search page StaySearchResult component"
+      "id": "803983856064570",
+      "title": "BlackBerry Bold 9700",
+      "price": 40.0,
+      "currency": "USD",
+      "priceFormatted": "$40",
+      "location": "Walnut Creek, CA",
+      "condition": null,
+      "description": null,
+      "category": null,
+      "seller": null,
+      "images": [
+        "https://scontent-iad3-1.xx.fbcdn.net/v/t39.84726-6/637962256_1247913630618565_2493900383733982606_n.jpg?stp=c0.43.261.261a_dst-jpg_p261x260_tt6&_nc_cat=107&ccb=1-7&_nc_sid=92e707&_nc_ohc=JuKcY7QpFNgQ7kNvwHalVvB&_nc_oc=AdkbMMQ5IrPPWNKUZjvUSWW7FZ6J4yTUGjsKrJV9FSykPMq0X-rsjOy_fJEeYaiKzT8&_nc_zt=14&_nc_ht=scontent-iad3-1.xx&_nc_gid=5Zp8DvtZL_3ponFdHYG5tQ&_nc_ss=8&oh=00_AfzH0qAiYybI2XKm5nauzIxdTfG-rcV96Lv14mBSrq8tgw&oe=69AC2800"
+      ],
+      "listingUrl": "https://www.facebook.com/marketplace/item/803983856064570",
+      "postedAt": null,
+      "isDeliveryAvailable": true,
+      "isSold": false,
+      "isPending": false
     },
     {
-      "listingId": "414986416",
-      "url": "https://www.airbnb.com/rooms/414986416",
-      "rating": "4.9 (280)",
-      "priceFor5Nights": null,
-      "priceDisplay": null,
-      "dataSource": "Airbnb search page StaySearchResult component"
+      "id": "884475471160631",
+      "title": "Cellphone",
+      "price": 60.0,
+      "currency": "USD",
+      "priceFormatted": "$60",
+      "location": "Redwood City, CA",
+      "condition": null,
+      "description": null,
+      "category": null,
+      "seller": null,
+      "images": [
+        "https://scontent-iad3-1.xx.fbcdn.net/v/t39.84726-6/646287932_1379277907286113_9025390125388670090_n.jpg?stp=c0.66.261.261a_dst-jpg_p261x260_tt6&_nc_cat=104&ccb=1-7&_nc_sid=92e707&_nc_ohc=OQMfJWtTM5kQ7kNvwFe22vD&_nc_oc=AdlEpAq73rNljnhC2QiFGM9wpFWv27WMf57fIy_u6lX09vtjw5KIncxT6jySdj8lBrY&_nc_zt=14&_nc_ht=scontent-iad3-1.xx&_nc_gid=5Zp8DvtZL_3ponFdHYG5tQ&_nc_ss=8&oh=00_AfwqQ6_TPvtt45OibBfJVazwlPyuEoJAFksC_ieRNTLMyg&oe=69ABFF1F"
+      ],
+      "listingUrl": "https://www.facebook.com/marketplace/item/884475471160631",
+      "postedAt": null,
+      "isDeliveryAvailable": true,
+      "isSold": false,
+      "isPending": false
     },
     {
-      "listingId": "1596354668",
-      "url": "https://www.airbnb.com/rooms/1596354668",
-      "rating": "4.52 (238)",
-      "priceFor5Nights": null,
-      "priceDisplay": null,
-      "dataSource": "Airbnb search page StaySearchResult component"
-    },
-    {
-      "listingId": "2389454677",
-      "url": "https://www.airbnb.com/rooms/2389454677",
-      "rating": "4.57 (111)",
-      "priceFor5Nights": "$866 for 5 nights",
-      "priceDisplay": null,
-      "dataSource": "Airbnb search page StaySearchResult component"
-    },
-    {
-      "listingId": "2003449921",
-      "url": "https://www.airbnb.com/rooms/2003449921",
-      "rating": "4.87 (239)",
-      "priceFor5Nights": null,
-      "priceDisplay": null,
-      "dataSource": "Airbnb search page StaySearchResult component"
-    },
-    {
-      "listingId": "2426509811",
-      "url": "https://www.airbnb.com/rooms/2426509811",
-      "rating": null,
-      "priceFor5Nights": "$1,769 for 5 nights",
-      "priceDisplay": "$1,769",
-      "dataSource": "Airbnb search page StaySearchResult component"
-    },
-    {
-      "listingId": "1617652818",
-      "url": "https://www.airbnb.com/rooms/1617652818",
-      "rating": "4.91 (125)",
-      "priceFor5Nights": null,
-      "priceDisplay": null,
-      "dataSource": "Airbnb search page StaySearchResult component"
+      "id": "2218021485608606",
+      "title": "iPhone 13 unlock",
+      "price": 250.0,
+      "currency": "USD",
+      "priceFormatted": "$250",
+      "location": "San Bruno, CA",
+      "condition": null,
+      "description": null,
+      "category": null,
+      "seller": null,
+      "images": [
+        "https://scontent-iad3-1.xx.fbcdn.net/v/t39.84726-6/645528742_1688858782275940_7268565140620801061_n.jpg?stp=c0.43.261.261a_dst-jpg_p261x260_tt6&_nc_cat=109&ccb=1-7&_nc_sid=92e707&_nc_ohc=XM4ZzewfdbIQ7kNvwFt3Vdm&_nc_oc=Adk1nBBrgJ63yX78RpvOBj3ysdhQkaK8wNd9hPRi8eh39Zxcv4cRnImZ8U3Qh6gvy0c&_nc_zt=14&_nc_ht=scontent-iad3-1.xx&_nc_gid=5Zp8DvtZL_3ponFdHYG5tQ&_nc_ss=8&oh=00_AfxU7V38sTrWgt3diwBm7hxpEDV9XVsbYLNRX1loYiEX4w&oe=69AC133C"
+      ],
+      "listingUrl": "https://www.facebook.com/marketplace/item/2218021485608606",
+      "postedAt": null,
+      "isDeliveryAvailable": true,
+      "isSold": false,
+      "isPending": false
     }
-  ]
+  ],
+  "since": "1h",
+  "location": "Bay Area, CA",
+  "query_term": "electronics",
+  "count": 6,
+  "meta": {
+    "proxy": {
+      "country": "US",
+      "type": "mobile",
+      "provider": "apify-mobile-proxy"
+    },
+    "scrapedAt": "2026-03-03T02:14:37.786207Z",
+    "responseTimeMs": 623
+  },
+  "payment": {
+    "txHash": "0xc41c873b12ef3e2dc0769b356a16d67624ffaccc688f6482fac2f4e3a56052ef",
+    "network": "base",
+    "amount": 0.03,
+    "settled": true
+  }
 }

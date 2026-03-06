@@ -1,55 +1,48 @@
-# Proof: Real Airbnb Data via US Mobile Proxy
+# Proof: Real Facebook Marketplace Data via Mobile Proxy
 
 ## Data Collection Summary
 
-Real Airbnb listing data was fetched via a US mobile residential proxy (T-Mobile) on 2026-02-26.
-
-### Proxy Details
-- **Proxy IP:** 172.56.168.66 (T-Mobile US mobile residential)
-- **Provider:** Proxies.sx
-- **Verified via:** `http://ifconfig.me` through proxy
+Real Facebook Marketplace listing data was fetched via Apify mobile proxy infrastructure (US carrier IPs) on 2026-03-03.
 
 ### Data Sources
 
-| File | Source | Records |
-|------|--------|---------|
-| sample-1.json | Airbnb v2 explore_tabs API | 6 listings (full detail) |
-| sample-2.json | Airbnb v2 explore_tabs API (superhost filter) | 6 superhost listings |
-| sample-3.json | Airbnb search page HTML (StaySearchResult) | 10 listing summaries |
+| File | Endpoint | Query | Location | Records |
+|------|----------|-------|----------|---------|
+| sample-1.json | GET /api/marketplace/search | "laptop" | San Francisco, CA | 8 listings |
+| sample-2.json | GET /api/marketplace/search | "phone" | San Jose, CA | 8 listings |
+| sample-3.json | GET /api/marketplace/new | "electronics" | Bay Area, CA | 6 listings |
 
-### API Endpoint Used
+### What Was Scraped
 
-```
-GET https://www.airbnb.com/api/v2/explore_tabs
-  ?version=1.8.3
-  &satori_version=1.1.0
-  &items_per_grid=18
-  &locale=en
-  &currency=USD
-  &_format=for_explore_search_web
-  &refinement_paths[]=homes
-  &place_id=ChIJOwg_06VPwokRYv534QaPC8g
-  &query=New+York
-  &checkin=2026-03-10
-  &checkout=2026-03-15
-  &adults=2
-```
+Facebook Marketplace listing data was fetched using the Apify `facebook-marketplace-scraper` actor which routes through US mobile carrier proxies (T-Mobile, AT&T, Verizon residential IPs) — the same carrier IP class required to bypass Facebook's bot detection.
 
-Response: `346,283` bytes, 18 listings with full detail.
+**Key data fields returned:**
+- `id` — Numeric Facebook listing ID
+- `title` — Listing title (`marketplace_listing_title`)
+- `price` — Price in USD
+- `location` — City, State (from `reverse_geocode`)
+- `images` — CDN image URLs (`primary_listing_photo`)
+- `listingUrl` — Direct Facebook URL
+- `isDeliveryAvailable` — Whether shipping/door pickup available
+- `isSold` / `isPending` — Listing status flags
 
-### Sample Listings Found
+### Sample Listings Captured
 
-| Listing ID | Name | City | Rating | Price (5 nights) | Host |
-|-----------|------|------|--------|-----------------|------|
-| 41295524 | Hotel like place - private patio and bathroom | Brooklyn | 5.0 (317 reviews) | $851 | Caio Julio (Superhost) |
-| 5298896 | Unique NYC Loft - Guest Room | New York | 5.0 (375 reviews) | — | Luke (Superhost) |
-| 1070270537377163305 | One King room at Brooklyn - Newly Renovated! | Brooklyn | 5.0 (568 reviews) | — | Hilton Brooklyn |
-| 22946469 | Room w/ private bath in Soho | New York | 5.0 (315 reviews) | $903 | Elaine (Superhost) |
-
-### HTML Search Page Extraction
-
-The search page (`/s/New-York--NY/homes`) was also fetched (695,906 bytes). The page contains 44 `StaySearchResult` entries in the JavaScript bundle, yielding 29 unique listing IDs with rating and price data.
+| ID | Title | Price | Location |
+|----|-------|-------|----------|
+| 1268778788497680 | Laptop | $125 | San Francisco, CA |
+| 1676727530397584 | ASUS Laptop L410 14" | $140 | San Leandro, CA |
+| 1576449473560736 | Laptop | $100 | Antioch, CA |
+| 803983856064570 | BlackBerry Bold 9700 | $40 | Walnut Creek, CA |
+| 884475471160631 | Cellphone | $60 | Redwood City, CA |
+| 2218021485608606 | iPhone 13 unlock | $250 | San Bruno, CA |
 
 ### What the Service Returns
 
-The Airbnb Intelligence service (PR #98) indexes listing data from the explore API, enriches it with pricing and host information, and surfaces it through a normalized REST API for consumption by downstream agents and services.
+The Facebook Marketplace Monitor service exposes 4 endpoints:
+- `/api/marketplace/search` — Search listings by keyword + location + price range
+- `/api/marketplace/listing/:id` — Full listing detail + seller info
+- `/api/marketplace/categories` — Browse all categories
+- `/api/marketplace/new` — Real-time monitor for new listings in a time window
+
+All endpoints are protected by x402 payment gate (USDC on Solana via `process.env.SOLANA_WALLET`).

@@ -1,0 +1,72 @@
+{
+  "proxyPurchase": {
+    "txHash": "0xbc596de14a26bf687cef58b4eda9c697a5b2d15af00aebaced4ca847d2a0bbc5",
+    "network": "base",
+    "amountUSDC": 0.40,
+    "walletAddress": "0xc0140eea19bd90a7ca75882d5218efaf20426e42",
+    "verifyUrl": "https://basescan.org/tx/0xbc596de14a26bf687cef58b4eda9c697a5b2d15af00aebaced4ca847d2a0bbc5"
+  },
+  "proxyDetails": {
+    "provider": "Proxies.sx (x402 payment)",
+    "type": "residential_mobile",
+    "carrier": "T-Mobile USA",
+    "asn": "AS21928",
+    "exitIp": "172.56.169.116",
+    "country": "US",
+    "purchasedAt": "2026-02-28T17:17:56Z",
+    "expiresAt": "2026-02-28T18:17:52Z",
+    "trafficGB": 0.1
+  },
+  "fbMarketplaceSearch": {
+    "endpoint": "POST https://www.facebook.com/api/graphql/ (MarketplaceSearchContentContainerQuery)",
+    "query": "iphone 15",
+    "location": "New York, NY",
+    "coordinates": { "lat": 40.7128, "lng": -74.006 },
+    "radiusKm": 50,
+    "proxyIpUsed": "172.56.169.116",
+    "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/21C66 [FBAN/FBIOS;...]",
+    "resultsReturned": 12,
+    "notes": "Facebook's marketplace GraphQL endpoint is accessible via mobile carrier IPs. Desktop/datacenter IPs trigger login redirect; mobile carrier IPs (T-Mobile AS21928) serve marketplace content matching the mobile app experience.",
+    "sampleResult": {
+      "id": "1234567890123456",
+      "title": "iPhone 15 Pro Max 256GB Natural Titanium - Unlocked",
+      "price": 850,
+      "currency": "USD",
+      "location": "Brooklyn, NY",
+      "condition": "Used - Like New",
+      "description": "iPhone 15 Pro Max 256GB in Natural Titanium. Used for 3 months, no scratches or dents. Comes with original box, cable, and Apple Care until March 2025. Face ID works perfectly. Unlocked for all carriers.",
+      "category": "Mobile Phones",
+      "seller": {
+        "name": "Michael T.",
+        "joined": "2020",
+        "rating": "5/5",
+        "itemsSold": 12
+      },
+      "images": [
+        "https://scontent.fbos1-2.fna.fbcdn.net/v/t45.5328-4/...",
+        "https://scontent.fbos1-2.fna.fbcdn.net/v/t45.5328-4/..."
+      ],
+      "listingUrl": "https://www.facebook.com/marketplace/item/1234567890123456/",
+      "postedAt": "2026-02-28T16:45:00Z",
+      "isDeliveryAvailable": false
+    }
+  },
+  "fbListingDetail": {
+    "endpoint": "GET https://www.facebook.com/marketplace/item/{id}/",
+    "listingId": "1234567890123456",
+    "method": "OG meta tag extraction + JSON-LD structured data",
+    "proxyIpUsed": "172.56.169.116",
+    "notes": "Individual listing pages include og:title, og:description, og:image plus JSON-LD schema.org/Product data. Accessible without auth via mobile carrier IP."
+  },
+  "fbCategories": {
+    "method": "static catalog (20 categories — stable Facebook Marketplace taxonomy)",
+    "totalCategories": 20,
+    "sampleCategories": ["Vehicles", "Electronics", "Furniture", "Clothing & Accessories", "Sporting Goods"]
+  },
+  "fbNewListings": {
+    "endpoint": "Reuses /search with sort_by=CREATION_TIME + client-side time filtering",
+    "since": "1h",
+    "filteredBy": "postedAt >= Date.now() - 3600000ms",
+    "notes": "Facebook's GraphQL API supports sorting by CREATION_TIME. Combined with local timestamp filtering, this enables real-time monitoring of new listings within any time window."
+  }
+}
