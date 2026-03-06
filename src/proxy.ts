@@ -18,6 +18,8 @@ export interface ProxyConfig {
   user: string;
   pass: string;
   country: string;
+  carrier: string;     // e.g. 'T-Mobile US'
+  type: string;        // e.g. 'mobile'
 }
 
 export interface ProxyFetchOptions extends RequestInit {
@@ -52,6 +54,8 @@ export function getProxy(): ProxyConfig {
     user,
     pass,
     country: process.env.PROXY_COUNTRY || 'US',
+    carrier: process.env.PROXY_CARRIER || 'T-Mobile US',
+    type: 'mobile',
   };
 }
 
