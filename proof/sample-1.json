@@ -125,5 +125,16 @@
       "zestimate": null,
       "url": "https://www.zillow.com/homedetails/245387446_zpid/"
     }
-  ]
+  ],
+  "proxyIp": "172.58.147.62",
+  "proxyCarrier": "T-Mobile",
+  "responseTimeMs": 1843,
+  "meta": {
+    "proxy": {
+      "ip": "172.58.147.62",
+      "country": "US",
+      "carrier": "T-Mobile",
+      "type": "mobile"
+    }
+  }
 }

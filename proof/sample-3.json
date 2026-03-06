@@ -161,5 +161,16 @@
       "status": "For Rent",
       "url": "https://www.zillow.com/apartments/brooklyn-ny/475-clermont/CkCdnX/"
     }
-  ]
+  ],
+  "proxyIp": "172.58.238.91",
+  "proxyCarrier": "T-Mobile",
+  "responseTimeMs": 1677,
+  "meta": {
+    "proxy": {
+      "ip": "172.58.238.91",
+      "country": "US",
+      "carrier": "T-Mobile",
+      "type": "mobile"
+    }
+  }
 }

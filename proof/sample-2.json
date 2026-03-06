@@ -19,5 +19,16 @@
   "status": "FOR_SALE",
   "yearBuilt": 1910,
   "daysOnZillow": 6,
-  "description": "Welcome to 227-229 West 116th Street, the Casa Loma\u2014 Apartment 5B is a bright, roomy 2-bedroom, 1.5-bath unit with soaring 11-foot ceilings, exposed brick, and hardwood floors, you can just feel the Historic Charm! The bedrooms are located in a quieter section at the rear of the unit. The Primary Be"
+  "description": "Welcome to 227-229 West 116th Street, the Casa Loma\u2014 Apartment 5B is a bright, roomy 2-bedroom, 1.5-bath unit with soaring 11-foot ceilings, exposed brick, and hardwood floors, you can just feel the Historic Charm! The bedrooms are located in a quieter section at the rear of the unit. The Primary Be",
+  "proxyIp": "172.58.147.62",
+  "proxyCarrier": "T-Mobile",
+  "responseTimeMs": 2241,
+  "meta": {
+    "proxy": {
+      "ip": "172.58.147.62",
+      "country": "US",
+      "carrier": "T-Mobile",
+      "type": "mobile"
+    }
+  }
 }
