@@ -1,100 +1,176 @@
 {
-  "metadata": {
-    "source": "airbnb.com",
-    "endpoint": "https://www.airbnb.com/s/New-York--NY/homes",
-    "method": "HTML search page extraction",
-    "params": {
-      "destination": "New York, NY",
-      "checkin": "2026-03-10",
-      "checkout": "2026-03-15",
-      "adults": 2
-    },
-    "fetchedAt": "2026-02-26T13:51:18Z",
-    "proxyIp": "172.56.168.66",
-    "proxyProvider": "Proxies.sx T-Mobile US mobile",
-    "listingsExtracted": 29,
-    "extractionNote": "44 StaySearchResult entries found in page JS, 29 unique after dedup"
-  },
-  "listingSummaries": [
+  "endpoint": "/api/realestate/search",
+  "query": "New York City, NY",
+  "filter": "for_rent",
+  "source": "zillow.com",
+  "scraped_at": "2026-03-02T11:34:00Z",
+  "total_results": 41,
+  "results": [
     {
-      "listingId": "2027023659",
-      "url": "https://www.airbnb.com/rooms/2027023659",
-      "rating": "4.9 (317)",
-      "priceFor5Nights": "$851 for 5 nights",
-      "priceDisplay": "$851",
-      "dataSource": "Airbnb search page StaySearchResult component"
-    },
-    {
-      "listingId": "801378680",
-      "url": "https://www.airbnb.com/rooms/801378680",
-      "rating": "4.97 (375)",
-      "priceFor5Nights": null,
-      "priceDisplay": null,
-      "dataSource": "Airbnb search page StaySearchResult component"
+      "zpid": "40.58985--73.797356",
+      "address": "190 Beach 69th St, Arverne, NY",
+      "city": "Arverne",
+      "state": "NY",
+      "zipcode": "11692",
+      "price_from": "$3,300+",
+      "units": [
+        {
+          "beds": "1",
+          "price": "$3,300+"
+        },
+        {
+          "beds": "2",
+          "price": "$3,900+"
+        }
+      ],
+      "status": "For Rent",
+      "url": "https://www.zillow.com/apartments/arverne-ny/the-tides-at-arverne-by-the-sea/ChWHPZ/"
     },
     {
-      "listingId": "2322612075",
-      "url": "https://www.airbnb.com/rooms/2322612075",
-      "rating": "4.62 (1129)",
-      "priceFor5Nights": "$1,095 for 5 nights",
-      "priceDisplay": "$1,095",
-      "dataSource": "Airbnb search page StaySearchResult component"
+      "zpid": "40.808674--73.93156",
+      "address": "2413 3rd Ave, Bronx, NY",
+      "city": "Bronx",
+      "state": "NY",
+      "zipcode": "10451",
+      "price_from": "$3,354+",
+      "units": [
+        {
+          "beds": "1",
+          "price": "$3,354+"
+        },
+        {
+          "beds": "3",
+          "price": "$5,441+"
+        }
+      ],
+      "status": "For Rent",
+      "url": "https://www.zillow.com/apartments/bronx-ny/maven/CkBKWd/"
     },
     {
-      "listingId": "2146521584",
-      "url": "https://www.airbnb.com/rooms/2146521584",
-      "rating": "4.76 (568)",
-      "priceFor5Nights": null,
-      "priceDisplay": null,
-      "dataSource": "Airbnb search page StaySearchResult component"
+      "zpid": "40.744976--73.99104",
+      "address": "776 6th Ave, New York, NY",
+      "city": "New York",
+      "state": "NY",
+      "zipcode": "10001",
+      "price_from": "$5,821+",
+      "units": [
+        {
+          "beds": "1",
+          "price": "$5,821+"
+        },
+        {
+          "beds": "2",
+          "price": "$10,547+"
+        }
+      ],
+      "status": "For Rent",
+      "url": "https://www.zillow.com/apartments/new-york-ny/the-capitol/CkLq8m/"
     },
     {
-      "listingId": "414986416",
-      "url": "https://www.airbnb.com/rooms/414986416",
-      "rating": "4.9 (280)",
-      "priceFor5Nights": null,
-      "priceDisplay": null,
-      "dataSource": "Airbnb search page StaySearchResult component"
+      "zpid": "40.72793--73.85516",
+      "address": "98-81 Queens Blvd, Rego Park, NY",
+      "city": "Rego Park",
+      "state": "NY",
+      "zipcode": "11374",
+      "price_from": "$3,000+",
+      "units": [
+        {
+          "beds": "0",
+          "price": "$3,000+"
+        },
+        {
+          "beds": "1",
+          "price": "$3,025+"
+        }
+      ],
+      "status": "For Rent",
+      "url": "https://www.zillow.com/apartments/rego-park-ny/trylon-tower/Cm45hD/"
     },
     {
-      "listingId": "1596354668",
-      "url": "https://www.airbnb.com/rooms/1596354668",
-      "rating": "4.52 (238)",
-      "priceFor5Nights": null,
-      "priceDisplay": null,
-      "dataSource": "Airbnb search page StaySearchResult component"
+      "zpid": "40.70391--73.79586",
+      "address": "92-33 Guy R Brewer Blvd, Jamaica, NY",
+      "city": "Jamaica",
+      "state": "NY",
+      "zipcode": "11433",
+      "price_from": "$2,775+",
+      "units": [
+        {
+          "beds": "1",
+          "price": "$2,775+"
+        },
+        {
+          "beds": "2",
+          "price": "$3,325+"
+        }
+      ],
+      "status": "For Rent",
+      "url": "https://www.zillow.com/apartments/jamaica-ny/the-monarch/CqWR4H/"
     },
     {
-      "listingId": "2389454677",
-      "url": "https://www.airbnb.com/rooms/2389454677",
-      "rating": "4.57 (111)",
-      "priceFor5Nights": "$866 for 5 nights",
-      "priceDisplay": null,
-      "dataSource": "Airbnb search page StaySearchResult component"
+      "zpid": "40.80232--73.96171",
+      "address": "1 Morningside Dr, New York, NY",
+      "city": "New York",
+      "state": "NY",
+      "zipcode": "10025",
+      "price_from": "$4,525+",
+      "units": [
+        {
+          "beds": "0",
+          "price": "$4,525+"
+        },
+        {
+          "beds": "1",
+          "price": "$4,945+"
+        },
+        {
+          "beds": "2",
+          "price": "$8,450+"
+        }
+      ],
+      "status": "For Rent",
+      "url": "https://www.zillow.com/apartments/new-york-ny/avalon-morningside-park/ChQRJx/"
     },
     {
-      "listingId": "2003449921",
-      "url": "https://www.airbnb.com/rooms/2003449921",
-      "rating": "4.87 (239)",
-      "priceFor5Nights": null,
-      "priceDisplay": null,
-      "dataSource": "Airbnb search page StaySearchResult component"
+      "zpid": "460750873",
+      "address": "Staten Island Urby, 7 Navy Pier Ct #2036, Staten Island, NY 10304",
+      "city": "Staten Island",
+      "state": "NY",
+      "zipcode": "10304",
+      "price_from": "$3,573/mo",
+      "units": [],
+      "status": "For Rent",
+      "url": "https://www.zillow.comhttps://www.zillow.com/apartments/staten-island-ny/staten-island-urby/CkCgG9/"
     },
     {
-      "listingId": "2426509811",
-      "url": "https://www.airbnb.com/rooms/2426509811",
-      "rating": null,
-      "priceFor5Nights": "$1,769 for 5 nights",
-      "priceDisplay": "$1,769",
-      "dataSource": "Airbnb search page StaySearchResult component"
-    },
-    {
-      "listingId": "1617652818",
-      "url": "https://www.airbnb.com/rooms/1617652818",
-      "rating": "4.91 (125)",
-      "priceFor5Nights": null,
-      "priceDisplay": null,
-      "dataSource": "Airbnb search page StaySearchResult component"
+      "zpid": "40.683136--73.96856",
+      "address": "475 Clermont Ave, Brooklyn, NY",
+      "city": "Brooklyn",
+      "state": "NY",
+      "zipcode": "11238",
+      "price_from": "$3,648+",
+      "units": [
+        {
+          "beds": "0",
+          "price": "$3,648+"
+        },
+        {
+          "beds": "1",
+          "price": "$4,264+"
+        }
+      ],
+      "status": "For Rent",
+      "url": "https://www.zillow.com/apartments/brooklyn-ny/475-clermont/CkCdnX/"
     }
-  ]
+  ],
+  "proxyIp": "172.58.238.91",
+  "proxyCarrier": "T-Mobile",
+  "responseTimeMs": 1677,
+  "meta": {
+    "proxy": {
+      "ip": "172.58.238.91",
+      "country": "US",
+      "carrier": "T-Mobile",
+      "type": "mobile"
+    }
+  }
 }

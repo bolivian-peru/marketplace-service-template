@@ -1,55 +1,29 @@
-# Proof: Real Airbnb Data via US Mobile Proxy
+# Proof of Output — Real Estate Intelligence API (Zillow)
 
-## Data Collection Summary
+Data collected through US mobile proxy on 2026-03-02T11:30:00Z
 
-Real Airbnb listing data was fetched via a US mobile residential proxy (T-Mobile) on 2026-02-26.
+## Proxy Details
+- Exit IP: 99.87.225.2 (US T-Mobile mobile carrier)
+- Provider: Proxies.sx
+- Payment TX: 0x2f1a662e9dbd6371bbcb533389d31f54671a8ebcb10810ba16c6ed6e684edd8c (Base L2 USDC)
 
-### Proxy Details
-- **Proxy IP:** 172.56.168.66 (T-Mobile US mobile residential)
-- **Provider:** Proxies.sx
-- **Verified via:** `http://ifconfig.me` through proxy
+## Queries Executed
 
-### Data Sources
+### sample-1.json: New York City, NY — For Sale search
+- URL: `https://www.zillow.com/new-york-city-ny/`
+- Results: 10 NYC listings (Manhattan, Queens, Brooklyn, Bronx)
+- Source verified: zillow.com
 
-| File | Source | Records |
-|------|--------|---------|
-| sample-1.json | Airbnb v2 explore_tabs API | 6 listings (full detail) |
-| sample-2.json | Airbnb v2 explore_tabs API (superhost filter) | 6 superhost listings |
-| sample-3.json | Airbnb search page HTML (StaySearchResult) | 10 listing summaries |
+### sample-2.json: Property Detail — 227-229 W 116th Street #5B, Manhattan
+- ZPID: 460661006
+- URL: `https://www.zillow.com/homedetails/460661006_zpid/`
+- Price: $799,000 | Beds: 2 | Location: New York, NY 10026
 
-### API Endpoint Used
+### sample-3.json: New York City, NY — Rentals
+- URL: `https://www.zillow.com/new-york-city-ny/rentals/`
+- Results: 8 NYC rental listings (Arverne, Bronx, Manhattan)
+- Source verified: zillow.com
 
-```
-GET https://www.airbnb.com/api/v2/explore_tabs
-  ?version=1.8.3
-  &satori_version=1.1.0
-  &items_per_grid=18
-  &locale=en
-  &currency=USD
-  &_format=for_explore_search_web
-  &refinement_paths[]=homes
-  &place_id=ChIJOwg_06VPwokRYv534QaPC8g
-  &query=New+York
-  &checkin=2026-03-10
-  &checkout=2026-03-15
-  &adults=2
-```
-
-Response: `346,283` bytes, 18 listings with full detail.
-
-### Sample Listings Found
-
-| Listing ID | Name | City | Rating | Price (5 nights) | Host |
-|-----------|------|------|--------|-----------------|------|
-| 41295524 | Hotel like place - private patio and bathroom | Brooklyn | 5.0 (317 reviews) | $851 | Caio Julio (Superhost) |
-| 5298896 | Unique NYC Loft - Guest Room | New York | 5.0 (375 reviews) | — | Luke (Superhost) |
-| 1070270537377163305 | One King room at Brooklyn - Newly Renovated! | Brooklyn | 5.0 (568 reviews) | — | Hilton Brooklyn |
-| 22946469 | Room w/ private bath in Soho | New York | 5.0 (315 reviews) | $903 | Elaine (Superhost) |
-
-### HTML Search Page Extraction
-
-The search page (`/s/New-York--NY/homes`) was also fetched (695,906 bytes). The page contains 44 `StaySearchResult` entries in the JavaScript bundle, yielding 29 unique listing IDs with rating and price data.
-
-### What the Service Returns
-
-The Airbnb Intelligence service (PR #98) indexes listing data from the explore API, enriches it with pricing and host information, and surfaces it through a normalized REST API for consumption by downstream agents and services.
+## Geographic Verification
+All results are confirmed New York City properties (NY state, NYC boroughs).
+No Maryland or out-of-state properties in results.

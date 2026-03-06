@@ -1,217 +1,140 @@
 {
-  "metadata": {
-    "source": "airbnb.com",
-    "endpoint": "https://www.airbnb.com/api/v2/explore_tabs",
-    "params": {
-      "query": "New York",
-      "place_id": "ChIJOwg_06VPwokRYv534QaPC8g",
-      "checkin": "2026-03-10",
-      "checkout": "2026-03-15",
-      "adults": 2,
-      "currency": "USD",
-      "locale": "en"
+  "endpoint": "/api/realestate/search",
+  "query": "New York City, NY",
+  "source": "zillow.com",
+  "scraped_at": "2026-03-02T11:30:00Z",
+  "total_results": 41,
+  "results": [
+    {
+      "zpid": "460663064",
+      "address": "154-24 27th Avenue, Flushing, NY 11354",
+      "price": "$2,150,000",
+      "beds": 4,
+      "baths": 4,
+      "sqft": 3650,
+      "status": "House for sale",
+      "type": "SINGLE_FAMILY",
+      "zestimate": null,
+      "url": "https://www.zillow.com/homedetails/460663064_zpid/"
     },
-    "fetchedAt": "2026-02-26T13:51:18Z",
-    "proxyIp": "172.56.168.66",
-    "proxyProvider": "Proxies.sx T-Mobile US mobile",
-    "totalResultsReturned": 18,
-    "paginationMetadata": {
-      "hasNextPage": true,
-      "itemsPerPage": 18
+    {
+      "zpid": "460661006",
+      "address": "227-229 W 116th Street #5B, New York (Manhattan), NY 10026",
+      "price": "$799,000",
+      "beds": 2,
+      "baths": 2,
+      "sqft": 1007,
+      "status": "Condo for sale",
+      "type": "CONDO",
+      "zestimate": null,
+      "url": "https://www.zillow.com/homedetails/460661006_zpid/"
+    },
+    {
+      "zpid": "2068952873",
+      "address": "217 W 57th St #127/128, New York, NY 10019",
+      "price": "$128,000,000",
+      "beds": 8,
+      "baths": 10,
+      "sqft": 11535,
+      "status": "Condo for sale",
+      "type": "CONDO",
+      "zestimate": null,
+      "url": "https://www.zillow.com/homedetails/2068952873_zpid/"
+    },
+    {
+      "zpid": "2077302840",
+      "address": "1810 3rd Ave, New York, NY 10029",
+      "price": "$699,000",
+      "beds": 3,
+      "baths": 1,
+      "sqft": 800,
+      "status": "Condo for sale",
+      "type": "CONDO",
+      "zestimate": 695000,
+      "url": "https://www.zillow.com/homedetails/2077302840_zpid/"
+    },
+    {
+      "zpid": "30696332",
+      "address": "220 77th St, Brooklyn, NY 11209",
+      "price": "$25,000,000",
+      "beds": 6,
+      "baths": 8,
+      "sqft": 14000,
+      "status": "House for sale",
+      "type": "SINGLE_FAMILY",
+      "zestimate": null,
+      "url": "https://www.zillow.com/homedetails/30696332_zpid/"
+    },
+    {
+      "zpid": "460597886",
+      "address": "99-99 60th Rd #63-3AA, Rego Park, NY 11374",
+      "price": "$349,000",
+      "beds": 2,
+      "baths": 1,
+      "sqft": 0,
+      "status": "Condo for sale",
+      "type": "CONDO",
+      "zestimate": 404600,
+      "url": "https://www.zillow.com/homedetails/460597886_zpid/"
+    },
+    {
+      "zpid": "245483180",
+      "address": "22424 Union Turnpike #2O, Oakland Gardens, NY 11364",
+      "price": "$250,000",
+      "beds": 2,
+      "baths": 1,
+      "sqft": 920,
+      "status": "Condo for sale",
+      "type": "CONDO",
+      "zestimate": null,
+      "url": "https://www.zillow.com/homedetails/245483180_zpid/"
+    },
+    {
+      "zpid": "244800502",
+      "address": "246 E 90th St APT 4D, New York, NY 10128",
+      "price": "$350,000",
+      "beds": 1,
+      "baths": 1,
+      "sqft": 0,
+      "status": "Condo for sale",
+      "type": "CONDO",
+      "zestimate": null,
+      "url": "https://www.zillow.com/homedetails/244800502_zpid/"
+    },
+    {
+      "zpid": "460454491",
+      "address": "3755 Henry Hudson Pkwy APT 3F, Bronx, NY 10463",
+      "price": "$399,999",
+      "beds": 3,
+      "baths": 2,
+      "sqft": 1450,
+      "status": "Condo for sale",
+      "type": "CONDO",
+      "zestimate": 402900,
+      "url": "https://www.zillow.com/homedetails/460454491_zpid/"
+    },
+    {
+      "zpid": "245387446",
+      "address": "86-16 60th Avenue #4L, Elmhurst, NY 11373",
+      "price": "$200,000",
+      "beds": 2,
+      "baths": 2,
+      "sqft": 1400,
+      "status": "Condo for sale",
+      "type": "CONDO",
+      "zestimate": null,
+      "url": "https://www.zillow.com/homedetails/245387446_zpid/"
     }
-  },
-  "listings": [
-    {
-      "listingId": "41295524",
-      "url": "https://www.airbnb.com/rooms/41295524",
-      "name": "Hotel like place - private patio and bathroom",
-      "roomType": "private_room",
-      "location": {
-        "city": "Brooklyn",
-        "publicAddress": "Brooklyn, NY, United States",
-        "lat": 40.67627,
-        "lng": -73.94137
-      },
-      "capacity": {
-        "guests": 2,
-        "bedrooms": 1,
-        "beds": 2,
-        "bathrooms": 1.0
-      },
-      "rating": {
-        "stars": 5.0,
-        "reviewCount": 317
-      },
-      "pricing": {
-        "displayPrice": "$851",
-        "stayDuration": "5 nights (Mar 10-15, 2026)",
-        "currency": "USD"
-      },
-      "host": {
-        "firstName": "Caio Julio",
-        "isSuperhost": true
-      },
-      "instantBook": false
-    },
-    {
-      "listingId": "5298896",
-      "url": "https://www.airbnb.com/rooms/5298896",
-      "name": "Unique NYC Loft - Guest Room",
-      "roomType": "private_room",
-      "location": {
-        "city": "New York",
-        "publicAddress": "New York, NY, United States",
-        "lat": 40.70419,
-        "lng": -74.01127
-      },
-      "capacity": {
-        "guests": 2,
-        "bedrooms": 1,
-        "beds": 1,
-        "bathrooms": 1.0
-      },
-      "rating": {
-        "stars": 5.0,
-        "reviewCount": 375
-      },
-      "pricing": {
-        "displayPrice": null,
-        "stayDuration": "5 nights (Mar 10-15, 2026)",
-        "currency": "USD"
-      },
-      "host": {
-        "firstName": "Luke",
-        "isSuperhost": true
-      },
-      "instantBook": false
-    },
-    {
-      "listingId": "1070270537377163305",
-      "url": "https://www.airbnb.com/rooms/1070270537377163305",
-      "name": "One King room at Brooklyn - Newly Renovated!",
-      "roomType": "private_room",
-      "location": {
-        "city": "Brooklyn",
-        "publicAddress": "Brooklyn, NY, United States",
-        "lat": 40.690157186681645,
-        "lng": -73.98692196057979
-      },
-      "capacity": {
-        "guests": 2,
-        "bedrooms": 1,
-        "beds": 1,
-        "bathrooms": 1.0
-      },
-      "rating": {
-        "stars": 5.0,
-        "reviewCount": 568
-      },
-      "pricing": {
-        "displayPrice": null,
-        "stayDuration": "5 nights (Mar 10-15, 2026)",
-        "currency": "USD"
-      },
-      "host": {
-        "firstName": "Hilton Brooklyn New York City",
-        "isSuperhost": true
-      },
-      "instantBook": false
-    },
-    {
-      "listingId": "1010503905929192028",
-      "url": "https://www.airbnb.com/rooms/1010503905929192028",
-      "name": "Steps to Times Square | Free Breakfast & Fitness",
-      "roomType": "private_room",
-      "location": {
-        "city": "New York",
-        "publicAddress": "New York, NY, United States",
-        "lat": 40.75724,
-        "lng": -73.99236
-      },
-      "capacity": {
-        "guests": 2,
-        "bedrooms": 1,
-        "beds": 1,
-        "bathrooms": 1.0
-      },
-      "rating": {
-        "stars": 4.5,
-        "reviewCount": 1129
-      },
-      "pricing": {
-        "displayPrice": "$1,095",
-        "stayDuration": "5 nights (Mar 10-15, 2026)",
-        "currency": "USD"
-      },
-      "host": {
-        "firstName": "Times Square South New York City",
-        "isSuperhost": false
-      },
-      "instantBook": false
-    },
-    {
-      "listingId": "1267449405198185516",
-      "url": "https://www.airbnb.com/rooms/1267449405198185516",
-      "name": "Pod Times Square Hotel",
-      "roomType": "private_room",
-      "location": {
-        "city": "New York",
-        "publicAddress": "New York, NY, United States",
-        "lat": 40.7583945,
-        "lng": -73.9930985
-      },
-      "capacity": {
-        "guests": 2,
-        "bedrooms": 1,
-        "beds": 1,
-        "bathrooms": 1.0
-      },
-      "rating": {
-        "stars": 4.5,
-        "reviewCount": 111
-      },
-      "pricing": {
-        "displayPrice": null,
-        "stayDuration": "5 nights (Mar 10-15, 2026)",
-        "currency": "USD"
-      },
-      "host": {
-        "firstName": "Pod Times Square Hotel",
-        "isSuperhost": false
-      },
-      "instantBook": false
-    },
-    {
-      "listingId": "21969733",
-      "url": "https://www.airbnb.com/rooms/21969733",
-      "name": "BRIGHT HOMEY AND COZY  MINUTES TO NEW YORK  CITY",
-      "roomType": "entire_home",
-      "location": {
-        "city": "Jersey City",
-        "publicAddress": "Jersey City, NJ, United States",
-        "lat": 40.7479,
-        "lng": -74.05105
-      },
-      "capacity": {
-        "guests": 6,
-        "bedrooms": 1,
-        "beds": 3,
-        "bathrooms": 1.0
-      },
-      "rating": {
-        "stars": 5.0,
-        "reviewCount": 280
-      },
-      "pricing": {
-        "displayPrice": null,
-        "stayDuration": "5 nights (Mar 10-15, 2026)",
-        "currency": "USD"
-      },
-      "host": {
-        "firstName": "Kenia",
-        "isSuperhost": true
-      },
-      "instantBook": false
+  ],
+  "proxyIp": "172.58.147.62",
+  "proxyCarrier": "T-Mobile",
+  "responseTimeMs": 1843,
+  "meta": {
+    "proxy": {
+      "ip": "172.58.147.62",
+      "country": "US",
+      "carrier": "T-Mobile",
+      "type": "mobile"
     }
-  ]
+  }
 }

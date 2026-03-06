@@ -1,0 +1,56 @@
+{
+  "endpoint": "/api/realestate/search",
+  "query": "Chicago, IL",
+  "source": "zillow.com",
+  "scraped_at": "2026-03-02T11:38:00Z",
+  "proxyIp": "172.58.238.91",
+  "proxyCarrier": "T-Mobile",
+  "responseTimeMs": 2104,
+  "total_results": 38,
+  "results": [
+    {
+      "zpid": "32030944",
+      "address": "1717 S Prairie Ave #1804, Chicago, IL 60616",
+      "price": "$1,295,000",
+      "beds": 3,
+      "baths": 3,
+      "sqft": 2600,
+      "status": "Condo for sale",
+      "type": "CONDO",
+      "zestimate": 1240000,
+      "url": "https://www.zillow.com/homedetails/32030944_zpid/"
+    },
+    {
+      "zpid": "32029117",
+      "address": "1440 N Lake Shore Dr #28B, Chicago, IL 60610",
+      "price": "$875,000",
+      "beds": 2,
+      "baths": 2,
+      "sqft": 1750,
+      "status": "Condo for sale",
+      "type": "CONDO",
+      "zestimate": 830000,
+      "url": "https://www.zillow.com/homedetails/32029117_zpid/"
+    },
+    {
+      "zpid": "32040282",
+      "address": "2130 W Division St, Chicago, IL 60622",
+      "price": "$649,000",
+      "beds": 3,
+      "baths": 2,
+      "sqft": 1580,
+      "status": "Townhouse for sale",
+      "type": "TOWNHOUSE",
+      "zestimate": 625000,
+      "url": "https://www.zillow.com/homedetails/32040282_zpid/"
+    }
+  ],
+  "meta": {
+    "proxy": {
+      "ip": "172.58.238.91",
+      "country": "US",
+      "carrier": "T-Mobile",
+      "type": "mobile"
+    }
+  }
+}
