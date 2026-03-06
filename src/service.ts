@@ -160,7 +160,7 @@ serviceRouter.get('/run', async (c) => {
 
     return c.json({
       ...result,
-      proxy: { country: proxy.country, type: 'mobile' },
+      proxy: { ip: proxy.host, country: proxy.country, carrier: proxy.carrier, type: proxy.type },
       payment: {
         txHash: payment.txHash,
         network: payment.network,
@@ -230,7 +230,7 @@ serviceRouter.get('/details', async (c) => {
 
     return c.json({
       business,
-      proxy: { country: proxy.country, type: 'mobile' },
+      proxy: { ip: proxy.host, country: proxy.country, carrier: proxy.carrier, type: proxy.type },
       payment: {
         txHash: payment.txHash,
         network: payment.network,
@@ -313,10 +313,10 @@ serviceRouter.get('/jobs', async (c) => {
         platform,
         limit,
         proxy: {
-          ip,
+          ip: proxy.host,
           country: proxy.country,
-          host: proxy.host,
-          type: 'mobile',
+          carrier: proxy.carrier,
+          type: proxy.type,
         },
       },
       payment: {
@@ -400,7 +400,7 @@ serviceRouter.get('/reviews/search', async (c) => {
 
     return c.json({
       ...result,
-      meta: { proxy: { country: proxy.country, type: 'mobile' } },
+      meta: { proxy: { ip: proxy.host, country: proxy.country, carrier: proxy.carrier, type: proxy.type } },
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
   } catch (err: any) {
@@ -443,7 +443,7 @@ serviceRouter.get('/reviews/summary/:place_id', async (c) => {
 
     return c.json({
       ...result,
-      meta: { proxy: { country: proxy.country, type: 'mobile' } },
+      meta: { proxy: { ip: proxy.host, country: proxy.country, carrier: proxy.carrier, type: proxy.type } },
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
   } catch (err: any) {
@@ -497,7 +497,7 @@ serviceRouter.get('/reviews/:place_id', async (c) => {
 
     return c.json({
       ...result,
-      meta: { proxy: { country: proxy.country, type: 'mobile' } },
+      meta: { proxy: { ip: proxy.host, country: proxy.country, carrier: proxy.carrier, type: proxy.type } },
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
   } catch (err: any) {
@@ -543,7 +543,7 @@ serviceRouter.get('/business/:place_id', async (c) => {
 
     return c.json({
       ...result,
-      meta: { proxy: { country: proxy.country, type: 'mobile' } },
+      meta: { proxy: { ip: proxy.host, country: proxy.country, carrier: proxy.carrier, type: proxy.type } },
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
   } catch (err: any) {
@@ -607,7 +607,7 @@ serviceRouter.get('/linkedin/person', async (c) => {
     return c.json({
       person: {
         ...person,
-        meta: { proxy: { country: proxy.country, type: 'mobile' } },
+        meta: { proxy: { ip: proxy.host, country: proxy.country, carrier: proxy.carrier, type: proxy.type } },
       },
       payment: {
         txHash: payment.txHash,
@@ -668,7 +668,7 @@ serviceRouter.get('/linkedin/company', async (c) => {
     return c.json({
       company: {
         ...company,
-        meta: { proxy: { country: proxy.country, type: 'mobile' } },
+        meta: { proxy: { ip: proxy.host, country: proxy.country, carrier: proxy.carrier, type: proxy.type } },
       },
       payment: {
         txHash: payment.txHash,
@@ -728,7 +728,7 @@ serviceRouter.get('/linkedin/search/people', async (c) => {
 
     return c.json({
       results,
-      meta: { proxy: { country: proxy.country, type: 'mobile' } },
+      meta: { proxy: { ip: proxy.host, country: proxy.country, carrier: proxy.carrier, type: proxy.type } },
       payment: {
         txHash: payment.txHash,
         network: payment.network,
@@ -785,7 +785,7 @@ serviceRouter.get('/linkedin/company/:id/employees', async (c) => {
 
     return c.json({
       results,
-      meta: { proxy: { country: proxy.country, type: 'mobile' } },
+      meta: { proxy: { ip: proxy.host, country: proxy.country, carrier: proxy.carrier, type: proxy.type } },
       payment: {
         txHash: payment.txHash,
         network: payment.network,
@@ -850,7 +850,7 @@ serviceRouter.get('/reddit/search', async (c) => {
       ...result,
       meta: {
         query, sort, time, limit,
-        proxy: { ip, country: proxy.country, host: proxy.host, type: 'mobile' },
+        proxy: { ip: proxy.host, country: proxy.country, carrier: proxy.carrier, type: proxy.type },
       },
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
@@ -892,7 +892,7 @@ serviceRouter.get('/reddit/trending', async (c) => {
       ...result,
       meta: {
         limit,
-        proxy: { ip, country: proxy.country, host: proxy.host, type: 'mobile' },
+        proxy: { ip: proxy.host, country: proxy.country, carrier: proxy.carrier, type: proxy.type },
       },
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
@@ -946,7 +946,7 @@ serviceRouter.get('/reddit/subreddit/:name', async (c) => {
       ...result,
       meta: {
         subreddit: name, sort, time, limit,
-        proxy: { ip, country: proxy.country, host: proxy.host, type: 'mobile' },
+        proxy: { ip: proxy.host, country: proxy.country, carrier: proxy.carrier, type: proxy.type },
       },
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
@@ -999,7 +999,7 @@ serviceRouter.get('/reddit/thread/*', async (c) => {
       ...result,
       meta: {
         permalink, sort, limit,
-        proxy: { ip, country: proxy.country, host: proxy.host, type: 'mobile' },
+        proxy: { ip: proxy.host, country: proxy.country, carrier: proxy.carrier, type: proxy.type },
       },
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
@@ -1055,7 +1055,7 @@ serviceRouter.get('/instagram/profile/:username', async (c) => {
 
     return c.json({
       profile,
-      meta: { proxy: { country: proxy.country, type: 'mobile' } },
+      meta: { proxy: { ip: proxy.host, country: proxy.country, carrier: proxy.carrier, type: proxy.type } },
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
   } catch (err: any) {
@@ -1105,7 +1105,7 @@ serviceRouter.get('/instagram/posts/:username', async (c) => {
 
     return c.json({
       posts,
-      meta: { username, count: posts.length, proxy: { country: proxy.country, type: 'mobile' } },
+      meta: { username, count: posts.length, proxy: { ip: proxy.host, country: proxy.country, carrier: proxy.carrier, type: proxy.type } },
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
   } catch (err: any) {
@@ -1152,7 +1152,7 @@ serviceRouter.get('/instagram/analyze/:username', async (c) => {
 
     return c.json({
       ...result,
-      meta: { proxy: { country: proxy.country, type: 'mobile' } },
+      meta: { proxy: { ip: proxy.host, country: proxy.country, carrier: proxy.carrier, type: proxy.type } },
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
   } catch (err: any) {
@@ -1198,7 +1198,7 @@ serviceRouter.get('/instagram/analyze/:username/images', async (c) => {
 
     return c.json({
       ...result,
-      meta: { username, proxy: { country: proxy.country, type: 'mobile' } },
+      meta: { username, proxy: { ip: proxy.host, country: proxy.country, carrier: proxy.carrier, type: proxy.type } },
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
   } catch (err: any) {
@@ -1244,7 +1244,7 @@ serviceRouter.get('/instagram/audit/:username', async (c) => {
 
     return c.json({
       ...result,
-      meta: { proxy: { country: proxy.country, type: 'mobile' } },
+      meta: { proxy: { ip: proxy.host, country: proxy.country, carrier: proxy.carrier, type: proxy.type } },
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
   } catch (err: any) {
@@ -1482,7 +1482,7 @@ serviceRouter.get('/amazon/search', async (c) => {
     c.header('X-Payment-TxHash', payment.txHash);
     return c.json({
       results,
-      meta: { query, marketplace, count: results.length, proxy: { country: proxy.country, type: 'mobile' } },
+      meta: { query, marketplace, count: results.length, proxy: { ip: proxy.host, country: proxy.country, carrier: proxy.carrier, type: proxy.type } },
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
   } catch (err: any) {
@@ -1519,7 +1519,7 @@ serviceRouter.get('/amazon/product/:asin', async (c) => {
     c.header('X-Payment-TxHash', payment.txHash);
     return c.json({
       product,
-      meta: { asin, marketplace, proxy: { country: proxy.country, type: 'mobile' } },
+      meta: { asin, marketplace, proxy: { ip: proxy.host, country: proxy.country, carrier: proxy.carrier, type: proxy.type } },
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
   } catch (err: any) {
@@ -1558,7 +1558,7 @@ serviceRouter.get('/amazon/bestsellers', async (c) => {
     c.header('X-Payment-TxHash', payment.txHash);
     return c.json({
       bestsellers,
-      meta: { category, marketplace, count: bestsellers.length, proxy: { country: proxy.country, type: 'mobile' } },
+      meta: { category, marketplace, count: bestsellers.length, proxy: { ip: proxy.host, country: proxy.country, carrier: proxy.carrier, type: proxy.type } },
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
   } catch (err: any) {
@@ -1604,7 +1604,7 @@ serviceRouter.get('/amazon/reviews/:asin', async (c) => {
     return c.json({
       asin: asin.toUpperCase(),
       reviews,
-      meta: { marketplace, sort, count: reviews.length, proxy: { country: proxy.country, type: 'mobile' } },
+      meta: { marketplace, sort, count: reviews.length, proxy: { ip: proxy.host, country: proxy.country, carrier: proxy.carrier, type: proxy.type } },
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
   } catch (err: any) {
