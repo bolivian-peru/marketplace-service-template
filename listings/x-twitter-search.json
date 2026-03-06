@@ -4,7 +4,7 @@
   "description": "Real-time X/Twitter search, trending topics, user profiles, tweet timelines, and thread extraction via mobile proxy. Replaces X API ($100-5000/mo) with micropayments.",
   "longDescription": "Full X/Twitter intelligence without the expensive API tier. Search tweets in real-time, track trending topics, extract user profiles with engagement metrics, fetch tweet timelines, and reconstruct full threads. All via mobile proxies that bypass X's aggressive rate limiting on non-authenticated requests.",
   "endpoint": "https://marketplace-api-9kvb.onrender.com/api",
-  "docsUrl": "https://github.com/TheAuroraAI/marketplace-service-template/tree/bounty-73-x-twitter-search",
+  "docsUrl": "https://github.com/bolivian-peru/marketplace-service-template",
   "pricing": {
     "model": "per-request",
     "amount": "0.01",
