@@ -3,8 +3,8 @@
   "name": "Prediction Market Aggregator",
   "description": "Aggregated prediction market data from Polymarket, Kalshi, and more. Real-time odds, volume, and market signals. $0.05/query via x402.",
   "longDescription": "Aggregate prediction market data from Polymarket, Kalshi, and other major platforms. Get real-time odds, trading volume, market signals, and historical trends. Query by topic, category, or specific market. Returns structured JSON with current probabilities, volume data, price history, and cross-platform comparisons. Ideal for trading agents, research, forecasting, and decision-making automation.",
-  "endpoint": "https://marketplace-service-template.onrender.com",
-  "docsUrl": "https://agents.proxies.sx/marketplace/skill.md",
+  "endpoint": "https://marketplace-api-9kvb.onrender.com",
+  "docsUrl": "https://github.com/bolivian-peru/marketplace-service-template/pull/158",
   "pricing": {
     "model": "per-request",
     "amount": "0.05",
@@ -14,14 +14,14 @@
       {
         "network": "solana",
         "chainId": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
-        "recipient": "6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv",
+        "recipient": "process.env.WALLET_ADDRESS",
         "asset": "USDC",
         "assetAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
       },
       {
         "network": "base",
         "chainId": "eip155:8453",
-        "recipient": "0xF8cD900794245fc36CBE65be9afc23CDF5103042",
+        "recipient": "process.env.BASE_WALLET_ADDRESS",
         "asset": "USDC",
         "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
       }
@@ -37,17 +37,17 @@
     "market-signals"
   ],
   "owner": {
-    "name": "rakesh0x",
-    "github": "rakesh0x"
+    "name": "TheAuroraAI",
+    "github": "TheAuroraAI"
   },
   "status": "active",
   "featured": false,
-  "addedAt": "2026-02-15",
-  "updatedAt": "2026-02-15",
+  "addedAt": "2026-03-02",
+  "updatedAt": "2026-03-05",
   "x402": {
-    "discoveryUrl": "https://marketplace-service-template.onrender.com/api/run",
-    "wellKnown": "https://marketplace-service-template.onrender.com"
+    "discoveryUrl": "https://marketplace-api-9kvb.onrender.com/api/run",
+    "wellKnown": "https://marketplace-api-9kvb.onrender.com"
   },
-  "lastVerified": "2026-02-15T00:00:00Z",
-  "healthEndpoint": "https://marketplace-service-template.onrender.com/health"
+  "lastVerified": "2026-03-05T15:00:00Z",
+  "healthEndpoint": "https://marketplace-api-9kvb.onrender.com/health"
 }

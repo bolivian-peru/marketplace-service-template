@@ -1,0 +1,104 @@
+{
+  "id": "prediction-market-signals",
+  "name": "Prediction Market Signal Aggregator",
+  "description": "Real-time prediction market odds from Polymarket, Kalshi, and Metaculus combined with social sentiment from Twitter/X, Reddit, and TikTok via mobile proxies. Detects arbitrage spreads and sentiment divergence.",
+  "longDescription": "Aggregate live prediction market data with social sentiment signals to identify mispricings. Pulls odds from Polymarket (CLOB API + Gamma), Kalshi Trade API, and Metaculus community forecasts. Overlays social sentiment scraped from Twitter/X, Reddit, and TikTok through real 4G/5G mobile carrier IPs. Generates: arbitrage signals (cross-platform spread detection), sentiment divergence alerts (when social opinion departs from on-chain odds), and volume spike detection. Four endpoints: /signal (full market analysis), /arbitrage (all active spreads), /sentiment (topic-level social analysis), /trending (top markets by divergence score). Inspired by the $40M in trader profits from cross-platform prediction market arbitrage between 2024-2025.",
+  "endpoint": "https://marketplace-api-9kvb.onrender.com/api/prediction",
+  "docsUrl": "https://github.com/TheAuroraAI/marketplace-service-template/blob/bounty-55-prediction-market/README.md",
+  "pricing": {
+    "model": "per-request",
+    "endpoints": [
+      { "path": "/api/prediction/signal", "price": "$0.05", "unit": "per request" },
+      { "path": "/api/prediction/arbitrage", "price": "$0.03", "unit": "per request" },
+      { "path": "/api/prediction/sentiment", "price": "$0.02", "unit": "per request" },
+      { "path": "/api/prediction/trending", "price": "$0.04", "unit": "per request" }
+    ],
+    "comparison": "Polymarket data alone: free via public API. Kalshi: free. Metaculus: free. Twitter API for sentiment: $100/month minimum. Reddit API: $100/month. The value is combining all sources + running sentiment scraping through mobile proxies at <$0.05/query.",
+    "currency": "USDC",
+    "networks": [
+      {
+        "network": "solana",
+        "chainId": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "recipient": "GpXHXs5KfzfXbNKcMLNbAMsJsgPsBE7y5GtwVoiuxYvH",
+        "asset": "USDC",
+        "assetAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+      },
+      {
+        "network": "base",
+        "chainId": "eip155:8453",
+        "recipient": "0xC0140eEa19bD90a7cA75882d5218eFaF20426e42",
+        "asset": "USDC",
+        "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+      }
+    ]
+  },
+  "whyMobileProxy": "Twitter/X aggressively blocks datacenter IPs from the search and timeline API. Reddit blocked free API access in 2023. TikTok's content API requires mobile-like User-Agent patterns and mobile carrier IPs to avoid serving empty responses. Mobile proxy IPs (real 4G/5G carrier traffic) appear as authentic mobile users, bypassing rate limits and bot detection that would block datacenter IPs entirely.",
+  "outputSchema": {
+    "signal": {
+      "type": "signal",
+      "market": "string — Market slug queried",
+      "timestamp": "ISO 8601 timestamp",
+      "odds": {
+        "polymarket": { "yes": "number (0-1)", "no": "number (0-1)", "volume24h": "number USD", "liquidity": "number USD" },
+        "kalshi": { "yes": "number (0-1)", "no": "number (0-1)", "volume24h": "number USD" },
+        "metaculus": { "median": "number (0-1)", "forecasters": "number" }
+      },
+      "sentiment": {
+        "twitter": {
+          "positive": "number (0-1)",
+          "negative": "number (0-1)",
+          "neutral": "number (0-1)",
+          "volume": "number estimated tweets",
+          "trending": "boolean",
+          "topTweets": "Array<{ text, likes, retweets, author, timestamp }>"
+        },
+        "reddit": {
+          "positive": "number (0-1)",
+          "negative": "number (0-1)",
+          "neutral": "number (0-1)",
+          "volume": "number posts",
+          "topSubreddits": "string[]"
+        },
+        "tiktok": {
+          "relatedVideos": "number",
+          "totalViews": "number",
+          "sentiment": "bullish | bearish | neutral"
+        }
+      },
+      "signals": {
+        "arbitrage": { "detected": "boolean", "spread": "number", "direction": "string", "confidence": "number (0-1)" },
+        "sentimentDivergence": { "detected": "boolean", "description": "string", "magnitude": "low | moderate | high" },
+        "volumeSpike": { "detected": "boolean" }
+      }
+    }
+  },
+  "limitations": [
+    "Twitter sentiment uses Nitter fallback when direct API blocked",
+    "TikTok sentiment is estimated from hashtag/topic data",
+    "Metaculus data is community-based (not financial odds)",
+    "Rate limited to 10 requests/minute per client IP"
+  ],
+  "category": "data",
+  "tags": [
+    "prediction-market",
+    "polymarket",
+    "kalshi",
+    "metaculus",
+    "sentiment",
+    "arbitrage",
+    "trading-signals",
+    "social-intelligence",
+    "mobile-proxy"
+  ],
+  "owner": {
+    "name": "TheAuroraAI",
+    "github": "TheAuroraAI"
+  },
+  "status": "pending",
+  "featured": false,
+  "addedAt": "2026-03-02",
+  "x402": {
+    "discoveryUrl": "https://marketplace-api-9kvb.onrender.com/api/prediction/signal",
+    "wellKnown": "https://marketplace-api-9kvb.onrender.com/.well-known/x402.json"
+  }
+}

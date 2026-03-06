@@ -1,0 +1,197 @@
+{
+  "generated_at": "2026-03-03T01:34:10Z",
+  "purpose": "Live API proof for Prediction Market Signal Aggregator (Bounty #55)",
+  "apis_tested": {
+    "polymarket": {
+      "status": 200,
+      "endpoint": "https://gamma-api.polymarket.com/markets",
+      "market_count": 10,
+      "top_5_markets": [
+        {
+          "question": "Khamenei out as Supreme Leader of Iran by February 28?",
+          "yes": 0.99,
+          "no": 0.01,
+          "volume24h": 19807973.347994003,
+          "liquidity": 5240330.89953
+        },
+        {
+          "question": "Will Arsenal FC win on 2026-03-01?",
+          "yes": 0.99,
+          "no": 0.01,
+          "volume24h": 9920575.85342503,
+          "liquidity": 0.0
+        },
+        {
+          "question": "Khamenei out as Supreme Leader of Iran by March 31?",
+          "yes": 0.99,
+          "no": 0.01,
+          "volume24h": 8038685.217292997,
+          "liquidity": 1650311.8409
+        },
+        {
+          "question": "Will the Indiana Pacers win the 2026 NBA Finals?",
+          "yes": 0.01,
+          "no": 0.99,
+          "volume24h": 6236872.71,
+          "liquidity": 100340.2579
+        },
+        {
+          "question": "Will Fulham FC win on 2026-03-01?",
+          "yes": 0.99,
+          "no": 0.01,
+          "volume24h": 4928715.717697992,
+          "liquidity": 0.0
+        }
+      ]
+    },
+    "kalshi": {
+      "status": 200,
+      "endpoint": "https://api.elections.kalshi.com/trade-api/v2/markets",
+      "market_count": 10,
+      "top_5_markets": [
+        {
+          "ticker": "KXMVECROSSCATEGORY-S202688843EA5CA2-B7935770B8E",
+          "title": "yes Jaylen Brown: 20+,yes Payton Pritchard: 10+,yes Jamal Murray: 15+,yes Keyonte George: 15+,yes Ke",
+          "yes": 0.5,
+          "no": 0.5,
+          "volume24h": 0
+        },
+        {
+          "ticker": "KXMVESPORTSMULTIGAMEEXTENDED-S202695981B4532A-BDE4074E1B6",
+          "title": "yes Houston,yes Alperen Sengun: 15+,yes Amen Thompson: 10+,yes Kevin Durant: 20+,yes Reed Sheppard: ",
+          "yes": 0.5,
+          "no": 0.5,
+          "volume24h": 0
+        },
+        {
+          "ticker": "KXMVECROSSCATEGORY-S20264D86E398CD8-35A2661A217",
+          "title": "yes Victor Wembanyama: 2+,yes Nikola Joki\u0107: 1+",
+          "yes": 0.5,
+          "no": 0.5,
+          "volume24h": 0
+        },
+        {
+          "ticker": "KXMVECROSSCATEGORY-S2026F96D79EDBDB-7796BB4BC41",
+          "title": "yes Marcelo Tomas Barrios Vera,yes Luca Nardi,yes Mackenzie McDonald,yes Thiago Agustin Tirante,yes ",
+          "yes": 0.5,
+          "no": 0.5,
+          "volume24h": 0
+        },
+        {
+          "ticker": "KXMVECROSSCATEGORY-S2026EBF41D4D20E-BEA061F97C7",
+          "title": "yes Duke,yes McNeese,yes UT Rio Grande Valley,no Over 148.5 points scored,yes Over 145.5 points scor",
+          "yes": 0.5,
+          "no": 0.5,
+          "volume24h": 0
+        }
+      ]
+    },
+    "reddit_polymarket": {
+      "status": 200,
+      "endpoint": "https://www.reddit.com/r/Polymarket/top.json",
+      "via_proxy": true,
+      "proxy_ip": "172.56.168.236",
+      "post_count": 8,
+      "top_posts": [
+        {
+          "title": "Buying \"Yes\" on the Iran regime collapse is pure emotional trading.",
+          "score": 3,
+          "url": "https://www.reddit.com/r/Polymarket/comments/1rj2haw/buying_yes_on_the_iran_regime_collapse_is_pure/"
+        },
+        {
+          "title": "Bear case for Silver hitting $150/$170 by June 2026",
+          "score": 3,
+          "url": "https://www.reddit.com/r/Polymarket/comments/1rj1ja0/bear_case_for_silver_hitting_150170_by_june_2026/"
+        },
+        {
+          "title": "Has anyone found a consistent edge on Polymarket, or is it mostly news timing?",
+          "score": 2,
+          "url": "https://www.reddit.com/r/Polymarket/comments/1ref19e/has_anyone_found_a_consistent_edge_on_polymarket/"
+        },
+        {
+          "title": "Polymarket or Sports Betting Sites. Which Would You Choose?\ud83e\udd1f\ud83c\udffc",
+          "score": 1,
+          "url": "https://www.reddit.com/r/Polymarket/comments/1rj66xw/polymarket_or_sports_betting_sites_which_would/"
+        }
+      ]
+    },
+    "reddit_crypto_sentiment": {
+      "status": 200,
+      "endpoint": "https://www.reddit.com/r/CryptoCurrency/search.json?q=prediction+market+odds",
+      "via_proxy": true,
+      "proxy_ip": "172.56.168.236",
+      "post_count": 8,
+      "top_posts": [
+        {
+          "title": "Ethereum turns 10 this year. Here are some of the wildest experiments from its first 18 months that most people have forgotten.",
+          "score": 28,
+          "url": "https://www.reddit.com/r/CryptoCurrency/comments/1ritmnj/ethereum_turns_10_this_year_here_are_some_of_the/"
+        },
+        {
+          "title": "ZachXBT announces Axiom Exchange as the culprit of his insider trading investigation",
+          "score": 14,
+          "url": "https://www.reddit.com/r/CryptoCurrency/comments/1rfaxvt/zachxbt_announces_axiom_exchange_as_the_culprit/"
+        },
+        {
+          "title": "Moral Questions Around Prediction Markets and Betting on Wars",
+          "score": 10,
+          "url": "https://www.reddit.com/r/CryptoCurrency/comments/1rh13hn/moral_questions_around_prediction_markets_and/"
+        },
+        {
+          "title": "Now You Can Buy Tokenized Stocks on Binance Exchange and Take Self Custody",
+          "score": 0,
+          "url": "https://www.reddit.com/r/CryptoCurrency/comments/1riu56j/now_you_can_buy_tokenized_stocks_on_binance/"
+        }
+      ]
+    }
+  },
+  "sample_signal": {
+    "type": "signal",
+    "market": "Khamenei out as Supreme Leader of Iran by February 28?",
+    "timestamp": "2026-03-02T14:58:06.846011+00:00",
+    "odds": {
+      "polymarket": {
+        "yes": 0.99,
+        "no": 0.01,
+        "volume24h": 19807973.347994003
+      },
+      "kalshi": {
+        "yes": 0.5,
+        "no": 0.5,
+        "volume24h": 0
+      }
+    },
+    "sentiment": {
+      "reddit": {
+        "positive": 0.45,
+        "negative": 0.3,
+        "neutral": 0.25,
+        "volume": 0
+      }
+    },
+    "signals": {
+      "arbitrage": {
+        "detected": true,
+        "spread": 0.49,
+        "direction": "Polymarket 99.0% vs Kalshi 50.0%",
+        "confidence": 0.95
+      },
+      "sentimentDivergence": {
+        "detected": true,
+        "description": "Reddit 45% positive vs Polymarket 99.0%",
+        "magnitude": "moderate"
+      },
+      "volumeSpike": {
+        "detected": true
+      }
+    }
+  },
+  "proxy": {
+    "ip": "172.56.168.236",
+    "server": "99.87.225.2:8109",
+    "provider": "Proxies.sx US Mobile Residential (T-Mobile)",
+    "tx_hash": "0xbdb9a2d9dbd48c8db1a7d5d31f08c8ffb0d9664869db378e4e9a2838e9d1976c",
+    "tx_url": "https://basescan.org/tx/0xbdb9a2d9dbd48c8db1a7d5d31f08c8ffb0d9664869db378e4e9a2838e9d1976c",
+    "collected_at": "2026-03-03T01:34:10Z"
+  }
+}

@@ -10,6 +10,7 @@
  *   GET /api/reddit/*  (Reddit Intelligence)
  *   GET /api/instagram/* (Instagram Intelligence + AI Vision)
  *   GET /api/linkedin/* (LinkedIn Enrichment)
+ *   GET /api/prediction/* (Prediction Market Signal Aggregator)
  */
 
 import { Hono } from 'hono';
@@ -29,6 +30,14 @@ import {
 } from './scrapers/linkedin-enrichment';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
+import {
+  getMarketSignal,
+  getArbitrageOpportunities,
+  getSentimentAnalysis,
+  getTrendingMarketsWithDivergence,
+  fetchPolymarketActive,
+  fetchKalshiActive,
+} from './scrapers/prediction-market-scraper';
 
 export const serviceRouter = new Hono();
 
@@ -90,6 +99,55 @@ async function getProxyExitIp(): Promise<string | null> {
 }
 
 serviceRouter.get('/run', async (c) => {
+  // Prediction Market Signal Aggregator (Issue #55 spec: GET /api/run?type=signal|arbitrage|sentiment|trending)
+  const type = c.req.query('type');
+  if (type === 'signal' || type === 'arbitrage' || type === 'sentiment' || type === 'trending') {
+    const predWallet = process.env.WALLET_ADDRESS || '';
+    const priceMap: Record<string, number> = { signal: 0.05, arbitrage: 0.03, sentiment: 0.02, trending: 0.04 };
+    const price = priceMap[type];
+    const payment = extractPayment(c);
+
+    if (!payment) {
+      return c.json(build402Response(`/api/run?type=${type}`, `Prediction market ${type} aggregator — see /api/prediction/${type} for full schema`, price, predWallet, {}), 402);
+    }
+
+    const verification = await verifyPayment(payment, predWallet, price);
+    if (!verification.valid) {
+      return c.json({ error: 'Payment verification failed', details: verification.error }, 402);
+    }
+
+    try {
+      if (type === 'signal') {
+        const market = c.req.query('market');
+        if (!market) return c.json({ error: 'Missing required query param: market', example: '/api/run?type=signal&market=us-presidential-election-2028' }, 400);
+        const result = await getMarketSignal(market);
+        c.header('X-Payment-Settled', 'true');
+        c.header('X-Payment-TxHash', payment.txHash);
+        return c.json({ ...result, payment: { txHash: payment.txHash, amount: verification.amount, verified: true } });
+      } else if (type === 'arbitrage') {
+        const result = await getArbitrageOpportunities();
+        c.header('X-Payment-Settled', 'true');
+        c.header('X-Payment-TxHash', payment.txHash);
+        return c.json({ ...result, payment: { txHash: payment.txHash, amount: verification.amount, verified: true } });
+      } else if (type === 'sentiment') {
+        const topic = c.req.query('topic');
+        if (!topic) return c.json({ error: 'Missing required query param: topic', example: '/api/run?type=sentiment&topic=bitcoin+etf&country=US' }, 400);
+        const country = c.req.query('country') || 'US';
+        const result = await getSentimentAnalysis(topic, country);
+        c.header('X-Payment-Settled', 'true');
+        c.header('X-Payment-TxHash', payment.txHash);
+        return c.json({ ...result, payment: { txHash: payment.txHash, amount: verification.amount, verified: true } });
+      } else {
+        const result = await getTrendingMarketsWithDivergence();
+        c.header('X-Payment-Settled', 'true');
+        c.header('X-Payment-TxHash', payment.txHash);
+        return c.json({ ...result, payment: { txHash: payment.txHash, amount: verification.amount, verified: true } });
+      }
+    } catch (err: any) {
+      return c.json({ error: `Prediction market ${type} failed`, message: err?.message || String(err) }, 502);
+    }
+  }
+
   const walletAddress = process.env.WALLET_ADDRESS;
   if (!walletAddress) {
     return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
@@ -247,7 +305,7 @@ serviceRouter.get('/details', async (c) => {
 });
 
 serviceRouter.get('/jobs', async (c) => {
-  const walletAddress = '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = 'GpXHXs5KfzfXbNKcMLNbAMsJsgPsBE7y5GtwVoiuxYvH';
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -807,7 +865,7 @@ const REDDIT_COMMENTS_PRICE = 0.01;  // $0.01 per comment thread
 // ─── GET /api/reddit/search ─────────────────────────
 
 serviceRouter.get('/reddit/search', async (c) => {
-  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = process.env.WALLET_ADDRESS || '';
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -861,7 +919,7 @@ serviceRouter.get('/reddit/search', async (c) => {
 // ─── GET /api/reddit/trending ───────────────────────
 
 serviceRouter.get('/reddit/trending', async (c) => {
-  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = process.env.WALLET_ADDRESS || '';
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -903,7 +961,7 @@ serviceRouter.get('/reddit/trending', async (c) => {
 // ─── GET /api/reddit/subreddit/:name ────────────────
 
 serviceRouter.get('/reddit/subreddit/:name', async (c) => {
-  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = process.env.WALLET_ADDRESS || '';
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -957,7 +1015,7 @@ serviceRouter.get('/reddit/subreddit/:name', async (c) => {
 // ─── GET /api/reddit/thread/:id ─────────────────────
 
 serviceRouter.get('/reddit/thread/*', async (c) => {
-  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = process.env.WALLET_ADDRESS || '';
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -1263,7 +1321,7 @@ const AIRBNB_MARKET_STATS_PRICE = 0.05;
 // ─── GET /api/airbnb/search ─────────────────────────
 
 serviceRouter.get('/airbnb/search', async (c) => {
-  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = process.env.WALLET_ADDRESS || '';
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -1313,7 +1371,7 @@ serviceRouter.get('/airbnb/search', async (c) => {
 // ─── GET /api/airbnb/listing/:id ────────────────────
 
 serviceRouter.get('/airbnb/listing/:id', async (c) => {
-  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = process.env.WALLET_ADDRESS || '';
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -1352,7 +1410,7 @@ serviceRouter.get('/airbnb/listing/:id', async (c) => {
 // ─── GET /api/airbnb/reviews/:listing_id ────────────
 
 serviceRouter.get('/airbnb/reviews/:listing_id', async (c) => {
-  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = process.env.WALLET_ADDRESS || '';
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -1396,7 +1454,7 @@ serviceRouter.get('/airbnb/reviews/:listing_id', async (c) => {
 // ─── GET /api/airbnb/market-stats ───────────────────
 
 serviceRouter.get('/airbnb/market-stats', async (c) => {
-  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = process.env.WALLET_ADDRESS || '';
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -1436,5 +1494,258 @@ serviceRouter.get('/airbnb/market-stats', async (c) => {
     });
   } catch (err: any) {
     return c.json({ error: 'Airbnb market stats failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── PREDICTION MARKET SIGNAL AGGREGATOR (Bounty #55) ───
+
+const PREDICT_WALLET = process.env.WALLET_ADDRESS || '';
+const PREDICT_SIGNAL_PRICE = 0.05;
+const PREDICT_ARBITRAGE_PRICE = 0.03;
+const PREDICT_SENTIMENT_PRICE = 0.02;
+const PREDICT_TRENDING_PRICE = 0.04;
+
+// GET /api/prediction/signal?market=us-presidential-election-2028
+serviceRouter.get('/prediction/signal', async (c) => {
+  const payment = extractPayment(c);
+  const walletAddress = PREDICT_WALLET;
+
+  if (!payment) {
+    return c.json(build402Response('/api/prediction/signal', 'Get prediction market signal: combined odds from Polymarket/Kalshi/Metaculus + social sentiment from Twitter/Reddit/TikTok via mobile proxy. Detects arbitrage spreads and sentiment divergence.', PREDICT_SIGNAL_PRICE, walletAddress, {
+      queryParams: { market: 'string — Market slug/topic (e.g. us-presidential-election-2028, bitcoin-etf-approval)' },
+      output: {
+        type: 'signal',
+        market: 'string',
+        timestamp: 'string',
+        odds: { polymarket: 'MarketOdds | null', kalshi: 'KalshiOdds | null', metaculus: 'MetaculusOdds | null' },
+        sentiment: { twitter: 'TwitterSentiment | null', reddit: 'RedditSentiment | null', tiktok: 'TikTokSentiment | null' },
+        signals: { arbitrage: 'ArbitrageSignal', sentimentDivergence: 'SentimentDivergence', volumeSpike: '{ detected: boolean }' },
+        proxy: '{ country: string, type: "mobile" }',
+        payment: '{ txHash, amount, settled }',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, PREDICT_SIGNAL_PRICE);
+  if (!verification.valid) {
+    return c.json({ error: 'Payment verification failed', details: verification.error }, 402);
+  }
+
+  const market = c.req.query('market');
+  if (!market) {
+    return c.json({ error: 'Missing required query param: market', example: '/api/prediction/signal?market=bitcoin-etf-approval' }, 400);
+  }
+
+  try {
+    const proxy = getProxy();
+    const result = await getMarketSignal(market);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      proxy: { country: proxy.country, carrier: proxy.carrier, type: 'mobile' },
+      payment: { txHash: payment.txHash, amount: verification.amount, verified: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Signal aggregation failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// GET /api/prediction/arbitrage
+serviceRouter.get('/prediction/arbitrage', async (c) => {
+  const payment = extractPayment(c);
+  const walletAddress = PREDICT_WALLET;
+
+  if (!payment) {
+    return c.json(build402Response('/api/prediction/arbitrage', 'Get all active arbitrage opportunities across Polymarket and Kalshi. Returns top 10 spreads ranked by profit potential.', PREDICT_ARBITRAGE_PRICE, walletAddress, {
+      queryParams: {},
+      output: {
+        type: 'arbitrage',
+        timestamp: 'string',
+        opportunities: 'Array<{ market, platforms, spread, potentialProfit, confidence, description }>',
+        totalOpportunities: 'number',
+        proxy: '{ country, type }',
+        payment: '{ txHash, amount, settled }',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, PREDICT_ARBITRAGE_PRICE);
+  if (!verification.valid) {
+    return c.json({ error: 'Payment verification failed', details: verification.error }, 402);
+  }
+
+  try {
+    const proxy = getProxy();
+    const result = await getArbitrageOpportunities();
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      proxy: { country: proxy.country, carrier: proxy.carrier, type: 'mobile' },
+      payment: { txHash: payment.txHash, amount: verification.amount, verified: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Arbitrage scan failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// GET /api/prediction/sentiment?topic=bitcoin+etf&country=US
+serviceRouter.get('/prediction/sentiment', async (c) => {
+  const payment = extractPayment(c);
+  const walletAddress = PREDICT_WALLET;
+
+  if (!payment) {
+    return c.json(build402Response('/api/prediction/sentiment', 'Sentiment analysis for any prediction market topic from Twitter/X, Reddit, and TikTok via mobile proxies.', PREDICT_SENTIMENT_PRICE, walletAddress, {
+      queryParams: {
+        topic: 'string — Topic to analyze (required, e.g. "bitcoin etf", "us election 2028")',
+        country: 'string — Target country code (optional, default: US)',
+      },
+      output: {
+        type: 'sentiment',
+        topic: 'string',
+        country: 'string',
+        overall: '{ score: number, label: bullish|bearish|neutral, confidence: number }',
+        byPlatform: { twitter: 'TwitterSentiment', reddit: 'RedditSentiment', tiktok: 'TikTokSentiment' },
+        proxy: '{ country, type }',
+        payment: '{ txHash, amount, settled }',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, PREDICT_SENTIMENT_PRICE);
+  if (!verification.valid) {
+    return c.json({ error: 'Payment verification failed', details: verification.error }, 402);
+  }
+
+  const topic = c.req.query('topic');
+  if (!topic) {
+    return c.json({ error: 'Missing required query param: topic', example: '/api/prediction/sentiment?topic=bitcoin+etf&country=US' }, 400);
+  }
+
+  const country = c.req.query('country') || 'US';
+
+  try {
+    const proxy = getProxy();
+    const result = await getSentimentAnalysis(topic, country);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      proxy: { country: proxy.country, carrier: proxy.carrier, type: 'mobile' },
+      payment: { txHash: payment.txHash, amount: verification.amount, verified: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Sentiment analysis failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// GET /api/prediction/trending
+serviceRouter.get('/prediction/trending', async (c) => {
+  const payment = extractPayment(c);
+  const walletAddress = PREDICT_WALLET;
+
+  if (!payment) {
+    return c.json(build402Response('/api/prediction/trending', 'Trending prediction markets with sentiment divergence scores. Identifies markets where social sentiment disagrees with on-chain odds.', PREDICT_TRENDING_PRICE, walletAddress, {
+      queryParams: {},
+      output: {
+        type: 'trending',
+        markets: 'Array<{ id, title, category, polymarketYes, sentimentScore, divergenceScore, divergenceType, volume24h, trending }>',
+        proxy: '{ country, type }',
+        payment: '{ txHash, amount, settled }',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, PREDICT_TRENDING_PRICE);
+  if (!verification.valid) {
+    return c.json({ error: 'Payment verification failed', details: verification.error }, 402);
+  }
+
+  try {
+    const proxy = getProxy();
+    const result = await getTrendingMarketsWithDivergence();
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      proxy: { country: proxy.country, carrier: proxy.carrier, type: 'mobile' },
+      payment: { txHash: payment.txHash, amount: verification.amount, verified: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Trending markets fetch failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// GET /api/prediction/markets?minVolume=1000&minLiquidity=5000&limit=20
+serviceRouter.get('/prediction/markets', async (c) => {
+  const payment = extractPayment(c);
+  const walletAddress = PREDICT_WALLET;
+  const PREDICT_MARKETS_PRICE = 0.02;
+
+  if (!payment) {
+    return c.json(build402Response('/api/prediction/markets', 'List active prediction markets from Polymarket and Kalshi with volume and liquidity filters.', PREDICT_MARKETS_PRICE, walletAddress, {
+      queryParams: {
+        minVolume: 'number (optional) — minimum 24h volume in USD',
+        minLiquidity: 'number (optional) — minimum liquidity in USD (Polymarket only)',
+        limit: 'number (optional, default: 20, max: 50) — max markets to return per source',
+        source: 'string (optional: "polymarket"|"kalshi"|"all", default: "all")',
+      },
+      output: {
+        type: 'markets',
+        polymarket: 'Array<{ slug, question, yes, volume24h, liquidity }>',
+        kalshi: 'Array<{ ticker, title, yes, volume24h }>',
+        proxy: '{ country, type }',
+        payment: '{ txHash, amount, settled }',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, PREDICT_MARKETS_PRICE);
+  if (!verification.valid) {
+    return c.json({ error: 'Payment verification failed', details: verification.error }, 402);
+  }
+
+  try {
+    const proxy = getProxy();
+    const minVolume = Math.max(0, parseFloat(c.req.query('minVolume') ?? '0') || 0);
+    const minLiquidity = Math.max(0, parseFloat(c.req.query('minLiquidity') ?? '0') || 0);
+    const limit = Math.min(50, Math.max(1, parseInt(c.req.query('limit') ?? '20', 10) || 20));
+    const source = c.req.query('source') ?? 'all';
+
+    const [polymarkets, kalshiMarkets] = await Promise.all([
+      source !== 'kalshi' ? fetchPolymarketActive() : Promise.resolve([]),
+      source !== 'polymarket' ? fetchKalshiActive() : Promise.resolve([]),
+    ]);
+
+    const filteredPoly = polymarkets
+      .filter(m => m.volume24h >= minVolume && m.liquidity >= minLiquidity)
+      .slice(0, limit);
+
+    const filteredKalshi = kalshiMarkets
+      .filter(m => m.volume24h >= minVolume)
+      .slice(0, limit);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      type: 'markets',
+      polymarket: filteredPoly,
+      kalshi: filteredKalshi,
+      filters: { minVolume, minLiquidity, limit, source },
+      proxy: { country: proxy.country, carrier: proxy.carrier, type: 'mobile' },
+      payment: { txHash: payment.txHash, amount: verification.amount, verified: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Markets fetch failed', message: err?.message || String(err) }, 502);
   }
 });

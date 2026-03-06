@@ -1,217 +1,91 @@
 {
-  "metadata": {
-    "source": "airbnb.com",
-    "endpoint": "https://www.airbnb.com/api/v2/explore_tabs",
-    "params": {
-      "query": "New York",
-      "place_id": "ChIJOwg_06VPwokRYv534QaPC8g",
-      "checkin": "2026-03-10",
-      "checkout": "2026-03-15",
-      "adults": 2,
-      "currency": "USD",
-      "locale": "en"
-    },
-    "fetchedAt": "2026-02-26T13:51:18Z",
-    "proxyIp": "172.56.168.66",
-    "proxyProvider": "Proxies.sx T-Mobile US mobile",
-    "totalResultsReturned": 18,
-    "paginationMetadata": {
-      "hasNextPage": true,
-      "itemsPerPage": 18
-    }
+  "request": {
+    "platform": "reddit",
+    "subreddit": "polymarket",
+    "query": "top posts",
+    "via_proxy": true
   },
-  "listings": [
-    {
-      "listingId": "41295524",
-      "url": "https://www.airbnb.com/rooms/41295524",
-      "name": "Hotel like place - private patio and bathroom",
-      "roomType": "private_room",
-      "location": {
-        "city": "Brooklyn",
-        "publicAddress": "Brooklyn, NY, United States",
-        "lat": 40.67627,
-        "lng": -73.94137
+  "response": {
+    "status": 200,
+    "posts": [
+      {
+        "id": "1rj2haw",
+        "title": "Buying \"Yes\" on the Iran regime collapse is pure emotional trading.",
+        "url": "https://www.reddit.com/r/Polymarket/comments/1rj2haw/buying_yes_on_the_iran_regime_collapse_is_pure/",
+        "score": 3,
+        "comments": 0,
+        "subreddit": "r/Polymarket",
+        "created_utc": 1772479577.0
       },
-      "capacity": {
-        "guests": 2,
-        "bedrooms": 1,
-        "beds": 2,
-        "bathrooms": 1.0
+      {
+        "id": "1rj1ja0",
+        "title": "Bear case for Silver hitting $150/$170 by June 2026",
+        "url": "https://www.reddit.com/r/Polymarket/comments/1rj1ja0/bear_case_for_silver_hitting_150170_by_june_2026/",
+        "score": 3,
+        "comments": 1,
+        "subreddit": "r/Polymarket",
+        "created_utc": 1772477532.0
       },
-      "rating": {
-        "stars": 5.0,
-        "reviewCount": 317
+      {
+        "id": "1ref19e",
+        "title": "Has anyone found a consistent edge on Polymarket, or is it mostly news timing?",
+        "url": "https://www.reddit.com/r/Polymarket/comments/1ref19e/has_anyone_found_a_consistent_edge_on_polymarket/",
+        "score": 2,
+        "comments": 6,
+        "subreddit": "r/Polymarket",
+        "created_utc": 1772030517.0
       },
-      "pricing": {
-        "displayPrice": "$851",
-        "stayDuration": "5 nights (Mar 10-15, 2026)",
-        "currency": "USD"
+      {
+        "id": "1rj66xw",
+        "title": "Polymarket or Sports Betting Sites. Which Would You Choose?\ud83e\udd1f\ud83c\udffc",
+        "url": "https://www.reddit.com/r/Polymarket/comments/1rj66xw/polymarket_or_sports_betting_sites_which_would/",
+        "score": 1,
+        "comments": 0,
+        "subreddit": "r/Polymarket",
+        "created_utc": 1772487716.0
       },
-      "host": {
-        "firstName": "Caio Julio",
-        "isSuperhost": true
+      {
+        "id": "1rj21g1",
+        "title": "masculine urge to place a legal bet on the ongoing war on Polymarket",
+        "url": "https://www.reddit.com/r/Polymarket/comments/1rj21g1/masculine_urge_to_place_a_legal_bet_on_the/",
+        "score": 1,
+        "comments": 0,
+        "subreddit": "r/Polymarket",
+        "created_utc": 1772478623.0
       },
-      "instantBook": false
-    },
-    {
-      "listingId": "5298896",
-      "url": "https://www.airbnb.com/rooms/5298896",
-      "name": "Unique NYC Loft - Guest Room",
-      "roomType": "private_room",
-      "location": {
-        "city": "New York",
-        "publicAddress": "New York, NY, United States",
-        "lat": 40.70419,
-        "lng": -74.01127
+      {
+        "id": "1rj1y9l",
+        "title": "Democrats sweeping 2026 midterms?",
+        "url": "https://www.reddit.com/r/Polymarket/comments/1rj1y9l/democrats_sweeping_2026_midterms/",
+        "score": 1,
+        "comments": 0,
+        "subreddit": "r/Polymarket",
+        "created_utc": 1772478431.0
       },
-      "capacity": {
-        "guests": 2,
-        "bedrooms": 1,
-        "beds": 1,
-        "bathrooms": 1.0
+      {
+        "id": "1riz3u1",
+        "title": "Unauthorized withdrawal emptied my Polymarket wallet, lack of support response",
+        "url": "https://www.reddit.com/r/Polymarket/comments/1riz3u1/unauthorized_withdrawal_emptied_my_polymarket/",
+        "score": 1,
+        "comments": 1,
+        "subreddit": "r/Polymarket",
+        "created_utc": 1772472380.0
       },
-      "rating": {
-        "stars": 5.0,
-        "reviewCount": 375
-      },
-      "pricing": {
-        "displayPrice": null,
-        "stayDuration": "5 nights (Mar 10-15, 2026)",
-        "currency": "USD"
-      },
-      "host": {
-        "firstName": "Luke",
-        "isSuperhost": true
-      },
-      "instantBook": false
-    },
-    {
-      "listingId": "1070270537377163305",
-      "url": "https://www.airbnb.com/rooms/1070270537377163305",
-      "name": "One King room at Brooklyn - Newly Renovated!",
-      "roomType": "private_room",
-      "location": {
-        "city": "Brooklyn",
-        "publicAddress": "Brooklyn, NY, United States",
-        "lat": 40.690157186681645,
-        "lng": -73.98692196057979
-      },
-      "capacity": {
-        "guests": 2,
-        "bedrooms": 1,
-        "beds": 1,
-        "bathrooms": 1.0
-      },
-      "rating": {
-        "stars": 5.0,
-        "reviewCount": 568
-      },
-      "pricing": {
-        "displayPrice": null,
-        "stayDuration": "5 nights (Mar 10-15, 2026)",
-        "currency": "USD"
-      },
-      "host": {
-        "firstName": "Hilton Brooklyn New York City",
-        "isSuperhost": true
-      },
-      "instantBook": false
-    },
-    {
-      "listingId": "1010503905929192028",
-      "url": "https://www.airbnb.com/rooms/1010503905929192028",
-      "name": "Steps to Times Square | Free Breakfast & Fitness",
-      "roomType": "private_room",
-      "location": {
-        "city": "New York",
-        "publicAddress": "New York, NY, United States",
-        "lat": 40.75724,
-        "lng": -73.99236
-      },
-      "capacity": {
-        "guests": 2,
-        "bedrooms": 1,
-        "beds": 1,
-        "bathrooms": 1.0
-      },
-      "rating": {
-        "stars": 4.5,
-        "reviewCount": 1129
-      },
-      "pricing": {
-        "displayPrice": "$1,095",
-        "stayDuration": "5 nights (Mar 10-15, 2026)",
-        "currency": "USD"
-      },
-      "host": {
-        "firstName": "Times Square South New York City",
-        "isSuperhost": false
-      },
-      "instantBook": false
-    },
-    {
-      "listingId": "1267449405198185516",
-      "url": "https://www.airbnb.com/rooms/1267449405198185516",
-      "name": "Pod Times Square Hotel",
-      "roomType": "private_room",
-      "location": {
-        "city": "New York",
-        "publicAddress": "New York, NY, United States",
-        "lat": 40.7583945,
-        "lng": -73.9930985
-      },
-      "capacity": {
-        "guests": 2,
-        "bedrooms": 1,
-        "beds": 1,
-        "bathrooms": 1.0
-      },
-      "rating": {
-        "stars": 4.5,
-        "reviewCount": 111
-      },
-      "pricing": {
-        "displayPrice": null,
-        "stayDuration": "5 nights (Mar 10-15, 2026)",
-        "currency": "USD"
-      },
-      "host": {
-        "firstName": "Pod Times Square Hotel",
-        "isSuperhost": false
-      },
-      "instantBook": false
-    },
-    {
-      "listingId": "21969733",
-      "url": "https://www.airbnb.com/rooms/21969733",
-      "name": "BRIGHT HOMEY AND COZY  MINUTES TO NEW YORK  CITY",
-      "roomType": "entire_home",
-      "location": {
-        "city": "Jersey City",
-        "publicAddress": "Jersey City, NJ, United States",
-        "lat": 40.7479,
-        "lng": -74.05105
-      },
-      "capacity": {
-        "guests": 6,
-        "bedrooms": 1,
-        "beds": 3,
-        "bathrooms": 1.0
-      },
-      "rating": {
-        "stars": 5.0,
-        "reviewCount": 280
-      },
-      "pricing": {
-        "displayPrice": null,
-        "stayDuration": "5 nights (Mar 10-15, 2026)",
-        "currency": "USD"
-      },
-      "host": {
-        "firstName": "Kenia",
-        "isSuperhost": true
-      },
-      "instantBook": false
-    }
-  ]
+      {
+        "id": "1rixjjj",
+        "title": "It\u2019s wild that there's only an 8% chance that US &amp; Iran reach ceasefire by Sunday",
+        "url": "https://www.reddit.com/r/Polymarket/comments/1rixjjj/its_wild_that_theres_only_an_8_chance_that_us/",
+        "score": 1,
+        "comments": 0,
+        "subreddit": "r/Polymarket",
+        "created_utc": 1772469058.0
+      }
+    ],
+    "subreddit": "polymarket"
+  },
+  "proxy": {
+    "ip": "172.56.168.236",
+    "provider": "Proxies.sx US Mobile"
+  },
+  "timestamp": "2026-03-03T01:34:10.666300+00:00"
 }
