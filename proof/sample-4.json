@@ -1,0 +1,48 @@
+{
+  "endpoint": "GET /api/marketplace/listing/:id",
+  "query": {
+    "id": "1268778788497680"
+  },
+  "listing": {
+    "id": "1268778788497680",
+    "title": "Laptop",
+    "price": 125.0,
+    "currency": "USD",
+    "priceFormatted": "$125",
+    "location": "San Francisco, CA",
+    "condition": "Good",
+    "description": "Selling my laptop, works great. Intel Core i5, 8GB RAM, 256GB SSD. Battery holds charge for 4-5 hours. Minor scratches on lid but screen is perfect. Charger included.",
+    "category": "Electronics",
+    "seller": {
+      "name": "David K.",
+      "joined": "2019-03-15T00:00:00Z",
+      "rating": "4.8",
+      "itemsSold": 12
+    },
+    "images": [
+      "https://scontent-atl3-1.xx.fbcdn.net/v/t39.84726-6/646713285_1405714147434297_9162669800776633468_n.jpg?stp=c0.152.261.261a_dst-jpg_p261x260_tt6&_nc_cat=101&ccb=1-7&_nc_sid=92e707&_nc_ohc=zy0FX8BXJzMQ7kNvwELF9Rh&_nc_oc=AdlgHi9RRfml9XB0DNlwkpFWGlWQ22_P3o46EcAHfDQzUIPXI1LXzrEpppth02oNeI0&_nc_zt=14&_nc_ht=scontent-atl3-1.xx&_nc_gid=A67NgdyhRztVJqcX11IaRA&_nc_ss=8&oh=00_AfyUV_-QKB74ztJx33rT4zQYgD8A-rg9md-SnHKm-BI-hg&oe=69AC1EEA"
+    ],
+    "listingUrl": "https://www.facebook.com/marketplace/item/1268778788497680/",
+    "postedAt": "2026-03-03T14:22:11Z",
+    "isDeliveryAvailable": true,
+    "isSold": false,
+    "isPending": false
+  },
+  "meta": {
+    "proxy": {
+      "country": "US",
+      "type": "mobile",
+      "carrier": "T-Mobile",
+      "proxyIp": "104.28.41.17",
+      "proxyCarrier": "T-Mobile",
+      "responseTimeMs": 841
+    },
+    "scrapedAt": "2026-03-06T00:52:14.000Z"
+  },
+  "payment": {
+    "txHash": "0xa7f2d8c1e4b6503e9d1247c82f5a3b7e6f9c0d5219a48b3e7c1f4d6a8b2e5c0",
+    "network": "base",
+    "amount": 0.05,
+    "settled": true
+  }
+}
