@@ -1,7 +1,7 @@
 {
   "endpoint": "/api/food/restaurant/:id",
   "request": {
-    "id": "e8c54076-eb39-45da-bde2-f34f9ec382fd"
+    "id": "53eb755c-7277-5318-aebb-c409e1614ca3"
   },
   "meta": {
     "proxy": {
@@ -13,7 +13,7 @@
     }
   },
   "payment": {
-    "txHash": "0xproof7619cc3dbdd70",
+    "txHash": "0xproxy7619cc3fb969f",
     "network": "base-sepolia",
     "settled": true
   },

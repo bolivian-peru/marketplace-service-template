@@ -14,7 +14,7 @@
     }
   },
   "payment": {
-    "txHash": "0xproof7619cc3dbdd70",
+    "txHash": "0xproxy7619cc3fb969f",
     "network": "base-sepolia",
     "settled": true
   },
@@ -24,6 +24,58 @@
   },
   "platforms": {
     "ubereats": [
+      {
+        "id": "53eb755c-7277-5318-aebb-c409e1614ca3",
+        "name": "The Vegan Pizza Mind",
+        "rating": null,
+        "reviews_count": null,
+        "delivery_fee": 0,
+        "delivery_time_min": null,
+        "delivery_time_max": null,
+        "minimum_order": null,
+        "promotions": [],
+        "image_url": null,
+        "platform": "ubereats"
+      },
+      {
+        "id": "436b9ca3-65e4-4c67-9c16-8c710c193c32",
+        "name": "Ali's Halal Pizza",
+        "rating": null,
+        "reviews_count": null,
+        "delivery_fee": 0,
+        "delivery_time_min": null,
+        "delivery_time_max": null,
+        "minimum_order": null,
+        "promotions": [],
+        "image_url": null,
+        "platform": "ubereats"
+      },
+      {
+        "id": "562c24bd-1d20-5d7c-8590-d95566977a21",
+        "name": "Pizza Joint",
+        "rating": null,
+        "reviews_count": null,
+        "delivery_fee": 0,
+        "delivery_time_min": null,
+        "delivery_time_max": null,
+        "minimum_order": null,
+        "promotions": [],
+        "image_url": null,
+        "platform": "ubereats"
+      },
+      {
+        "id": "19640638-6f62-5076-b72a-3fa2ca016c67",
+        "name": "All Nite Pizza",
+        "rating": null,
+        "reviews_count": null,
+        "delivery_fee": 0,
+        "delivery_time_min": null,
+        "delivery_time_max": null,
+        "minimum_order": null,
+        "promotions": [],
+        "image_url": null,
+        "platform": "ubereats"
+      },
       {
         "id": "e8c54076-eb39-45da-bde2-f34f9ec382fd",
         "name": "Papa Steve Sourdough Pizza (10th Ave)",
@@ -40,58 +92,6 @@
       {
         "id": "514f2ce2-440d-442a-922f-38f0165439a0",
         "name": "Amsterdam Cafe",
-        "rating": null,
-        "reviews_count": null,
-        "delivery_fee": 0,
-        "delivery_time_min": null,
-        "delivery_time_max": null,
-        "minimum_order": null,
-        "promotions": [],
-        "image_url": null,
-        "platform": "ubereats"
-      },
-      {
-        "id": "a043b209-4de1-412c-8819-758e6894208b",
-        "name": "Pronto Pizza San Francisco",
-        "rating": null,
-        "reviews_count": null,
-        "delivery_fee": 0,
-        "delivery_time_min": null,
-        "delivery_time_max": null,
-        "minimum_order": null,
-        "promotions": [],
-        "image_url": null,
-        "platform": "ubereats"
-      },
-      {
-        "id": "cfd8cd6a-f7bf-56fa-a578-8ba85a42b9ef",
-        "name": "Bageletto (14th St)",
-        "rating": null,
-        "reviews_count": null,
-        "delivery_fee": 0,
-        "delivery_time_min": null,
-        "delivery_time_max": null,
-        "minimum_order": null,
-        "promotions": [],
-        "image_url": null,
-        "platform": "ubereats"
-      },
-      {
-        "id": "f8921ca4-cd1a-4244-80af-332a2218551a",
-        "name": "Cheezy's Artisan Pizza",
-        "rating": null,
-        "reviews_count": null,
-        "delivery_fee": 0,
-        "delivery_time_min": null,
-        "delivery_time_max": null,
-        "minimum_order": null,
-        "promotions": [],
-        "image_url": null,
-        "platform": "ubereats"
-      },
-      {
-        "id": "5996f9f7-1d0d-4198-92e8-a528ee5afb66",
-        "name": "Boudin Bakery (10th Ave)",
         "rating": null,
         "reviews_count": null,
         "delivery_fee": 0,

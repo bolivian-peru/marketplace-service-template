@@ -8,10 +8,26 @@
   "pricing": {
     "model": "per-request",
     "endpoints": [
-      { "path": "/api/food/search", "price": "$0.01", "unit": "per request" },
-      { "path": "/api/food/restaurant/:id", "price": "$0.02", "unit": "per request" },
-      { "path": "/api/food/menu/:restaurant_id", "price": "$0.02", "unit": "per request" },
-      { "path": "/api/food/compare", "price": "$0.03", "unit": "per request" }
+      {
+        "path": "/api/food/search",
+        "price": "$0.01",
+        "unit": "per request"
+      },
+      {
+        "path": "/api/food/restaurant/:id",
+        "price": "$0.02",
+        "unit": "per request"
+      },
+      {
+        "path": "/api/food/menu/:restaurant_id",
+        "price": "$0.02",
+        "unit": "per request"
+      },
+      {
+        "path": "/api/food/compare",
+        "price": "$0.03",
+        "unit": "per request"
+      }
     ],
     "comparison": "Bright Data and enterprise food-delivery datasets typically require monthly commitments and account setup. This service is pay-as-you-go ($0.01-$0.03) and directly callable by AI agents over x402 without subscription overhead.",
     "currency": "USDC",
@@ -24,7 +40,7 @@
       {
         "network": "solana",
         "token": "USDC",
-        "recipient": "72f37C6skHfwTmDik7j5BN1Ro2F4JDR9XT9n8645HpeV"
+        "recipient": "6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv"
       }
     ]
   },
@@ -37,7 +53,13 @@
   ],
   "uptime": "Pending deployment verification",
   "category": "scraper",
-  "tags": ["food-delivery", "ubereats", "doordash", "menu-prices", "pricing-intelligence"],
+  "tags": [
+    "food-delivery",
+    "ubereats",
+    "doordash",
+    "menu-prices",
+    "pricing-intelligence"
+  ],
   "owner": {
     "name": "Samfresh-ai",
     "github": "Samfresh-ai"
