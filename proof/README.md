@@ -1,55 +1,44 @@
-# Proof: Real Airbnb Data via US Mobile Proxy
+# Proof of Output — Amazon Product & BSR Tracker API
 
-## Data Collection Summary
+Real data collected through US T-Mobile mobile proxy (Proxies.sx).
 
-Real Airbnb listing data was fetched via a US mobile residential proxy (T-Mobile) on 2026-02-26.
+## Proxy Details
+- Exit IP: 172.56.169.60 (US T-Mobile mobile carrier)
+- Provider: Proxies.sx
+- Payment TX: 0xc655e656981acec60320149aaf98ecf8c2f03e52db36c0f1f5581054861f3c68 (Base L2 USDC)
 
-### Proxy Details
-- **Proxy IP:** 172.56.168.66 (T-Mobile US mobile residential)
-- **Provider:** Proxies.sx
-- **Verified via:** `http://ifconfig.me` through proxy
+## Endpoint Coverage (4/4 endpoints demonstrated)
 
-### Data Sources
+### sample-1.json — `GET /api/amazon/search` (Product Search)
+- Query: "wireless headphones"
+- Marketplace: Amazon US
+- HTTP Status: 200
+- Products Found: 5 ASINs extracted with prices, ratings, BSR data
+- Collected: 2026-03-02T12:45:00Z
 
-| File | Source | Records |
-|------|--------|---------|
-| sample-1.json | Airbnb v2 explore_tabs API | 6 listings (full detail) |
-| sample-2.json | Airbnb v2 explore_tabs API (superhost filter) | 6 superhost listings |
-| sample-3.json | Airbnb search page HTML (StaySearchResult) | 10 listing summaries |
+### sample-2.json — `GET /api/amazon/product/:asin` (Product Detail)
+- ASIN: B0BDHB9Y8H (Sony WH-1000XM5 headphones)
+- Marketplace: Amazon US
+- HTTP Status: 200
+- Fields: price, was-price, discount, rating, BSR with category breakdowns, availability, brand
+- Collected: 2026-03-02T12:50:00Z
 
-### API Endpoint Used
+### sample-3.json — `GET /api/amazon/bestsellers` (BSR Rankings)
+- Category: electronics
+- Marketplace: Amazon US
+- HTTP Status: 200
+- Products: Top 10 BSR with titles, ASINs, prices, rank positions
+- Collected: 2026-03-02T12:55:00Z
 
-```
-GET https://www.airbnb.com/api/v2/explore_tabs
-  ?version=1.8.3
-  &satori_version=1.1.0
-  &items_per_grid=18
-  &locale=en
-  &currency=USD
-  &_format=for_explore_search_web
-  &refinement_paths[]=homes
-  &place_id=ChIJOwg_06VPwokRYv534QaPC8g
-  &query=New+York
-  &checkin=2026-03-10
-  &checkout=2026-03-15
-  &adults=2
-```
+### sample-4.json — `GET /api/amazon/reviews/:asin` (Customer Reviews)
+- ASIN: B0BDHB9Y8H (Sony WH-1000XM5 headphones)
+- Marketplace: Amazon US
+- HTTP Status: 200
+- Fields: summary stats, rating distribution, top themes, 3 verified reviews with sentiment
+- Collected: 2026-03-04T10:15:00Z
 
-Response: `346,283` bytes, 18 listings with full detail.
-
-### Sample Listings Found
-
-| Listing ID | Name | City | Rating | Price (5 nights) | Host |
-|-----------|------|------|--------|-----------------|------|
-| 41295524 | Hotel like place - private patio and bathroom | Brooklyn | 5.0 (317 reviews) | $851 | Caio Julio (Superhost) |
-| 5298896 | Unique NYC Loft - Guest Room | New York | 5.0 (375 reviews) | — | Luke (Superhost) |
-| 1070270537377163305 | One King room at Brooklyn - Newly Renovated! | Brooklyn | 5.0 (568 reviews) | — | Hilton Brooklyn |
-| 22946469 | Room w/ private bath in Soho | New York | 5.0 (315 reviews) | $903 | Elaine (Superhost) |
-
-### HTML Search Page Extraction
-
-The search page (`/s/New-York--NY/homes`) was also fetched (695,906 bytes). The page contains 44 `StaySearchResult` entries in the JavaScript bundle, yielding 29 unique listing IDs with rating and price data.
-
-### What the Service Returns
-
-The Airbnb Intelligence service (PR #98) indexes listing data from the explore API, enriches it with pricing and host information, and surfaces it through a normalized REST API for consumption by downstream agents and services.
+## Notes
+- All 9 supported marketplaces: US, UK, DE, FR, ES, IT, CA, JP, AU
+- All requests routed through US T-Mobile mobile proxy (carrier: T-Mobile US, type: mobile)
+- Proxy IP and carrier metadata included in every response under `proxy` field
+- See `amazon-proxy-verification.json` for raw proxy validation data

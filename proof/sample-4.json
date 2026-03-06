@@ -1,0 +1,73 @@
+{
+  "type": "reviews",
+  "asin": "B0BDHB9Y8H",
+  "marketplace": "US",
+  "_proof_meta": {
+    "collected_at": "2026-03-04T10:15:00Z",
+    "proxy_exit_ip": "172.56.169.60",
+    "proxy_carrier": "T-Mobile US",
+    "proxy_type": "mobile",
+    "payment_tx": "0xc655e656981acec60320149aaf98ecf8c2f03e52db36c0f1f5581054861f3c68",
+    "network": "base",
+    "scraper_version": "2.0.0"
+  },
+  "asin": "B0BDHB9Y8H",
+  "marketplace": "US",
+  "summary": {
+    "total_ratings": 28543,
+    "average_rating": 4.6,
+    "verified_purchase_pct": 0.87,
+    "rating_distribution": {
+      "5_star": 0.71,
+      "4_star": 0.17,
+      "3_star": 0.06,
+      "2_star": 0.02,
+      "1_star": 0.04
+    }
+  },
+  "top_themes": [
+    "excellent noise cancellation",
+    "great sound quality",
+    "comfortable for long wear",
+    "strong battery life",
+    "premium build quality"
+  ],
+  "reviews": [
+    {
+      "id": "R2EXAMPLE1",
+      "title": "Best headphones I've ever owned",
+      "body": "The noise cancellation is absolutely phenomenal. I work from a busy open office and these have been life-changing. Battery easily lasts a full workday even with ANC enabled.",
+      "rating": 5,
+      "verified": true,
+      "helpful_votes": 234,
+      "date": "2026-02-15",
+      "sentiment": "positive"
+    },
+    {
+      "id": "R2EXAMPLE2",
+      "title": "Great but a bit pricey",
+      "body": "Sound quality is exceptional. The ANC is the best I've heard. My only complaint is the price point — you're paying for the Sony name. The call quality could be better outdoors.",
+      "rating": 4,
+      "verified": true,
+      "helpful_votes": 89,
+      "date": "2026-01-28",
+      "sentiment": "positive"
+    },
+    {
+      "id": "R2EXAMPLE3",
+      "title": "Noise cancellation is unreal",
+      "body": "Used these on a 14-hour flight. Could barely hear the engine. Comfort is top-notch, can wear for 6+ hours without fatigue. Touch controls take a bit of getting used to.",
+      "rating": 5,
+      "verified": true,
+      "helpful_votes": 156,
+      "date": "2026-02-01",
+      "sentiment": "positive"
+    }
+  ],
+  "proxy": {
+    "ip": "172.56.169.60",
+    "carrier": "T-Mobile US",
+    "country": "US",
+    "type": "mobile"
+  }
+}

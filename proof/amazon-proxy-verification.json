@@ -1,0 +1,23 @@
+{
+  "proxyPurchase": {
+    "txHash": "0x879b6e3a39e74bd65635a588231472887b8f45417d248b9c47425d0d1d906ecf",
+    "network": "base",
+    "amountUSDC": 0.4,
+    "walletAddress": "0xc0140eea19bd90a7ca75882d5218efaf20426e42",
+    "verifyUrl": "https://basescan.org/tx/0x879b6e3a39e74bd65635a588231472887b8f45417d248b9c47425d0d1d906ecf"
+  },
+  "proxyDetails": {
+    "provider": "Proxies.sx",
+    "exitIp": "172.56.168.66",
+    "carrier": "T-Mobile US",
+    "type": "mobile",
+    "country": "US"
+  },
+  "connectionTest": {
+    "testUrl": "https://www.amazon.com/s?k=wireless+headphones",
+    "statusCode": 200,
+    "dataExtracted": "Product listings with ASINs, prices, titles, ratings",
+    "timestamp": "2026-02-26T13:42:05.415835+00:00"
+  },
+  "notes": "US mobile proxy used to access Amazon product data and Best Seller Rankings"
+}

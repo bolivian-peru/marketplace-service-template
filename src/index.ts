@@ -80,6 +80,9 @@ app.get('/health', (c) => c.json({
     '/api/airbnb/listing/:id',
     '/api/airbnb/reviews/:listing_id',
     '/api/airbnb/market-stats',
+    '/api/amazon/search',
+    '/api/amazon/product/:asin',
+    '/api/amazon/bestsellers',
   ],
 }));
 
@@ -103,7 +106,7 @@ app.get('/', (c) => c.json({
       {
         network: 'solana',
         chainId: 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
-        recipient: '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv',
+        recipient: 'GpXHXs5KfzfXbNKcMLNbAMsJsgPsBE7y5GtwVoiuxYvH',
         asset: 'USDC',
         assetAddress: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
         settlementTime: '~400ms',
@@ -111,7 +114,7 @@ app.get('/', (c) => c.json({
       {
         network: 'base',
         chainId: 'eip155:8453',
-        recipient: '0xF8cD900794245fc36CBE65be9afc23CDF5103042',
+        recipient: '0xC0140eEa19bD90a7cA75882d5218eFaF20426e42',
         asset: 'USDC',
         assetAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
         settlementTime: '~2s',
@@ -128,7 +131,7 @@ app.get('/', (c) => c.json({
 
 app.route('/api', serviceRouter);
 
-app.notFound((c) => c.json({ error: 'Not found', endpoints: ['/', '/health', '/api/run', '/api/details', '/api/jobs', '/api/reviews/search', '/api/reviews/:place_id', '/api/business/:place_id', '/api/reviews/summary/:place_id'] }, 404));
+app.notFound((c) => c.json({ error: 'Not found', endpoints: ['/', '/health', '/api/run', '/api/details', '/api/jobs', '/api/reviews/search', '/api/reviews/:place_id', '/api/business/:place_id', '/api/reviews/summary/:place_id', '/api/amazon/search', '/api/amazon/product/:asin', '/api/amazon/bestsellers'] }, 404));
 
 app.onError((err, c) => {
   console.error(`[ERROR] ${err.message}`);

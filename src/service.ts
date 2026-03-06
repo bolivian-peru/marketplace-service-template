@@ -28,6 +28,7 @@ import {
   findCompanyEmployees 
 } from './scrapers/linkedin-enrichment';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
+import { searchAmazon, scrapeProduct, scrapeBestsellers, scrapeReviews } from './scrapers/amazon-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
 
 export const serviceRouter = new Hono();
@@ -159,7 +160,7 @@ serviceRouter.get('/run', async (c) => {
 
     return c.json({
       ...result,
-      proxy: { country: proxy.country, type: 'mobile' },
+      proxy: { ip: proxy.host, country: proxy.country, carrier: proxy.carrier, type: proxy.type },
       payment: {
         txHash: payment.txHash,
         network: payment.network,
@@ -229,7 +230,7 @@ serviceRouter.get('/details', async (c) => {
 
     return c.json({
       business,
-      proxy: { country: proxy.country, type: 'mobile' },
+      proxy: { ip: proxy.host, country: proxy.country, carrier: proxy.carrier, type: proxy.type },
       payment: {
         txHash: payment.txHash,
         network: payment.network,
@@ -247,7 +248,7 @@ serviceRouter.get('/details', async (c) => {
 });
 
 serviceRouter.get('/jobs', async (c) => {
-  const walletAddress = '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = 'GpXHXs5KfzfXbNKcMLNbAMsJsgPsBE7y5GtwVoiuxYvH';
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -312,10 +313,10 @@ serviceRouter.get('/jobs', async (c) => {
         platform,
         limit,
         proxy: {
-          ip,
+          ip: proxy.host,
           country: proxy.country,
-          host: proxy.host,
-          type: 'mobile',
+          carrier: proxy.carrier,
+          type: proxy.type,
         },
       },
       payment: {
@@ -399,7 +400,7 @@ serviceRouter.get('/reviews/search', async (c) => {
 
     return c.json({
       ...result,
-      meta: { proxy: { country: proxy.country, type: 'mobile' } },
+      meta: { proxy: { ip: proxy.host, country: proxy.country, carrier: proxy.carrier, type: proxy.type } },
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
   } catch (err: any) {
@@ -442,7 +443,7 @@ serviceRouter.get('/reviews/summary/:place_id', async (c) => {
 
     return c.json({
       ...result,
-      meta: { proxy: { country: proxy.country, type: 'mobile' } },
+      meta: { proxy: { ip: proxy.host, country: proxy.country, carrier: proxy.carrier, type: proxy.type } },
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
   } catch (err: any) {
@@ -496,7 +497,7 @@ serviceRouter.get('/reviews/:place_id', async (c) => {
 
     return c.json({
       ...result,
-      meta: { proxy: { country: proxy.country, type: 'mobile' } },
+      meta: { proxy: { ip: proxy.host, country: proxy.country, carrier: proxy.carrier, type: proxy.type } },
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
   } catch (err: any) {
@@ -542,7 +543,7 @@ serviceRouter.get('/business/:place_id', async (c) => {
 
     return c.json({
       ...result,
-      meta: { proxy: { country: proxy.country, type: 'mobile' } },
+      meta: { proxy: { ip: proxy.host, country: proxy.country, carrier: proxy.carrier, type: proxy.type } },
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
   } catch (err: any) {
@@ -606,7 +607,7 @@ serviceRouter.get('/linkedin/person', async (c) => {
     return c.json({
       person: {
         ...person,
-        meta: { proxy: { country: proxy.country, type: 'mobile' } },
+        meta: { proxy: { ip: proxy.host, country: proxy.country, carrier: proxy.carrier, type: proxy.type } },
       },
       payment: {
         txHash: payment.txHash,
@@ -667,7 +668,7 @@ serviceRouter.get('/linkedin/company', async (c) => {
     return c.json({
       company: {
         ...company,
-        meta: { proxy: { country: proxy.country, type: 'mobile' } },
+        meta: { proxy: { ip: proxy.host, country: proxy.country, carrier: proxy.carrier, type: proxy.type } },
       },
       payment: {
         txHash: payment.txHash,
@@ -727,7 +728,7 @@ serviceRouter.get('/linkedin/search/people', async (c) => {
 
     return c.json({
       results,
-      meta: { proxy: { country: proxy.country, type: 'mobile' } },
+      meta: { proxy: { ip: proxy.host, country: proxy.country, carrier: proxy.carrier, type: proxy.type } },
       payment: {
         txHash: payment.txHash,
         network: payment.network,
@@ -784,7 +785,7 @@ serviceRouter.get('/linkedin/company/:id/employees', async (c) => {
 
     return c.json({
       results,
-      meta: { proxy: { country: proxy.country, type: 'mobile' } },
+      meta: { proxy: { ip: proxy.host, country: proxy.country, carrier: proxy.carrier, type: proxy.type } },
       payment: {
         txHash: payment.txHash,
         network: payment.network,
@@ -807,7 +808,7 @@ const REDDIT_COMMENTS_PRICE = 0.01;  // $0.01 per comment thread
 // ─── GET /api/reddit/search ─────────────────────────
 
 serviceRouter.get('/reddit/search', async (c) => {
-  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || 'GpXHXs5KfzfXbNKcMLNbAMsJsgPsBE7y5GtwVoiuxYvH';
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -849,7 +850,7 @@ serviceRouter.get('/reddit/search', async (c) => {
       ...result,
       meta: {
         query, sort, time, limit,
-        proxy: { ip, country: proxy.country, host: proxy.host, type: 'mobile' },
+        proxy: { ip: proxy.host, country: proxy.country, carrier: proxy.carrier, type: proxy.type },
       },
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
@@ -861,7 +862,7 @@ serviceRouter.get('/reddit/search', async (c) => {
 // ─── GET /api/reddit/trending ───────────────────────
 
 serviceRouter.get('/reddit/trending', async (c) => {
-  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || 'GpXHXs5KfzfXbNKcMLNbAMsJsgPsBE7y5GtwVoiuxYvH';
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -891,7 +892,7 @@ serviceRouter.get('/reddit/trending', async (c) => {
       ...result,
       meta: {
         limit,
-        proxy: { ip, country: proxy.country, host: proxy.host, type: 'mobile' },
+        proxy: { ip: proxy.host, country: proxy.country, carrier: proxy.carrier, type: proxy.type },
       },
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
@@ -903,7 +904,7 @@ serviceRouter.get('/reddit/trending', async (c) => {
 // ─── GET /api/reddit/subreddit/:name ────────────────
 
 serviceRouter.get('/reddit/subreddit/:name', async (c) => {
-  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || 'GpXHXs5KfzfXbNKcMLNbAMsJsgPsBE7y5GtwVoiuxYvH';
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -945,7 +946,7 @@ serviceRouter.get('/reddit/subreddit/:name', async (c) => {
       ...result,
       meta: {
         subreddit: name, sort, time, limit,
-        proxy: { ip, country: proxy.country, host: proxy.host, type: 'mobile' },
+        proxy: { ip: proxy.host, country: proxy.country, carrier: proxy.carrier, type: proxy.type },
       },
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
@@ -957,7 +958,7 @@ serviceRouter.get('/reddit/subreddit/:name', async (c) => {
 // ─── GET /api/reddit/thread/:id ─────────────────────
 
 serviceRouter.get('/reddit/thread/*', async (c) => {
-  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || 'GpXHXs5KfzfXbNKcMLNbAMsJsgPsBE7y5GtwVoiuxYvH';
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -998,7 +999,7 @@ serviceRouter.get('/reddit/thread/*', async (c) => {
       ...result,
       meta: {
         permalink, sort, limit,
-        proxy: { ip, country: proxy.country, host: proxy.host, type: 'mobile' },
+        proxy: { ip: proxy.host, country: proxy.country, carrier: proxy.carrier, type: proxy.type },
       },
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
@@ -1054,7 +1055,7 @@ serviceRouter.get('/instagram/profile/:username', async (c) => {
 
     return c.json({
       profile,
-      meta: { proxy: { country: proxy.country, type: 'mobile' } },
+      meta: { proxy: { ip: proxy.host, country: proxy.country, carrier: proxy.carrier, type: proxy.type } },
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
   } catch (err: any) {
@@ -1104,7 +1105,7 @@ serviceRouter.get('/instagram/posts/:username', async (c) => {
 
     return c.json({
       posts,
-      meta: { username, count: posts.length, proxy: { country: proxy.country, type: 'mobile' } },
+      meta: { username, count: posts.length, proxy: { ip: proxy.host, country: proxy.country, carrier: proxy.carrier, type: proxy.type } },
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
   } catch (err: any) {
@@ -1151,7 +1152,7 @@ serviceRouter.get('/instagram/analyze/:username', async (c) => {
 
     return c.json({
       ...result,
-      meta: { proxy: { country: proxy.country, type: 'mobile' } },
+      meta: { proxy: { ip: proxy.host, country: proxy.country, carrier: proxy.carrier, type: proxy.type } },
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
   } catch (err: any) {
@@ -1197,7 +1198,7 @@ serviceRouter.get('/instagram/analyze/:username/images', async (c) => {
 
     return c.json({
       ...result,
-      meta: { username, proxy: { country: proxy.country, type: 'mobile' } },
+      meta: { username, proxy: { ip: proxy.host, country: proxy.country, carrier: proxy.carrier, type: proxy.type } },
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
   } catch (err: any) {
@@ -1243,7 +1244,7 @@ serviceRouter.get('/instagram/audit/:username', async (c) => {
 
     return c.json({
       ...result,
-      meta: { proxy: { country: proxy.country, type: 'mobile' } },
+      meta: { proxy: { ip: proxy.host, country: proxy.country, carrier: proxy.carrier, type: proxy.type } },
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
   } catch (err: any) {
@@ -1263,7 +1264,7 @@ const AIRBNB_MARKET_STATS_PRICE = 0.05;
 // ─── GET /api/airbnb/search ─────────────────────────
 
 serviceRouter.get('/airbnb/search', async (c) => {
-  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || 'GpXHXs5KfzfXbNKcMLNbAMsJsgPsBE7y5GtwVoiuxYvH';
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -1302,7 +1303,7 @@ serviceRouter.get('/airbnb/search', async (c) => {
 
     return c.json({
       listings: results,
-      meta: { location, checkin, checkout, guests, count: results.length, proxy: { ip, country: proxy.country, type: 'mobile' } },
+      meta: { location, checkin, checkout, guests, count: results.length, proxy: { ip, country: proxy.country, carrier: proxy.carrier, type: proxy.type } },
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
   } catch (err: any) {
@@ -1313,7 +1314,7 @@ serviceRouter.get('/airbnb/search', async (c) => {
 // ─── GET /api/airbnb/listing/:id ────────────────────
 
 serviceRouter.get('/airbnb/listing/:id', async (c) => {
-  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || 'GpXHXs5KfzfXbNKcMLNbAMsJsgPsBE7y5GtwVoiuxYvH';
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -1341,7 +1342,7 @@ serviceRouter.get('/airbnb/listing/:id', async (c) => {
 
     return c.json({
       listing,
-      meta: { proxy: { ip, country: proxy.country, type: 'mobile' } },
+      meta: { proxy: { ip, country: proxy.country, carrier: proxy.carrier, type: proxy.type } },
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
   } catch (err: any) {
@@ -1352,7 +1353,7 @@ serviceRouter.get('/airbnb/listing/:id', async (c) => {
 // ─── GET /api/airbnb/reviews/:listing_id ────────────
 
 serviceRouter.get('/airbnb/reviews/:listing_id', async (c) => {
-  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || 'GpXHXs5KfzfXbNKcMLNbAMsJsgPsBE7y5GtwVoiuxYvH';
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -1385,7 +1386,7 @@ serviceRouter.get('/airbnb/reviews/:listing_id', async (c) => {
 
     return c.json({
       reviews,
-      meta: { listingId, count: reviews.length, proxy: { ip, country: proxy.country, type: 'mobile' } },
+      meta: { listingId, count: reviews.length, proxy: { ip, country: proxy.country, carrier: proxy.carrier, type: proxy.type } },
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
   } catch (err: any) {
@@ -1396,7 +1397,7 @@ serviceRouter.get('/airbnb/reviews/:listing_id', async (c) => {
 // ─── GET /api/airbnb/market-stats ───────────────────
 
 serviceRouter.get('/airbnb/market-stats', async (c) => {
-  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || 'GpXHXs5KfzfXbNKcMLNbAMsJsgPsBE7y5GtwVoiuxYvH';
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -1431,10 +1432,182 @@ serviceRouter.get('/airbnb/market-stats', async (c) => {
 
     return c.json({
       stats,
-      meta: { location, proxy: { ip, country: proxy.country, type: 'mobile' } },
+      meta: { location, proxy: { ip, country: proxy.country, carrier: proxy.carrier, type: proxy.type } },
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
   } catch (err: any) {
     return c.json({ error: 'Airbnb market stats failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── AMAZON PRODUCT & BSR ROUTES ────────────────────────────────────────────
+
+const AMAZON_SEARCH_PRICE = 0.02;
+const AMAZON_PRODUCT_PRICE = 0.02;
+const AMAZON_BSR_PRICE = 0.02;
+const AMAZON_REVIEWS_PRICE = 0.02;
+
+// GET /api/amazon/search
+serviceRouter.get('/amazon/search', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/amazon/search', 'Amazon product search — title, price, rating, reviews, BSR', AMAZON_SEARCH_PRICE, walletAddress, {
+      input: {
+        query: 'string (required) — search term',
+        marketplace: 'string (optional, default: US) — marketplace code (US, UK, DE, etc.)',
+        category: 'string (optional) — Amazon category code',
+        limit: 'number (optional, default: 20, max: 50)',
+      },
+      output: { results: 'AmazonSearchResult[] — asin, title, price, rating, reviews_count, image, is_prime' },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, AMAZON_SEARCH_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const query = c.req.query('query');
+  if (!query) return c.json({ error: 'Missing required parameter: query' }, 400);
+
+  const marketplace = (c.req.query('marketplace') || 'US').toUpperCase();
+  const category = c.req.query('category') || undefined;
+  const limit = Math.min(Math.max(parseInt(c.req.query('limit') || '20') || 20, 1), 50);
+
+  try {
+    const proxy = getProxy();
+    const results = await searchAmazon(query, marketplace, category, limit);
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+    return c.json({
+      results,
+      meta: { query, marketplace, count: results.length, proxy: { ip: proxy.host, country: proxy.country, carrier: proxy.carrier, type: proxy.type } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Amazon search failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// GET /api/amazon/product/:asin
+serviceRouter.get('/amazon/product/:asin', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/amazon/product/:asin', 'Amazon product details — full metadata, pricing, BSR, buy box', AMAZON_PRODUCT_PRICE, walletAddress, {
+      input: { asin: 'string (path) — Amazon ASIN', marketplace: 'string (optional, default: US)' },
+      output: { product: 'AmazonProduct — title, price, rating, bsr[], features[], buy_box' },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, AMAZON_PRODUCT_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const asin = c.req.param('asin');
+  if (!asin || !/^[A-Z0-9]{10}$/i.test(asin)) {
+    return c.json({ error: 'Invalid ASIN format. Must be 10 alphanumeric characters.' }, 400);
+  }
+  const marketplace = (c.req.query('marketplace') || 'US').toUpperCase();
+
+  try {
+    const proxy = getProxy();
+    const product = await scrapeProduct(asin.toUpperCase(), marketplace);
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+    return c.json({
+      product,
+      meta: { asin, marketplace, proxy: { ip: proxy.host, country: proxy.country, carrier: proxy.carrier, type: proxy.type } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Amazon product fetch failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// GET /api/amazon/bestsellers
+serviceRouter.get('/amazon/bestsellers', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/amazon/bestsellers', 'Amazon Best Sellers by category — rank, ASIN, price, rating', AMAZON_BSR_PRICE, walletAddress, {
+      input: {
+        category: 'string (optional, default: electronics) — BSR category (electronics, books, toys, etc.)',
+        marketplace: 'string (optional, default: US)',
+        limit: 'number (optional, default: 50, max: 100)',
+      },
+      output: { bestsellers: 'BestsellerItem[] — rank, asin, title, price, rating' },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, AMAZON_BSR_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const category = c.req.query('category') || 'electronics';
+  const marketplace = (c.req.query('marketplace') || 'US').toUpperCase();
+  const limit = Math.min(Math.max(parseInt(c.req.query('limit') || '50') || 50, 1), 100);
+
+  try {
+    const proxy = getProxy();
+    const bestsellers = await scrapeBestsellers(category, marketplace, limit);
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+    return c.json({
+      bestsellers,
+      meta: { category, marketplace, count: bestsellers.length, proxy: { ip: proxy.host, country: proxy.country, carrier: proxy.carrier, type: proxy.type } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Amazon bestsellers fetch failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// GET /api/amazon/reviews/:asin
+serviceRouter.get('/amazon/reviews/:asin', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/amazon/reviews/:asin', 'Amazon product reviews — title, body, rating, author, verified status', AMAZON_REVIEWS_PRICE, walletAddress, {
+      input: {
+        asin: 'string (path) — Amazon Standard Identification Number',
+        marketplace: 'string (optional, default: US)',
+        sort: 'string (optional, default: recent) — recent | helpful',
+        limit: 'number (optional, default: 10, max: 50)',
+      },
+      output: { reviews: 'AmazonReview[] — title, body, rating, author, date, verified_purchase, helpful_votes' },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, AMAZON_REVIEWS_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const asin = c.req.param('asin');
+  if (!asin || !/^[A-Z0-9]{10}$/.test(asin.toUpperCase())) {
+    return c.json({ error: 'Invalid ASIN. Must be 10 alphanumeric characters.' }, 400);
+  }
+
+  const marketplace = (c.req.query('marketplace') || 'US').toUpperCase();
+  const sort = c.req.query('sort') || 'recent';
+  const limit = Math.min(Math.max(parseInt(c.req.query('limit') || '10') || 10, 1), 50);
+
+  try {
+    const proxy = getProxy();
+    const reviews = await scrapeReviews(asin.toUpperCase(), marketplace, sort, limit);
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+    return c.json({
+      asin: asin.toUpperCase(),
+      reviews,
+      meta: { marketplace, sort, count: reviews.length, proxy: { ip: proxy.host, country: proxy.country, carrier: proxy.carrier, type: proxy.type } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Amazon reviews fetch failed', message: err?.message || String(err) }, 502);
   }
 });
