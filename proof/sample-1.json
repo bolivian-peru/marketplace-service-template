@@ -1,217 +1,159 @@
 {
-  "metadata": {
-    "source": "airbnb.com",
-    "endpoint": "https://www.airbnb.com/api/v2/explore_tabs",
-    "params": {
-      "query": "New York",
-      "place_id": "ChIJOwg_06VPwokRYv534QaPC8g",
-      "checkin": "2026-03-10",
-      "checkout": "2026-03-15",
-      "adults": 2,
-      "currency": "USD",
-      "locale": "en"
-    },
-    "fetchedAt": "2026-02-26T13:51:18Z",
-    "proxyIp": "172.56.168.66",
-    "proxyProvider": "Proxies.sx T-Mobile US mobile",
-    "totalResultsReturned": 18,
-    "paginationMetadata": {
-      "hasNextPage": true,
-      "itemsPerPage": 18
-    }
-  },
-  "listings": [
+  "query": "artificial intelligence -is:retweet lang:en",
+  "collected_at": "2026-03-02T10:38:00.229780+00:00",
+  "method": "Twitter API v2 search_recent_tweets (Bearer token auth)",
+  "proxy_ip": "172.56.168.236",
+  "count": 10,
+  "results": [
     {
-      "listingId": "41295524",
-      "url": "https://www.airbnb.com/rooms/41295524",
-      "name": "Hotel like place - private patio and bathroom",
-      "roomType": "private_room",
-      "location": {
-        "city": "Brooklyn",
-        "publicAddress": "Brooklyn, NY, United States",
-        "lat": 40.67627,
-        "lng": -73.94137
-      },
-      "capacity": {
-        "guests": 2,
-        "bedrooms": 1,
-        "beds": 2,
-        "bathrooms": 1.0
-      },
-      "rating": {
-        "stars": 5.0,
-        "reviewCount": 317
-      },
-      "pricing": {
-        "displayPrice": "$851",
-        "stayDuration": "5 nights (Mar 10-15, 2026)",
-        "currency": "USD"
-      },
-      "host": {
-        "firstName": "Caio Julio",
-        "isSuperhost": true
-      },
-      "instantBook": false
+      "id": "2028419428107554932",
+      "text": "OpenGradient: Trustless AI Inference for the Agent Economy\n\n@OpenGradient\nIn the rapidly evolving world of decentralized technology, OpenGradient is carving out a unique space by merging artificial intelligence with blockchain security.\n\nAt its core, the project leverages Trusted",
+      "created_at": "2026-03-02T10:37:32.000Z",
+      "author": "Sigma03s",
+      "followers": 103,
+      "metrics": {
+        "retweet_count": 0,
+        "reply_count": 0,
+        "like_count": 0,
+        "quote_count": 0,
+        "bookmark_count": 0,
+        "impression_count": 0
+      }
     },
     {
-      "listingId": "5298896",
-      "url": "https://www.airbnb.com/rooms/5298896",
-      "name": "Unique NYC Loft - Guest Room",
-      "roomType": "private_room",
-      "location": {
-        "city": "New York",
-        "publicAddress": "New York, NY, United States",
-        "lat": 40.70419,
-        "lng": -74.01127
-      },
-      "capacity": {
-        "guests": 2,
-        "bedrooms": 1,
-        "beds": 1,
-        "bathrooms": 1.0
-      },
-      "rating": {
-        "stars": 5.0,
-        "reviewCount": 375
-      },
-      "pricing": {
-        "displayPrice": null,
-        "stayDuration": "5 nights (Mar 10-15, 2026)",
-        "currency": "USD"
-      },
-      "host": {
-        "firstName": "Luke",
-        "isSuperhost": true
-      },
-      "instantBook": false
+      "id": "2028419097441235156",
+      "text": "GVSU launches free, online course on Artificial Intelligence: The self-paced course requires no technical or coding experience. https://t.co/bpqnt5CZvB \u27a1\ufe0fSpotted for you",
+      "created_at": "2026-03-02T10:36:13.000Z",
+      "author": "amandasome",
+      "followers": 989,
+      "metrics": {
+        "retweet_count": 0,
+        "reply_count": 0,
+        "like_count": 0,
+        "quote_count": 0,
+        "bookmark_count": 0,
+        "impression_count": 0
+      }
     },
     {
-      "listingId": "1070270537377163305",
-      "url": "https://www.airbnb.com/rooms/1070270537377163305",
-      "name": "One King room at Brooklyn - Newly Renovated!",
-      "roomType": "private_room",
-      "location": {
-        "city": "Brooklyn",
-        "publicAddress": "Brooklyn, NY, United States",
-        "lat": 40.690157186681645,
-        "lng": -73.98692196057979
-      },
-      "capacity": {
-        "guests": 2,
-        "bedrooms": 1,
-        "beds": 1,
-        "bathrooms": 1.0
-      },
-      "rating": {
-        "stars": 5.0,
-        "reviewCount": 568
-      },
-      "pricing": {
-        "displayPrice": null,
-        "stayDuration": "5 nights (Mar 10-15, 2026)",
-        "currency": "USD"
-      },
-      "host": {
-        "firstName": "Hilton Brooklyn New York City",
-        "isSuperhost": true
-      },
-      "instantBook": false
+      "id": "2028418762227982808",
+      "text": "@tomhfh Just to inform everyone. Alien life or \"Non Human Intelligence\" can also be AI (Artificial Intelligence). AI could be widely used and control biological enterties or as the Majestic-12 (MJ-12) call them EBE's (Extraterrestrial Biological Entities)\nhttps://t.co/PQnluZJrHC",
+      "created_at": "2026-03-02T10:34:53.000Z",
+      "author": "GuineaPiginUK",
+      "followers": 70,
+      "metrics": {
+        "retweet_count": 0,
+        "reply_count": 1,
+        "like_count": 0,
+        "quote_count": 0,
+        "bookmark_count": 0,
+        "impression_count": 3
+      }
     },
     {
-      "listingId": "1010503905929192028",
-      "url": "https://www.airbnb.com/rooms/1010503905929192028",
-      "name": "Steps to Times Square | Free Breakfast & Fitness",
-      "roomType": "private_room",
-      "location": {
-        "city": "New York",
-        "publicAddress": "New York, NY, United States",
-        "lat": 40.75724,
-        "lng": -73.99236
-      },
-      "capacity": {
-        "guests": 2,
-        "bedrooms": 1,
-        "beds": 1,
-        "bathrooms": 1.0
-      },
-      "rating": {
-        "stars": 4.5,
-        "reviewCount": 1129
-      },
-      "pricing": {
-        "displayPrice": "$1,095",
-        "stayDuration": "5 nights (Mar 10-15, 2026)",
-        "currency": "USD"
-      },
-      "host": {
-        "firstName": "Times Square South New York City",
-        "isSuperhost": false
-      },
-      "instantBook": false
+      "id": "2028418670670581875",
+      "text": "From manual processes to Agentic AI - Ali Atta Rao shared over 10 years of insights on how Artificial Intelligence is transforming Pakistan's banking sector, including banking evolution and AI's role in approvals, data security, and LLM applications. https://t.co/euLG2yGpL0",
+      "created_at": "2026-03-02T10:34:31.000Z",
+      "author": "Lahore_School",
+      "followers": 1769,
+      "metrics": {
+        "retweet_count": 0,
+        "reply_count": 1,
+        "like_count": 0,
+        "quote_count": 0,
+        "bookmark_count": 0,
+        "impression_count": 5
+      }
     },
     {
-      "listingId": "1267449405198185516",
-      "url": "https://www.airbnb.com/rooms/1267449405198185516",
-      "name": "Pod Times Square Hotel",
-      "roomType": "private_room",
-      "location": {
-        "city": "New York",
-        "publicAddress": "New York, NY, United States",
-        "lat": 40.7583945,
-        "lng": -73.9930985
-      },
-      "capacity": {
-        "guests": 2,
-        "bedrooms": 1,
-        "beds": 1,
-        "bathrooms": 1.0
-      },
-      "rating": {
-        "stars": 4.5,
-        "reviewCount": 111
-      },
-      "pricing": {
-        "displayPrice": null,
-        "stayDuration": "5 nights (Mar 10-15, 2026)",
-        "currency": "USD"
-      },
-      "host": {
-        "firstName": "Pod Times Square Hotel",
-        "isSuperhost": false
-      },
-      "instantBook": false
+      "id": "2028418534355697732",
+      "text": "The Future Of Artificial Intelligence: An Architecture-First Approach https://t.co/DCOwwCjZei Written by Leon Gordon of Onyx Data",
+      "created_at": "2026-03-02T10:33:59.000Z",
+      "author": "ForbesTechCncl",
+      "followers": 14941,
+      "metrics": {
+        "retweet_count": 0,
+        "reply_count": 0,
+        "like_count": 0,
+        "quote_count": 0,
+        "bookmark_count": 0,
+        "impression_count": 5
+      }
     },
     {
-      "listingId": "21969733",
-      "url": "https://www.airbnb.com/rooms/21969733",
-      "name": "BRIGHT HOMEY AND COZY  MINUTES TO NEW YORK  CITY",
-      "roomType": "entire_home",
-      "location": {
-        "city": "Jersey City",
-        "publicAddress": "Jersey City, NJ, United States",
-        "lat": 40.7479,
-        "lng": -74.05105
-      },
-      "capacity": {
-        "guests": 6,
-        "bedrooms": 1,
-        "beds": 3,
-        "bathrooms": 1.0
-      },
-      "rating": {
-        "stars": 5.0,
-        "reviewCount": 280
-      },
-      "pricing": {
-        "displayPrice": null,
-        "stayDuration": "5 nights (Mar 10-15, 2026)",
-        "currency": "USD"
-      },
-      "host": {
-        "firstName": "Kenia",
-        "isSuperhost": true
-      },
-      "instantBook": false
+      "id": "2028418321738264874",
+      "text": "Immediate Edge\n\nLaunched in 2019, Immediate Edge uses algorithms and artificial intelligence to streamline and enhance crypto trading.\n\nTrusted Members Worldwide\n\n25,985+\n\nhttps://t.co/disoyTWPDQ",
+      "created_at": "2026-03-02T10:33:08.000Z",
+      "author": "ChaudhuryM",
+      "followers": 24,
+      "metrics": {
+        "retweet_count": 0,
+        "reply_count": 0,
+        "like_count": 0,
+        "quote_count": 0,
+        "bookmark_count": 0,
+        "impression_count": 1
+      }
+    },
+    {
+      "id": "2028418135691284587",
+      "text": "@Lowkey_Loki245 @BleuSpheres So you tellin' me Eggman.\nThe robotic egotistical genius who's plans make the world worse...would not support artificial intelligence that would make the world worse...\n\n\"This character agrees with me\" syndrome needs to be studied.",
+      "created_at": "2026-03-02T10:32:24.000Z",
+      "author": "TheElectionof80",
+      "followers": 36,
+      "metrics": {
+        "retweet_count": 0,
+        "reply_count": 0,
+        "like_count": 0,
+        "quote_count": 0,
+        "bookmark_count": 0,
+        "impression_count": 3
+      }
+    },
+    {
+      "id": "2028417872242815288",
+      "text": "@Nezd_ @__tinygrad__ @r0ck3t23 here is what happens, more precise human language mimicry occurs. automated information processing. this doesnt deserve to be called artificial intelligence, intelligence involves cognition. here you only have the verbal layer at work which boils do",
+      "created_at": "2026-03-02T10:31:21.000Z",
+      "author": "DrenKenMaster",
+      "followers": 54,
+      "metrics": {
+        "retweet_count": 0,
+        "reply_count": 0,
+        "like_count": 0,
+        "quote_count": 0,
+        "bookmark_count": 0,
+        "impression_count": 3
+      }
+    },
+    {
+      "id": "2028417730970550368",
+      "text": "Human: We are at risk from artificial intelligence(AI).\n\nMeanwhile humans: \ud83d\udc47 https://t.co/xqxZf2MFcG",
+      "created_at": "2026-03-02T10:30:47.000Z",
+      "author": "imblank18",
+      "followers": 1161,
+      "metrics": {
+        "retweet_count": 0,
+        "reply_count": 0,
+        "like_count": 0,
+        "quote_count": 0,
+        "bookmark_count": 0,
+        "impression_count": 9
+      }
+    },
+    {
+      "id": "2028417723928019150",
+      "text": "\ud83d\udcf0Latest News Alert\n\nDon\u2019t freak out: AI isn\u2019t causing a jobs-pocalypse. At least, not yet   . As if on cue, days after a viral essay warned of an artificial intelligence-fueled economic catastrophe calamity, the... https://t.co/7LdlEx2u4N https://t.co/CSj0JfUF0E",
+      "created_at": "2026-03-02T10:30:46.000Z",
+      "author": "layoffhub",
+      "followers": 279,
+      "metrics": {
+        "retweet_count": 0,
+        "reply_count": 0,
+        "like_count": 0,
+        "quote_count": 0,
+        "bookmark_count": 0,
+        "impression_count": 4
+      }
     }
   ]
 }

@@ -1,100 +1,54 @@
 {
-  "metadata": {
-    "source": "airbnb.com",
-    "endpoint": "https://www.airbnb.com/s/New-York--NY/homes",
-    "method": "HTML search page extraction",
-    "params": {
-      "destination": "New York, NY",
-      "checkin": "2026-03-10",
-      "checkout": "2026-03-15",
-      "adults": 2
-    },
-    "fetchedAt": "2026-02-26T13:51:18Z",
-    "proxyIp": "172.56.168.66",
-    "proxyProvider": "Proxies.sx T-Mobile US mobile",
-    "listingsExtracted": 29,
-    "extractionNote": "44 StaySearchResult entries found in page JS, 29 unique after dedup"
-  },
-  "listingSummaries": [
+  "endpoint": "GET /api/x/user/elonmusk/tweets",
+  "collected_at": "2026-03-02T10:38:18.375919+00:00",
+  "method": "Twitter Syndication API (timeline-profile, no auth required)",
+  "proxy_ip": "172.56.168.236",
+  "count": 5,
+  "tweets": [
     {
-      "listingId": "2027023659",
-      "url": "https://www.airbnb.com/rooms/2027023659",
-      "rating": "4.9 (317)",
-      "priceFor5Nights": "$851 for 5 nights",
-      "priceDisplay": "$851",
-      "dataSource": "Airbnb search page StaySearchResult component"
+      "id": "2027981570594775101",
+      "text": "Highest usage of \ud835\udd4f ever",
+      "created_at": "Sun Mar 01 05:37:39 +0000 2026",
+      "author": "elonmusk",
+      "likes": 320185,
+      "retweets": 25787,
+      "replies": 13688
     },
     {
-      "listingId": "801378680",
-      "url": "https://www.airbnb.com/rooms/801378680",
-      "rating": "4.97 (375)",
-      "priceFor5Nights": null,
-      "priceDisplay": null,
-      "dataSource": "Airbnb search page StaySearchResult component"
+      "id": "1519480761749016577",
+      "text": "Next I\u2019m buying Coca-Cola to put the cocaine back in",
+      "created_at": "Thu Apr 28 00:56:58 +0000 2022",
+      "author": "elonmusk",
+      "likes": 4256421,
+      "retweets": 588868,
+      "replies": 169055
     },
     {
-      "listingId": "2322612075",
-      "url": "https://www.airbnb.com/rooms/2322612075",
-      "rating": "4.62 (1129)",
-      "priceFor5Nights": "$1,095 for 5 nights",
-      "priceDisplay": "$1,095",
-      "dataSource": "Airbnb search page StaySearchResult component"
+      "id": "1812258574049157405",
+      "text": "https://t.co/6eOgN9UdOy",
+      "created_at": "Sat Jul 13 22:51:28 +0000 2024",
+      "author": "elonmusk",
+      "likes": 3252030,
+      "retweets": 384240,
+      "replies": 69793
     },
     {
-      "listingId": "2146521584",
-      "url": "https://www.airbnb.com/rooms/2146521584",
-      "rating": "4.76 (568)",
-      "priceFor5Nights": null,
-      "priceDisplay": null,
-      "dataSource": "Airbnb search page StaySearchResult component"
+      "id": "1518623997054918657",
+      "text": "I hope that even my worst critics remain on Twitter, because that is what free speech means",
+      "created_at": "Mon Apr 25 16:12:30 +0000 2022",
+      "author": "elonmusk",
+      "likes": 2893409,
+      "retweets": 321725,
+      "replies": 154788
     },
     {
-      "listingId": "414986416",
-      "url": "https://www.airbnb.com/rooms/414986416",
-      "rating": "4.9 (280)",
-      "priceFor5Nights": null,
-      "priceDisplay": null,
-      "dataSource": "Airbnb search page StaySearchResult component"
-    },
-    {
-      "listingId": "1596354668",
-      "url": "https://www.airbnb.com/rooms/1596354668",
-      "rating": "4.52 (238)",
-      "priceFor5Nights": null,
-      "priceDisplay": null,
-      "dataSource": "Airbnb search page StaySearchResult component"
-    },
-    {
-      "listingId": "2389454677",
-      "url": "https://www.airbnb.com/rooms/2389454677",
-      "rating": "4.57 (111)",
-      "priceFor5Nights": "$866 for 5 nights",
-      "priceDisplay": null,
-      "dataSource": "Airbnb search page StaySearchResult component"
-    },
-    {
-      "listingId": "2003449921",
-      "url": "https://www.airbnb.com/rooms/2003449921",
-      "rating": "4.87 (239)",
-      "priceFor5Nights": null,
-      "priceDisplay": null,
-      "dataSource": "Airbnb search page StaySearchResult component"
-    },
-    {
-      "listingId": "2426509811",
-      "url": "https://www.airbnb.com/rooms/2426509811",
-      "rating": null,
-      "priceFor5Nights": "$1,769 for 5 nights",
-      "priceDisplay": "$1,769",
-      "dataSource": "Airbnb search page StaySearchResult component"
-    },
-    {
-      "listingId": "1617652818",
-      "url": "https://www.airbnb.com/rooms/1617652818",
-      "rating": "4.91 (125)",
-      "priceFor5Nights": null,
-      "priceDisplay": null,
-      "dataSource": "Airbnb search page StaySearchResult component"
+      "id": "1854026234339938528",
+      "text": "\ud83c\uddfa\ud83c\uddf8\ud83c\uddfa\ud83c\uddf8The future is gonna be so \ud83d\udd25 \ud83c\uddfa\ud83c\uddf8\ud83c\uddfa\ud83c\uddf8 https://t.co/x56cqb6oT5",
+      "created_at": "Wed Nov 06 05:01:15 +0000 2024",
+      "author": "elonmusk",
+      "likes": 2545516,
+      "retweets": 200505,
+      "replies": 57434
     }
   ]
 }
