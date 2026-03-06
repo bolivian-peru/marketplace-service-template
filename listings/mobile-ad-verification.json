@@ -2,15 +2,27 @@
   "id": "mobile-ad-verification",
   "name": "Mobile Ad Verification & Creative Intelligence",
   "description": "See exactly what ads appear from a real 4G/5G mobile device in any country. Verify geo-targeted ads, spy on competitor creatives, detect ad fraud. Three query types: search ads, display ads, advertiser lookup.",
-  "longDescription": "Ad verification from real mobile carrier IPs. Shows paid search ads, display/banner ads, and advertiser creative inventories as seen by a real mobile user — not a datacenter bot that gets blocked or served sanitized content. Three endpoints: search_ads (what Google ads show for a query in a country), display_ads (what banner/display ads appear on any URL), advertiser (what a specific brand is running via Google Ads Transparency Center). The ad verification market is $4.8B growing to $15.9B by 2033 — enterprise solutions charge $50K+/year. This brings it to $0.01-$0.02/check.",
+  "longDescription": "Ad verification from real mobile carrier IPs. Shows paid search ads, display/banner ads, and advertiser creative inventories as seen by a real mobile user \u2014 not a datacenter bot that gets blocked or served sanitized content. Three endpoints: search_ads (what Google ads show for a query in a country), display_ads (what banner/display ads appear on any URL), advertiser (what a specific brand is running via Google Ads Transparency Center). The ad verification market is $4.8B growing to $15.9B by 2033 \u2014 enterprise solutions charge $50K+/year. This brings it to $0.01-$0.02/check.",
   "endpoint": "https://marketplace-api-9kvb.onrender.com/api/ads",
-  "docsUrl": "https://github.com/TheAuroraAI/marketplace-service-template/blob/bounty-53-ad-verification/README.md",
+  "docsUrl": "https://github.com/bolivian-peru/marketplace-service-template",
   "pricing": {
     "model": "per-request",
     "endpoints": [
-      { "path": "/api/ads?type=search_ads", "price": "$0.02", "unit": "per request" },
-      { "path": "/api/ads?type=display_ads", "price": "$0.015", "unit": "per request" },
-      { "path": "/api/ads?type=advertiser", "price": "$0.01", "unit": "per request" }
+      {
+        "path": "/api/ads?type=search_ads",
+        "price": "$0.02",
+        "unit": "per request"
+      },
+      {
+        "path": "/api/ads?type=display_ads",
+        "price": "$0.015",
+        "unit": "per request"
+      },
+      {
+        "path": "/api/ads?type=advertiser",
+        "price": "$0.01",
+        "unit": "per request"
+      }
     ],
     "comparison": "GeoEdge: $50K+/year. DoubleVerify: $100K+/year. IAS: $75K+/year. SerpAPI ad scraping: $0.10+/query (datacenter IPs get blocked or fake results). Our mobile carrier IPs see authentic ad serving at $0.01-0.02/query.",
     "currency": "USDC",
@@ -35,37 +47,41 @@
   "outputSchema": {
     "search_ads": {
       "type": "search_ads",
-      "query": "string — Query used",
-      "country": "string — ISO country code",
+      "query": "string \u2014 Query used",
+      "country": "string \u2014 ISO country code",
       "timestamp": "ISO 8601",
-      "ads": [{
-        "position": "number — 1-indexed position",
-        "placement": "top | bottom | unknown",
-        "title": "string — Ad headline",
-        "description": "string — Ad body text",
-        "displayUrl": "string — Shown URL (e.g. nordvpn.com/deal)",
-        "finalUrl": "string — Actual destination URL",
-        "advertiser": "string — Brand name",
-        "extensions": "string[] — Sitelinks, callouts, etc.",
-        "isResponsive": "boolean — Responsive search ad"
-      }],
-      "organic_count": "number — Non-paid results count",
+      "ads": [
+        {
+          "position": "number \u2014 1-indexed position",
+          "placement": "top | bottom | unknown",
+          "title": "string \u2014 Ad headline",
+          "description": "string \u2014 Ad body text",
+          "displayUrl": "string \u2014 Shown URL (e.g. nordvpn.com/deal)",
+          "finalUrl": "string \u2014 Actual destination URL",
+          "advertiser": "string \u2014 Brand name",
+          "extensions": "string[] \u2014 Sitelinks, callouts, etc.",
+          "isResponsive": "boolean \u2014 Responsive search ad"
+        }
+      ],
+      "organic_count": "number \u2014 Non-paid results count",
       "total_ads": "number",
       "ad_positions": "{ top: number, bottom: number }"
     },
     "display_ads": {
       "type": "display_ads",
-      "url": "string — URL checked",
+      "url": "string \u2014 URL checked",
       "country": "string",
       "timestamp": "ISO 8601",
-      "ads": [{
-        "network": "string — Ad network (Google, Facebook, etc.)",
-        "adUnitId": "string | null",
-        "src": "string | null — Ad creative URL",
-        "width": "number | null",
-        "height": "number | null",
-        "type": "display | banner | interstitial | native"
-      }],
+      "ads": [
+        {
+          "network": "string \u2014 Ad network (Google, Facebook, etc.)",
+          "adUnitId": "string | null",
+          "src": "string | null \u2014 Ad creative URL",
+          "width": "number | null",
+          "height": "number | null",
+          "type": "display | banner | interstitial | native"
+        }
+      ],
       "total_ads": "number",
       "networks_detected": "string[]"
     },
@@ -74,13 +90,15 @@
       "domain": "string",
       "country": "string",
       "timestamp": "ISO 8601",
-      "ads": [{
-        "headline": "string",
-        "description": "string",
-        "targetUrl": "string",
-        "format": "string",
-        "dateRange": "string | null"
-      }],
+      "ads": [
+        {
+          "headline": "string",
+          "description": "string",
+          "targetUrl": "string",
+          "format": "string",
+          "dateRange": "string | null"
+        }
+      ],
       "total_creatives": "number"
     }
   },
