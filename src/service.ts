@@ -790,3 +790,223 @@ serviceRouter.get('/linkedin/company/:id/employees', async (c) => {
     return c.json({ error: 'Employee search failed', message: err?.message || String(err) }, 502);
   }
 });
+
+// ═══════════════════════════════════════════════════════
+// ─── AIRBNB MARKET INTELLIGENCE API (Bounty #78) ─────
+// ═══════════════════════════════════════════════════════
+
+const AIRBNB_SEARCH_PRICE = 0.02;
+const AIRBNB_LISTING_PRICE = 0.01;
+const AIRBNB_REVIEWS_PRICE = 0.01;
+const AIRBNB_MARKET_PRICE = 0.05;
+
+// ─── GET /api/airbnb/search ──────────────────────────
+
+serviceRouter.get('/airbnb/search', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(
+      build402Response('/api/airbnb/search', 'Search Airbnb listings by location, dates, and guests', AIRBNB_SEARCH_PRICE, walletAddress, {
+        input: {
+          location: 'string (required) — city or area (e.g., "Miami Beach")',
+          checkin: 'string (optional) — YYYY-MM-DD',
+          checkout: 'string (optional) — YYYY-MM-DD',
+          guests: 'number (optional, default: 2)',
+          price_min: 'number (optional)',
+          price_max: 'number (optional)',
+          limit: 'number (optional, default: 20, max: 50)',
+        },
+        output: {
+          listings: 'AirbnbListing[]',
+          market_overview: '{ avg_daily_rate, median_daily_rate, total_listings }',
+          meta: '{ proxy: { ip, country, carrier, type } }',
+        },
+      }),
+      402,
+    );
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, AIRBNB_SEARCH_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const location = c.req.query('location');
+  if (!location) return c.json({ error: 'Missing required parameter: location', example: '/api/airbnb/search?location=Miami+Beach&checkin=2026-04-01&checkout=2026-04-07&guests=2' }, 400);
+
+  const checkin = c.req.query('checkin') || undefined;
+  const checkout = c.req.query('checkout') || undefined;
+  const guests = Math.max(1, parseInt(c.req.query('guests') || '2') || 2);
+  const priceMin = c.req.query('price_min') ? parseInt(c.req.query('price_min')!) : undefined;
+  const priceMax = c.req.query('price_max') ? parseInt(c.req.query('price_max')!) : undefined;
+  const limit = Math.min(Math.max(parseInt(c.req.query('limit') || '20') || 20, 1), 50);
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const carrier = process.env.PROXY_CARRIER || undefined;
+    const listings = await searchAirbnb(location, checkin, checkout, guests, priceMin, priceMax, limit);
+
+    const prices = listings.map(l => l.price_per_night).filter((p): p is number => p !== null && p > 0);
+    const avgDailyRate = prices.length > 0 ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length) : null;
+    const sortedPrices = [...prices].sort((a, b) => a - b);
+    const medianDailyRate = sortedPrices.length > 0 ? sortedPrices[Math.floor(sortedPrices.length / 2)] : null;
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      location,
+      results: listings,
+      market_overview: {
+        avg_daily_rate: avgDailyRate,
+        median_daily_rate: medianDailyRate,
+        total_listings: listings.length,
+      },
+      meta: {
+        proxy: { ip, country: proxy.country, ...(carrier ? { carrier } : {}), type: 'mobile' },
+      },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Airbnb search failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/airbnb/listing/:id ─────────────────────
+
+serviceRouter.get('/airbnb/listing/:id', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(
+      build402Response('/api/airbnb/listing/:id', 'Get detailed Airbnb listing data by ID', AIRBNB_LISTING_PRICE, walletAddress, {
+        input: { id: 'string — Airbnb listing ID (in URL path)' },
+        output: { listing: 'AirbnbListingDetail (title, price, rating, host, amenities, description, house rules)', meta: '{ proxy }' },
+      }),
+      402,
+    );
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, AIRBNB_LISTING_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const listingId = c.req.param('id');
+  if (!listingId) return c.json({ error: 'Missing listing ID in URL path', example: '/api/airbnb/listing/12345678' }, 400);
+
+  try {
+    const proxy = getProxy();
+    const carrier = process.env.PROXY_CARRIER || undefined;
+    const listing = await getListingDetail(listingId);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      listing,
+      meta: { proxy: { country: proxy.country, ...(carrier ? { carrier } : {}), type: 'mobile' } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Listing fetch failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/airbnb/market-stats ────────────────────
+
+serviceRouter.get('/airbnb/market-stats', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(
+      build402Response('/api/airbnb/market-stats', 'Airbnb market statistics: avg daily rate, price distribution, property types, occupancy', AIRBNB_MARKET_PRICE, walletAddress, {
+        input: {
+          location: 'string (required) — city or area',
+          checkin: 'string (optional) — YYYY-MM-DD',
+          checkout: 'string (optional) — YYYY-MM-DD',
+        },
+        output: { stats: 'MarketStats (avg_daily_rate, median_daily_rate, price_distribution, property_types, superhost_pct)' },
+      }),
+      402,
+    );
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, AIRBNB_MARKET_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const location = c.req.query('location');
+  if (!location) return c.json({ error: 'Missing required parameter: location', example: '/api/airbnb/market-stats?location=Miami+Beach' }, 400);
+
+  const checkin = c.req.query('checkin') || undefined;
+  const checkout = c.req.query('checkout') || undefined;
+
+  try {
+    const proxy = getProxy();
+    const carrier = process.env.PROXY_CARRIER || undefined;
+    const stats = await getMarketStats(location, checkin, checkout);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      stats,
+      meta: { proxy: { country: proxy.country, ...(carrier ? { carrier } : {}), type: 'mobile' } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Market stats failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/airbnb/reviews/:listing_id ─────────────
+
+serviceRouter.get('/airbnb/reviews/:listing_id', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(
+      build402Response('/api/airbnb/reviews/:listing_id', 'Fetch Airbnb guest reviews for a listing', AIRBNB_REVIEWS_PRICE, walletAddress, {
+        input: {
+          listing_id: 'string — Airbnb listing ID (in URL path)',
+          limit: 'number (optional, default: 10, max: 50)',
+        },
+        output: { reviews: 'AirbnbReview[] (author, rating, date, text, host_response)' },
+      }),
+      402,
+    );
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, AIRBNB_REVIEWS_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const listingId = c.req.param('listing_id');
+  if (!listingId) return c.json({ error: 'Missing listing_id in URL path', example: '/api/airbnb/reviews/12345678?limit=10' }, 400);
+
+  const limit = Math.min(Math.max(parseInt(c.req.query('limit') || '10') || 10, 1), 50);
+
+  try {
+    const proxy = getProxy();
+    const carrier = process.env.PROXY_CARRIER || undefined;
+    const reviews = await getListingReviews(listingId, limit);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      listing_id: listingId,
+      reviews,
+      count: reviews.length,
+      meta: { proxy: { country: proxy.country, ...(carrier ? { carrier } : {}), type: 'mobile' } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Reviews fetch failed', message: err?.message || String(err) }, 502);
+  }
+});

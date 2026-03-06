@@ -95,6 +95,10 @@ app.get('/', (c) => c.json({
     { method: 'GET', path: '/api/reviews/:place_id', description: 'Fetch Google reviews by Place ID', price: '0.02 USDC' },
     { method: 'GET', path: '/api/business/:place_id', description: 'Get business details + review summary', price: '0.01 USDC' },
     { method: 'GET', path: '/api/reviews/summary/:place_id', description: 'Get review summary stats', price: '0.005 USDC' },
+    { method: 'GET', path: '/api/airbnb/search', description: 'Search Airbnb listings by location, dates, guests', price: '0.02 USDC' },
+    { method: 'GET', path: '/api/airbnb/listing/:id', description: 'Get detailed Airbnb listing data', price: '0.01 USDC' },
+    { method: 'GET', path: '/api/airbnb/market-stats', description: 'Airbnb market statistics: ADR, price distribution, property types', price: '0.05 USDC' },
+    { method: 'GET', path: '/api/airbnb/reviews/:listing_id', description: 'Fetch Airbnb guest reviews for a listing', price: '0.01 USDC' },
   ],
   pricing: {
     amount: process.env.PRICE_USDC || '0.005',

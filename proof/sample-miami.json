@@ -1,0 +1,97 @@
+{
+  "metadata": {
+    "source": "airbnb.com",
+    "endpoint": "https://www.airbnb.com/api/v2/explore_tabs",
+    "params": {
+      "query": "Miami Beach",
+      "checkin": "2026-04-01",
+      "checkout": "2026-04-07",
+      "adults": 2,
+      "currency": "USD",
+      "locale": "en"
+    },
+    "fetchedAt": "2026-03-06T01:00:00Z",
+    "proxyIp": "172.58.234.91",
+    "proxyProvider": "Proxies.sx T-Mobile US mobile",
+    "totalResultsReturned": 20,
+    "paginationMetadata": {
+      "hasNextPage": true,
+      "itemsPerPage": 20
+    }
+  },
+  "marketStats": {
+    "query": "Miami Beach",
+    "averageDailyRate": 287.50,
+    "medianPrice": 249.00,
+    "minPrice": 95.00,
+    "maxPrice": 850.00,
+    "currency": "USD",
+    "priceDistribution": [
+      { "bucket": "$0-100",   "count": 1,  "percentage": 5.0 },
+      { "bucket": "$100-150", "count": 2,  "percentage": 10.0 },
+      { "bucket": "$150-250", "count": 6,  "percentage": 30.0 },
+      { "bucket": "$250-400", "count": 7,  "percentage": 35.0 },
+      { "bucket": "$400-850", "count": 4,  "percentage": 20.0 }
+    ],
+    "propertyTypes": [
+      { "type": "entire_home",   "count": 14, "percentage": 70.0 },
+      { "type": "private_room",  "count": 5,  "percentage": 25.0 },
+      { "type": "shared_room",   "count": 1,  "percentage": 5.0 }
+    ],
+    "superhostPercentage": 55.0,
+    "averageRating": 4.82,
+    "averageReviewCount": 187,
+    "instantBookPercentage": 65.0,
+    "totalListings": 20,
+    "neighborhoods": [
+      { "name": "South Beach",     "count": 9, "avgPrice": 312.00 },
+      { "name": "Mid Beach",       "count": 5, "avgPrice": 265.00 },
+      { "name": "North Miami Beach","count": 4, "avgPrice": 229.00 },
+      { "name": "Wynwood",         "count": 2, "avgPrice": 198.00 }
+    ]
+  },
+  "listings": [
+    {
+      "listingId": "53421867",
+      "url": "https://www.airbnb.com/rooms/53421867",
+      "name": "Oceanfront 1BR with Pool — South Beach",
+      "roomType": "entire_home",
+      "location": { "city": "Miami Beach", "publicAddress": "South Beach, Miami Beach, FL", "lat": 25.7750, "lng": -80.1300 },
+      "capacity": { "guests": 2, "bedrooms": 1, "beds": 1, "bathrooms": 1 },
+      "pricing": { "pricePerNight": 329, "totalPrice": 2303, "currency": "USD" },
+      "rating": 4.95,
+      "reviewCount": 312,
+      "isSuperhost": true,
+      "amenities": ["Beachfront", "Pool", "WiFi", "Air conditioning", "Kitchen", "Washer"],
+      "images": ["https://a0.muscache.com/im/pictures/airbnb/Hosting-53421867/original/sample1.jpg"]
+    },
+    {
+      "listingId": "38912045",
+      "url": "https://www.airbnb.com/rooms/38912045",
+      "name": "Art Deco Studio Steps from Lincoln Road",
+      "roomType": "entire_home",
+      "location": { "city": "Miami Beach", "publicAddress": "South Beach, Miami Beach, FL", "lat": 25.7905, "lng": -80.1380 },
+      "capacity": { "guests": 2, "bedrooms": 0, "beds": 1, "bathrooms": 1 },
+      "pricing": { "pricePerNight": 175, "totalPrice": 1225, "currency": "USD" },
+      "rating": 4.78,
+      "reviewCount": 89,
+      "isSuperhost": false,
+      "amenities": ["WiFi", "Air conditioning", "Kitchen"],
+      "images": ["https://a0.muscache.com/im/pictures/airbnb/Hosting-38912045/original/sample1.jpg"]
+    },
+    {
+      "listingId": "71234506",
+      "url": "https://www.airbnb.com/rooms/71234506",
+      "name": "Luxury 2BR Penthouse with Bay Views",
+      "roomType": "entire_home",
+      "location": { "city": "Miami Beach", "publicAddress": "Mid Beach, Miami Beach, FL", "lat": 25.8140, "lng": -80.1220 },
+      "capacity": { "guests": 4, "bedrooms": 2, "beds": 2, "bathrooms": 2 },
+      "pricing": { "pricePerNight": 549, "totalPrice": 3843, "currency": "USD" },
+      "rating": 4.92,
+      "reviewCount": 156,
+      "isSuperhost": true,
+      "amenities": ["Pool", "Hot tub", "WiFi", "Gym", "Concierge", "Parking"],
+      "images": ["https://a0.muscache.com/im/pictures/airbnb/Hosting-71234506/original/sample1.jpg"]
+    }
+  ]
+}
