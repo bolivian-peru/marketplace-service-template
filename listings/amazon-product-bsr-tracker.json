@@ -4,14 +4,30 @@
   "description": "Real-time Amazon product data via mobile proxy: price, BSR rankings, reviews, buy box analysis. Supports US, UK, DE, FR, ES, IT, CA, JP, AU marketplaces.",
   "longDescription": "Extract Amazon product intelligence at micropayment prices. Get current pricing, Best Seller Rank with subcategory breakdowns, buy box winner, review summaries, and search across 9 marketplaces. All requests routed through mobile carrier IPs for maximum reliability. Replaces $30-200/month tools like Jungle Scout and Helium 10 with pay-per-request pricing.",
   "endpoint": "https://marketplace-api-9kvb.onrender.com/api/amazon",
-  "docsUrl": "https://github.com/TheAuroraAI/marketplace-service-template/tree/bounty-72-amazon-bsr",
+  "docsUrl": "https://github.com/bolivian-peru/marketplace-service-template",
   "pricing": {
     "model": "per-request",
     "endpoints": [
-      { "path": "/api/amazon/product/:asin", "price": "$0.005", "unit": "per request" },
-      { "path": "/api/amazon/search", "price": "$0.01", "unit": "per request" },
-      { "path": "/api/amazon/bestsellers", "price": "$0.01", "unit": "per request" },
-      { "path": "/api/amazon/reviews/:asin", "price": "$0.02", "unit": "per request" }
+      {
+        "path": "/api/amazon/product/:asin",
+        "price": "$0.005",
+        "unit": "per request"
+      },
+      {
+        "path": "/api/amazon/search",
+        "price": "$0.01",
+        "unit": "per request"
+      },
+      {
+        "path": "/api/amazon/bestsellers",
+        "price": "$0.01",
+        "unit": "per request"
+      },
+      {
+        "path": "/api/amazon/reviews/:asin",
+        "price": "$0.02",
+        "unit": "per request"
+      }
     ],
     "comparison": "Jungle Scout: $49/mo (limited lookups). Helium 10: $29-229/mo. Keepa API: $0.02/product. Outscraper Amazon: $0.01-0.05/product. Our x402 zero-signup micropayments start at $0.005/product with real mobile proxy IPs.",
     "currency": "USDC",
@@ -35,31 +51,33 @@
   "whyMobileProxy": "Amazon aggressively blocks datacenter IPs with CAPTCHAs and returns different prices/availability based on IP reputation. Mobile carrier IPs (4G/5G) appear as real shoppers, bypassing bot detection and returning accurate pricing, BSR rankings, and buy box data. Without mobile proxies, Amazon returns CAPTCHA pages or redirects to robot-check.",
   "outputSchema": {
     "product": {
-      "asin": "string — Amazon product ASIN",
-      "title": "string — Product title",
+      "asin": "string \u2014 Amazon product ASIN",
+      "title": "string \u2014 Product title",
       "price": "{ current: number, currency: string, was: number | null, discount_pct: number | null }",
       "bsr": "{ rank: number, category: string, sub_category_ranks: Array<{ rank, category }> }",
-      "rating": "number — Average star rating (1-5)",
-      "reviews_count": "number — Total review count",
+      "rating": "number \u2014 Average star rating (1-5)",
+      "reviews_count": "number \u2014 Total review count",
       "buy_box": "{ seller: string, is_amazon: boolean, fulfilled_by: string }",
-      "availability": "string — In Stock / Out of Stock / etc.",
-      "brand": "string — Product brand",
-      "images": "string[] — Product image URLs",
-      "description": "string — Product description",
-      "features": "string[] — Bullet point features"
+      "availability": "string \u2014 In Stock / Out of Stock / etc.",
+      "brand": "string \u2014 Product brand",
+      "images": "string[] \u2014 Product image URLs",
+      "description": "string \u2014 Product description",
+      "features": "string[] \u2014 Bullet point features"
     },
     "search": {
-      "results": [{
-        "asin": "string",
-        "title": "string",
-        "price": "number",
-        "rating": "number",
-        "reviews_count": "number",
-        "image": "string",
-        "is_prime": "boolean",
-        "is_sponsored": "boolean",
-        "url": "string"
-      }]
+      "results": [
+        {
+          "asin": "string",
+          "title": "string",
+          "price": "number",
+          "rating": "number",
+          "reviews_count": "number",
+          "image": "string",
+          "is_prime": "boolean",
+          "is_sponsored": "boolean",
+          "url": "string"
+        }
+      ]
     }
   },
   "limitations": [
@@ -70,7 +88,14 @@
     "ASIN must be exactly 10 alphanumeric characters"
   ],
   "category": "scraper",
-  "tags": ["amazon", "ecommerce", "bsr", "product-intelligence", "price-tracking", "reviews"],
+  "tags": [
+    "amazon",
+    "ecommerce",
+    "bsr",
+    "product-intelligence",
+    "price-tracking",
+    "reviews"
+  ],
   "owner": {
     "name": "Aurora",
     "github": "TheAuroraAI"
