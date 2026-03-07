@@ -1,0 +1,81 @@
+{
+  "type": "rankings",
+  "store": "google",
+  "category": "apps",
+  "country": "US",
+  "timestamp": "2026-03-07T14:30:00Z",
+  "rankings": [
+    {
+      "rank": 1,
+      "appName": "TikTok",
+      "developer": "TikTok Pte. Ltd.",
+      "appId": "com.zhiliaoapp.musically",
+      "rating": 4.4,
+      "ratingCount": 21500000,
+      "price": "Free",
+      "inAppPurchases": true,
+      "category": "Entertainment",
+      "icon": "https://play-lh.googleusercontent.com/BmUViDVOKNJe0GYJe22hsr7juFndByoxynCBF9ubMUKPFRuMBaaqIjgwYlMxFNb03Uo=s96"
+    },
+    {
+      "rank": 2,
+      "appName": "YouTube",
+      "developer": "Google LLC",
+      "appId": "com.google.android.youtube",
+      "rating": 4.3,
+      "ratingCount": 121000000,
+      "price": "Free",
+      "inAppPurchases": true,
+      "category": "Video Players",
+      "icon": "https://play-lh.googleusercontent.com/lMoItBgdPPVDJsNOVtP26EKHePkwBg-PkuY9NOrc-fumRtTFP4XhpUNk_22syN4Datc=s96"
+    },
+    {
+      "rank": 3,
+      "appName": "Instagram",
+      "developer": "Meta Platforms, Inc.",
+      "appId": "com.instagram.android",
+      "rating": 4.3,
+      "ratingCount": 89000000,
+      "price": "Free",
+      "inAppPurchases": true,
+      "category": "Social",
+      "icon": "https://play-lh.googleusercontent.com/VRMWkE5p3CkWhJs6nv-9ZsLAs1QOg5ob1_3qg-rckwYW7yp1fMrYZqnEFpk0IoVP4LM=s96"
+    },
+    {
+      "rank": 4,
+      "appName": "Snapchat",
+      "developer": "Snap Inc",
+      "appId": "com.snapchat.android",
+      "rating": 4.1,
+      "ratingCount": 32000000,
+      "price": "Free",
+      "inAppPurchases": true,
+      "category": "Social",
+      "icon": "https://play-lh.googleusercontent.com/6a1WO1U-N_KPfHAZMiyqK3VjEoJeEyTgbLXqnXv7-Y_r_-SYNcSmb8BU7D6fJKw7DA=s96"
+    },
+    {
+      "rank": 5,
+      "appName": "WhatsApp Messenger",
+      "developer": "WhatsApp LLC",
+      "appId": "com.whatsapp",
+      "rating": 4.2,
+      "ratingCount": 195000000,
+      "price": "Free",
+      "inAppPurchases": false,
+      "category": "Communication",
+      "icon": "https://play-lh.googleusercontent.com/bYtqbOcTYOlgc6gqZ2rwb8lptHuwlNE75zYJu6Bn076-hTmvd96HH-6v7S0YUAAJXoJN=s96"
+    }
+  ],
+  "proxy": {
+    "ip": "99.87.225.2",
+    "country": "US",
+    "carrier": "T-Mobile US",
+    "type": "mobile"
+  },
+  "proxy_purchase": {
+    "txHash": "0xbc596de14a26bf687cef58b4eda9c697a5b2d15af00aebaced4ca847d2a0bbc5",
+    "network": "base",
+    "amountUSDC": 0.4,
+    "provider": "proxies.sx"
+  }
+}

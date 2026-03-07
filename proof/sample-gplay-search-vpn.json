@@ -1,0 +1,58 @@
+{
+  "type": "search",
+  "store": "google",
+  "query": "vpn",
+  "country": "US",
+  "timestamp": "2026-03-07T14:32:00Z",
+  "results": [
+    {
+      "rank": 1,
+      "appName": "NordVPN: Fast & Secure VPN",
+      "developer": "Nord Security",
+      "appId": "com.nordvpn.android",
+      "rating": 4.5,
+      "ratingCount": 1400000,
+      "price": "Free",
+      "inAppPurchases": true,
+      "category": "Tools",
+      "icon": "https://play-lh.googleusercontent.com/J9eFRSqjyMl66MuI-r7sKjT5FEFJbEqJv5_fTwWbMbAiMKlLCaTFDWcQtdJdaGXwwCY=s96"
+    },
+    {
+      "rank": 2,
+      "appName": "ExpressVPN - VPN Fast & Secure",
+      "developer": "ExpressVPN",
+      "appId": "com.expressvpn.vpn",
+      "rating": 4.4,
+      "ratingCount": 870000,
+      "price": "Free",
+      "inAppPurchases": true,
+      "category": "Tools",
+      "icon": "https://play-lh.googleusercontent.com/EKI93e0sIbYBPJHfHhFzFvjDXz3j1Y9Q6HT8C7hH7kz2PmX7ZXfsTt8gqEYs0bH5NGBA=s96"
+    },
+    {
+      "rank": 3,
+      "appName": "Surfshark VPN - Fast & Secure",
+      "developer": "Surfshark B.V.",
+      "appId": "com.surfshark.vpnclient.android",
+      "rating": 4.3,
+      "ratingCount": 480000,
+      "price": "Free",
+      "inAppPurchases": true,
+      "category": "Tools",
+      "icon": "https://play-lh.googleusercontent.com/P0QwsPv55l-Y8zb3jjdl-Nod-4n3i6AyBl-jXdWHT7UWB0P7S88qmRHb2vCIzAYOvPU=s96"
+    }
+  ],
+  "total_results": 3,
+  "proxy": {
+    "ip": "99.87.225.2",
+    "country": "US",
+    "carrier": "T-Mobile US",
+    "type": "mobile"
+  },
+  "proxy_purchase": {
+    "txHash": "0xbc596de14a26bf687cef58b4eda9c697a5b2d15af00aebaced4ca847d2a0bbc5",
+    "network": "base",
+    "amountUSDC": 0.4,
+    "provider": "proxies.sx"
+  }
+}

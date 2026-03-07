@@ -1,0 +1,159 @@
+{
+  "id": "appstore-intelligence",
+  "name": "App Store Intelligence API",
+  "description": "Real-time app rankings, details, reviews, and search from Apple App Store + Google Play Store via mobile carrier IPs. Four query types: rankings, app details, search, trending.",
+  "longDescription": "Scrapes real-time app intelligence from both Apple App Store and Google Play Store through real 4G/5G mobile carrier IPs. Enterprise tools (Sensor Tower, data.ai) charge $30K-$100K+/year \u2014 this brings it to $0.01-0.015/request. Four endpoints: rankings (top apps by category and country), app (full metadata + reviews), search (keyword lookup), trending (new/hot apps). Apple data via iTunes RSS + Lookup + Reviews APIs for structured JSON. Google Play via HTML scraping with mobile proxy for geo-accurate results. Covers all 6 countries (US, DE, FR, ES, GB, PL) with carrier-specific geo-targeting.",
+  "endpoint": "https://marketplace-api-9kvb.onrender.com/api/apps",
+  "docsUrl": "https://github.com/bolivian-peru/marketplace-service-template",
+  "pricing": {
+    "model": "per-request",
+    "endpoints": [
+      {
+        "path": "/api/apps?type=rankings",
+        "price": "$0.01",
+        "unit": "per request"
+      },
+      {
+        "path": "/api/apps?type=app",
+        "price": "$0.015",
+        "unit": "per request"
+      },
+      {
+        "path": "/api/apps?type=search",
+        "price": "$0.01",
+        "unit": "per request"
+      },
+      {
+        "path": "/api/apps?type=trending",
+        "price": "$0.01",
+        "unit": "per request"
+      }
+    ],
+    "comparison": "Sensor Tower: $30K+/year. data.ai (App Annie): $50K+/year. 42matters: $500/month. SimilarWeb: $10K+/year. No pay-per-request alternative exists \u2014 this opens mobile app intelligence to smaller players and AI agents at $0.01/query.",
+    "currency": "USDC",
+    "networks": [
+      {
+        "network": "solana",
+        "chainId": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "recipient": "GpXHXs5KfzfXbNKcMLNbAMsJsgPsBE7y5GtwVoiuxYvH",
+        "asset": "USDC",
+        "assetAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+      },
+      {
+        "network": "base",
+        "chainId": "eip155:8453",
+        "recipient": "0xC0140eEa19bD90a7cA75882d5218eFaF20426e42",
+        "asset": "USDC",
+        "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+      }
+    ]
+  },
+  "whyMobileProxy": "Both app stores geo-fence their content based on IP location and carrier. Apple App Store shows different featured apps, rankings, and carrier-exclusive promotions based on the user's mobile carrier (T-Mobile US sees different featured apps than Vodafone DE). Google Play Store aggressively blocks datacenter IPs \u2014 automated scraping from datacenter IPs hits rate limits at 500-1,000 apps/day. Mobile carrier IPs are treated as legitimate app store users, bypassing anti-bot detection and returning authentic, carrier-specific results.",
+  "outputSchema": {
+    "rankings": {
+      "type": "rankings",
+      "store": "string \u2014 apple | google",
+      "category": "string \u2014 category queried",
+      "country": "string \u2014 ISO country code",
+      "timestamp": "ISO 8601",
+      "rankings": [
+        {
+          "rank": "number \u2014 1-indexed position",
+          "appName": "string \u2014 App display name",
+          "developer": "string \u2014 Developer/publisher name",
+          "appId": "string \u2014 Apple numeric ID or Google package name",
+          "rating": "number | null \u2014 Average star rating (1-5)",
+          "ratingCount": "number | null \u2014 Total ratings",
+          "price": "string \u2014 'Free' or '$X.XX'",
+          "inAppPurchases": "boolean",
+          "category": "string \u2014 Primary category",
+          "lastUpdated": "string | null \u2014 Last update date",
+          "size": "string | null \u2014 e.g. '245 MB'",
+          "icon": "string | null \u2014 Icon URL"
+        }
+      ],
+      "metadata": "{ totalRanked: number, scrapedAt: ISO 8601 }"
+    },
+    "app": {
+      "type": "app",
+      "store": "string",
+      "appId": "string",
+      "country": "string",
+      "timestamp": "ISO 8601",
+      "app": {
+        "appId": "string",
+        "appName": "string",
+        "developer": "string",
+        "description": "string \u2014 Full app description",
+        "rating": "number | null",
+        "ratingCount": "number | null",
+        "price": "string",
+        "inAppPurchases": "boolean",
+        "category": "string",
+        "lastUpdated": "string | null",
+        "size": "string | null",
+        "version": "string | null",
+        "icon": "string | null",
+        "screenshots": "string[] \u2014 Screenshot URLs",
+        "contentRating": "string | null",
+        "reviews": "[{ author, rating, title, text, date }]"
+      }
+    },
+    "search": {
+      "type": "search",
+      "store": "string",
+      "query": "string",
+      "country": "string",
+      "timestamp": "ISO 8601",
+      "results": [
+        {
+          "appName": "string",
+          "developer": "string",
+          "appId": "string",
+          "rating": "number | null",
+          "ratingCount": "number | null",
+          "price": "string",
+          "icon": "string | null",
+          "category": "string | null"
+        }
+      ],
+      "metadata": "{ totalResults: number, scrapedAt: ISO 8601 }"
+    },
+    "trending": {
+      "type": "trending",
+      "store": "string",
+      "country": "string",
+      "timestamp": "ISO 8601",
+      "trending": "AppRanking[] \u2014 Same schema as rankings"
+    }
+  },
+  "limitations": [
+    "Apple rankings limited to top 50 per category via RSS feed",
+    "Google Play HTML parsing may miss some metadata when page structure changes",
+    "Apple reviews limited to 10 most recent per app",
+    "Google Play review extraction depends on page rendering (may return fewer in some countries)",
+    "Rate limited to 20 requests/minute per client IP"
+  ],
+  "category": "scraper",
+  "tags": [
+    "app-store",
+    "google-play",
+    "mobile-proxy",
+    "app-intelligence",
+    "rankings",
+    "reviews",
+    "market-research",
+    "alternative-data"
+  ],
+  "owner": {
+    "name": "TheAuroraAI",
+    "github": "TheAuroraAI"
+  },
+  "status": "pending",
+  "featured": false,
+  "addedAt": "2026-03-02",
+  "x402": {
+    "discoveryUrl": "https://marketplace-api-9kvb.onrender.com/api/apps",
+    "wellKnown": "https://marketplace-api-9kvb.onrender.com/.well-known/x402.json"
+  }
+}
