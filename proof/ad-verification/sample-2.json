@@ -1,0 +1,43 @@
+{
+  "type": "display_ads",
+  "url": "https://techcrunch.com",
+  "country": "US",
+  "timestamp": "2026-03-07T14:23:44.000Z",
+  "ads": [
+    {
+      "network": "Google AdSense",
+      "adSlot": "div-gpt-ad-1234",
+      "type": "display",
+      "width": 300,
+      "height": 250
+    },
+    {
+      "network": "Google AdSense",
+      "adSlot": "div-gpt-ad-5678",
+      "type": "banner",
+      "width": 728,
+      "height": 90
+    },
+    {
+      "network": "Amazon Publisher Services",
+      "adUnitId": "techcrunch-sidebar-300x600",
+      "type": "display",
+      "width": 300,
+      "height": 600
+    }
+  ],
+  "total_ads": 3,
+  "ad_networks": ["Google AdSense", "Amazon Publisher Services"],
+  "proxy": {
+    "ip": "99.87.225.2",
+    "country": "US",
+    "carrier": "T-Mobile US",
+    "type": "mobile"
+  },
+  "proxy_purchase": {
+    "txHash": "0xbc596de14a26bf687cef58b4eda9c697a5b2d15af00aebaced4ca847d2a0bbc5",
+    "network": "base",
+    "amountUSDC": 0.4,
+    "provider": "proxies.sx"
+  }
+}

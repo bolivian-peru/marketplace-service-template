@@ -1,0 +1,133 @@
+{
+  "id": "mobile-ad-verification",
+  "name": "Mobile Ad Verification & Creative Intelligence",
+  "description": "See exactly what ads appear from a real 4G/5G mobile device in any country. Verify geo-targeted ads, spy on competitor creatives, detect ad fraud. Three query types: search ads, display ads, advertiser lookup.",
+  "longDescription": "Ad verification from real mobile carrier IPs. Shows paid search ads, display/banner ads, and advertiser creative inventories as seen by a real mobile user \u2014 not a datacenter bot that gets blocked or served sanitized content. Three endpoints: search_ads (what Google ads show for a query in a country), display_ads (what banner/display ads appear on any URL), advertiser (what a specific brand is running via Google Ads Transparency Center). The ad verification market is $4.8B growing to $15.9B by 2033 \u2014 enterprise solutions charge $50K+/year. This brings it to $0.01-$0.02/check.",
+  "endpoint": "https://marketplace-api-9kvb.onrender.com/api/ads",
+  "docsUrl": "https://github.com/bolivian-peru/marketplace-service-template",
+  "pricing": {
+    "model": "per-request",
+    "endpoints": [
+      {
+        "path": "/api/ads?type=search_ads",
+        "price": "$0.02",
+        "unit": "per request"
+      },
+      {
+        "path": "/api/ads?type=display_ads",
+        "price": "$0.015",
+        "unit": "per request"
+      },
+      {
+        "path": "/api/ads?type=advertiser",
+        "price": "$0.01",
+        "unit": "per request"
+      }
+    ],
+    "comparison": "GeoEdge: $50K+/year. DoubleVerify: $100K+/year. IAS: $75K+/year. SerpAPI ad scraping: $0.10+/query (datacenter IPs get blocked or fake results). Our mobile carrier IPs see authentic ad serving at $0.01-0.02/query.",
+    "currency": "USDC",
+    "networks": [
+      {
+        "network": "solana",
+        "chainId": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "recipient": "GpXHXs5KfzfXbNKcMLNbAMsJsgPsBE7y5GtwVoiuxYvH",
+        "asset": "USDC",
+        "assetAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+      },
+      {
+        "network": "base",
+        "chainId": "eip155:8453",
+        "recipient": "0xC0140eEa19bD90a7cA75882d5218eFaF20426e42",
+        "asset": "USDC",
+        "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+      }
+    ]
+  },
+  "whyMobileProxy": "Ad networks serve dramatically different creatives based on IP type. Datacenter IPs get either blocked entirely or served low-quality/house ads that don't reflect real targeting. Google's real-time bidding system reserves premium geo-targeted ads exclusively for requests from real mobile carrier IPs (T-Mobile, Verizon, AT&T). Without a real carrier IP, you cannot verify whether your geo-targeted ad is actually appearing to your intended audience.",
+  "outputSchema": {
+    "search_ads": {
+      "type": "search_ads",
+      "query": "string \u2014 Query used",
+      "country": "string \u2014 ISO country code",
+      "timestamp": "ISO 8601",
+      "ads": [
+        {
+          "position": "number \u2014 1-indexed position",
+          "placement": "top | bottom | unknown",
+          "title": "string \u2014 Ad headline",
+          "description": "string \u2014 Ad body text",
+          "displayUrl": "string \u2014 Shown URL (e.g. nordvpn.com/deal)",
+          "finalUrl": "string \u2014 Actual destination URL",
+          "advertiser": "string \u2014 Brand name",
+          "extensions": "string[] \u2014 Sitelinks, callouts, etc.",
+          "isResponsive": "boolean \u2014 Responsive search ad"
+        }
+      ],
+      "organic_count": "number \u2014 Non-paid results count",
+      "total_ads": "number",
+      "ad_positions": "{ top: number, bottom: number }"
+    },
+    "display_ads": {
+      "type": "display_ads",
+      "url": "string \u2014 URL checked",
+      "country": "string",
+      "timestamp": "ISO 8601",
+      "ads": [
+        {
+          "network": "string \u2014 Ad network (Google, Facebook, etc.)",
+          "adUnitId": "string | null",
+          "src": "string | null \u2014 Ad creative URL",
+          "width": "number | null",
+          "height": "number | null",
+          "type": "display | banner | interstitial | native"
+        }
+      ],
+      "total_ads": "number",
+      "networks_detected": "string[]"
+    },
+    "advertiser": {
+      "type": "advertiser",
+      "domain": "string",
+      "country": "string",
+      "timestamp": "ISO 8601",
+      "ads": [
+        {
+          "headline": "string",
+          "description": "string",
+          "targetUrl": "string",
+          "format": "string",
+          "dateRange": "string | null"
+        }
+      ],
+      "total_creatives": "number"
+    }
+  },
+  "limitations": [
+    "Google Ads Transparency Center may rate-limit frequent advertiser lookups",
+    "Display ad detection depends on page load speed (timeout: 15s)",
+    "Some ad networks use obfuscated markup that reduces detection accuracy",
+    "Rate limited to 20 requests/minute per client IP"
+  ],
+  "category": "scraper",
+  "tags": [
+    "ad-verification",
+    "mobile-proxy",
+    "google-ads",
+    "display-ads",
+    "competitor-intelligence",
+    "creative-analysis",
+    "geo-targeting",
+    "ad-fraud"
+  ],
+  "owner": {
+    "name": "TheAuroraAI",
+    "github": "TheAuroraAI"
+  },
+  "status": "pending",
+  "featured": false,
+  "addedAt": "2026-03-02",
+  "x402": {
+    "discoveryUrl": "https://marketplace-api-9kvb.onrender.com/api/ads",
+    "wellKnown": "https://marketplace-api-9kvb.onrender.com/.well-known/x402.json"
+  }
+}

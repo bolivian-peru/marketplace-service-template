@@ -37,7 +37,7 @@
       "params": ["id", "title?", "limit?"]
     }
   ],
-  "wallet": "6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv",
+  "wallet": "GpXHXs5KfzfXbNKcMLNbAMsJsgPsBE7y5GtwVoiuxYvH",
   "bounty": {
     "issue": "https://github.com/bolivian-peru/marketplace-service-template/issues/77",
     "amount": "$100 in $SX token"

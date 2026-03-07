@@ -1,0 +1,59 @@
+{
+  "type": "search_ads",
+  "query": "best vpn",
+  "country": "US",
+  "timestamp": "2026-03-07T14:22:11.000Z",
+  "ads": [
+    {
+      "position": 1,
+      "placement": "top",
+      "title": "NordVPN® Official Site – Best VPN for Speed & Security",
+      "description": "Get NordVPN, the leading VPN service. Protect your privacy online with military-grade encryption. 68% off 2-year plan.",
+      "displayUrl": "nordvpn.com",
+      "finalUrl": "https://nordvpn.com/special/deal/",
+      "advertiser": "NordVPN",
+      "extensions": ["68% off 2-year plan", "30-day money-back guarantee"],
+      "isResponsive": true
+    },
+    {
+      "position": 2,
+      "placement": "top",
+      "title": "ExpressVPN – #1 Trusted VPN – Special Offer",
+      "description": "The fastest VPN available. No activity logs, 24/7 support. Get 3 months free with 12-month plan.",
+      "displayUrl": "expressvpn.com",
+      "finalUrl": "https://www.expressvpn.com/order",
+      "advertiser": "ExpressVPN",
+      "extensions": ["3 months free", "30-day money back"],
+      "isResponsive": false
+    },
+    {
+      "position": 3,
+      "placement": "top",
+      "title": "Surfshark VPN – Unlimited Devices – 85% Off Today",
+      "description": "Connect unlimited devices simultaneously. Fast, secure VPN with ad blocker included. Best value 2026.",
+      "displayUrl": "surfshark.com",
+      "finalUrl": "https://surfshark.com/deal/special-offer",
+      "advertiser": "Surfshark",
+      "extensions": ["Unlimited devices", "Ad blocker included"],
+      "isResponsive": true
+    }
+  ],
+  "organic_count": 7,
+  "total_ads": 3,
+  "ad_positions": {
+    "top": 3,
+    "bottom": 0
+  },
+  "proxy": {
+    "ip": "99.87.225.2",
+    "country": "US",
+    "carrier": "T-Mobile US",
+    "type": "mobile"
+  },
+  "proxy_purchase": {
+    "txHash": "0xbc596de14a26bf687cef58b4eda9c697a5b2d15af00aebaced4ca847d2a0bbc5",
+    "network": "base",
+    "amountUSDC": 0.4,
+    "provider": "proxies.sx"
+  }
+}

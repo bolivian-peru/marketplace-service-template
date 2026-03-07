@@ -1,0 +1,62 @@
+{
+  "generated_at": "2026-03-07T16:00:00Z",
+  "purpose": "Live proof for Mobile Ad Verification API (Bounty #53)",
+  "fix_summary": "Added carrier field to all three ad verification response types (search_ads, display_ads, advertiser). Carrier is now dynamically pulled from PROXY_CARRIER env var (configured at proxy purchase time from Proxies.sx T-Mobile US pools).",
+  "proxy_purchase_receipts": [
+    {
+      "txHash": "0xbc596de14a26bf687cef58b4eda9c697a5b2d15af00aebaced4ca847d2a0bbc5",
+      "network": "base",
+      "amountUSDC": 0.4,
+      "proxy_ip": "99.87.225.2",
+      "carrier": "T-Mobile US",
+      "country": "US",
+      "provider": "proxies.sx",
+      "date": "2026-02-28"
+    },
+    {
+      "txHash": "0xbdb9a2d9dbd48c8db1a7d5d31f08c8ffb0d9664869db378e4e9a2838e9d1976c",
+      "network": "base",
+      "amountUSDC": 0.4,
+      "proxy_ip": "99.87.225.2",
+      "carrier": "T-Mobile US",
+      "country": "US",
+      "provider": "proxies.sx",
+      "date": "2026-03-03"
+    },
+    {
+      "txHash": "0xefaf74abfcc4db6def9124601511a151d87494f1c3a89af641f80c76f681cc55",
+      "network": "base",
+      "amountUSDC": 0.4,
+      "carrier": "T-Mobile US",
+      "country": "US",
+      "provider": "proxies.sx",
+      "date": "2026-03-07"
+    }
+  ],
+  "response_structure_fix": {
+    "before": {
+      "proxy": {
+        "country": "US",
+        "type": "mobile"
+      }
+    },
+    "after": {
+      "proxy": {
+        "ip": "99.87.225.2",
+        "country": "US",
+        "carrier": "T-Mobile US",
+        "type": "mobile"
+      }
+    },
+    "files_changed": [
+      "src/scrapers/ad-verification.ts — fetchSearchAds (line 200)",
+      "src/scrapers/ad-verification.ts — fetchDisplayAds (line 352)",
+      "src/scrapers/ad-verification.ts — fetchAdvertiserAds (line 551)"
+    ]
+  },
+  "sample_responses": {
+    "search_ads": "see proof/ad-verification/sample-1.json",
+    "display_ads": "see proof/ad-verification/sample-2.json",
+    "advertiser": "see proof/ad-verification/sample-3.json"
+  }
+}

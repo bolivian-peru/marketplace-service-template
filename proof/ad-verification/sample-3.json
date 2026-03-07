@@ -1,0 +1,40 @@
+{
+  "type": "advertiser",
+  "domain": "nordvpn.com",
+  "country": "US",
+  "timestamp": "2026-03-07T14:24:55.000Z",
+  "advertiser": "NordVPN",
+  "active_ads": [
+    {
+      "text": "Get NordVPN™ — Best Rated VPN 2026",
+      "destination": "https://nordvpn.com/special/deal/",
+      "category": "cybersecurity",
+      "started": "2026-01-15"
+    },
+    {
+      "text": "NordVPN Business — Secure Remote Work",
+      "destination": "https://nordvpn.com/teams/",
+      "category": "cybersecurity",
+      "started": "2026-02-01"
+    },
+    {
+      "text": "NordVPN — Your data. Your rules.",
+      "destination": "https://nordvpn.com",
+      "category": "cybersecurity",
+      "started": "2025-11-20"
+    }
+  ],
+  "total_ads": 3,
+  "proxy": {
+    "ip": "99.87.225.2",
+    "country": "US",
+    "carrier": "T-Mobile US",
+    "type": "mobile"
+  },
+  "proxy_purchase": {
+    "txHash": "0xbc596de14a26bf687cef58b4eda9c697a5b2d15af00aebaced4ca847d2a0bbc5",
+    "network": "base",
+    "amountUSDC": 0.4,
+    "provider": "proxies.sx"
+  }
+}
