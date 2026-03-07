@@ -26,7 +26,7 @@
       "category": "Utilities"
     },
     {
-      "appName": "Free VPN – Fast & Secure Proxy",
+      "appName": "Free VPN \u2013 Fast & Secure Proxy",
       "developer": "Free VPN LTD (Apps)",
       "appId": "1575330471",
       "rating": 4.7,
@@ -60,6 +60,15 @@
     "totalResults": 5,
     "scrapedAt": "2026-03-02T15:32:05Z"
   },
-  "proxy": { "country": "GB", "carrier": "mobile", "type": "mobile" },
-  "payment": { "txHash": "...", "amount": 0.01, "verified": true }
+  "proxy": {
+    "country": "GB",
+    "carrier": "T-Mobile US",
+    "type": "mobile",
+    "ip": "99.87.225.2"
+  },
+  "payment": {
+    "txHash": "...",
+    "amount": 0.01,
+    "verified": true
+  }
 }

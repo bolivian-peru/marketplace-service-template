@@ -81,6 +81,15 @@
     "scrapedAt": "2026-03-02T15:30:15Z"
   },
   "_countryDifferences": "Germany #1 is Subway Surfers City (US #7), Brawl Stars at DE #3 is absent from US top 10, Rainbow Six Mobile (US #1) is absent from DE top 5",
-  "proxy": { "country": "DE", "carrier": "mobile", "type": "mobile" },
-  "payment": { "txHash": "...", "amount": 0.01, "verified": true }
+  "proxy": {
+    "country": "DE",
+    "carrier": "T-Mobile US",
+    "type": "mobile",
+    "ip": "99.87.225.2"
+  },
+  "payment": {
+    "txHash": "...",
+    "amount": 0.01,
+    "verified": true
+  }
 }

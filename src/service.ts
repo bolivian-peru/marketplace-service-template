@@ -1531,7 +1531,7 @@ serviceRouter.get('/apps', async (c) => {
     c.header('X-Payment-Settled', 'true');
     c.header('X-Payment-TxHash', payment.txHash);
 
-    const proxyMeta = { country: proxy.country, carrier: 'mobile', type: 'mobile' as const };
+    const proxyMeta = { country: proxy.country, carrier: proxy.carrier, type: 'mobile' as const };
     const paymentMeta = { txHash: payment.txHash, amount: verification.amount, verified: true };
 
     if (type === 'rankings') {

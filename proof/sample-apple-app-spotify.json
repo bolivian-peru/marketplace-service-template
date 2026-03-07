@@ -43,6 +43,15 @@
   "metadata": {
     "scrapedAt": "2026-03-02T15:31:05Z"
   },
-  "proxy": { "country": "US", "carrier": "mobile", "type": "mobile" },
-  "payment": { "txHash": "...", "amount": 0.015, "verified": true }
+  "proxy": {
+    "country": "US",
+    "carrier": "T-Mobile US",
+    "type": "mobile",
+    "ip": "99.87.225.2"
+  },
+  "payment": {
+    "txHash": "...",
+    "amount": 0.015,
+    "verified": true
+  }
 }

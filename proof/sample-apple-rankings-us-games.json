@@ -133,7 +133,7 @@
     },
     {
       "rank": 10,
-      "appName": "Arrows – Puzzle Escape",
+      "appName": "Arrows \u2013 Puzzle Escape",
       "developer": "Lessmore UG (haftungsbeschrankt)",
       "appId": "6748397500",
       "rating": null,
@@ -150,6 +150,15 @@
     "totalRanked": 10,
     "scrapedAt": "2026-03-02T15:30:05Z"
   },
-  "proxy": { "country": "US", "carrier": "mobile", "type": "mobile" },
-  "payment": { "txHash": "...", "amount": 0.01, "verified": true }
+  "proxy": {
+    "country": "US",
+    "carrier": "T-Mobile US",
+    "type": "mobile",
+    "ip": "99.87.225.2"
+  },
+  "payment": {
+    "txHash": "...",
+    "amount": 0.01,
+    "verified": true
+  }
 }
