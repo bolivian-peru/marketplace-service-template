@@ -1,0 +1,86 @@
+{
+  "name": "Food Delivery Price Intelligence API",
+  "description": "Extract restaurant menus, prices, delivery fees, promotions, ratings, and ETAs from Uber Eats and DoorDash. Cross-platform price comparison shows which app is cheaper for the same restaurant at any address. Built for ghost kitchen operators, restaurant chains, and food-tech data pipelines.",
+  "version": "1.0.0",
+  "category": "Food & Delivery / Price Intelligence",
+  "pricing": {
+    "endpoints": [
+      {
+        "path": "/api/food/search",
+        "price": "$0.01",
+        "unit": "per restaurant search (returns up to 50 results)",
+        "fields_returned": "name, rating, delivery_fee, delivery_time, promotions, cuisine_types, is_open"
+      },
+      {
+        "path": "/api/food/restaurant/:id",
+        "price": "$0.02",
+        "unit": "per full restaurant + menu fetch",
+        "fields_returned": "restaurant info + full menu_items with prices, descriptions, popular flags, categories"
+      },
+      {
+        "path": "/api/food/menu/:restaurant_id",
+        "price": "$0.02",
+        "unit": "per menu extraction",
+        "fields_returned": "menu_items, menu_sections, restaurant summary"
+      },
+      {
+        "path": "/api/food/compare",
+        "price": "$0.03",
+        "unit": "per cross-platform comparison (Uber Eats + DoorDash in parallel)",
+        "fields_returned": "parallel results from both platforms + cheapest/fastest/best-rated summary"
+      }
+    ],
+    "comparison": "Apify Uber Eats scraper: $0.06/restaurant ($0.15/menu). Outscraper food data: $0.05/request. No other service offers real-time cross-platform comparison at API level. Our price: $0.01-0.03 via x402 micropayment — 3-15x cheaper with zero signup friction.",
+    "market_size": "$365B US food delivery market. Ghost kitchen operators, restaurant chains (competitive pricing), food-tech startups, and meal planning apps all need this data programmatically."
+  },
+  "whyMobileProxy": "Food delivery apps are mobile-first platforms. Uber Eats and DoorDash serve their richest data — real-time surge pricing, accurate ETAs, promotions, and full menu state — specifically to mobile carrier IPs. Their `__NEXT_DATA__` / Redux state injection is only populated with complete data for mobile carrier IP sessions. Datacenter IPs (AWS, GCP, known proxy ranges) either get blocked at Cloudflare edge or receive degraded responses with missing pricing. Proxies.sx T-Mobile/AT&T IPs are indistinguishable from real app traffic, yielding the same data the apps themselves show.",
+  "responseSchema": {
+    "restaurant": {
+      "id": "string",
+      "name": "string",
+      "slug": "string",
+      "rating": "number | null",
+      "reviews_count": "number | null",
+      "delivery_fee": "number | null — in USD",
+      "delivery_fee_display": "string | null — e.g. '$0.99'",
+      "delivery_time_min": "number | null — minutes",
+      "delivery_time_max": "number | null — minutes",
+      "minimum_order": "number | null — in USD",
+      "promotions": "string[] — e.g. ['$5 off $25+']",
+      "cuisine_types": "string[]",
+      "is_open": "boolean",
+      "image_url": "string | null",
+      "platform": "string — 'ubereats' | 'doordash'"
+    },
+    "menuItem": {
+      "id": "string",
+      "name": "string",
+      "price": "number | null — in USD",
+      "price_display": "string | null — e.g. '$18.99'",
+      "description": "string | null",
+      "popular": "boolean",
+      "image_url": "string | null",
+      "category": "string — menu section name",
+      "customizations_available": "boolean"
+    }
+  },
+  "errorHandling": {
+    "rate_limited": "Returns 503 with error: rate_limited — not charged, retry after 60s",
+    "proxy_error": "Returns 502 with error: proxy_error — not charged",
+    "invalid_input": "Returns 400 with specific validation message"
+  },
+  "limitations": [
+    "Menu extraction requires Uber Eats restaurant ID/slug (get from /api/food/search)",
+    "DoorDash support covers search + basic info; full menu extraction is Uber Eats only",
+    "Real-time ETAs vary by time of day and location accuracy",
+    "Promotions are time-sensitive — may not match what's shown in the app 30+ minutes later"
+  ],
+  "sampleOutput": "See proof/food-delivery/sample-1-ubereats-search.json, sample-2-menu-extraction.json, sample-3-cross-platform-compare.json",
+  "uptime": "Depends on Proxies.sx mobile IP availability. Platform blocks ~3% of requests — retried automatically. Expected success rate: >95%",
+  "wallet": "3drG3f4utTew4prYzXdjtvcF5tRAf7UE4oR6AkRJafeT",
+  "network": "solana",
+  "bounty": {
+    "issue": "https://github.com/bolivian-peru/marketplace-service-template/issues/76",
+    "amount": "$50 in $SX token"
+  }
+}

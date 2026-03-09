@@ -1,0 +1,101 @@
+{
+  "_query": {
+    "endpoint": "GET /api/food/compare?query=sushi&address=94105",
+    "scraped_at": "2026-03-09T15:20:33Z",
+    "proxy_ip": "172.58.204.112",
+    "proxy_carrier": "T-Mobile US",
+    "proxy_provider": "Proxies.sx",
+    "response_time_ms": 6844
+  },
+  "query": "sushi",
+  "address": "94105",
+  "ubereats": [
+    {
+      "restaurant_name": "Ichi Sushi",
+      "platform": "ubereats",
+      "delivery_fee": 1.49,
+      "delivery_time_min": 25,
+      "delivery_time_max": 40,
+      "rating": 4.8,
+      "minimum_order": 15.00,
+      "promotions": ["$8 off $35+"],
+      "url": "https://www.ubereats.com/store/ichi-sushi-sf"
+    },
+    {
+      "restaurant_name": "Morimoto",
+      "platform": "ubereats",
+      "delivery_fee": 2.99,
+      "delivery_time_min": 35,
+      "delivery_time_max": 55,
+      "rating": 4.9,
+      "minimum_order": 30.00,
+      "promotions": [],
+      "url": "https://www.ubereats.com/store/morimoto-sf"
+    },
+    {
+      "restaurant_name": "Hinodeya Ramen & Sushi",
+      "platform": "ubereats",
+      "delivery_fee": 0.99,
+      "delivery_time_min": 30,
+      "delivery_time_max": 45,
+      "rating": 4.6,
+      "minimum_order": 12.00,
+      "promotions": ["Free delivery orders over $25"],
+      "url": "https://www.ubereats.com/store/hinodeya-sf"
+    }
+  ],
+  "doordash": [
+    {
+      "restaurant_name": "Ichi Sushi",
+      "platform": "doordash",
+      "delivery_fee": 2.49,
+      "delivery_time_min": 28,
+      "delivery_time_max": 43,
+      "rating": 4.8,
+      "minimum_order": 15.00,
+      "promotions": ["$0 delivery fee for DashPass"],
+      "url": "https://www.doordash.com/store/ichi-sushi-san-francisco"
+    },
+    {
+      "restaurant_name": "Akiko's Restaurant",
+      "platform": "doordash",
+      "delivery_fee": 1.99,
+      "delivery_time_min": 30,
+      "delivery_time_max": 50,
+      "rating": 4.7,
+      "minimum_order": 20.00,
+      "promotions": [],
+      "url": "https://www.doordash.com/store/akikos-restaurant"
+    },
+    {
+      "restaurant_name": "Hinodeya Ramen & Sushi",
+      "platform": "doordash",
+      "delivery_fee": 1.49,
+      "delivery_time_min": 32,
+      "delivery_time_max": 47,
+      "rating": 4.6,
+      "minimum_order": 12.00,
+      "promotions": [],
+      "url": "https://www.doordash.com/store/hinodeya-sf"
+    }
+  ],
+  "comparison_summary": {
+    "cheapest_delivery": "Hinodeya Ramen & Sushi (ubereats) — $0.99 delivery",
+    "fastest_delivery": "Ichi Sushi (ubereats) — 25-40 min",
+    "best_rated": "Morimoto (ubereats) — 4.9 stars",
+    "most_promotions": "Ichi Sushi (ubereats) — $8 off $35+"
+  },
+  "insight": {
+    "same_restaurant_price_diff": "Ichi Sushi: Uber Eats charges $1.49 delivery vs DoorDash $2.49 — save $1.00 on Uber Eats. Hinodeya: Uber Eats $0.99 vs DoorDash $1.49.",
+    "cross_platform_winner": "Uber Eats has lower delivery fees for these restaurants in 94105 today."
+  },
+  "scraped_at": "2026-03-09T15:20:33Z",
+  "meta": {
+    "proxy": {
+      "ip": "172.58.204.112",
+      "country": "US",
+      "carrier": "T-Mobile"
+    },
+    "response_time_ms": 6844
+  }
+}

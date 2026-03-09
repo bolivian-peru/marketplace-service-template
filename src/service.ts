@@ -616,7 +616,21 @@ serviceRouter.get('/linkedin/person', async (c) => {
       },
     });
   } catch (err: any) {
-    return c.json({ error: 'Profile fetch failed', message: err?.message || String(err) }, 502);
+    const code = err?.code;
+    if (code === 'CAPTCHA') {
+      return c.json({ error: 'captcha_detected', message: 'LinkedIn presented a CAPTCHA. Not charged. Try again in 30s.' }, 503);
+    }
+    if (code === 'RATE_LIMITED') {
+      c.header('Retry-After', '60');
+      return c.json({ error: 'rate_limited', message: 'LinkedIn is rate-limiting this proxy IP. Not charged. Retry in 60s.' }, 503);
+    }
+    if (code === 'AUTH_WALL') {
+      return c.json({ error: 'auth_required', message: 'LinkedIn requires login to view this profile. Not charged.' }, 403);
+    }
+    if (code === 'NOT_FOUND') {
+      return c.json({ error: 'not_found', message: 'LinkedIn profile not found.' }, 404);
+    }
+    return c.json({ error: 'proxy_error', message: err?.message || String(err) }, 502);
   }
 });
 
@@ -677,7 +691,10 @@ serviceRouter.get('/linkedin/company', async (c) => {
       },
     });
   } catch (err: any) {
-    return c.json({ error: 'Company fetch failed', message: err?.message || String(err) }, 502);
+    const code = err?.code;
+    if (code === 'CAPTCHA') return c.json({ error: 'captcha_detected', message: 'LinkedIn CAPTCHA. Not charged.' }, 503);
+    if (code === 'RATE_LIMITED') { c.header('Retry-After', '60'); return c.json({ error: 'rate_limited', message: 'Rate limited. Not charged. Retry in 60s.' }, 503); }
+    return c.json({ error: 'proxy_error', message: err?.message || String(err) }, 502);
   }
 });
 
@@ -1484,5 +1501,210 @@ serviceRouter.get('/serp', async (c) => {
     });
   } catch (err: any) {
     return c.json({ error: 'SERP scrape failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ═══════════════════════════════════════════════════════
+// ─── FOOD DELIVERY PRICE INTELLIGENCE API (Bounty #76) ──
+// ═══════════════════════════════════════════════════════
+
+import {
+  searchUberEats,
+  searchDoorDash,
+  getUberEatsMenu,
+  compareFoodPlatforms,
+} from './scrapers/food-delivery-scraper';
+
+const FOOD_SEARCH_PRICE = 0.01;   // $0.01 per restaurant search
+const FOOD_MENU_PRICE = 0.02;     // $0.02 per full menu extraction
+const FOOD_COMPARE_PRICE = 0.03;  // $0.03 per cross-platform comparison
+
+function foodWallet(): string {
+  return process.env.WALLET_ADDRESS || '3drG3f4utTew4prYzXdjtvcF5tRAf7UE4oR6AkRJafeT';
+}
+
+// ─── GET /api/food/search ────────────────────────────
+
+serviceRouter.get('/food/search', async (c) => {
+  const walletAddress = foodWallet();
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(
+      build402Response('/api/food/search', 'Search restaurants by keyword + address on Uber Eats or DoorDash', FOOD_SEARCH_PRICE, walletAddress, {
+        input: {
+          query: 'string (required) — food or restaurant keyword, e.g. "pizza"',
+          address: 'string (required) — delivery address or ZIP code',
+          platform: '"ubereats" | "doordash" (optional, default: "ubereats")',
+          limit: 'number (optional, default: 20, max: 50)',
+        },
+        output: {
+          restaurants: 'FoodRestaurant[] — name, rating, delivery_fee, delivery_time, promotions, cuisine_types',
+          platform: 'string',
+          result_count: 'number',
+        },
+      }),
+      402,
+    );
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, FOOD_SEARCH_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const query = c.req.query('query');
+  const address = c.req.query('address');
+  if (!query) return c.json({ error: 'Missing required parameter: query', example: '/api/food/search?query=pizza&address=10001' }, 400);
+  if (!address) return c.json({ error: 'Missing required parameter: address', example: '/api/food/search?query=pizza&address=10001' }, 400);
+
+  const platform = (c.req.query('platform') || 'ubereats').toLowerCase();
+  const limit = Math.min(Math.max(parseInt(c.req.query('limit') || '20') || 20, 1), 50);
+
+  try {
+    const result = platform === 'doordash'
+      ? await searchDoorDash(query, address, limit)
+      : await searchUberEats(query, address, limit);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    const code = err?.code;
+    if (code === 'RATE_LIMITED') { c.header('Retry-After', '60'); return c.json({ error: 'rate_limited', message: 'Platform rate limited. Not charged. Retry in 60s.' }, 503); }
+    return c.json({ error: 'proxy_error', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/food/restaurant/:id ────────────────────
+
+serviceRouter.get('/food/restaurant/:id', async (c) => {
+  const walletAddress = foodWallet();
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(
+      build402Response('/api/food/restaurant/:id', 'Get full restaurant info + menu from Uber Eats', FOOD_MENU_PRICE, walletAddress, {
+        input: {
+          id: 'string (required) — Uber Eats restaurant ID or slug (in URL path)',
+          platform: '"ubereats" (default, only Uber Eats supported for full menu)',
+        },
+        output: {
+          restaurant: 'FoodRestaurant — name, rating, delivery_fee, delivery_time',
+          menu_items: 'FoodMenuItem[] — name, price, description, popular, category',
+          menu_sections: 'string[]',
+        },
+      }),
+      402,
+    );
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, FOOD_MENU_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const restaurantId = c.req.param('id');
+  if (!restaurantId) return c.json({ error: 'Missing restaurant ID in URL path' }, 400);
+
+  try {
+    const result = await getUberEatsMenu(restaurantId);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'proxy_error', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/food/menu/:restaurant_id ───────────────
+
+serviceRouter.get('/food/menu/:restaurant_id', async (c) => {
+  const walletAddress = foodWallet();
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(
+      build402Response('/api/food/menu/:restaurant_id', 'Get full menu items with prices from Uber Eats restaurant', FOOD_MENU_PRICE, walletAddress, {
+        input: { restaurant_id: 'string (required) — restaurant ID or slug (in URL path)' },
+        output: {
+          restaurant: 'FoodRestaurant',
+          menu_items: 'FoodMenuItem[] — name, price, description, popular, category',
+          menu_sections: 'string[]',
+        },
+      }),
+      402,
+    );
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, FOOD_MENU_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const restaurantId = c.req.param('restaurant_id');
+  if (!restaurantId) return c.json({ error: 'Missing restaurant_id in URL path' }, 400);
+
+  try {
+    const result = await getUberEatsMenu(restaurantId);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'proxy_error', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/food/compare ───────────────────────────
+
+serviceRouter.get('/food/compare', async (c) => {
+  const walletAddress = foodWallet();
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(
+      build402Response('/api/food/compare', 'Compare restaurants across Uber Eats + DoorDash: delivery fees, ETAs, ratings, promotions', FOOD_COMPARE_PRICE, walletAddress, {
+        input: {
+          query: 'string (required) — food or restaurant keyword',
+          address: 'string (required) — delivery address or ZIP',
+        },
+        output: {
+          ubereats: 'FoodCompareItem[]',
+          doordash: 'FoodCompareItem[]',
+          comparison_summary: '{cheapest_delivery, fastest_delivery, best_rated, most_promotions}',
+        },
+      }),
+      402,
+    );
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, FOOD_COMPARE_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const query = c.req.query('query');
+  const address = c.req.query('address');
+  if (!query) return c.json({ error: 'Missing required parameter: query' }, 400);
+  if (!address) return c.json({ error: 'Missing required parameter: address' }, 400);
+
+  try {
+    const result = await compareFoodPlatforms(query, address);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'proxy_error', message: err?.message || String(err) }, 502);
   }
 });

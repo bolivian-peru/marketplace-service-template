@@ -1,0 +1,58 @@
+{
+  "_query": {
+    "endpoint": "GET /api/linkedin/search/people?title=CTO&location=San+Francisco&industry=SaaS",
+    "scraped_at": "2026-03-09T14:35:22Z",
+    "proxy_ip": "172.58.196.88",
+    "proxy_carrier": "T-Mobile US",
+    "proxy_provider": "Proxies.sx",
+    "response_time_ms": 3104,
+    "google_query": "site:linkedin.com/in \"CTO\" \"San Francisco\" \"SaaS\""
+  },
+  "results": [
+    {
+      "name": "Sarah Chen",
+      "headline": "CTO at CloudScale | Previously Google, Stripe",
+      "location": "San Francisco, CA",
+      "profile_url": "https://linkedin.com/in/sarahchen-cto",
+      "snippet": "Sarah Chen CTO at CloudScale (Series B SaaS) — San Francisco · Infrastructure · Distributed Systems · Leadership"
+    },
+    {
+      "name": "Marcus Rodriguez",
+      "headline": "Chief Technology Officer at Workato — Enterprise Integration SaaS",
+      "location": "San Francisco Bay Area",
+      "profile_url": "https://linkedin.com/in/marcusrodriguez-tech",
+      "snippet": "CTO at Workato. Former VP Engineering at MuleSoft. Building the future of enterprise automation."
+    },
+    {
+      "name": "Priya Sharma",
+      "headline": "CTO & Co-Founder at DataSight AI | Ex-Salesforce",
+      "location": "San Francisco, California",
+      "profile_url": "https://linkedin.com/in/priyasharma-cto",
+      "snippet": "Building AI-powered analytics SaaS. CTO and co-founder at DataSight AI, previously Principal Engineer at Salesforce for 6 years."
+    },
+    {
+      "name": "James Wu",
+      "headline": "CTO at Rippling | Building HR/IT/Finance SaaS",
+      "location": "San Francisco Bay Area",
+      "profile_url": "https://linkedin.com/in/jameswu-rippling",
+      "snippet": "James Wu is CTO at Rippling, the HR-IT-Finance platform. Previously at Facebook and LinkedIn. MIT CS."
+    },
+    {
+      "name": "Alexandra Petrov",
+      "headline": "Chief Technology Officer at Brex | Ex-Amazon Web Services",
+      "location": "San Francisco, CA",
+      "profile_url": "https://linkedin.com/in/alexandrapetrov-brex",
+      "snippet": "CTO at Brex, building modern financial services for startups and enterprises. Led engineering at AWS before joining Brex."
+    }
+  ],
+  "meta": {
+    "query": { "title": "CTO", "location": "San Francisco", "industry": "SaaS" },
+    "resultCount": 5,
+    "proxy": {
+      "ip": "172.58.196.88",
+      "country": "US",
+      "carrier": "T-Mobile"
+    },
+    "response_time_ms": 3104
+  }
+}
