@@ -107,6 +107,8 @@ export function build402Response(
   walletAddress: string,
   outputSchema?: Record<string, any>,
 ) {
+  const baseRecipient = process.env.WALLET_ADDRESS_BASE || walletAddress;
+
   return {
     status: 402,
     message: 'Payment required',
@@ -128,7 +130,7 @@ export function build402Response(
       {
         network: 'base',
         chainId: 'eip155:8453',
-        recipient: process.env.WALLET_ADDRESS_BASE || '0xF8cD900794245fc36CBE65be9afc23CDF5103042',
+        recipient: baseRecipient,
         asset: 'USDC',
         assetAddress: USDC_BASE,
       },

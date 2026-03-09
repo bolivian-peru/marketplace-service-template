@@ -10,6 +10,53 @@ import { logger } from 'hono/logger';
 import { serviceRouter } from './service';
 
 const app = new Hono();
+const startedAt = Date.now();
+
+function getWalletNetworks() {
+  const solanaRecipient = process.env.WALLET_ADDRESS;
+  const baseRecipient = process.env.WALLET_ADDRESS_BASE;
+  const networks = [];
+
+  if (solanaRecipient) {
+    networks.push({
+      network: 'solana',
+      chainId: 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
+      recipient: solanaRecipient,
+      asset: 'USDC',
+      assetAddress: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+      settlementTime: '~400ms',
+    });
+  }
+
+  if (baseRecipient) {
+    networks.push({
+      network: 'base',
+      chainId: 'eip155:8453',
+      recipient: baseRecipient,
+      asset: 'USDC',
+      assetAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+      settlementTime: '~2s',
+    });
+  }
+
+  return networks;
+}
+
+function getHealthChecks() {
+  const hasProxyConfig = Boolean(process.env.PROXY_LIST || (
+    process.env.PROXY_HOST &&
+    process.env.PROXY_HTTP_PORT &&
+    process.env.PROXY_USER &&
+    process.env.PROXY_PASS
+  ));
+  const hasWalletConfig = Boolean(process.env.WALLET_ADDRESS);
+
+  return {
+    proxy: hasProxyConfig ? 'configured' : 'missing',
+    target: hasProxyConfig ? 'ready' : 'proxy_missing',
+    payment: hasWalletConfig ? 'configured' : 'missing',
+  };
+}
 
 // ─── MIDDLEWARE ──────────────────────────────────────
 
@@ -61,12 +108,9 @@ setInterval(() => {
 
 // ─── ROUTES ─────────────────────────────────────────
 
-app.get('/health', (c) => c.json({
-  status: 'healthy',
-  service: process.env.SERVICE_NAME || 'marketplace-service',
-  version: '2.0.0',
-  timestamp: new Date().toISOString(),
-  endpoints: [
+app.get('/health', (c) => {
+  const checks = getHealthChecks();
+  const endpoints = [
     '/api/run',
     '/api/details',
     '/api/serp',
@@ -94,8 +138,19 @@ app.get('/health', (c) => c.json({
     '/api/airbnb/market-stats',
     '/api/research',
     '/api/trending',
-  ],
-}));
+  ];
+  const isHealthy = checks.proxy !== 'missing' && checks.payment !== 'missing';
+
+  return c.json({
+    status: isHealthy ? 'healthy' : 'degraded',
+    service: process.env.SERVICE_NAME || 'marketplace-service',
+    version: '2.0.0',
+    uptime: `${Math.floor((Date.now() - startedAt) / 1000)}s`,
+    timestamp: new Date().toISOString(),
+    checks,
+    endpoints,
+  }, isHealthy ? 200 : 503);
+});
 
 app.get('/', (c) => c.json({
   name: process.env.SERVICE_NAME || 'marketplace-service-hub',
@@ -133,24 +188,7 @@ app.get('/', (c) => c.json({
   pricing: {
     amount: process.env.PRICE_USDC || '0.005',
     currency: 'USDC',
-    networks: [
-      {
-        network: 'solana',
-        chainId: 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
-        recipient: '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv',
-        asset: 'USDC',
-        assetAddress: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
-        settlementTime: '~400ms',
-      },
-      {
-        network: 'base',
-        chainId: 'eip155:8453',
-        recipient: '0xF8cD900794245fc36CBE65be9afc23CDF5103042',
-        asset: 'USDC',
-        assetAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
-        settlementTime: '~2s',
-      },
-    ],
+    networks: getWalletNetworks(),
   },
   infrastructure: 'Proxies.sx mobile proxies (real 4G/5G IPs)',
   links: {
