@@ -102,7 +102,7 @@ app.get('/', (c) => c.json({
   description: process.env.SERVICE_DESCRIPTION || 'AI agent intelligence services powered by real 4G/5G mobile proxies.',
   version: '2.0.0',
   endpoints: [
-    { method: 'GET', path: '/api/run', description: 'Google Maps Lead Generator — search businesses by category + location', price: '0.005 USDC' },
+    { method: 'GET', path: '/api/run', description: 'Mode router: maps lead generation, SERP scraping, or AI overview extraction (`type=maps|serp|ai_overview`)', price: '0.003-0.005 USDC' },
     { method: 'GET', path: '/api/details', description: 'Google Maps Place Details — detailed business info by Place ID', price: '0.005 USDC' },
     { method: 'GET', path: '/api/serp', description: 'Mobile SERP Tracker — Google search results with organic, ads, PAA, AI overview', price: '0.003 USDC' },
     { method: 'GET', path: '/api/jobs', description: 'Get job listings (Indeed/LinkedIn) with salary + date + proxy metadata' },

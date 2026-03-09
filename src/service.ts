@@ -29,6 +29,16 @@ import {
 } from './scrapers/linkedin-enrichment';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
+import type {
+  AdResult,
+  AiOverview,
+  FeaturedSnippet,
+  KnowledgePanel,
+  MapPackResult,
+  OrganicResult,
+  PeopleAlsoAsk,
+  SerpResponse,
+} from './types/index';
 
 export const serviceRouter = new Hono();
 
@@ -41,6 +51,8 @@ const PRICE_USDC = 0.005;
 const DESCRIPTION = 'Job Market Intelligence API (Indeed/LinkedIn): title, company, location, salary, date, link, remote + proxy exit metadata.';
 const MAPS_PRICE_USDC = 0.005;
 const MAPS_DESCRIPTION = 'Extract structured business data from Google Maps: name, address, phone, website, email, hours, ratings, reviews, categories, and geocoordinates. Search by category + location with full pagination.';
+const SERP_PRICE_USDC = parseFloat(process.env.SERP_PRICE_USDC || '0.003');
+const SERP_DESCRIPTION = 'Mobile SERP Tracker — Google search results with organic, ads, PAA, AI overview, map pack, knowledge panel. Real mobile IP fingerprint.';
 
 const MAPS_OUTPUT_SCHEMA = {
   input: {
@@ -74,6 +86,40 @@ const MAPS_OUTPUT_SCHEMA = {
   },
 };
 
+const SERP_OUTPUT_SCHEMA = {
+  input: {
+    query: 'string (required) — search query',
+    country: 'string (optional, default: us) — Google country code',
+    language: 'string (optional, default: en) — result language',
+    location: 'string (optional) — geo hint appended to query',
+    pages: 'number (optional, default: 1, max: 3) — fetch multiple result pages',
+  },
+  output: {
+    organic: '[{ position, title, url, snippet, sitelinks? }]',
+    ads: '[{ position, title, url, description }]',
+    peopleAlsoAsk: '[{ question, snippet, url }]',
+    featuredSnippet: '{ text, title, url, type } | null',
+    aiOverview: '{ text, sources } | null',
+    mapPack: '[{ name, rating, address }]',
+    knowledgePanel: '{ title, description, attributes } | null',
+    relatedSearches: 'string[]',
+  },
+};
+
+const AI_OVERVIEW_OUTPUT_SCHEMA = {
+  input: SERP_OUTPUT_SCHEMA.input,
+  output: {
+    aiOverview: '{ text, sources } | null',
+    supportingOrganicResults: '[{ title, url, snippet }]',
+    relatedQuestions: '[{ question, snippet, url }]',
+    relatedSearches: 'string[]',
+    totalOrganicResults: 'number',
+    totalAds: 'number',
+  },
+};
+
+type RunMode = 'maps' | 'serp' | 'ai_overview';
+
 async function getProxyExitIp(): Promise<string | null> {
   try {
     const r = await proxyFetch('https://api.ipify.org?format=json', {
@@ -89,27 +135,230 @@ async function getProxyExitIp(): Promise<string | null> {
   }
 }
 
+function parseRunMode(input: string | undefined): RunMode | null {
+  if (!input) return 'maps';
+  const normalized = input.trim().toLowerCase();
+  if (normalized === 'maps') return 'maps';
+  if (normalized === 'serp') return 'serp';
+  if (normalized === 'ai_overview') return 'ai_overview';
+  return null;
+}
+
+function parseSerpPages(input: string | undefined): number {
+  const parsed = Number.parseInt(input ?? '1', 10);
+  if (!Number.isFinite(parsed)) return 1;
+  return Math.min(Math.max(parsed, 1), 3);
+}
+
+function parseSerpStart(pageIndex: number): number {
+  return Math.max(0, pageIndex) * 10;
+}
+
+async function scrapePagedSerp(
+  query: string,
+  country: string,
+  language: string,
+  location: string | undefined,
+  pages: number,
+) : Promise<SerpResponse> {
+  const organic = new Map<string, OrganicResult>();
+  const ads = new Map<string, AdResult>();
+  const questions = new Map<string, PeopleAlsoAsk>();
+  const mapPack = new Map<string, MapPackResult>();
+  const relatedSearches = new Set<string>();
+
+  let featuredSnippet: FeaturedSnippet | null = null;
+  let aiOverview: AiOverview | null = null;
+  let knowledgePanel: KnowledgePanel | null = null;
+  let totalResults: string | null = null;
+
+  for (let page = 0; page < pages; page += 1) {
+    const response = await scrapeMobileSERP(query, country, language, location, parseSerpStart(page));
+
+    totalResults = totalResults || response.totalResults;
+    featuredSnippet = featuredSnippet || response.featuredSnippet;
+    aiOverview = aiOverview || response.aiOverview;
+    knowledgePanel = knowledgePanel || response.knowledgePanel;
+
+    for (const result of response.organic) {
+      if (!organic.has(result.url)) {
+        organic.set(result.url, {
+          ...result,
+          position: organic.size + 1,
+        });
+      }
+    }
+
+    for (const ad of response.ads) {
+      const key = `${ad.url}:${ad.title}`;
+      if (!ads.has(key)) {
+        ads.set(key, {
+          ...ad,
+          position: ads.size + 1,
+        });
+      }
+    }
+
+    for (const question of response.peopleAlsoAsk) {
+      const key = question.question.trim().toLowerCase();
+      if (key && !questions.has(key)) {
+        questions.set(key, question);
+      }
+    }
+
+    for (const item of response.mapPack) {
+      const key = `${item.name}:${item.address ?? ''}`.trim().toLowerCase();
+      if (key && !mapPack.has(key)) {
+        mapPack.set(key, item);
+      }
+    }
+
+    for (const term of response.relatedSearches) {
+      if (term.trim()) {
+        relatedSearches.add(term.trim());
+      }
+    }
+  }
+
+  return {
+    query,
+    country,
+    language,
+    location: location || null,
+    totalResults,
+    organic: Array.from(organic.values()),
+    ads: Array.from(ads.values()),
+    peopleAlsoAsk: Array.from(questions.values()),
+    featuredSnippet,
+    aiOverview,
+    mapPack: Array.from(mapPack.values()),
+    knowledgePanel,
+    relatedSearches: Array.from(relatedSearches.values()),
+  };
+}
+
 serviceRouter.get('/run', async (c) => {
   const walletAddress = process.env.WALLET_ADDRESS;
   if (!walletAddress) {
     return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
   }
 
+  const mode = parseRunMode(c.req.query('type'));
+  if (!mode) {
+    return c.json({ error: 'Unsupported type. Use one of: maps, serp, ai_overview' }, 400);
+  }
+
+  const price = mode === 'maps' ? MAPS_PRICE_USDC : SERP_PRICE_USDC;
+  const description = mode === 'maps'
+    ? MAPS_DESCRIPTION
+    : mode === 'serp'
+      ? SERP_DESCRIPTION
+      : 'AI overview mode — returns Google AI overview plus supporting organic evidence.';
+  const outputSchema = mode === 'maps'
+    ? MAPS_OUTPUT_SCHEMA
+    : mode === 'serp'
+      ? SERP_OUTPUT_SCHEMA
+      : AI_OVERVIEW_OUTPUT_SCHEMA;
+
   const payment = extractPayment(c);
   if (!payment) {
     return c.json(
-      build402Response('/api/run', MAPS_DESCRIPTION, MAPS_PRICE_USDC, walletAddress, MAPS_OUTPUT_SCHEMA),
+      build402Response('/api/run', description, price, walletAddress, outputSchema),
       402,
     );
   }
 
-  const verification = await verifyPayment(payment, walletAddress, MAPS_PRICE_USDC);
+  const verification = await verifyPayment(payment, walletAddress, price);
   if (!verification.valid) {
     return c.json({
       error: 'Payment verification failed',
       reason: verification.error,
       hint: 'Ensure the transaction is confirmed and sends the correct USDC amount to the recipient wallet.',
     }, 402);
+  }
+
+  if (mode !== 'maps') {
+    const query = c.req.query('query') || c.req.query('q');
+    if (!query) {
+      return c.json({ error: 'Missing required parameter: query' }, 400);
+    }
+
+    const country = (c.req.query('country') || 'us').trim().toLowerCase();
+    const language = (c.req.query('language') || 'en').trim().toLowerCase();
+    const location = c.req.query('location') || undefined;
+    const pages = parseSerpPages(c.req.query('pages'));
+
+    try {
+      const proxy = getProxy();
+      const ip = await getProxyExitIp();
+      const results = await scrapePagedSerp(query, country, language, location, pages);
+
+      c.header('X-Payment-Settled', 'true');
+      c.header('X-Payment-TxHash', payment.txHash);
+
+      if (mode === 'ai_overview') {
+        const excludedUrls = new Set([
+          ...results.ads.map((entry) => entry.url),
+          ...(results.aiOverview?.sources ?? []).map((entry) => entry.url),
+        ]);
+        const supportingOrganicResults = results.organic
+          .filter((entry) => !excludedUrls.has(entry.url))
+          .slice(0, 5)
+          .map((entry) => ({
+            title: entry.title,
+            url: entry.url,
+            snippet: entry.snippet,
+          }));
+
+        return c.json({
+          query,
+          mode,
+          aiOverview: results.aiOverview,
+          supportingOrganicResults,
+          relatedQuestions: results.peopleAlsoAsk.slice(0, 5),
+          relatedSearches: results.relatedSearches.slice(0, 10),
+          totalOrganicResults: results.organic.length,
+          totalAds: results.ads.length,
+          meta: {
+            country,
+            language,
+            location,
+            pages,
+            proxy: { ip, country: proxy.country, type: 'mobile' },
+          },
+          payment: {
+            txHash: payment.txHash,
+            network: payment.network,
+            amount: verification.amount,
+            settled: true,
+          },
+        });
+      }
+
+      return c.json({
+        query,
+        mode,
+        results,
+        meta: {
+          country,
+          language,
+          location,
+          pages,
+          proxy: { ip, country: proxy.country, type: 'mobile' },
+        },
+        payment: {
+          txHash: payment.txHash,
+          network: payment.network,
+          amount: verification.amount,
+          settled: true,
+        },
+      });
+    } catch (err: any) {
+      return c.json({
+        error: 'SERP scrape failed',
+        message: err?.message || String(err),
+      }, 502);
+    }
   }
 
   const clientIp = c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
@@ -1443,13 +1692,6 @@ serviceRouter.get('/airbnb/market-stats', async (c) => {
 
 import { scrapeMobileSERP } from './scrapers/serp-tracker';
 
-const SERP_PRICE_USDC = parseFloat(process.env.SERP_PRICE_USDC || '0.003');
-const SERP_DESCRIPTION = 'Mobile SERP Tracker — Google search results with organic, ads, PAA, AI overview, map pack, knowledge panel. Real mobile IP fingerprint.';
-const SERP_OUTPUT_SCHEMA = {
-  input: { query: 'string (required) — search query', location: 'string (optional) — geo location', num: 'number (optional) — results count, default 10' },
-  output: { organic: '[{ position, title, url, snippet, sitelinks? }]', ads: '[{ position, title, url, description }]', peopleAlsoAsk: '[{ question, snippet }]', aiOverview: '{ text, sources }', mapPack: '[{ name, rating, reviews, address }]', knowledgePanel: '{ title, description, attributes }' },
-};
-
 serviceRouter.get('/serp', async (c) => {
   const walletAddress = process.env.WALLET_ADDRESS;
   if (!walletAddress) return c.json({ error: 'Wallet not configured' }, 500);
@@ -1471,7 +1713,7 @@ serviceRouter.get('/serp', async (c) => {
   try {
     const proxy = getProxy();
     const ip = await getProxyExitIp();
-    const results = await scrapeMobileSERP(query, { location, num });
+    const results = await scrapeMobileSERP(query, proxy.country.toLowerCase(), 'en', location, 0);
 
     c.header('X-Payment-Settled', 'true');
     c.header('X-Payment-TxHash', payment.txHash);
