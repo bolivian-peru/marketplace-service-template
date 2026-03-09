@@ -23,6 +23,35 @@ export interface TwitterResult {
   platform: 'twitter';
 }
 
+export interface TwitterUserProfile {
+  handle: string;
+  name: string | null;
+  bio: string | null;
+  followers: number | null;
+  following: number | null;
+  verified: boolean | null;
+  profileUrl: string;
+}
+
+export interface TwitterSearchItem {
+  id: string;
+  author: {
+    handle: string;
+    name: string | null;
+    followers: number | null;
+    verified: boolean | null;
+  };
+  text: string;
+  created_at: string | null;
+  likes: number | null;
+  retweets: number | null;
+  replies: number | null;
+  views: number | null;
+  url: string;
+  media: string[];
+  hashtags: string[];
+}
+
 // OpenSERP response shape
 interface OpenSERPResult {
   rank?: unknown;
@@ -377,4 +406,100 @@ export async function getTwitterTrending(
   }
 
   return deduplicateByUrl(results).slice(0, safeLimit);
+}
+
+function extractHashtags(text: string): string[] {
+  const tags = text.match(/#[\p{L}0-9_]+/gu) || [];
+  return Array.from(new Set(tags.map((t) => t.replace(/^#/, '').toLowerCase()))).slice(0, 8);
+}
+
+function toSearchItem(result: TwitterResult): TwitterSearchItem {
+  const id = result.tweetId || (result.url.match(/status\/(\d+)/)?.[1] ?? result.url);
+  const handle = (result.author || '').replace(/^@/, '') || 'unknown';
+  return {
+    id,
+    author: {
+      handle,
+      name: result.author || null,
+      followers: null,
+      verified: null,
+    },
+    text: result.text,
+    created_at: result.publishedAt,
+    likes: result.likes,
+    retweets: result.retweets,
+    replies: null,
+    views: null,
+    url: result.url,
+    media: [],
+    hashtags: extractHashtags(result.text),
+  };
+}
+
+export async function searchTwitterStructured(
+  query: string,
+  sort: string = 'latest',
+  limit: number = 20,
+): Promise<TwitterSearchItem[]> {
+  const safeQuery = sanitizeText(query, MAX_TOPIC_LENGTH);
+  if (!safeQuery) return [];
+
+  const safeSort = typeof sort === 'string' ? sort.trim().toLowerCase() : 'latest';
+  const days = safeSort === 'latest' ? 7 : safeSort === 'top' ? 30 : 14;
+  const raw = await searchTwitter(safeQuery, days, limit);
+  return raw.map(toSearchItem);
+}
+
+export async function getTwitterUserProfile(handle: string): Promise<TwitterUserProfile | null> {
+  const cleaned = sanitizeText(handle.replace(/^@/, ''), 30);
+  if (!cleaned) return null;
+
+  const profileUrl = `https://x.com/${cleaned}`;
+  const samples = await searchTwitter(`site:x.com/${cleaned}`, 30, 5);
+  const first = samples[0] || null;
+
+  return {
+    handle: cleaned,
+    name: first?.author || `@${cleaned}`,
+    bio: first?.text || null,
+    followers: null,
+    following: null,
+    verified: null,
+    profileUrl,
+  };
+}
+
+export async function getTwitterUserTweets(handle: string, limit: number = 20): Promise<TwitterSearchItem[]> {
+  const cleaned = sanitizeText(handle.replace(/^@/, ''), 30);
+  if (!cleaned) return [];
+
+  const raw = await searchTwitter(`from:${cleaned}`, 14, limit * 2);
+  const filtered = raw.filter((r) => (r.author || '').replace(/^@/, '').toLowerCase() === cleaned.toLowerCase());
+  const selected = (filtered.length ? filtered : raw).slice(0, clamp(limit, 1, MAX_LIMIT));
+  return selected.map(toSearchItem);
+}
+
+export async function getTwitterThread(tweetId: string, limit: number = 40): Promise<TwitterSearchItem[]> {
+  const cleaned = sanitizeText(tweetId, 32).replace(/[^0-9]/g, '');
+  if (!cleaned) return [];
+
+  const rootUrl = `https://x.com/i/status/${cleaned}`;
+  const conversation = await searchTwitter(`conversation_id:${cleaned}`, 30, limit);
+  if (conversation.length === 0) {
+    return [{
+      id: cleaned,
+      author: { handle: 'unknown', name: null, followers: null, verified: null },
+      text: `Thread root ${cleaned}`,
+      created_at: null,
+      likes: null,
+      retweets: null,
+      replies: null,
+      views: null,
+      url: rootUrl,
+      media: [],
+      hashtags: [],
+    }];
+  }
+
+  return conversation.map(toSearchItem).slice(0, clamp(limit, 1, 80));
 }
