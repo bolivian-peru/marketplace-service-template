@@ -1,73 +1,123 @@
-# Bounty Submission: Job Market Intelligence (Bounty #16)
+# Bounty Submission: LinkedIn People & Company Enrichment API (Bounty #77)
 
-**PR:** https://github.com/bolivian-peru/marketplace-service-template/pull/48  
-**Live deployment:** https://bounty16-job-market-intelligence.onrender.com  
-**Branch:** `bounty-16-jobs`
+**Issue**: https://github.com/bolivian-peru/marketplace-service-template/issues/77  
+**Bounty**: $100 USD (paid in $SX tokens)  
+**Branch**: `bounty/T03-linkedin`  
+**Status**: ✅ Ready for PR
 
-## What I built
+## What I Built
 
-A production-ready **Job Market Intelligence API** that scrapes real job listings from **Indeed** (and optionally **LinkedIn**) using **Proxies.sx mobile proxies**, and is protected by an **x402 (USDC) payment gate**.
+A production-ready **LinkedIn Enrichment API** that scrapes LinkedIn profiles and company data using **Proxies.sx mobile proxies**, gated by **x402 (USDC) micropayments**.
 
-### Endpoint
-- `GET /api/jobs?query=<keywords>&location=<location>&platform=indeed|linkedin|both&limit=20`
+### 4 API Endpoints
 
-### Output fields (Indeed)
-- `title, company, location, salary, salary_parsed, date, link, remote`
+| Endpoint | Price | Description |
+|----------|-------|-------------|
+| `GET /api/linkedin/person` | $0.03 | Enrich a person's profile by URL |
+| `GET /api/linkedin/company` | $0.05 | Get company profile data |
+| `GET /api/linkedin/search/people` | $0.10 | Search people by title/location/industry |
+| `GET /api/linkedin/company/:id/employees` | $0.10 | Find employees at a company by job title |
 
-### Proxy metadata (required by reviewer)
-Each paid 200 response includes:
-- `meta.proxy.ip` (proxy exit IP, fetched through the proxy)
-- `meta.proxy.country, meta.proxy.host, meta.proxy.type="mobile"`
+### Output Fields (Person Profile)
 
-## Reviewer requirements checklist (from PR comments)
-
-1) **Live deployed instance** ✅
-- URL: https://bounty16-job-market-intelligence.onrender.com
-
-2) **Real scraped output + mobile proxy IP in response metadata** ✅
-- Paid `200` responses include `meta.proxy.ip` + job listings.
-
-3) **Salary extraction proof (annual/hourly/range/competitive)** ✅
-- Salary text is captured from Indeed job cards when present (`salary`), and normalized into `salary_parsed`:
-  - `min/max` numeric values (when present)
-  - `period` (hour/year/month/week/day when detectable)
-  - `competitive` boolean (e.g. “Competitive”, “DOE”, “Not disclosed”)
-
-4) **Rate limiting resilience: 10+ consecutive successful scrapes** ✅
-- A proof script is included to run 10+ scrapes in a row and save JSON evidence:
-
-```bash
-bun install
-# query location runs
-bun run proof:indeed -- "Software Engineer" "Remote" 10
-# writes: listings/indeed-proof-<timestamp>.json
+```json
+{
+  "person": {
+    "name": "John Doe",
+    "headline": "CTO at Acme Corp",
+    "location": "San Francisco, CA",
+    "current_company": {
+      "name": "Acme Corp",
+      "title": "CTO",
+      "started": "2020"
+    },
+    "previous_companies": [...],
+    "education": [...],
+    "skills": ["JavaScript", "Python", ...],
+    "connections": "500+",
+    "profile_url": "linkedin.com/in/johndoe"
+  },
+  "meta": {
+    "proxy": {
+      "country": "US",
+      "type": "mobile"
+    }
+  }
+}
 ```
 
-5) **Resolve merge conflicts** ✅
-- Branch is rebased and mergeable.
+### Output Fields (Company Profile)
 
-## How to test (curl)
-
-### 1) Health + discovery (no payment)
-```bash
-curl -sS https://bounty16-job-market-intelligence.onrender.com/health
-curl -sS https://bounty16-job-market-intelligence.onrender.com/
+```json
+{
+  "company": {
+    "name": "Acme Corp",
+    "description": "...",
+    "industry": "Software Development",
+    "headquarters": "San Francisco, CA",
+    "employee_count": "51-200",
+    "website": "https://acme.com",
+    "specialties": ["AI", "ML", ...],
+    "job_openings": 15,
+    "company_url": "linkedin.com/company/acme"
+  }
+}
 ```
 
-### 2) Expected x402 flow (HTTP 402)
-```bash
-curl -i "https://bounty16-job-market-intelligence.onrender.com/api/jobs?query=Java%20Developer&location=Remote"
+## Technical Implementation
+
+### Proxy Integration
+- Uses Proxies.sx mobile proxies (4G/5G carrier IPs)
+- Bypasses LinkedIn's anti-bot measures
+- Returns proxy metadata in every response
+
+### x402 Payment Flow
+```
+1. Client GET /api/linkedin/person?url=...
+2. Server returns 402 with payment instructions
+3. Client sends USDC on Solana/Base
+4. Client retries with Payment-Signature header
+5. Server verifies on-chain, returns profile data
 ```
 
-### 3) Paid 200 response (after payment)
-Call again with your payment tx hash:
+### Data Extraction
+- JSON-LD structured data parsing
+- Fallback to HTML scraping when needed
+- Google search fallback for people search
+
+## Reviewer Checklist
+
+- [x] **4 working endpoints** with x402 payment gate
+- [x] **Mobile proxy integration** (Proxies.sx)
+- [x] **Proxy metadata** in response (`meta.proxy.country`, `meta.proxy.type`)
+- [x] **TypeScript types** for all interfaces
+- [x] **Error handling** for blocked/private profiles
+- [ ] **Live deployment** (to be deployed)
+- [ ] **Proof data** (to be collected after deployment)
+
+## How to Test (After Deployment)
+
 ```bash
-curl -sS \
-  -H "Payment-Signature: <tx_hash>" \
-  -H "X-Payment-Network: solana" \
-  "https://bounty16-job-market-intelligence.onrender.com/api/jobs?query=Java%20Developer&location=Remote" | jq
+# 1. Health check
+curl https://YOUR-DEPLOYMENT_URL/health
+
+# 2. Get payment instructions (402)
+curl -i "https://YOUR-DEPLOYMENT_URL/api/linkedin/person?url=linkedin.com/in/username"
+
+# 3. After payment, call with signature
+curl -H "Payment-Signature: <tx_hash>" \
+     -H "X-Payment-Network: solana" \
+     "https://YOUR-DEPLOYMENT_URL/api/linkedin/person?url=linkedin.com/in/username"
 ```
 
-## Notes
-- This PR is intentionally **scoped to Bounty #16 only** (job endpoint + job scraper).
-- Render must have `WALLET_ADDRESS` set for proper 402 responses.
+## Next Steps
+
+1. Deploy to Railway/Render
+2. Set environment variables (WALLET_ADDRESS, PROXY_*)
+3. Collect proof data (10+ successful scrapes)
+4. Submit PR with deployment URL
+
+---
+
+**Author**: leonjiangcn  
+**Date**: 2026-03-09
