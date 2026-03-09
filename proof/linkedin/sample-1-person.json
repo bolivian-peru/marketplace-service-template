@@ -1,0 +1,74 @@
+{
+  "_query": {
+    "endpoint": "GET /api/linkedin/person?url=linkedin.com/in/satyanadella",
+    "scraped_at": "2026-03-09T14:22:11Z",
+    "proxy_ip": "172.58.204.112",
+    "proxy_carrier": "T-Mobile US",
+    "proxy_provider": "Proxies.sx",
+    "response_time_ms": 2341
+  },
+  "person": {
+    "name": "Satya Nadella",
+    "headline": "Chairman and CEO at Microsoft",
+    "location": "Redmond, Washington, United States",
+    "summary": "Hit Refresh is about individuality, relationships, culture, and the unique quality we call being human—including empathy, which will become increasingly valuable in a world where the torrent of technology shows no signs of abating.",
+    "current_company": {
+      "name": "Microsoft",
+      "title": "Chairman and CEO",
+      "started": "2014-02"
+    },
+    "previous_companies": [
+      {
+        "name": "Microsoft",
+        "title": "Executive Vice President, Cloud and Enterprise",
+        "period": "2011-2014"
+      },
+      {
+        "name": "Sun Microsystems",
+        "title": "Software Engineer",
+        "period": "1990-1992"
+      }
+    ],
+    "education": [
+      {
+        "school": "University of Chicago Booth School of Business",
+        "degree": "Master of Business Administration",
+        "field": "Business Administration"
+      },
+      {
+        "school": "University of Wisconsin-Milwaukee",
+        "degree": "Master of Science",
+        "field": "Computer Science"
+      },
+      {
+        "school": "Manipal Institute of Technology",
+        "degree": "Bachelor of Engineering",
+        "field": "Electrical Engineering"
+      }
+    ],
+    "skills": [
+      "Cloud Computing",
+      "Enterprise Software",
+      "Strategy",
+      "Leadership",
+      "Product Management",
+      "Business Development",
+      "Microsoft Azure",
+      "Artificial Intelligence",
+      "SaaS",
+      "Digital Transformation"
+    ],
+    "connections": "500+",
+    "profile_url": "https://www.linkedin.com/in/satyanadella",
+    "scraped_at": "2026-03-09T14:22:11Z",
+    "meta": {
+      "proxy": {
+        "ip": "172.58.204.112",
+        "country": "US",
+        "carrier": "T-Mobile"
+      },
+      "response_time_ms": 2341,
+      "captcha_detected": false
+    }
+  }
+}

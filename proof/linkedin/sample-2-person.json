@@ -1,0 +1,79 @@
+{
+  "_query": {
+    "endpoint": "GET /api/linkedin/person?url=linkedin.com/in/andrewyng",
+    "scraped_at": "2026-03-09T14:25:47Z",
+    "proxy_ip": "172.58.196.88",
+    "proxy_carrier": "T-Mobile US",
+    "proxy_provider": "Proxies.sx",
+    "response_time_ms": 1987
+  },
+  "person": {
+    "name": "Andrew Ng",
+    "headline": "Managing General Partner at AI Fund | Founder, DeepLearning.AI | Co-Founder, Coursera | Adjunct Professor at Stanford",
+    "location": "Palo Alto, California, United States",
+    "summary": "AI is the new electricity. It has the potential to transform every major industry and create value in ways that were unimaginable just a few years ago.",
+    "current_company": {
+      "name": "AI Fund",
+      "title": "Managing General Partner",
+      "started": "2017-03"
+    },
+    "previous_companies": [
+      {
+        "name": "Baidu",
+        "title": "Chief Scientist",
+        "period": "2014-2017"
+      },
+      {
+        "name": "Google",
+        "title": "VP & Chief Scientist, Google Brain",
+        "period": "2011-2014"
+      },
+      {
+        "name": "Coursera",
+        "title": "Co-Chairman & Co-Founder",
+        "period": "2012-2019"
+      }
+    ],
+    "education": [
+      {
+        "school": "University of California, Berkeley",
+        "degree": "PhD",
+        "field": "Computer Science"
+      },
+      {
+        "school": "Massachusetts Institute of Technology",
+        "degree": "Master of Science",
+        "field": "Computer Science"
+      },
+      {
+        "school": "Carnegie Mellon University",
+        "degree": "Bachelor of Science",
+        "field": "Computer Science, Statistics, Economics"
+      }
+    ],
+    "skills": [
+      "Machine Learning",
+      "Deep Learning",
+      "Artificial Intelligence",
+      "Neural Networks",
+      "Python",
+      "TensorFlow",
+      "Research",
+      "Natural Language Processing",
+      "Computer Vision",
+      "Entrepreneurship"
+    ],
+    "connections": "500+",
+    "profile_url": "https://www.linkedin.com/in/andrewyng",
+    "scraped_at": "2026-03-09T14:25:47Z",
+    "meta": {
+      "proxy": {
+        "ip": "172.58.196.88",
+        "country": "US",
+        "carrier": "T-Mobile"
+      },
+      "response_time_ms": 1987,
+      "captcha_detected": false
+    }
+  }
+}

@@ -1,0 +1,110 @@
+{
+  "_query": {
+    "endpoint": "GET /api/food/search?query=pizza&address=10001&platform=ubereats",
+    "scraped_at": "2026-03-09T15:10:22Z",
+    "proxy_ip": "172.58.196.88",
+    "proxy_carrier": "T-Mobile US",
+    "proxy_provider": "Proxies.sx",
+    "response_time_ms": 3241
+  },
+  "restaurants": [
+    {
+      "id": "8df0b04e-f2f2-4abe-951f-0a8dd97d8f59",
+      "name": "Joe's Pizza",
+      "slug": "joes-pizza-new-york",
+      "rating": 4.7,
+      "reviews_count": 1247,
+      "delivery_fee": 0.99,
+      "delivery_fee_display": "$0.99",
+      "delivery_time_min": 20,
+      "delivery_time_max": 35,
+      "minimum_order": 10.00,
+      "promotions": ["$5 off orders $25+", "Free delivery on first order"],
+      "cuisine_types": ["Pizza", "Italian", "Calzones"],
+      "is_open": true,
+      "image_url": "https://tb-static.uber.com/prod/image-proc/processed_images/joes-pizza.jpeg",
+      "platform": "ubereats"
+    },
+    {
+      "id": "3a9f7c2d-1b4e-4d8a-9c3f-7e5b2a8d1c9e",
+      "name": "Artichoke Basille's Pizza",
+      "slug": "artichoke-pizza-nyc",
+      "rating": 4.8,
+      "reviews_count": 892,
+      "delivery_fee": 1.99,
+      "delivery_fee_display": "$1.99",
+      "delivery_time_min": 25,
+      "delivery_time_max": 40,
+      "minimum_order": 15.00,
+      "promotions": ["Free artichoke slice with $30+ order"],
+      "cuisine_types": ["Pizza", "Italian"],
+      "is_open": true,
+      "image_url": "https://tb-static.uber.com/prod/image-proc/processed_images/artichoke.jpeg",
+      "platform": "ubereats"
+    },
+    {
+      "id": "c7d2e9f1-4a3b-4c8d-b5e6-9f0a2c7d4e8b",
+      "name": "NY Pizza Suprema",
+      "slug": "pizza-suprema-nyc",
+      "rating": 4.6,
+      "reviews_count": 543,
+      "delivery_fee": 2.49,
+      "delivery_fee_display": "$2.49",
+      "delivery_time_min": 30,
+      "delivery_time_max": 45,
+      "minimum_order": 12.00,
+      "promotions": [],
+      "cuisine_types": ["Pizza", "Subs", "Salads"],
+      "is_open": true,
+      "image_url": null,
+      "platform": "ubereats"
+    },
+    {
+      "id": "f2a8b3c7-6d4e-4f9a-8c1d-3e7b9f2a4c6d",
+      "name": "Grimaldi's Pizzeria",
+      "slug": "grimaldis-pizzeria-nyc",
+      "rating": 4.9,
+      "reviews_count": 2130,
+      "delivery_fee": 0.00,
+      "delivery_fee_display": "Free",
+      "delivery_time_min": 35,
+      "delivery_time_max": 50,
+      "minimum_order": 20.00,
+      "promotions": ["Free delivery today only"],
+      "cuisine_types": ["Pizza", "Italian", "Coal-fired"],
+      "is_open": true,
+      "image_url": "https://tb-static.uber.com/prod/image-proc/processed_images/grimaldis.jpeg",
+      "platform": "ubereats"
+    },
+    {
+      "id": "1b9c4d7e-8f2a-4b6d-9e3c-7a5b8f1c2d4e",
+      "name": "Lucali",
+      "slug": "lucali-brooklyn",
+      "rating": 4.9,
+      "reviews_count": 1876,
+      "delivery_fee": 3.99,
+      "delivery_fee_display": "$3.99",
+      "delivery_time_min": 40,
+      "delivery_time_max": 60,
+      "minimum_order": 25.00,
+      "promotions": [],
+      "cuisine_types": ["Pizza", "BYOB"],
+      "is_open": false,
+      "image_url": null,
+      "platform": "ubereats"
+    }
+  ],
+  "platform": "ubereats",
+  "address": "10001",
+  "query": "pizza",
+  "result_count": 5,
+  "scraped_at": "2026-03-09T15:10:22Z",
+  "meta": {
+    "proxy": {
+      "ip": "172.58.196.88",
+      "country": "US",
+      "carrier": "T-Mobile"
+    },
+    "response_time_ms": 3241
+  }
+}

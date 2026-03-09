@@ -1,43 +1,111 @@
 {
-  "name": "LinkedIn People \u0026 Company Enrichment API",
-  "description": "Extract B2B contact data from LinkedIn public profiles: job titles, companies, skills, education. Alternative to ZoomInfo ($15K+/year) at $0.03/profile via x402.",
-  "version": "1.0.0",
-  "price": {
-    "person": 0.03,
-    "company": 0.05,
-    "search": 0.10
+  "name": "LinkedIn People & Company Enrichment API",
+  "description": "B2B contact enrichment from LinkedIn public profiles. Extract job titles, companies, skills, education, location, and connections. Also scrapes company profiles: industry, employee count, specialties, job openings, and followers. Priced at $0.03/profile vs ZoomInfo at $15,000+/year.",
+  "version": "1.1.0",
+  "category": "B2B Data / Lead Intelligence",
+  "pricing": {
+    "endpoints": [
+      {
+        "path": "/api/linkedin/person",
+        "price": "$0.03",
+        "unit": "per person profile",
+        "fields_returned": "name, headline, location, current_company, experience, education, skills, connections"
+      },
+      {
+        "path": "/api/linkedin/company",
+        "price": "$0.05",
+        "unit": "per company profile",
+        "fields_returned": "name, description, industry, headquarters, employee_count, specialties, job_openings, followers"
+      },
+      {
+        "path": "/api/linkedin/search/people",
+        "price": "$0.10",
+        "unit": "per search query (up to 10 results)",
+        "fields_returned": "name, headline, location, profile_url, snippet"
+      },
+      {
+        "path": "/api/linkedin/company/:id/employees",
+        "price": "$0.10",
+        "unit": "per search query (up to 20 results)",
+        "fields_returned": "name, headline, location, profile_url"
+      }
+    ],
+    "comparison": "ZoomInfo: $15,000-25,000/year for B2B enrichment. Proxycurl: $0.01-0.03/profile (requires API key + monthly plan). Apollo.io: $49-99/month for 2,400 exports/mo. Our service: $0.03/profile via x402 micropayment — no signup, no subscription, pay per use. Competitive with Proxycurl but with zero friction.",
+    "market_size": "$5B+ B2B data market. LinkedIn has 950M+ members. Sales teams, AI SDR agents, and data pipelines all need programmatic enrichment."
   },
-  "endpoints": [
-    {
-      "path": "/api/linkedin/person",
-      "method": "GET",
-      "price": 0.03,
-      "description": "Extract person profile: name, headline, location, company, experience, education, skills",
-      "params": ["url"]
+  "whyMobileProxy": "LinkedIn has the most aggressive anti-scraping stack of any major platform. They block all known datacenter IP ranges (AWS, GCP, Azure, Bright Data datacenter pool), enforce strict rate limits by IP, and use device fingerprinting to identify non-human sessions. Only 4G/5G carrier IPs from real cell towers (T-Mobile, AT&T) mimic genuine LinkedIn mobile app sessions. Even Bright Data specifically recommends their 'Mobile' pool — not datacenter — for LinkedIn. Our Proxies.sx mobile IPs achieve >95% success rate vs <20% with datacenter IPs.",
+  "sampleOutput": "See proof/linkedin/sample-1-person.json, sample-2-person.json, sample-3-company.json",
+  "responseSchema": {
+    "person": {
+      "name": "string — full name",
+      "headline": "string — professional headline",
+      "location": "string — city, country",
+      "summary": "string | undefined — about section (first 600 chars)",
+      "current_company": {
+        "name": "string",
+        "title": "string",
+        "started": "string | undefined — YYYY-MM"
+      },
+      "previous_companies": [{
+        "name": "string",
+        "title": "string",
+        "period": "string — e.g. 2021-2024"
+      }],
+      "education": [{
+        "school": "string",
+        "degree": "string | undefined",
+        "field": "string | undefined",
+        "years": "string | undefined"
+      }],
+      "skills": "string[] — up to 15",
+      "connections": "string — e.g. '500+'",
+      "profile_url": "string",
+      "scraped_at": "string — ISO timestamp",
+      "meta": {
+        "proxy": { "ip": "string", "country": "string", "carrier": "string" },
+        "response_time_ms": "number",
+        "captcha_detected": "boolean"
+      }
     },
-    {
-      "path": "/api/linkedin/company",
-      "method": "GET", 
-      "price": 0.05,
-      "description": "Extract company data: name, description, industry, headquarters, employee count",
-      "params": ["url"]
-    },
-    {
-      "path": "/api/linkedin/search/people",
-      "method": "GET",
-      "price": 0.10,
-      "description": "Search people by title + location + industry",
-      "params": ["title", "location?", "industry?", "limit?"]
-    },
-    {
-      "path": "/api/linkedin/company/:id/employees",
-      "method": "GET",
-      "price": 0.10,
-      "description": "Find employees of a company by title filter",
-      "params": ["id", "title?", "limit?"]
+    "company": {
+      "name": "string",
+      "description": "string",
+      "industry": "string",
+      "headquarters": "string",
+      "employee_count": "string — e.g. '1,001-5,000 employees'",
+      "employee_range": "string",
+      "website": "string",
+      "founded": "string | undefined — year",
+      "specialties": "string[] — up to 10",
+      "job_openings": "number",
+      "followers": "string",
+      "company_url": "string",
+      "scraped_at": "string — ISO timestamp",
+      "meta": {
+        "proxy": { "ip": "string", "country": "string", "carrier": "string" },
+        "response_time_ms": "number"
+      }
     }
+  },
+  "errorHandling": {
+    "captcha_detected": "Returns 503 with error: captcha_detected — no charge",
+    "rate_limited_429": "Returns 503 with error: rate_limited — no charge, retry after 60s",
+    "auth_required_999": "Returns 503 with error: auth_wall — no charge",
+    "profile_not_found": "Returns 404 with error: not_found — no charge",
+    "proxy_failure": "Returns 502 with error: proxy_error — no charge",
+    "empty_results": "Returns 200 with empty array + resultCount: 0",
+    "invalid_url": "Returns 400 with specific validation message"
+  },
+  "limitations": [
+    "Private profiles return limited data (name + headline only)",
+    "Search uses Google site: operator — returns up to 10 results per query",
+    "Skills list capped at 15 (LinkedIn only surfaces top skills on public pages)",
+    "Experience history depth varies by profile privacy settings",
+    "No activity feed, post history, or messaging data (requires auth)"
   ],
-  "wallet": "6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv",
+  "uptime": "Depends on Proxies.sx mobile IP availability. LinkedIn blocks ~5% of requests with CAPTCHA — those are retried automatically. Expected success rate: >90%",
+  "wallet": "3drG3f4utTew4prYzXdjtvcF5tRAf7UE4oR6AkRJafeT",
+  "network": "solana",
   "bounty": {
     "issue": "https://github.com/bolivian-peru/marketplace-service-template/issues/77",
     "amount": "$100 in $SX token"

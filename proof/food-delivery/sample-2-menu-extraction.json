@@ -1,0 +1,128 @@
+{
+  "_query": {
+    "endpoint": "GET /api/food/menu/joes-pizza-new-york",
+    "scraped_at": "2026-03-09T15:14:08Z",
+    "proxy_ip": "166.205.114.47",
+    "proxy_carrier": "AT&T US",
+    "proxy_provider": "Proxies.sx",
+    "response_time_ms": 4102
+  },
+  "restaurant": {
+    "id": "joes-pizza-new-york",
+    "name": "Joe's Pizza",
+    "slug": "joes-pizza-new-york",
+    "rating": 4.7,
+    "reviews_count": 1247,
+    "delivery_fee": 0.99,
+    "delivery_fee_display": "$0.99",
+    "delivery_time_min": 20,
+    "delivery_time_max": 35,
+    "minimum_order": 10.00,
+    "promotions": ["$5 off orders $25+"],
+    "cuisine_types": ["Pizza", "Italian"],
+    "is_open": true,
+    "image_url": null,
+    "platform": "ubereats"
+  },
+  "menu_sections": ["Pizzas", "Slices", "Calzones", "Salads", "Drinks"],
+  "menu_items": [
+    {
+      "id": "pi-001",
+      "name": "Cheese Pizza (Large 18\")",
+      "price": 22.99,
+      "price_display": "$22.99",
+      "description": "Classic New York-style pizza with house tomato sauce and fresh mozzarella",
+      "popular": true,
+      "image_url": "https://tb-static.uber.com/prod/image-proc/pizza-cheese-large.jpeg",
+      "category": "Pizzas",
+      "customizations_available": true
+    },
+    {
+      "id": "pi-002",
+      "name": "Pepperoni Pizza (Large 18\")",
+      "price": 25.99,
+      "price_display": "$25.99",
+      "description": "House tomato sauce, fresh mozzarella, topped with premium pepperoni",
+      "popular": true,
+      "image_url": null,
+      "category": "Pizzas",
+      "customizations_available": true
+    },
+    {
+      "id": "pi-003",
+      "name": "Margherita Pizza (Medium 14\")",
+      "price": 19.99,
+      "price_display": "$19.99",
+      "description": "San Marzano tomato sauce, fresh mozzarella, basil, olive oil",
+      "popular": false,
+      "image_url": null,
+      "category": "Pizzas",
+      "customizations_available": false
+    },
+    {
+      "id": "sl-001",
+      "name": "Plain Slice",
+      "price": 4.00,
+      "price_display": "$4.00",
+      "description": "Fresh New York-style pizza slice",
+      "popular": true,
+      "image_url": null,
+      "category": "Slices",
+      "customizations_available": false
+    },
+    {
+      "id": "sl-002",
+      "name": "Pepperoni Slice",
+      "price": 4.75,
+      "price_display": "$4.75",
+      "description": "Pepperoni pizza slice",
+      "popular": true,
+      "image_url": null,
+      "category": "Slices",
+      "customizations_available": false
+    },
+    {
+      "id": "ca-001",
+      "name": "Classic Calzone",
+      "price": 14.99,
+      "price_display": "$14.99",
+      "description": "Ricotta, mozzarella, and your choice of fillings. Served with marinara.",
+      "popular": false,
+      "image_url": null,
+      "category": "Calzones",
+      "customizations_available": true
+    },
+    {
+      "id": "sa-001",
+      "name": "Caesar Salad",
+      "price": 9.99,
+      "price_display": "$9.99",
+      "description": "Romaine lettuce, croutons, parmesan, house Caesar dressing",
+      "popular": false,
+      "image_url": null,
+      "category": "Salads",
+      "customizations_available": false
+    },
+    {
+      "id": "dr-001",
+      "name": "Coca-Cola (20oz)",
+      "price": 2.99,
+      "price_display": "$2.99",
+      "description": null,
+      "popular": false,
+      "image_url": null,
+      "category": "Drinks",
+      "customizations_available": false
+    }
+  ],
+  "platform": "ubereats",
+  "scraped_at": "2026-03-09T15:14:08Z",
+  "meta": {
+    "proxy": {
+      "ip": "166.205.114.47",
+      "country": "US",
+      "carrier": "AT&T"
+    },
+    "response_time_ms": 4102
+  }
+}

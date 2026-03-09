@@ -1,0 +1,44 @@
+{
+  "_query": {
+    "endpoint": "GET /api/linkedin/company?url=linkedin.com/company/openai",
+    "scraped_at": "2026-03-09T14:31:05Z",
+    "proxy_ip": "166.205.114.47",
+    "proxy_carrier": "AT&T US",
+    "proxy_provider": "Proxies.sx",
+    "response_time_ms": 2758
+  },
+  "company": {
+    "name": "OpenAI",
+    "description": "OpenAI is an AI research and deployment company. Our mission is to ensure that artificial general intelligence benefits all of humanity. We're based in San Francisco, California.",
+    "industry": "Technology, Information and Internet",
+    "headquarters": "San Francisco, California, United States",
+    "employee_count": "1,001-5,000 employees",
+    "employee_range": "1001-5000",
+    "website": "https://openai.com",
+    "founded": "2015",
+    "specialties": [
+      "Artificial Intelligence",
+      "Machine Learning",
+      "Natural Language Processing",
+      "Computer Vision",
+      "Research",
+      "GPT",
+      "DALL-E",
+      "ChatGPT",
+      "API",
+      "Safety"
+    ],
+    "job_openings": 47,
+    "followers": "2,341,888",
+    "company_url": "https://www.linkedin.com/company/openai",
+    "scraped_at": "2026-03-09T14:31:05Z",
+    "meta": {
+      "proxy": {
+        "ip": "166.205.114.47",
+        "country": "US",
+        "carrier": "AT&T"
+      },
+      "response_time_ms": 2758
+    }
+  }
+}
