@@ -1,0 +1,17 @@
+HTTP/2 402 
+date: Mon, 09 Mar 2026 07:57:49 GMT
+content-type: application/json
+cf-ray: 9d9887efdbcc42c7-EWR
+access-control-allow-origin: *
+access-control-expose-headers: X-Payment-Settled,X-Payment-TxHash,Retry-After
+referrer-policy: no-referrer
+rndr-id: 77ebd8d3-47b2-4e2d
+vary: Accept-Encoding
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-render-origin-server: Render
+cf-cache-status: DYNAMIC
+server: cloudflare
+alt-svc: h3=":443"; ma=86400
+
+{"status":402,"message":"Payment required","resource":"/api/airbnb/market-stats","description":"Market stats: ADR, occupancy, price distribution, property types","price":{"amount":"0.05","currency":"USDC","minimumAmount":"0.05"},"networks":[{"network":"solana","chainId":"solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp","recipient":"GpXHXs5KfzfXbNKcMLNbAMsJsgPsBE7y5GtwVoiuxYvH","asset":"USDC","assetAddress":"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"},{"network":"base","chainId":"eip155:8453","recipient":"0xF8cD900794245fc36CBE65be9afc23CDF5103042","asset":"USDC","assetAddress":"0x833589fcd6edb6e08f4c7c32d4f71b54bda02913"}],"headers":{"required":["Payment-Signature"],"optional":["X-Payment-Network"],"format":"Payment-Signature: <transaction_hash>"},"outputSchema":{"input":{"location":"string (required)","checkin":"YYYY-MM-DD","checkout":"YYYY-MM-DD"},"output":{"stats":"{ avg_daily_rate, median_daily_rate, total_listings, price_distribution, property_types }"}}}

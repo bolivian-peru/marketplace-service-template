@@ -1,0 +1,17 @@
+HTTP/2 402 
+date: Mon, 09 Mar 2026 07:57:49 GMT
+content-type: application/json
+cf-ray: 9d9887ed6d7c499b-EWR
+access-control-allow-origin: *
+access-control-expose-headers: X-Payment-Settled,X-Payment-TxHash,Retry-After
+referrer-policy: no-referrer
+rndr-id: 2268d1c0-6f47-4fee
+vary: Accept-Encoding
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-render-origin-server: Render
+cf-cache-status: DYNAMIC
+server: cloudflare
+alt-svc: h3=":443"; ma=86400
+
+{"status":402,"message":"Payment required","resource":"/api/airbnb/reviews/:listing_id","description":"Airbnb listing reviews","price":{"amount":"0.01","currency":"USDC","minimumAmount":"0.01"},"networks":[{"network":"solana","chainId":"solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp","recipient":"GpXHXs5KfzfXbNKcMLNbAMsJsgPsBE7y5GtwVoiuxYvH","asset":"USDC","assetAddress":"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"},{"network":"base","chainId":"eip155:8453","recipient":"0xF8cD900794245fc36CBE65be9afc23CDF5103042","asset":"USDC","assetAddress":"0x833589fcd6edb6e08f4c7c32d4f71b54bda02913"}],"headers":{"required":["Payment-Signature"],"optional":["X-Payment-Network"],"format":"Payment-Signature: <transaction_hash>"},"outputSchema":{"input":{"listing_id":"string (in path)","limit":"number (max 20)"},"output":{"reviews":"AirbnbReview[]"}}}

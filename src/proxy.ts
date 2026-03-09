@@ -12,6 +12,8 @@ export interface ProxyConfig {
   user: string;
   pass: string;
   country: string;
+  carrier?: string;
+  type?: string;
 }
 
 export interface ProxyFetchOptions extends RequestInit {
@@ -38,6 +40,8 @@ function initPool(): ProxyConfig[] {
         user,
         pass,
         country: country || 'US',
+        carrier: process.env.PROXY_CARRIER || 'T-Mobile US',
+        type: 'mobile',
       };
     });
     console.log(`[PROXY] Loaded ${proxyPool.length} proxies from PROXY_LIST`);
@@ -63,6 +67,8 @@ function initPool(): ProxyConfig[] {
     user,
     pass,
     country: process.env.PROXY_COUNTRY || 'US',
+    carrier: process.env.PROXY_CARRIER || 'T-Mobile US',
+    type: 'mobile',
   }];
   return proxyPool;
 }
