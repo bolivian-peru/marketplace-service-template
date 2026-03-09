@@ -1302,7 +1302,7 @@ serviceRouter.get('/airbnb/search', async (c) => {
 
     return c.json({
       listings: results,
-      meta: { location, checkin, checkout, guests, count: results.length, proxy: { ip, country: proxy.country, type: 'mobile' } },
+      meta: { location, checkin, checkout, guests, count: results.length, proxy: { ip, country: proxy.country, carrier: proxy.carrier, type: proxy.type } },
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
   } catch (err: any) {
@@ -1341,7 +1341,7 @@ serviceRouter.get('/airbnb/listing/:id', async (c) => {
 
     return c.json({
       listing,
-      meta: { proxy: { ip, country: proxy.country, type: 'mobile' } },
+      meta: { proxy: { ip, country: proxy.country, carrier: proxy.carrier, type: proxy.type } },
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
   } catch (err: any) {
@@ -1385,7 +1385,7 @@ serviceRouter.get('/airbnb/reviews/:listing_id', async (c) => {
 
     return c.json({
       reviews,
-      meta: { listingId, count: reviews.length, proxy: { ip, country: proxy.country, type: 'mobile' } },
+      meta: { listingId, count: reviews.length, proxy: { ip, country: proxy.country, carrier: proxy.carrier, type: proxy.type } },
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
   } catch (err: any) {
@@ -1431,7 +1431,7 @@ serviceRouter.get('/airbnb/market-stats', async (c) => {
 
     return c.json({
       stats,
-      meta: { location, proxy: { ip, country: proxy.country, type: 'mobile' } },
+      meta: { location, proxy: { ip, country: proxy.country, carrier: proxy.carrier, type: proxy.type } },
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
   } catch (err: any) {
@@ -1479,7 +1479,7 @@ serviceRouter.get('/serp', async (c) => {
     return c.json({
       query,
       results,
-      meta: { location, num, proxy: { ip, country: proxy.country, type: 'mobile' } },
+      meta: { location, num, proxy: { ip, country: proxy.country, carrier: proxy.carrier, type: proxy.type } },
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
   } catch (err: any) {
