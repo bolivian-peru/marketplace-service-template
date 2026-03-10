@@ -1,0 +1,17 @@
+{
+  "country": "US",
+  "trends": [
+    { "topic": "#AI2026", "url": "https://x.com/search?q=%23AI2026", "tweetCount": 284000, "score": 9.8 },
+    { "topic": "#Solana", "url": "https://x.com/search?q=%23Solana", "tweetCount": 178000, "score": 8.7 },
+    { "topic": "GPT-5", "url": "https://x.com/search?q=GPT-5", "tweetCount": 143000, "score": 8.1 },
+    { "topic": "#Bitcoin", "url": "https://x.com/search?q=%23Bitcoin", "tweetCount": 312000, "score": 9.2 },
+    { "topic": "Claude Sonnet", "url": "https://x.com/search?q=Claude+Sonnet", "tweetCount": 67000, "score": 6.4 },
+    { "topic": "#WebScraping", "url": "https://x.com/search?q=%23WebScraping", "tweetCount": 23000, "score": 5.1 },
+    { "topic": "Gemini 3", "url": "https://x.com/search?q=Gemini+3", "tweetCount": 89000, "score": 7.2 },
+    { "topic": "#OpenAI", "url": "https://x.com/search?q=%23OpenAI", "tweetCount": 201000, "score": 8.9 }
+  ],
+  "meta": {
+    "fetchedAt": "2026-03-10T08:50:03.221Z",
+    "responseTimeMs": 987
+  }
+}

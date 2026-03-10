@@ -1,0 +1,48 @@
+{
+  "query": "solana price prediction",
+  "results": [
+    {
+      "tweetId": "1899012345678901234",
+      "author": "cryptoalpha_sol",
+      "text": "Solana breaking $220 resistance. Next target $250 if BTC holds $90k. The ecosystem growth is insane right now — Jito tips up 340% YoY, DEX volume hitting records. $SOL 🚀",
+      "url": "https://x.com/cryptoalpha_sol/status/1899012345678901234",
+      "likes": 847,
+      "retweets": 213,
+      "engagementScore": 1060,
+      "publishedAt": "2026-03-09T22:14:33Z",
+      "platform": "twitter"
+    },
+    {
+      "tweetId": "1899011234567890123",
+      "author": "solana_daily",
+      "text": "Breaking: Solana TVL hits $12.8B — new all-time high. Raydium and Orca leading DEX volume. The L1 wars are over and Solana won the retail + DeFi category.",
+      "url": "https://x.com/solana_daily/status/1899011234567890123",
+      "likes": 2341,
+      "retweets": 589,
+      "engagementScore": 2930,
+      "publishedAt": "2026-03-09T20:45:11Z",
+      "platform": "twitter"
+    },
+    {
+      "tweetId": "1899010123456789012",
+      "author": "0xtrader_eth",
+      "text": "Sold my $ETH bags for $SOL. Controversial take but: Solana's user experience is 10x better. Sub-second finality, $0.001 fees, and now even the institutional crowd is showing up.",
+      "url": "https://x.com/0xtrader_eth/status/1899010123456789012",
+      "likes": 1562,
+      "retweets": 341,
+      "engagementScore": 1903,
+      "publishedAt": "2026-03-09T18:30:55Z",
+      "platform": "twitter"
+    }
+  ],
+  "meta": {
+    "total": 3,
+    "proxy": {
+      "ip": "37.110.214.88",
+      "country": "US",
+      "carrier": "T-Mobile"
+    },
+    "fetchedAt": "2026-03-10T08:45:12.441Z",
+    "responseTimeMs": 1243
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "handle": "elonmusk",
+  "displayName": "Elon Musk",
+  "bio": "Technoking of Tesla, Founder of SpaceX and xAI. Running X so you don't have to.",
+  "followers": 218400000,
+  "following": null,
+  "tweetCount": 47832,
+  "verified": true,
+  "profileUrl": "https://x.com/elonmusk",
+  "meta": {
+    "proxy": {
+      "ip": "172.58.41.220",
+      "country": "US",
+      "carrier": "T-Mobile"
+    },
+    "fetchedAt": "2026-03-10T08:52:44.109Z"
+  }
+}

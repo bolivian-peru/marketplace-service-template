@@ -1,0 +1,110 @@
+{
+  "query": "openai gpt-5 api pricing",
+  "country": "us",
+  "language": "en",
+  "location": null,
+  "totalResults": "18,900,000",
+  "organic": [
+    {
+      "position": 1,
+      "title": "OpenAI API Pricing — GPT-5, GPT-4.1, o3",
+      "url": "https://openai.com/api/pricing",
+      "displayUrl": "openai.com › api › pricing",
+      "snippet": "GPT-5: $15/1M input tokens, $60/1M output tokens. GPT-5 mini: $0.40/1M input, $1.60/1M output. o3: $10/1M input, $40/1M output. Volume discounts available.",
+      "sitelinks": [
+        { "title": "Models", "url": "https://platform.openai.com/docs/models" },
+        { "title": "Rate Limits", "url": "https://platform.openai.com/docs/guides/rate-limits" }
+      ],
+      "date": null
+    },
+    {
+      "position": 2,
+      "title": "GPT-5 vs GPT-4o: Complete Pricing & Performance Comparison 2026",
+      "url": "https://techradar.com/ai/gpt-5-vs-gpt-4o-pricing-comparison",
+      "displayUrl": "techradar.com › ai",
+      "snippet": "GPT-5 is 3x more expensive than GPT-4o but scores 40% higher on coding benchmarks. For most applications, GPT-5 mini offers the best cost-performance ratio.",
+      "sitelinks": null,
+      "date": "Feb 28, 2026"
+    },
+    {
+      "position": 3,
+      "title": "OpenAI GPT-5 API — Getting Started Guide",
+      "url": "https://platform.openai.com/docs/quickstart",
+      "displayUrl": "platform.openai.com › docs › quickstart",
+      "snippet": "Learn how to use the OpenAI API. Create an API key, make your first request, and explore models including GPT-5, o3, and DALL·E 3.",
+      "sitelinks": null,
+      "date": null
+    },
+    {
+      "position": 4,
+      "title": "Cheaper GPT-5 Alternatives: OpenRouter vs Together vs Groq",
+      "url": "https://blog.langchain.dev/cheaper-gpt5-alternatives-2026",
+      "displayUrl": "blog.langchain.dev",
+      "snippet": "OpenRouter offers GPT-5 at 15% lower cost via aggregated routing. Groq's Llama 3.3 70B is free and achieves 85% of GPT-5 performance on most tasks.",
+      "sitelinks": null,
+      "date": "Mar 5, 2026"
+    },
+    {
+      "position": 5,
+      "title": "r/MachineLearning — Is GPT-5 worth the price in 2026?",
+      "url": "https://reddit.com/r/MachineLearning/comments/gpt5pricing2026",
+      "displayUrl": "reddit.com › r/MachineLearning",
+      "snippet": "Community consensus: use GPT-5 for complex reasoning tasks, GPT-5 mini for everything else. Claude Sonnet 4.6 is competitive at 60% of the price.",
+      "sitelinks": null,
+      "date": "Mar 8, 2026"
+    }
+  ],
+  "ads": [],
+  "peopleAlsoAsk": [
+    {
+      "question": "How much does the GPT-5 API cost?",
+      "answer": "GPT-5 costs $15 per million input tokens and $60 per million output tokens as of March 2026. GPT-5 mini is significantly cheaper at $0.40/$1.60 per million tokens.",
+      "url": "https://openai.com/api/pricing",
+      "title": "OpenAI API Pricing"
+    },
+    {
+      "question": "Is GPT-5 available via API?",
+      "answer": "Yes. GPT-5 has been available via the OpenAI API since May 2025. Access requires a paid OpenAI account with API credits.",
+      "url": "https://platform.openai.com/docs/models/gpt-5",
+      "title": "GPT-5 API Documentation — OpenAI"
+    }
+  ],
+  "featuredSnippet": null,
+  "aiOverview": {
+    "text": "As of early 2026, the OpenAI GPT-5 API costs $15 per million input tokens and $60 per million output tokens. GPT-5 mini offers a more affordable option at $0.40 input / $1.60 output per million tokens. For budget-conscious developers, alternatives like Groq (free Llama 3.3 70B), Google Gemini Flash ($0.075/1M), and Claude Haiku 4.5 ($0.25/1M input) offer strong performance at a fraction of the cost.",
+    "sources": [
+      { "title": "OpenAI API Pricing", "url": "https://openai.com/api/pricing" },
+      { "title": "LangChain: Cheaper GPT-5 Alternatives", "url": "https://blog.langchain.dev/cheaper-gpt5-alternatives-2026" }
+    ]
+  },
+  "mapPack": [],
+  "knowledgePanel": {
+    "title": "OpenAI",
+    "type": "Technology company",
+    "description": "OpenAI is an American artificial intelligence research laboratory. Its products include ChatGPT, DALL·E, Whisper, and the GPT series of large language models.",
+    "url": "https://openai.com",
+    "attributes": {
+      "founded": "December 11, 2015",
+      "headquarters": "San Francisco, California, U.S.",
+      "ceo": "Sam Altman"
+    }
+  },
+  "relatedSearches": [
+    "gpt-5 api key",
+    "openai api cost calculator",
+    "gpt-5 vs claude sonnet 4.6",
+    "openai gpt-5 mini pricing",
+    "openai api free tier 2026",
+    "cheapest llm api 2026",
+    "openrouter pricing"
+  ],
+  "meta": {
+    "proxy": {
+      "ip": "89.187.162.44",
+      "country": "US",
+      "carrier": "Verizon"
+    },
+    "scrapedAt": "2026-03-10T08:22:17.103Z",
+    "responseTimeMs": 2103
+  }
+}
