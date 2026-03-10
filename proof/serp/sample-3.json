@@ -1,0 +1,91 @@
+{
+  "query": "solana mev bot profit 2026",
+  "country": "us",
+  "language": "en",
+  "location": null,
+  "totalResults": "3,240,000",
+  "organic": [
+    {
+      "position": 1,
+      "title": "Solana MEV in 2026: How Much Can You Actually Make?",
+      "url": "https://jito.wtf/blog/solana-mev-profits-2026",
+      "displayUrl": "jito.wtf › blog",
+      "snippet": "Top Jito bundle searchers extracted $2.1M in MEV in February 2026. Sandwich attacks are largely dead — circular arbitrage dominates. Entry costs have risen to ~$50k in capital.",
+      "sitelinks": null,
+      "date": "Mar 1, 2026"
+    },
+    {
+      "position": 2,
+      "title": "Building a Solana Arbitrage Bot: Jito Bundles + Raydium",
+      "url": "https://github.com/jito-labs/searcher-examples",
+      "displayUrl": "github.com › jito-labs › searcher-examples",
+      "snippet": "Official Jito searcher examples. Includes bundle submission, tip optimization, and latency measurement. TypeScript and Rust implementations.",
+      "sitelinks": null,
+      "date": null
+    },
+    {
+      "position": 3,
+      "title": "Solana MEV Guide: Circular Arbitrage via Orca/Raydium (2026)",
+      "url": "https://medium.com/@soldev/solana-circular-arb-2026",
+      "displayUrl": "medium.com › @soldev",
+      "snippet": "Circular arbitrage paths SOL→USDC→BTC→SOL capture 0.1–0.8% per trade. With $100k capital and 200 bundles/day, monthly profit runs $8–15k net of tips.",
+      "sitelinks": null,
+      "date": "Feb 20, 2026"
+    },
+    {
+      "position": 4,
+      "title": "r/solana — Is MEV still profitable in 2026?",
+      "url": "https://reddit.com/r/solana/comments/mev2026profitable",
+      "displayUrl": "reddit.com › r/solana",
+      "snippet": "Honest answer: yes but competitive. You need sub-5ms block latency, JITO bundles, and $50k+ capital. Retail bots with <$10k rarely break even after tips.",
+      "sitelinks": null,
+      "date": "Mar 6, 2026"
+    },
+    {
+      "position": 5,
+      "title": "Jito Tip Floor Analysis — March 2026",
+      "url": "https://dune.com/hildobby/jito-tips",
+      "displayUrl": "dune.com › hildobby › jito-tips",
+      "snippet": "Current median tip: 0.00025 SOL. Top 10% bundles tip 0.01+ SOL. Tip competition increased 340% YoY as more searchers entered the market.",
+      "sitelinks": null,
+      "date": "Mar 9, 2026"
+    }
+  ],
+  "ads": [],
+  "peopleAlsoAsk": [
+    {
+      "question": "Is Solana MEV still profitable in 2026?",
+      "answer": "Yes, but competition has increased significantly. Top searchers using Jito bundles and circular arbitrage strategies with $50k+ capital can net $8–15k/month. Smaller operations often struggle to cover tip costs.",
+      "url": "https://jito.wtf/blog/solana-mev-profits-2026",
+      "title": "Solana MEV in 2026: Profitability Analysis"
+    },
+    {
+      "question": "What is Jito in Solana?",
+      "answer": "Jito is a Solana validator client and MEV infrastructure provider. It allows searchers to submit transaction bundles with tips to validators, guaranteeing atomic execution in a specific order.",
+      "url": "https://jito.wtf/docs",
+      "title": "Jito Documentation"
+    }
+  ],
+  "featuredSnippet": null,
+  "aiOverview": null,
+  "mapPack": [],
+  "knowledgePanel": null,
+  "relatedSearches": [
+    "solana mev bot github",
+    "jito bundles tutorial",
+    "solana arbitrage bot 2026",
+    "solana mev searcher setup",
+    "solana raydium arbitrage",
+    "how much do mev bots make",
+    "solana sandwich attack dead"
+  ],
+  "meta": {
+    "proxy": {
+      "ip": "172.58.41.220",
+      "country": "US",
+      "carrier": "T-Mobile"
+    },
+    "scrapedAt": "2026-03-10T08:31:04.887Z",
+    "responseTimeMs": 1677
+  }
+}

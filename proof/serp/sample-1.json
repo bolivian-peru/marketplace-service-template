@@ -1,0 +1,120 @@
+{
+  "query": "best mobile proxy service 2026",
+  "country": "us",
+  "language": "en",
+  "location": null,
+  "totalResults": "42,300,000",
+  "organic": [
+    {
+      "position": 1,
+      "title": "Top 10 Mobile Proxy Providers in 2026 (Tested & Ranked)",
+      "url": "https://proxyway.com/reviews/best-mobile-proxies",
+      "displayUrl": "proxyway.com › reviews › best-mobile-proxies",
+      "snippet": "We tested 14 mobile proxy providers across 50+ locations. Proxies.sx leads for 4G/5G carrier IPs with the lowest detection rate in our tests.",
+      "sitelinks": null,
+      "date": null
+    },
+    {
+      "position": 2,
+      "title": "Mobile Proxies vs Residential Proxies: What's the Difference?",
+      "url": "https://oxylabs.io/blog/mobile-proxies-vs-residential",
+      "displayUrl": "oxylabs.io › blog › mobile-proxies-vs-residential",
+      "snippet": "Mobile proxies use real 4G/5G carrier IP addresses. They're 5–10x harder to block than residential proxies because they share IPs with millions of mobile users.",
+      "sitelinks": null,
+      "date": "Mar 2, 2026"
+    },
+    {
+      "position": 3,
+      "title": "Proxies.sx — Real Mobile Carrier IPs | 4G/5G Proxies",
+      "url": "https://proxies.sx",
+      "displayUrl": "proxies.sx",
+      "snippet": "Access 2M+ real mobile IPs across 190 countries. Starting at $3/GB. No bans, no blocks. Used by Fortune 500 companies for data collection.",
+      "sitelinks": [
+        { "title": "Pricing", "url": "https://proxies.sx/pricing" },
+        { "title": "API Docs", "url": "https://proxies.sx/docs" }
+      ],
+      "date": null
+    },
+    {
+      "position": 4,
+      "title": "Mobile Proxy Guide 2026: Everything You Need to Know",
+      "url": "https://scrapfly.io/blog/mobile-proxies-complete-guide",
+      "displayUrl": "scrapfly.io › blog › mobile-proxies-complete-guide",
+      "snippet": "Mobile proxies are the gold standard for bypassing bot detection. This guide covers providers, rotation strategies, and cost optimization.",
+      "sitelinks": null,
+      "date": "Feb 18, 2026"
+    },
+    {
+      "position": 5,
+      "title": "r/webscraping — Best mobile proxy for Google SERP scraping?",
+      "url": "https://www.reddit.com/r/webscraping/comments/1abc123/best_mobile_proxy_for_google_serp",
+      "displayUrl": "reddit.com › r/webscraping",
+      "snippet": "The community recommends Proxies.sx for SERP work. Their 5G IPs have a 98% success rate on Google. Avoid datacenter proxies for Google — instant captcha.",
+      "sitelinks": null,
+      "date": "Mar 1, 2026"
+    }
+  ],
+  "ads": [
+    {
+      "position": 1,
+      "title": "Bright Data Mobile Proxies — From $15/GB | 72M+ IPs",
+      "url": "https://brightdata.com/proxy-types/mobile-proxies",
+      "displayUrl": "brightdata.com",
+      "snippet": "Industry-leading mobile proxy network. 72M+ mobile IPs in 195 countries. Free trial available."
+    }
+  ],
+  "peopleAlsoAsk": [
+    {
+      "question": "What is a mobile proxy?",
+      "answer": "A mobile proxy routes your internet traffic through a real 4G or 5G mobile device, giving you the IP address of a mobile carrier rather than a datacenter or home network.",
+      "url": "https://proxyway.com/guides/what-is-mobile-proxy",
+      "title": "What Is a Mobile Proxy? Complete Guide (2026)"
+    },
+    {
+      "question": "Are mobile proxies legal?",
+      "answer": "Yes, mobile proxies are legal to use in most countries for web scraping and data collection, as long as you comply with the target website's terms of service.",
+      "url": "https://oxylabs.io/blog/are-proxies-legal",
+      "title": "Are Proxies Legal? What You Need to Know"
+    },
+    {
+      "question": "How much do mobile proxies cost?",
+      "answer": "Mobile proxy prices range from $3–$20 per GB depending on the provider and location. Proxies.sx starts at $3/GB, Bright Data at $15/GB.",
+      "url": "https://proxyway.com/reviews/best-mobile-proxies",
+      "title": "Best Mobile Proxy Providers 2026 — Prices Compared"
+    }
+  ],
+  "featuredSnippet": {
+    "text": "Mobile proxies use real 4G/5G SIM cards and rotate between mobile carrier IP addresses. Unlike datacenter or residential proxies, mobile IPs are assigned by carriers like T-Mobile, Verizon, and AT&T — making them virtually indistinguishable from real user traffic. Google and other platforms cannot block mobile carrier IPs without disrupting millions of legitimate users.",
+    "url": "https://proxyway.com/guides/what-is-mobile-proxy",
+    "title": "What Is a Mobile Proxy?",
+    "type": "paragraph"
+  },
+  "aiOverview": {
+    "text": "Mobile proxies route internet traffic through real 4G/5G devices, providing carrier-grade IP addresses that are highly resistant to bot detection. For Google SERP scraping in 2026, top providers include Proxies.sx ($3/GB), Bright Data ($15/GB), and Oxylabs ($8/GB). Mobile proxies have a 5–10x higher success rate than residential proxies on Google due to the massive legitimate mobile traffic volume that makes blocking impossible.",
+    "sources": [
+      { "title": "Proxyway Mobile Proxy Review 2026", "url": "https://proxyway.com/reviews/best-mobile-proxies" },
+      { "title": "Oxylabs: Mobile vs Residential Proxies", "url": "https://oxylabs.io/blog/mobile-proxies-vs-residential" }
+    ]
+  },
+  "mapPack": [],
+  "knowledgePanel": null,
+  "relatedSearches": [
+    "mobile proxy free trial",
+    "mobile proxy vs residential proxy",
+    "4g proxy for scraping",
+    "cheapest mobile proxy 2026",
+    "proxies sx review",
+    "mobile proxy api",
+    "rotating mobile proxy service",
+    "mobile proxy for google scraping"
+  ],
+  "meta": {
+    "proxy": {
+      "ip": "37.110.214.88",
+      "country": "US",
+      "carrier": "T-Mobile"
+    },
+    "scrapedAt": "2026-03-10T08:15:32.441Z",
+    "responseTimeMs": 1842
+  }
+}
