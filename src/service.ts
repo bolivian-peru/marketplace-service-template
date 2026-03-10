@@ -21,6 +21,7 @@ import { scrapeGoogleMaps, extractDetailedBusiness } from './scrapers/maps-scrap
 import { researchRouter } from './routes/research';
 import { trendingRouter } from './routes/trending';
 import { serpRouter } from './routes/serp';
+import { twitterXRouter } from './routes/twitter-x';
 import { searchAirbnb, getListingDetail, getListingReviews, getMarketStats } from './scrapers/airbnb-scraper';
 import { 
   scrapeLinkedInPerson, 
@@ -37,6 +38,7 @@ export const serviceRouter = new Hono();
 serviceRouter.route('/research', researchRouter);
 serviceRouter.route('/trending', trendingRouter);
 serviceRouter.route('/serp', serpRouter);
+serviceRouter.route('/x', twitterXRouter);
 
 const SERVICE_NAME = 'job-market-intelligence';
 const PRICE_USDC = 0.005;
