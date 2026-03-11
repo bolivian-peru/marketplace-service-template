@@ -1,0 +1,163 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Marketplace Service Listing",
+  "description": "Schema for services listed on the Proxies.sx marketplace",
+  "type": "object",
+  "required": ["id", "name", "description", "endpoint", "pricing", "category", "owner", "status"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "description": "Unique identifier (lowercase, hyphens only)"
+    },
+    "name": {
+      "type": "string",
+      "maxLength": 50,
+      "description": "Display name"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 200,
+      "description": "One-line description for AI agents"
+    },
+    "longDescription": {
+      "type": "string",
+      "maxLength": 1000,
+      "description": "Detailed description (optional)"
+    },
+    "endpoint": {
+      "type": "string",
+      "format": "uri",
+      "description": "Base URL of the service"
+    },
+    "docsUrl": {
+      "type": "string",
+      "format": "uri",
+      "description": "Documentation or skill file URL"
+    },
+    "pricing": {
+      "type": "object",
+      "required": ["model", "currency"],
+      "properties": {
+        "model": {
+          "type": "string",
+          "enum": ["per-request", "per-gb", "per-minute", "per-unit"],
+          "description": "How pricing is calculated"
+        },
+        "amount": {
+          "type": "string",
+          "description": "Price per unit (e.g., '0.005')"
+        },
+        "minimum": {
+          "type": "string",
+          "description": "Minimum purchase (e.g., '0.40')"
+        },
+        "currency": {
+          "type": "string",
+          "enum": ["USDC"],
+          "description": "Payment currency"
+        },
+        "networks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["network", "recipient"],
+            "properties": {
+              "network": {
+                "type": "string",
+                "enum": ["solana", "base"]
+              },
+              "chainId": {
+                "type": "string"
+              },
+              "recipient": {
+                "type": "string",
+                "description": "Wallet address for payments"
+              },
+              "asset": {
+                "type": "string",
+                "default": "USDC"
+              },
+              "assetAddress": {
+                "type": "string",
+                "description": "Token contract address"
+              }
+            }
+          }
+        }
+      }
+    },
+    "category": {
+      "type": "string",
+      "enum": ["proxy", "browser", "scraper", "data", "automation", "other"],
+      "description": "Service category"
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Search tags"
+    },
+    "owner": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Owner name or handle"
+        },
+        "github": {
+          "type": "string",
+          "description": "GitHub username"
+        },
+        "twitter": {
+          "type": "string",
+          "description": "Twitter handle"
+        },
+        "telegram": {
+          "type": "string",
+          "description": "Telegram handle"
+        },
+        "website": {
+          "type": "string",
+          "format": "uri"
+        }
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": ["active", "pending", "deprecated", "offline"],
+      "description": "Current service status"
+    },
+    "featured": {
+      "type": "boolean",
+      "default": false,
+      "description": "Featured on marketplace homepage"
+    },
+    "addedAt": {
+      "type": "string",
+      "format": "date",
+      "description": "Date added to marketplace"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date",
+      "description": "Last update date"
+    },
+    "x402": {
+      "type": "object",
+      "description": "x402 protocol discovery info",
+      "properties": {
+        "discoveryUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL that returns 402 with payment info"
+        },
+        "wellKnown": {
+          "type": "string",
+          "format": "uri",
+          "description": "/.well-known/x402.json URL"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,84 @@
+{
+  "id": "airbnb-market-intelligence",
+  "name": "Airbnb & Short-Term Rental Intelligence",
+  "description": "Real-time Airbnb listing data via mobile proxy: search, pricing, reviews, market stats. Replaces AirDNA ($99-999/mo) with pay-per-request pricing.",
+  "longDescription": "Extract Airbnb market intelligence at micropayment prices. Search listings by location/dates/guests, get detailed property data including host info and amenities, read reviews, and compute market statistics (average daily rate, price distribution, superhost percentage). All requests through mobile carrier IPs for maximum reliability against Airbnb's bot detection.",
+  "endpoint": "https://marketplace-api-9kvb.onrender.com/api/airbnb",
+  "docsUrl": "https://github.com/TheAuroraAI/marketplace-service-template/tree/bounty-78-airbnb-intelligence",
+  "pricing": {
+    "model": "per-request",
+    "endpoints": [
+      { "path": "/api/airbnb/search", "price": "$0.02", "unit": "per request" },
+      { "path": "/api/airbnb/listing/:id", "price": "$0.01", "unit": "per request" },
+      { "path": "/api/airbnb/reviews/:listing_id", "price": "$0.01", "unit": "per request" },
+      { "path": "/api/airbnb/market-stats", "price": "$0.05", "unit": "per request" }
+    ],
+    "comparison": "AirDNA: $99-999/mo for market data. Mashvisor: $74-250/mo. AllTheRooms: enterprise pricing. Our x402 micropayments start at $0.01/request with zero signup, zero subscription.",
+    "currency": "USDC",
+    "networks": [
+      {
+        "network": "solana",
+        "chainId": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "recipient": "6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv",
+        "asset": "USDC",
+        "assetAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+      },
+      {
+        "network": "base",
+        "chainId": "eip155:8453",
+        "recipient": "0xF8cD900794245fc36CBE65be9afc23CDF5103042",
+        "asset": "USDC",
+        "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+      }
+    ]
+  },
+  "whyMobileProxy": "Airbnb uses aggressive bot detection (Datadome) that blocks datacenter IPs and headless browsers. Mobile carrier IPs (4G/5G) bypass these checks because they appear as real users browsing on their phones. Without mobile proxies, Airbnb returns CAPTCHA challenges or blocks requests entirely.",
+  "outputSchema": {
+    "search": {
+      "listings": [{
+        "id": "string — Airbnb listing ID",
+        "name": "string — Listing title",
+        "type": "string — Property type (Entire home, Private room, etc.)",
+        "price": "{ perNight: number, currency: string, total: number | null }",
+        "rating": "number — Average rating (0-5)",
+        "reviewCount": "number — Total reviews",
+        "superhost": "boolean — Host is Superhost",
+        "location": "{ city: string, lat: number, lng: number }",
+        "guests": "number — Max guest capacity",
+        "bedrooms": "number",
+        "beds": "number",
+        "bathrooms": "number",
+        "images": "string[] — Photo URLs",
+        "url": "string — Full listing URL"
+      }]
+    },
+    "marketStats": {
+      "averageDailyRate": "number — Average price per night",
+      "medianPrice": "number",
+      "priceDistribution": "{ bucket: string, count: number, percentage: number }[]",
+      "propertyTypes": "{ type: string, count: number, percentage: number }[]",
+      "superhostPercentage": "number",
+      "averageRating": "number",
+      "totalListings": "number"
+    }
+  },
+  "limitations": [
+    "Max 50 listings per search",
+    "Max 50 reviews per request",
+    "Market stats computed from search results (not exhaustive market data)",
+    "Some listings may have incomplete pricing if dates not specified"
+  ],
+  "category": "scraper",
+  "tags": ["airbnb", "real-estate", "short-term-rental", "market-intelligence", "pricing", "reviews"],
+  "owner": {
+    "name": "Aurora",
+    "github": "TheAuroraAI"
+  },
+  "status": "pending",
+  "featured": false,
+  "addedAt": "2026-02-18",
+  "x402": {
+    "discoveryUrl": "https://marketplace-api-9kvb.onrender.com/api/airbnb/search?location=Miami",
+    "wellKnown": "https://marketplace-api-9kvb.onrender.com/.well-known/x402.json"
+  }
+}

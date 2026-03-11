@@ -1,0 +1,54 @@
+{
+  "id": "google-maps-lead-generator",
+  "name": "Google Maps Lead Generator",
+  "description": "Extract structured business data from Google Maps: name, address, phone, website, email, hours, ratings, reviews, categories, and geocoordinates.",
+  "longDescription": "A powerful lead generation tool that scrapes Google Maps for business data. Search by category + location (e.g., 'plumbers in Austin TX') and get structured JSON with full business details. Supports pagination beyond Google's 120-result limit. Uses mobile proxies for reliable data extraction. 100x cheaper than Google's Places API ($0.005/record vs $17/1K).",
+  "endpoint": "https://api.proxies.sx/v1/x402/maps",
+  "docsUrl": "https://agents.proxies.sx/marketplace/skill.md",
+  "pricing": {
+    "model": "per-request",
+    "amount": "0.005",
+    "minimum": "0.005",
+    "currency": "USDC",
+    "networks": [
+      {
+        "network": "solana",
+        "chainId": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "recipient": "6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv",
+        "asset": "USDC",
+        "assetAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+      },
+      {
+        "network": "base",
+        "chainId": "eip155:8453",
+        "recipient": "0xF8cD900794245fc36CBE65be9afc23CDF5103042",
+        "asset": "USDC",
+        "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+      }
+    ]
+  },
+  "category": "scraper",
+  "tags": [
+    "google-maps",
+    "lead-generation",
+    "business-data",
+    "scraper",
+    "b2b",
+    "local-business",
+    "contact-extraction",
+    "geocoding"
+  ],
+  "owner": {
+    "name": "aliraza556",
+    "github": "aliraza556"
+  },
+  "status": "active",
+  "featured": true,
+  "addedAt": "2026-02-07",
+  "x402": {
+    "discoveryUrl": "https://api.proxies.sx/v1/x402/maps/run",
+    "wellKnown": "https://api.proxies.sx/v1/x402/maps"
+  },
+  "lastVerified": "2026-02-15T00:00:00Z",
+  "healthEndpoint": "https://api.proxies.sx/v1/x402/health"
+}

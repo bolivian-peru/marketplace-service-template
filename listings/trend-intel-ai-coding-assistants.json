@@ -1,0 +1,616 @@
+{
+  "topic": "AI coding assistants",
+  "timeframe": "last 30 days",
+  "generated_at": "2026-02-18T13:53:29.889Z",
+  "platforms_used": {
+    "reddit": 15,
+    "twitter": 11,
+    "youtube": 20
+  },
+  "samples": {
+    "reddit": [
+      {
+        "id": "1r3joqr",
+        "title": "I mapped every connection in the Epstein files. It started with 6,000 documents. It's now 1.5 million. Here's what changed.",
+        "subreddit": "Epstein",
+        "score": 33010,
+        "numComments": 1368,
+        "url": "https://www.reddit.com/r/Epstein/comments/1r3joqr/i_mapped_every_connection_in_the_epstein_files_it/",
+        "permalink": "https://www.reddit.com/r/Epstein/comments/1r3joqr/i_mapped_every_connection_in_the_epstein_files_it/",
+        "created": 1770970663,
+        "selftext": "A week ago I posted about an open database at [https://EpsteinExposed.com](https://EpsteinExposed.com) I've been building to cross-reference the Epstein case files that I've been working on for a couple of months. That post hit 568k views and 4.6k upvotes and took my server down twice. I have done nothing but ingest, clean, and index data since then. Here's where it stands. **Where it was vs. where it is now** Last week the database had roughly 6,000 documents. Right now it has 1,522,060. That's",
+        "author": "EricKeller2",
+        "upvoteRatio": 0.98,
+        "isVideo": false,
+        "flair": "Court document or investigative file",
+        "platform": "reddit"
+      },
+      {
+        "id": "1qpgym3",
+        "title": "AIO? My daughter didn’t listen to the teacher during a female emergency and is now receiving a referral",
+        "subreddit": "AmIOverreacting",
+        "score": 31616,
+        "numComments": 3320,
+        "url": "https://www.reddit.com/r/AmIOverreacting/comments/1qpgym3/aio_my_daughter_didnt_listen_to_the_teacher/",
+        "permalink": "https://www.reddit.com/r/AmIOverreacting/comments/1qpgym3/aio_my_daughter_didnt_listen_to_the_teacher/",
+        "created": 1769619543,
+        "selftext": "My 14yo daughter is a Freshman in HS. She has big dreams so she takes school very seriously. She’s a good student and doesn’t get into trouble. Today, she emailed me to tell me that she told her teacher that she has her period and urgently needed to go to the bathroom. The teacher said no. She went on to tell the teacher that she is actively bleeding through her tampon and didn’t want to get her light gray pants dirty for the rest of the school day. The teacher again said no. She panicked and we",
+        "author": "Common_Piglet7437",
+        "upvoteRatio": 0.97,
+        "isVideo": false,
+        "flair": "🎓 academic/school",
+        "platform": "reddit"
+      },
+      {
+        "id": "1r6olcv",
+        "title": "An AI CEO finally said something honest",
+        "subreddit": "ExperiencedDevs",
+        "score": 22197,
+        "numComments": 763,
+        "url": "https://www.reddit.com/r/ExperiencedDevs/comments/1r6olcv/an_ai_ceo_finally_said_something_honest/",
+        "permalink": "https://www.reddit.com/r/ExperiencedDevs/comments/1r6olcv/an_ai_ceo_finally_said_something_honest/",
+        "created": 1771282005,
+        "selftext": "Dax Raad from anoma.ly might be the only CEO speaking honestly about AI right now. His most recent take: “everyone's talking about their teams like they were at the peak of efficiency and bottlenecked by ability to produce code here's what things actually look like \\- your org rarely has good ideas. ideas being expensive to implement was actually helping \\- majority of workers have no reason to be super motivated, they want to do their 9-5 and get back to their life \\- they're not using AI to be",
+        "author": "Tech-Cowboy",
+        "upvoteRatio": 0.96,
+        "isVideo": false,
+        "flair": "Meta",
+        "platform": "reddit"
+      },
+      {
+        "id": "1r353io",
+        "title": "Spotify says its best developers haven't written a line of code since December, thanks to AI",
+        "subreddit": "technology",
+        "score": 14274,
+        "numComments": 2379,
+        "url": "https://techcrunch.com/2026/02/12/spotify-says-its-best-developers-havent-written-a-line-of-code-since-december-thanks-to-ai/",
+        "permalink": "https://www.reddit.com/r/technology/comments/1r353io/spotify_says_its_best_developers_havent_written_a/",
+        "created": 1770929526,
+        "selftext": "",
+        "author": "joe4942",
+        "upvoteRatio": 0.87,
+        "isVideo": false,
+        "flair": "Artificial Intelligence",
+        "platform": "reddit"
+      },
+      {
+        "id": "1qmf7n9",
+        "title": "theRealSDLC",
+        "subreddit": "ProgrammerHumor",
+        "score": 8865,
+        "numComments": 127,
+        "url": "https://i.redd.it/7nkwif31ygfg1.jpeg",
+        "permalink": "https://www.reddit.com/r/ProgrammerHumor/comments/1qmf7n9/therealsdlc/",
+        "created": 1769335230,
+        "selftext": "",
+        "author": "Shiroyasha_2308",
+        "upvoteRatio": 0.98,
+        "isVideo": false,
+        "flair": "Meme",
+        "platform": "reddit"
+      }
+    ],
+    "twitter": [
+      {
+        "tweetId": "2019628584357527713",
+        "author": "@official_taches",
+        "text": "GSD is like having a project manager for your AI coding assistant. You know how when you ask someone to build something for you, they might forget details, lose ...",
+        "url": "https://x.com/official_taches/status/2019628584357527713",
+        "likes": null,
+        "retweets": null,
+        "engagementScore": 100,
+        "publishedAt": null,
+        "platform": "twitter"
+      },
+      {
+        "tweetId": "2015806707977400431",
+        "author": "@AlphaSenseInc",
+        "text": "The expert notes that adoption has accelerated rapidly, with roughly 90 percent of engineers now using AI coding assistants daily, up from around 60-70 percent ...",
+        "url": "https://x.com/AlphaSenseInc/status/2015806707977400431",
+        "likes": null,
+        "retweets": null,
+        "engagementScore": 50,
+        "publishedAt": null,
+        "platform": "twitter"
+      },
+      {
+        "tweetId": "2018689948048666988",
+        "author": "@ElevenLabsDevs",
+        "text": "With skills, AI coding assistants like Claude Code, Cursor, and OpenCode are better at using our APIs to handle AI audio and agent workflows. Get started ...",
+        "url": "https://x.com/ElevenLabsDevs/status/2018689948048666988",
+        "likes": null,
+        "retweets": null,
+        "engagementScore": 33.33,
+        "publishedAt": null,
+        "platform": "twitter"
+      },
+      {
+        "tweetId": "2017640417768972393",
+        "author": "@bhaidar",
+        "text": "Been using AI coding assistants daily for months now. Biggest surprise? They didn't make me lazier. They made me pickier about code quality.",
+        "url": "https://x.com/bhaidar/status/2017640417768972393",
+        "likes": null,
+        "retweets": null,
+        "engagementScore": 25,
+        "publishedAt": null,
+        "platform": "twitter"
+      },
+      {
+        "tweetId": "2019152419624743055",
+        "author": "@devopsdotcom",
+        "text": "AI coding assistants accelerate development but can silently introduce security vulnerabilities. Trained on vast repositories of public code, ...",
+        "url": "https://x.com/devopsdotcom/status/2019152419624743055",
+        "likes": null,
+        "retweets": null,
+        "engagementScore": 20,
+        "publishedAt": null,
+        "platform": "twitter"
+      }
+    ],
+    "youtube": [
+      {
+        "videoId": "pvMGRSZJ4Jw",
+        "title": "Best AI Coding Tools for Developers in 2026",
+        "url": "https://www.youtube.com/watch?v=pvMGRSZJ4Jw",
+        "channelName": "Codevolution",
+        "viewCount": null,
+        "description": "",
+        "publishedAt": null,
+        "engagementScore": 100,
+        "platform": "youtube"
+      },
+      {
+        "videoId": "-VTiqivKOB8",
+        "title": "The Only AI Coding Tools Worth Learning in 2026",
+        "url": "https://www.youtube.com/watch?v=-VTiqivKOB8",
+        "channelName": "Tech With Tim",
+        "viewCount": null,
+        "description": "",
+        "publishedAt": null,
+        "engagementScore": 50,
+        "platform": "youtube"
+      },
+      {
+        "videoId": "GGOP8gx4368",
+        "title": "Best AI Tool 2026: The Best AI Coding Assistant for App Building ?",
+        "url": "https://www.youtube.com/watch?v=GGOP8gx4368",
+        "channelName": "Biz Check",
+        "viewCount": null,
+        "description": "",
+        "publishedAt": null,
+        "engagementScore": 33.33,
+        "platform": "youtube"
+      },
+      {
+        "videoId": "zgxorh9LhiE",
+        "title": "I Tried Every AI Coding Agent... Here's My 2026 Setup",
+        "url": "https://www.youtube.com/watch?v=zgxorh9LhiE",
+        "channelName": "Your Average Tech Bro",
+        "viewCount": null,
+        "description": "",
+        "publishedAt": null,
+        "engagementScore": 25,
+        "platform": "youtube"
+      },
+      {
+        "videoId": "zqiYTXiQq-0",
+        "title": "AI Coding Tools Ranked from Worst to Best (2026)",
+        "url": "https://www.youtube.com/watch?v=zqiYTXiQq-0",
+        "channelName": "Mikey No Code",
+        "viewCount": null,
+        "description": "",
+        "publishedAt": null,
+        "engagementScore": 20,
+        "platform": "youtube"
+      }
+    ]
+  },
+  "patterns": [
+    {
+      "pattern": "posted",
+      "strength": "emerging",
+      "sources": [
+        "reddit"
+      ],
+      "totalEngagement": 607,
+      "evidence": [
+        {
+          "platform": "reddit",
+          "title": "I mapped every connection in the Epstein files. It started with 6,000 documents. It's now 1.5 million. Here's what changed.",
+          "url": "https://www.reddit.com/r/Epstein/comments/1r3joqr/i_mapped_every_connection_in_the_epstein_files_it/",
+          "engagement": 33010,
+          "subreddit": "Epstein",
+          "score": 33010,
+          "numComments": 1368,
+          "created": 1770970663
+        },
+        {
+          "platform": "reddit",
+          "title": "AIO? My daughter didn’t listen to the teacher during a female emergency and is now receiving a referral",
+          "url": "https://www.reddit.com/r/BestofRedditorUpdates/comments/1qwc73q/aio_my_daughter_didnt_listen_to_the_teacher/",
+          "engagement": 8236,
+          "subreddit": "BestofRedditorUpdates",
+          "score": 8236,
+          "numComments": 751,
+          "created": 1770267727
+        },
+        {
+          "platform": "reddit",
+          "title": "[New Update]: AIO? My coworker took video of me outside of work to \"prove\" I'm not disabled",
+          "url": "https://www.reddit.com/r/BestofRedditorUpdates/comments/1qwc8kr/new_update_aio_my_coworker_took_video_of_me/",
+          "engagement": 5217,
+          "subreddit": "BestofRedditorUpdates",
+          "score": 5217,
+          "numComments": 233,
+          "created": 1770267847
+        }
+      ]
+    },
+    {
+      "pattern": "thanks",
+      "strength": "emerging",
+      "sources": [
+        "reddit"
+      ],
+      "totalEngagement": 602,
+      "evidence": [
+        {
+          "platform": "reddit",
+          "title": "Spotify says its best developers haven't written a line of code since December, thanks to AI",
+          "url": "https://www.reddit.com/r/technology/comments/1r353io/spotify_says_its_best_developers_havent_written_a/",
+          "engagement": 14274,
+          "subreddit": "technology",
+          "score": 14274,
+          "numComments": 2379,
+          "created": 1770929526
+        },
+        {
+          "platform": "reddit",
+          "title": "My Wife Just Released Her First Game 🎉",
+          "url": "https://www.reddit.com/r/IndieDev/comments/1r2p7nc/my_wife_just_released_her_first_game/",
+          "engagement": 6195,
+          "subreddit": "IndieDev",
+          "score": 6195,
+          "numComments": 415,
+          "created": 1770889275
+        },
+        {
+          "platform": "reddit",
+          "title": "Epstein appeared to use \"pizza\" as a code for underaged victims. No, I'm not joking.",
+          "url": "https://www.reddit.com/r/Epstein/comments/1qsiikn/epstein_appeared_to_use_pizza_as_a_code_for/",
+          "engagement": 5259,
+          "subreddit": "Epstein",
+          "score": 5259,
+          "numComments": 850,
+          "created": 1769903872
+        }
+      ]
+    },
+    {
+      "pattern": "code",
+      "strength": "emerging",
+      "sources": [
+        "reddit"
+      ],
+      "totalEngagement": 502,
+      "evidence": [
+        {
+          "platform": "reddit",
+          "title": "An AI CEO finally said something honest",
+          "url": "https://www.reddit.com/r/ExperiencedDevs/comments/1r6olcv/an_ai_ceo_finally_said_something_honest/",
+          "engagement": 22197,
+          "subreddit": "ExperiencedDevs",
+          "score": 22197,
+          "numComments": 763,
+          "created": 1771282005
+        },
+        {
+          "platform": "reddit",
+          "title": "Spotify says its best developers haven't written a line of code since December, thanks to AI",
+          "url": "https://www.reddit.com/r/technology/comments/1r353io/spotify_says_its_best_developers_havent_written_a/",
+          "engagement": 14274,
+          "subreddit": "technology",
+          "score": 14274,
+          "numComments": 2379,
+          "created": 1770929526
+        },
+        {
+          "platform": "reddit",
+          "title": "Epstein appeared to use \"pizza\" as a code for underaged victims. No, I'm not joking.",
+          "url": "https://www.reddit.com/r/Epstein/comments/1qsiikn/epstein_appeared_to_use_pizza_as_a_code_for/",
+          "engagement": 5259,
+          "subreddit": "Epstein",
+          "score": 5259,
+          "numComments": 850,
+          "created": 1769903872
+        }
+      ]
+    },
+    {
+      "pattern": "original",
+      "strength": "emerging",
+      "sources": [
+        "reddit"
+      ],
+      "totalEngagement": 477,
+      "evidence": [
+        {
+          "platform": "reddit",
+          "title": "AIO? My daughter didn’t listen to the teacher during a female emergency and is now receiving a referral",
+          "url": "https://www.reddit.com/r/BestofRedditorUpdates/comments/1qwc73q/aio_my_daughter_didnt_listen_to_the_teacher/",
+          "engagement": 8236,
+          "subreddit": "BestofRedditorUpdates",
+          "score": 8236,
+          "numComments": 751,
+          "created": 1770267727
+        },
+        {
+          "platform": "reddit",
+          "title": "Original Arc Concepts - Part 6: Parrot",
+          "url": "https://www.reddit.com/r/ArcRaiders/comments/1qif2o7/original_arc_concepts_part_6_parrot/",
+          "engagement": 6353,
+          "subreddit": "ArcRaiders",
+          "score": 6353,
+          "numComments": 373,
+          "created": 1768946574
+        },
+        {
+          "platform": "reddit",
+          "title": "Epstein appeared to use \"pizza\" as a code for underaged victims. No, I'm not joking.",
+          "url": "https://www.reddit.com/r/Epstein/comments/1qsiikn/epstein_appeared_to_use_pizza_as_a_code_for/",
+          "engagement": 5259,
+          "subreddit": "Epstein",
+          "score": 5259,
+          "numComments": 850,
+          "created": 1769903872
+        }
+      ]
+    },
+    {
+      "pattern": "originally",
+      "strength": "emerging",
+      "sources": [
+        "reddit"
+      ],
+      "totalEngagement": 473,
+      "evidence": [
+        {
+          "platform": "reddit",
+          "title": "AIO? My daughter didn’t listen to the teacher during a female emergency and is now receiving a referral",
+          "url": "https://www.reddit.com/r/BestofRedditorUpdates/comments/1qwc73q/aio_my_daughter_didnt_listen_to_the_teacher/",
+          "engagement": 8236,
+          "subreddit": "BestofRedditorUpdates",
+          "score": 8236,
+          "numComments": 751,
+          "created": 1770267727
+        },
+        {
+          "platform": "reddit",
+          "title": "Epstein appeared to use \"pizza\" as a code for underaged victims. No, I'm not joking.",
+          "url": "https://www.reddit.com/r/Epstein/comments/1qsiikn/epstein_appeared_to_use_pizza_as_a_code_for/",
+          "engagement": 5259,
+          "subreddit": "Epstein",
+          "score": 5259,
+          "numComments": 850,
+          "created": 1769903872
+        },
+        {
+          "platform": "reddit",
+          "title": "[New Update]: AIO? My coworker took video of me outside of work to \"prove\" I'm not disabled",
+          "url": "https://www.reddit.com/r/BestofRedditorUpdates/comments/1qwc8kr/new_update_aio_my_coworker_took_video_of_me/",
+          "engagement": 5217,
+          "subreddit": "BestofRedditorUpdates",
+          "score": 5217,
+          "numComments": 233,
+          "created": 1770267847
+        }
+      ]
+    },
+    {
+      "pattern": "right",
+      "strength": "emerging",
+      "sources": [
+        "reddit"
+      ],
+      "totalEngagement": 391,
+      "evidence": [
+        {
+          "platform": "reddit",
+          "title": "I mapped every connection in the Epstein files. It started with 6,000 documents. It's now 1.5 million. Here's what changed.",
+          "url": "https://www.reddit.com/r/Epstein/comments/1r3joqr/i_mapped_every_connection_in_the_epstein_files_it/",
+          "engagement": 33010,
+          "subreddit": "Epstein",
+          "score": 33010,
+          "numComments": 1368,
+          "created": 1770970663
+        },
+        {
+          "platform": "reddit",
+          "title": "An AI CEO finally said something honest",
+          "url": "https://www.reddit.com/r/ExperiencedDevs/comments/1r6olcv/an_ai_ceo_finally_said_something_honest/",
+          "engagement": 22197,
+          "subreddit": "ExperiencedDevs",
+          "score": 22197,
+          "numComments": 763,
+          "created": 1771282005
+        },
+        {
+          "platform": "reddit",
+          "title": "My Wife Just Released Her First Game 🎉",
+          "url": "https://www.reddit.com/r/IndieDev/comments/1r2p7nc/my_wife_just_released_her_first_game/",
+          "engagement": 6195,
+          "subreddit": "IndieDev",
+          "score": 6195,
+          "numComments": 415,
+          "created": 1770889275
+        }
+      ]
+    },
+    {
+      "pattern": "since",
+      "strength": "emerging",
+      "sources": [
+        "reddit"
+      ],
+      "totalEngagement": 388,
+      "evidence": [
+        {
+          "platform": "reddit",
+          "title": "I mapped every connection in the Epstein files. It started with 6,000 documents. It's now 1.5 million. Here's what changed.",
+          "url": "https://www.reddit.com/r/Epstein/comments/1r3joqr/i_mapped_every_connection_in_the_epstein_files_it/",
+          "engagement": 33010,
+          "subreddit": "Epstein",
+          "score": 33010,
+          "numComments": 1368,
+          "created": 1770970663
+        },
+        {
+          "platform": "reddit",
+          "title": "Spotify says its best developers haven't written a line of code since December, thanks to AI",
+          "url": "https://www.reddit.com/r/technology/comments/1r353io/spotify_says_its_best_developers_havent_written_a/",
+          "engagement": 14274,
+          "subreddit": "technology",
+          "score": 14274,
+          "numComments": 2379,
+          "created": 1770929526
+        },
+        {
+          "platform": "reddit",
+          "title": "I mapped every connection between the 1,438 people named in the Epstein files. The network graph is insane.",
+          "url": "https://www.reddit.com/r/conspiracy/comments/1r04g03/i_mapped_every_connection_between_the_1438_people/",
+          "engagement": 4937,
+          "subreddit": "conspiracy",
+          "score": 4937,
+          "numComments": 303,
+          "created": 1770644352
+        }
+      ]
+    },
+    {
+      "pattern": "here",
+      "strength": "emerging",
+      "sources": [
+        "reddit"
+      ],
+      "totalEngagement": 387,
+      "evidence": [
+        {
+          "platform": "reddit",
+          "title": "I mapped every connection in the Epstein files. It started with 6,000 documents. It's now 1.5 million. Here's what changed.",
+          "url": "https://www.reddit.com/r/Epstein/comments/1r3joqr/i_mapped_every_connection_in_the_epstein_files_it/",
+          "engagement": 33010,
+          "subreddit": "Epstein",
+          "score": 33010,
+          "numComments": 1368,
+          "created": 1770970663
+        },
+        {
+          "platform": "reddit",
+          "title": "An AI CEO finally said something honest",
+          "url": "https://www.reddit.com/r/ExperiencedDevs/comments/1r6olcv/an_ai_ceo_finally_said_something_honest/",
+          "engagement": 22197,
+          "subreddit": "ExperiencedDevs",
+          "score": 22197,
+          "numComments": 763,
+          "created": 1771282005
+        },
+        {
+          "platform": "reddit",
+          "title": "I mapped every connection between the 1,438 people named in the Epstein files. The network graph is insane.",
+          "url": "https://www.reddit.com/r/conspiracy/comments/1r04g03/i_mapped_every_connection_between_the_1438_people/",
+          "engagement": 4937,
+          "subreddit": "conspiracy",
+          "score": 4937,
+          "numComments": 303,
+          "created": 1770644352
+        }
+      ]
+    },
+    {
+      "pattern": "didn",
+      "strength": "emerging",
+      "sources": [
+        "reddit"
+      ],
+      "totalEngagement": 385,
+      "evidence": [
+        {
+          "platform": "reddit",
+          "title": "AIO? My daughter didn’t listen to the teacher during a female emergency and is now receiving a referral",
+          "url": "https://www.reddit.com/r/AmIOverreacting/comments/1qpgym3/aio_my_daughter_didnt_listen_to_the_teacher/",
+          "engagement": 31616,
+          "subreddit": "AmIOverreacting",
+          "score": 31616,
+          "numComments": 3320,
+          "created": 1769619543
+        },
+        {
+          "platform": "reddit",
+          "title": "AIO? My daughter didn’t listen to the teacher during a female emergency and is now receiving a referral",
+          "url": "https://www.reddit.com/r/BestofRedditorUpdates/comments/1qwc73q/aio_my_daughter_didnt_listen_to_the_teacher/",
+          "engagement": 8236,
+          "subreddit": "BestofRedditorUpdates",
+          "score": 8236,
+          "numComments": 751,
+          "created": 1770267727
+        },
+        {
+          "platform": "reddit",
+          "title": "My Wife Just Released Her First Game 🎉",
+          "url": "https://www.reddit.com/r/IndieDev/comments/1r2p7nc/my_wife_just_released_her_first_game/",
+          "engagement": 6195,
+          "subreddit": "IndieDev",
+          "score": 6195,
+          "numComments": 415,
+          "created": 1770889275
+        }
+      ]
+    },
+    {
+      "pattern": "aio",
+      "strength": "emerging",
+      "sources": [
+        "reddit"
+      ],
+      "totalEngagement": 380,
+      "evidence": [
+        {
+          "platform": "reddit",
+          "title": "AIO? My daughter didn’t listen to the teacher during a female emergency and is now receiving a referral",
+          "url": "https://www.reddit.com/r/AmIOverreacting/comments/1qpgym3/aio_my_daughter_didnt_listen_to_the_teacher/",
+          "engagement": 31616,
+          "subreddit": "AmIOverreacting",
+          "score": 31616,
+          "numComments": 3320,
+          "created": 1769619543
+        },
+        {
+          "platform": "reddit",
+          "title": "AIO? My daughter didn’t listen to the teacher during a female emergency and is now receiving a referral",
+          "url": "https://www.reddit.com/r/BestofRedditorUpdates/comments/1qwc73q/aio_my_daughter_didnt_listen_to_the_teacher/",
+          "engagement": 8236,
+          "subreddit": "BestofRedditorUpdates",
+          "score": 8236,
+          "numComments": 751,
+          "created": 1770267727
+        },
+        {
+          "platform": "reddit",
+          "title": "[New Update]: AIO? My coworker took video of me outside of work to \"prove\" I'm not disabled",
+          "url": "https://www.reddit.com/r/BestofRedditorUpdates/comments/1qwc8kr/new_update_aio_my_coworker_took_video_of_me/",
+          "engagement": 5217,
+          "subreddit": "BestofRedditorUpdates",
+          "score": 5217,
+          "numComments": 233,
+          "created": 1770267847
+        }
+      ]
+    }
+  ],
+  "sentiment": {
+    "overall": "neutral",
+    "positive": 33,
+    "neutral": 34,
+    "negative": 33
+  }
+}

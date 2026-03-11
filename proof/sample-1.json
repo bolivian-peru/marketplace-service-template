@@ -1,0 +1,217 @@
+{
+  "metadata": {
+    "source": "airbnb.com",
+    "endpoint": "https://www.airbnb.com/api/v2/explore_tabs",
+    "params": {
+      "query": "New York",
+      "place_id": "ChIJOwg_06VPwokRYv534QaPC8g",
+      "checkin": "2026-03-10",
+      "checkout": "2026-03-15",
+      "adults": 2,
+      "currency": "USD",
+      "locale": "en"
+    },
+    "fetchedAt": "2026-02-26T13:51:18Z",
+    "proxyIp": "172.56.168.66",
+    "proxyProvider": "Proxies.sx T-Mobile US mobile",
+    "totalResultsReturned": 18,
+    "paginationMetadata": {
+      "hasNextPage": true,
+      "itemsPerPage": 18
+    }
+  },
+  "listings": [
+    {
+      "listingId": "41295524",
+      "url": "https://www.airbnb.com/rooms/41295524",
+      "name": "Hotel like place - private patio and bathroom",
+      "roomType": "private_room",
+      "location": {
+        "city": "Brooklyn",
+        "publicAddress": "Brooklyn, NY, United States",
+        "lat": 40.67627,
+        "lng": -73.94137
+      },
+      "capacity": {
+        "guests": 2,
+        "bedrooms": 1,
+        "beds": 2,
+        "bathrooms": 1.0
+      },
+      "rating": {
+        "stars": 5.0,
+        "reviewCount": 317
+      },
+      "pricing": {
+        "displayPrice": "$851",
+        "stayDuration": "5 nights (Mar 10-15, 2026)",
+        "currency": "USD"
+      },
+      "host": {
+        "firstName": "Caio Julio",
+        "isSuperhost": true
+      },
+      "instantBook": false
+    },
+    {
+      "listingId": "5298896",
+      "url": "https://www.airbnb.com/rooms/5298896",
+      "name": "Unique NYC Loft - Guest Room",
+      "roomType": "private_room",
+      "location": {
+        "city": "New York",
+        "publicAddress": "New York, NY, United States",
+        "lat": 40.70419,
+        "lng": -74.01127
+      },
+      "capacity": {
+        "guests": 2,
+        "bedrooms": 1,
+        "beds": 1,
+        "bathrooms": 1.0
+      },
+      "rating": {
+        "stars": 5.0,
+        "reviewCount": 375
+      },
+      "pricing": {
+        "displayPrice": null,
+        "stayDuration": "5 nights (Mar 10-15, 2026)",
+        "currency": "USD"
+      },
+      "host": {
+        "firstName": "Luke",
+        "isSuperhost": true
+      },
+      "instantBook": false
+    },
+    {
+      "listingId": "1070270537377163305",
+      "url": "https://www.airbnb.com/rooms/1070270537377163305",
+      "name": "One King room at Brooklyn - Newly Renovated!",
+      "roomType": "private_room",
+      "location": {
+        "city": "Brooklyn",
+        "publicAddress": "Brooklyn, NY, United States",
+        "lat": 40.690157186681645,
+        "lng": -73.98692196057979
+      },
+      "capacity": {
+        "guests": 2,
+        "bedrooms": 1,
+        "beds": 1,
+        "bathrooms": 1.0
+      },
+      "rating": {
+        "stars": 5.0,
+        "reviewCount": 568
+      },
+      "pricing": {
+        "displayPrice": null,
+        "stayDuration": "5 nights (Mar 10-15, 2026)",
+        "currency": "USD"
+      },
+      "host": {
+        "firstName": "Hilton Brooklyn New York City",
+        "isSuperhost": true
+      },
+      "instantBook": false
+    },
+    {
+      "listingId": "1010503905929192028",
+      "url": "https://www.airbnb.com/rooms/1010503905929192028",
+      "name": "Steps to Times Square | Free Breakfast & Fitness",
+      "roomType": "private_room",
+      "location": {
+        "city": "New York",
+        "publicAddress": "New York, NY, United States",
+        "lat": 40.75724,
+        "lng": -73.99236
+      },
+      "capacity": {
+        "guests": 2,
+        "bedrooms": 1,
+        "beds": 1,
+        "bathrooms": 1.0
+      },
+      "rating": {
+        "stars": 4.5,
+        "reviewCount": 1129
+      },
+      "pricing": {
+        "displayPrice": "$1,095",
+        "stayDuration": "5 nights (Mar 10-15, 2026)",
+        "currency": "USD"
+      },
+      "host": {
+        "firstName": "Times Square South New York City",
+        "isSuperhost": false
+      },
+      "instantBook": false
+    },
+    {
+      "listingId": "1267449405198185516",
+      "url": "https://www.airbnb.com/rooms/1267449405198185516",
+      "name": "Pod Times Square Hotel",
+      "roomType": "private_room",
+      "location": {
+        "city": "New York",
+        "publicAddress": "New York, NY, United States",
+        "lat": 40.7583945,
+        "lng": -73.9930985
+      },
+      "capacity": {
+        "guests": 2,
+        "bedrooms": 1,
+        "beds": 1,
+        "bathrooms": 1.0
+      },
+      "rating": {
+        "stars": 4.5,
+        "reviewCount": 111
+      },
+      "pricing": {
+        "displayPrice": null,
+        "stayDuration": "5 nights (Mar 10-15, 2026)",
+        "currency": "USD"
+      },
+      "host": {
+        "firstName": "Pod Times Square Hotel",
+        "isSuperhost": false
+      },
+      "instantBook": false
+    },
+    {
+      "listingId": "21969733",
+      "url": "https://www.airbnb.com/rooms/21969733",
+      "name": "BRIGHT HOMEY AND COZY  MINUTES TO NEW YORK  CITY",
+      "roomType": "entire_home",
+      "location": {
+        "city": "Jersey City",
+        "publicAddress": "Jersey City, NJ, United States",
+        "lat": 40.7479,
+        "lng": -74.05105
+      },
+      "capacity": {
+        "guests": 6,
+        "bedrooms": 1,
+        "beds": 3,
+        "bathrooms": 1.0
+      },
+      "rating": {
+        "stars": 5.0,
+        "reviewCount": 280
+      },
+      "pricing": {
+        "displayPrice": null,
+        "stayDuration": "5 nights (Mar 10-15, 2026)",
+        "currency": "USD"
+      },
+      "host": {
+        "firstName": "Kenia",
+        "isSuperhost": true
+      },
+      "instantBook": false
+    }
+  ]
+}
