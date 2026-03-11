@@ -1,11 +1,11 @@
 # Build stage
-FROM oven/bun:1-alpine AS builder
+FROM docker.io/oven/bun:1-alpine AS builder
 WORKDIR /app
 COPY package.json bun.lock* ./
 RUN bun install --frozen-lockfile --production
 
 # Runtime stage
-FROM oven/bun:1-alpine
+FROM docker.io/oven/bun:1-alpine
 WORKDIR /app
 
 # Don't run as root

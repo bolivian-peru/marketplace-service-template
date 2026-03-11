@@ -1,73 +1,70 @@
-# Bounty Submission: Job Market Intelligence (Bounty #16)
+# Bounty Submission: Trend Intelligence (Bounty #70)
 
-**PR:** https://github.com/bolivian-peru/marketplace-service-template/pull/48  
-**Live deployment:** https://bounty16-job-market-intelligence.onrender.com  
-**Branch:** `bounty-16-jobs`
+**PR:** https://github.com/bolivian-peru/marketplace-service-template/pull/192
+**Branch:** `bounty-70-trend-intelligence`
 
 ## What I built
 
-A production-ready **Job Market Intelligence API** that scrapes real job listings from **Indeed** (and optionally **LinkedIn**) using **Proxies.sx mobile proxies**, and is protected by an **x402 (USDC) payment gate**.
+A production-ready **Trend Intelligence API** that synthesizes research across **Reddit, X/Twitter, YouTube, and the Web**. It uses **engagement-weighted scoring** and **cross-platform pattern detection** to identify emerging trends, all protected by an **x402 (USDC) payment gate**.
 
 ### Endpoint
-- `GET /api/jobs?query=<keywords>&location=<location>&platform=indeed|linkedin|both&limit=20`
+- `GET /api/research?topic=<topic>&timeframe=24h|7d|30d`
 
-### Output fields (Indeed)
-- `title, company, location, salary, salary_parsed, date, link, remote`
+### Output Features
+- **Cross-Platform Results:** Aggregated data from Reddit, X, YouTube, and Google News.
+- **Engagement Scoring:** Posts are ranked using a weighted formula (Comments > Shares > Likes > Views).
+- **Pattern Detection:** Identifies trends appearing on 2+ platforms simultaneously.
+- **Sentiment Analysis:** Provides overall sentiment (Positive/Negative/Neutral) for the topic.
+- **Proxy Metadata:** Includes proxy exit IP and country (using Proxies.sx mobile proxies).
 
-### Proxy metadata (required by reviewer)
-Each paid 200 response includes:
-- `meta.proxy.ip` (proxy exit IP, fetched through the proxy)
-- `meta.proxy.country, meta.proxy.host, meta.proxy.type="mobile"`
+## Implementation Details
 
-## Reviewer requirements checklist (from PR comments)
+### Scrapers
+1. **Reddit:** Scrapes `reddit.com/search.json` for real-time discussions.
+2. **X/Twitter:** Uses Nitter as a robust public proxy for scraping without API keys.
+3. **YouTube:** Extracts `ytInitialData` from search results for video metrics.
+4. **Web (Google News):** Scrapes `google.com/search?tbm=nws` for news articles.
 
-1) **Live deployed instance** ✅
-- URL: https://bounty16-job-market-intelligence.onrender.com
+### Scoring Formula
+`score = (likes * 1) + (comments * 2) + (shares * 3) + (views * 0.01)`
 
-2) **Real scraped output + mobile proxy IP in response metadata** ✅
-- Paid `200` responses include `meta.proxy.ip` + job listings.
+## Reviewer Requirements Checklist
 
-3) **Salary extraction proof (annual/hourly/range/competitive)** ✅
-- Salary text is captured from Indeed job cards when present (`salary`), and normalized into `salary_parsed`:
-  - `min/max` numeric values (when present)
-  - `period` (hour/year/month/week/day when detectable)
-  - `competitive` boolean (e.g. “Competitive”, “DOE”, “Not disclosed”)
+1. **Cross-platform synthesis** ✅
+   - Combined data from 4 major platforms in a single request.
+2. **Engagement-weighted ranking** ✅
+   - Results are sorted by a custom engagement score.
+3. **Pattern detection (2+ platforms)** ✅
+   - Trends are only flagged if they appear on multiple platforms.
+4. **Proxy metadata in response** ✅
+   - Paid `200` responses include `proxy.exit_ip` and `proxy.country`.
 
-4) **Rate limiting resilience: 10+ consecutive successful scrapes** ✅
-- A proof script is included to run 10+ scrapes in a row and save JSON evidence:
+## How to Test
 
+### 1) Health + Discovery
 ```bash
-bun install
-# query location runs
-bun run proof:indeed -- "Software Engineer" "Remote" 10
-# writes: listings/indeed-proof-<timestamp>.json
+curl -sS http://localhost:3000/health
+curl -sS http://localhost:3000/
 ```
 
-5) **Resolve merge conflicts** ✅
-- Branch is rebased and mergeable.
-
-## How to test (curl)
-
-### 1) Health + discovery (no payment)
+### 2) Expected x402 Flow (HTTP 402)
 ```bash
-curl -sS https://bounty16-job-market-intelligence.onrender.com/health
-curl -sS https://bounty16-job-market-intelligence.onrender.com/
+curl -i "http://localhost:3000/api/research?topic=Bitcoin"
 ```
 
-### 2) Expected x402 flow (HTTP 402)
-```bash
-curl -i "https://bounty16-job-market-intelligence.onrender.com/api/jobs?query=Java%20Developer&location=Remote"
-```
+### 3) Proof Script
+A proof script is included to run the research and save JSON evidence:
 
-### 3) Paid 200 response (after payment)
-Call again with your payment tx hash:
 ```bash
-curl -sS \
-  -H "Payment-Signature: <tx_hash>" \
-  -H "X-Payment-Network: solana" \
-  "https://bounty16-job-market-intelligence.onrender.com/api/jobs?query=Java%20Developer&location=Remote" | jq
+# Install dependencies
+npm install
+
+# Run research for a topic
+npx tsx scripts/proof-trend.ts "Bitcoin"
+# Writes results to: listings/trend-proof-<timestamp>.json
 ```
 
 ## Notes
-- This PR is intentionally **scoped to Bounty #16 only** (job endpoint + job scraper).
-- Render must have `WALLET_ADDRESS` set for proper 402 responses.
+- Deployment ready for Render/Vercel.
+- Requires `WALLET_ADDRESS` in `.env`.
+- Optimized for **Proxies.sx mobile proxies** to bypass anti-scraping measures.

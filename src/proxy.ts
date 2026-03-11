@@ -39,10 +39,15 @@ export function getProxy(): ProxyConfig {
   const pass = process.env.PROXY_PASS;
 
   if (!host || !port || !user || !pass) {
-    throw new Error(
-      'Proxy not configured. Set PROXY_HOST, PROXY_HTTP_PORT, PROXY_USER, PROXY_PASS in .env. ' +
-      'Get credentials: https://client.proxies.sx or via x402 API'
-    );
+    console.warn('Proxy not configured. Falling back to direct fetch (might be rate-limited/blocked).');
+    return {
+      url: '',
+      host: '',
+      port: 0,
+      user: '',
+      pass: '',
+      country: 'US',
+    };
   }
 
   return {
@@ -85,13 +90,17 @@ export async function proxyFetch(
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
-      const response = await fetch(url, {
+      const fetchInit: any = {
         ...fetchOptions,
         headers: { ...defaultHeaders, ...fetchOptions.headers as Record<string, string> },
         signal: controller.signal,
-        // @ts-ignore — Bun supports the proxy option natively
-        proxy: proxy.url,
-      });
+      };
+
+      if (proxy.url) {
+        fetchInit.proxy = proxy.url;
+      }
+
+      const response = await fetch(url, fetchInit);
 
       clearTimeout(timeout);
       return response;
@@ -104,5 +113,5 @@ export async function proxyFetch(
     }
   }
 
-  throw new Error(`Proxy fetch failed after ${maxRetries + 1} attempts: ${lastError?.message}`);
+  throw new Error(`Fetch failed after ${maxRetries + 1} attempts: ${lastError?.message}`);
 }
