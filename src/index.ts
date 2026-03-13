@@ -9,6 +9,9 @@ import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { serviceRouter } from './service';
 
+const SERVICE_NAME = 'prediction-signal-aggregator';
+const SERVICE_DESCRIPTION = 'Prediction Market Signal Aggregator';
+
 const app = new Hono();
 
 // ─── MIDDLEWARE ──────────────────────────────────────
@@ -67,7 +70,7 @@ app.get('/health', (c) => {
 
   return c.json({
     status: 'healthy',
-    service: process.env.SERVICE_NAME || 'marketplace-service',
+    service: SERVICE_NAME,
     version: '1.0.0',
     uptimeSeconds: Math.floor(process.uptime()),
     timestamp: new Date().toISOString(),
@@ -96,8 +99,8 @@ app.get('/health', (c) => {
 });
 
 app.get('/', (c) => c.json({
-  name: process.env.SERVICE_NAME || 'marketplace-service-hub',
-  description: process.env.SERVICE_DESCRIPTION || 'AI agent intelligence services powered by real 4G/5G mobile proxies.',
+  name: SERVICE_NAME,
+  description: SERVICE_DESCRIPTION,
   version: '1.0.0',
   endpoints: [
     { method: 'GET', path: '/api/run', description: 'Google Maps Lead Generator — search businesses by category + location', price: '0.005 USDC' },
