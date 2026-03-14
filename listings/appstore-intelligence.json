@@ -1,0 +1,102 @@
+{
+  "id": "appstore-intelligence",
+  "name": "App Store Intelligence API",
+  "description": "Real-time app rankings, reviews, metadata, and trends from Apple App Store and Google Play Store via real 4G/5G mobile carrier IPs. Search, compare, and track apps across 6 countries.",
+  "longDescription": "Enterprise-grade app store intelligence at pay-per-request pricing. Five endpoints: category rankings (top 200), app detail with reviews and sentiment analysis, keyword search, trending app discovery, and side-by-side competitor comparison. Supports Apple App Store and Google Play Store across US, DE, FR, ES, GB, and PL. Mobile carrier IPs are mandatory — Google Play bans datacenter IPs, and Apple geo-fences rankings by country and carrier. Replaces $30K-$100K/year tools like Sensor Tower and data.ai with x402 micropayments at $0.01-0.03/query.",
+  "endpoint": "https://marketplace-api-9kvb.onrender.com/api/appstore",
+  "docsUrl": "https://github.com/CelebrityPunks/marketplace-service-template/blob/feat/appstore-intelligence/README.md",
+  "pricing": {
+    "model": "per-request",
+    "endpoints": [
+      { "path": "/api/appstore/rankings", "price": "$0.01", "unit": "per request" },
+      { "path": "/api/appstore/app", "price": "$0.02", "unit": "per request" },
+      { "path": "/api/appstore/search", "price": "$0.01", "unit": "per request" },
+      { "path": "/api/appstore/trending", "price": "$0.01", "unit": "per request" },
+      { "path": "/api/appstore/compare", "price": "$0.03", "unit": "per request" }
+    ],
+    "comparison": "Sensor Tower: $30K-$100K+/year. data.ai: $50K+/year. SimilarWeb: $20K+/year. AppFollow: $120/month. Our mobile proxy approach delivers the same real-time data at $0.01-0.03/query with zero contracts or signup.",
+    "currency": "USDC",
+    "networks": [
+      {
+        "network": "solana",
+        "chainId": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "recipient": "6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv",
+        "asset": "USDC",
+        "assetAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+      },
+      {
+        "network": "base",
+        "chainId": "eip155:8453",
+        "recipient": "0xF8cD900794245fc36CBE65be9afc23CDF5103042",
+        "asset": "USDC",
+        "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+      }
+    ]
+  },
+  "whyMobileProxy": "Google Play Store bans datacenter IPs after ~500-1000 app lookups per day. Apple App Store geo-fences rankings by country AND carrier — a T-Mobile IP in the US sees different featured apps than Vodafone in Germany. Mobile carrier IPs (4G/5G) appear as legitimate app store users, bypassing all IP reputation checks, rate limits, and geo-restrictions. Reviews are sorted and displayed differently based on user location and device type.",
+  "outputSchema": {
+    "rankings": {
+      "type": "rankings",
+      "store": "apple | google",
+      "category": "string",
+      "country": "string",
+      "rankings": [{
+        "rank": "number",
+        "appName": "string",
+        "developer": "string",
+        "appId": "string",
+        "rating": "number | null",
+        "ratingCount": "number | null",
+        "price": "string",
+        "inAppPurchases": "boolean",
+        "category": "string",
+        "lastUpdated": "string | null",
+        "size": "string | null",
+        "icon": "string | null"
+      }],
+      "metadata": { "totalRanked": "number", "scrapedAt": "string" },
+      "proxy": { "country": "string", "type": "mobile" },
+      "payment": { "txHash": "string", "network": "string", "amount": "number", "settled": "boolean" }
+    },
+    "app": {
+      "type": "app",
+      "app": {
+        "appName": "string",
+        "developer": "string",
+        "appId": "string",
+        "description": "string",
+        "rating": "number | null",
+        "ratingCount": "number | null",
+        "price": "string",
+        "inAppPurchases": "boolean",
+        "reviews": "[{ author, rating, title, text, date, helpful }]"
+      },
+      "reviewSentiment": "{ overall, positive%, neutral%, negative% }"
+    }
+  },
+  "limitations": [
+    "Max 200 apps per rankings request",
+    "Max 50 results per search request",
+    "Max 5 apps per comparison request",
+    "Reviews limited to 10 most recent per app detail request",
+    "Supported countries: US, DE, FR, ES, GB, PL",
+    "Rate limited to 60 requests/minute per client IP"
+  ],
+  "category": "scraper",
+  "tags": [
+    "app-store", "google-play", "apple", "rankings", "reviews",
+    "sentiment-analysis", "competitor-intelligence", "mobile-apps",
+    "market-research", "trending", "scraper"
+  ],
+  "owner": {
+    "name": "CelebrityPunks",
+    "github": "CelebrityPunks"
+  },
+  "status": "pending",
+  "featured": false,
+  "addedAt": "2026-03-14",
+  "x402": {
+    "discoveryUrl": "https://marketplace-api-9kvb.onrender.com/api/appstore/rankings",
+    "wellKnown": "https://marketplace-api-9kvb.onrender.com/.well-known/x402.json"
+  }
+}

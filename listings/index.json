@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "updatedAt": "2026-02-15",
-  "count": 6,
+  "count": 7,
   "services": [
     {
       "id": "proxies-sx-mobile",
@@ -174,6 +174,36 @@
       "status": "active",
       "featured": false,
       "detailsFile": "prediction-market-aggregator.json"
+    },
+    {
+      "id": "appstore-intelligence",
+      "name": "App Store Intelligence API",
+      "description": "Real-time app rankings, reviews, and metadata from Apple App Store and Google Play Store via 4G/5G mobile proxies. $0.01-0.03/query via x402.",
+      "endpoint": "https://marketplace-api-9kvb.onrender.com/api/appstore",
+      "docsUrl": "https://github.com/CelebrityPunks/marketplace-service-template/blob/feat/appstore-intelligence/README.md",
+      "pricing": {
+        "model": "per-request",
+        "amount": "0.01",
+        "minimum": "0.01",
+        "currency": "USDC"
+      },
+      "category": "scraper",
+      "tags": [
+        "app-store",
+        "google-play",
+        "apple",
+        "rankings",
+        "reviews",
+        "competitor-intelligence",
+        "market-research"
+      ],
+      "owner": {
+        "name": "CelebrityPunks",
+        "github": "CelebrityPunks"
+      },
+      "status": "pending",
+      "featured": false,
+      "detailsFile": "appstore-intelligence.json"
     }
   ],
   "networks": {
