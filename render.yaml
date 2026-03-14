@@ -1,0 +1,19 @@
+# Render deployment configuration
+services:
+  # Amazon BSR Tracker API
+  - type: web
+    name: amazon-bsr-tracker
+    env: python
+    region: oregon
+    plan: starter
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn amazon_tracker:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: AMAZON_PROXY_URL
+        sync: false
+      - key: AMAZON_USDC_TREASURY
+        sync: false
+    healthCheckPath: /health
+    autoDeploy: true
