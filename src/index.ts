@@ -88,6 +88,9 @@ app.get('/health', (c) => c.json({
     '/api/instagram/analyze/:username',
     '/api/instagram/analyze/:username/images',
     '/api/instagram/audit/:username',
+    '/api/instagram/hashtags/:username',
+    '/api/instagram/compare',
+    '/api/instagram/discover',
     '/api/airbnb/search',
     '/api/airbnb/listing/:id',
     '/api/airbnb/reviews/:listing_id',
@@ -123,6 +126,9 @@ app.get('/', (c) => c.json({
     { method: 'GET', path: '/api/instagram/analyze/:username', description: 'Full Instagram analysis with AI vision', price: '0.15 USDC' },
     { method: 'GET', path: '/api/instagram/analyze/:username/images', description: 'AI vision analysis of Instagram images', price: '0.08 USDC' },
     { method: 'GET', path: '/api/instagram/audit/:username', description: 'Instagram authenticity audit', price: '0.05 USDC' },
+    { method: 'GET', path: '/api/instagram/hashtags/:username', description: 'Hashtag trend analysis', price: '0.03 USDC' },
+    { method: 'GET', path: '/api/instagram/compare', description: 'Compare 2-5 Instagram profiles side by side', price: '0.05 USDC' },
+    { method: 'GET', path: '/api/instagram/discover', description: 'Search/filter accounts by AI-derived attributes', price: '0.03 USDC' },
     { method: 'GET', path: '/api/airbnb/search', description: 'Search Airbnb listings by location', price: '0.02 USDC' },
     { method: 'GET', path: '/api/airbnb/listing/:id', description: 'Get detailed Airbnb listing', price: '0.01 USDC' },
     { method: 'GET', path: '/api/airbnb/reviews/:listing_id', description: 'Get Airbnb listing reviews', price: '0.01 USDC' },
@@ -162,7 +168,7 @@ app.get('/', (c) => c.json({
 
 app.route('/api', serviceRouter);
 
-app.notFound((c) => c.json({ error: 'Not found', endpoints: ['/', '/health', '/api/run', '/api/details', '/api/serp', '/api/jobs', '/api/reviews/search', '/api/reviews/:place_id', '/api/business/:place_id', '/api/reviews/summary/:place_id', '/api/linkedin/person', '/api/linkedin/company', '/api/linkedin/search/people', '/api/reddit/search', '/api/reddit/trending', '/api/reddit/subreddit/:name', '/api/reddit/thread/*', '/api/instagram/profile/:username', '/api/instagram/posts/:username', '/api/instagram/analyze/:username', '/api/instagram/audit/:username', '/api/airbnb/search', '/api/airbnb/listing/:id', '/api/airbnb/reviews/:listing_id', '/api/airbnb/market-stats', '/api/research', '/api/trending'] }, 404));
+app.notFound((c) => c.json({ error: 'Not found', endpoints: ['/', '/health', '/api/run', '/api/details', '/api/serp', '/api/jobs', '/api/reviews/search', '/api/reviews/:place_id', '/api/business/:place_id', '/api/reviews/summary/:place_id', '/api/linkedin/person', '/api/linkedin/company', '/api/linkedin/search/people', '/api/reddit/search', '/api/reddit/trending', '/api/reddit/subreddit/:name', '/api/reddit/thread/*', '/api/instagram/profile/:username', '/api/instagram/posts/:username', '/api/instagram/analyze/:username', '/api/instagram/analyze/:username/images', '/api/instagram/audit/:username', '/api/instagram/hashtags/:username', '/api/instagram/compare', '/api/instagram/discover', '/api/airbnb/search', '/api/airbnb/listing/:id', '/api/airbnb/reviews/:listing_id', '/api/airbnb/market-stats', '/api/research', '/api/trending'] }, 404));
 
 app.onError((err, c) => {
   console.error(`[ERROR] ${err.message}`);

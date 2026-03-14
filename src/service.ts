@@ -27,7 +27,7 @@ import {
   searchLinkedInPeople, 
   findCompanyEmployees 
 } from './scrapers/linkedin-enrichment';
-import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
+import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile, analyzeHashtags, compareProfiles, discoverProfiles, cacheAnalysis } from './scrapers/instagram-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
 
 export const serviceRouter = new Hono();
@@ -1146,6 +1146,9 @@ serviceRouter.get('/instagram/analyze/:username', async (c) => {
     const proxy = getProxy();
     const result = await analyzeProfile(username);
 
+    // Cache the analysis for discover queries
+    cacheAnalysis(username, result);
+
     c.header('X-Payment-Settled', 'true');
     c.header('X-Payment-TxHash', payment.txHash);
 
@@ -1248,6 +1251,192 @@ serviceRouter.get('/instagram/audit/:username', async (c) => {
     });
   } catch (err: any) {
     return c.json({ error: 'Instagram audit failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/instagram/hashtags/:username ───────────
+
+const IG_HASHTAGS_PRICE = 0.03;
+
+serviceRouter.get('/instagram/hashtags/:username', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/instagram/hashtags/:username', 'Hashtag trend analysis: top hashtags, engagement per hashtag, category breakdown, optimal count', IG_HASHTAGS_PRICE, walletAddress, {
+      input: {
+        username: 'string (required) — Instagram username (in URL path)',
+        limit: 'number (optional, default: 12, max: 50) — posts to analyze',
+      },
+      output: {
+        username: 'string', total_posts_analyzed: 'number', total_unique_hashtags: 'number',
+        top_hashtags: '{ hashtag, count, avg_likes, avg_comments, engagement_rate, sample_posts }[]',
+        hashtag_categories: '{ branded, niche, community, location, campaign, generic }',
+        optimal_hashtag_count: 'number', recommendations: 'string[]',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, IG_HASHTAGS_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const clientIp = c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  if (!checkProxyRateLimit(clientIp)) {
+    c.header('Retry-After', '60');
+    return c.json({ error: 'Proxy rate limit exceeded. Max 20 requests/min to protect proxy quota.', retryAfter: 60 }, 429);
+  }
+
+  const username = c.req.param('username');
+  if (!username) return c.json({ error: 'Missing username in URL path' }, 400);
+
+  const limit = Math.min(Math.max(parseInt(c.req.query('limit') || '12') || 12, 1), 50);
+
+  try {
+    const proxy = getProxy();
+    const result = await analyzeHashtags(username, limit);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      meta: { proxy: { country: proxy.country, type: 'mobile' } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Instagram hashtag analysis failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/instagram/compare ─────────────────────
+
+const IG_COMPARE_PRICE = 0.05;
+
+serviceRouter.get('/instagram/compare', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/instagram/compare', 'Compare 2-5 Instagram profiles: follower counts, engagement rates, posting frequency, shared hashtags, rankings', IG_COMPARE_PRICE, walletAddress, {
+      input: {
+        usernames: 'string (required) — comma-separated list of 2-5 Instagram usernames',
+      },
+      output: {
+        profiles: '{ username, followers, engagement_rate, avg_likes, avg_comments, posting_frequency, top_hashtags }[]',
+        comparison: '{ highest_followers, highest_engagement, most_active, best_likes_ratio, rankings }',
+        insights: 'string[]',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, IG_COMPARE_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const clientIp = c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  if (!checkProxyRateLimit(clientIp)) {
+    c.header('Retry-After', '60');
+    return c.json({ error: 'Proxy rate limit exceeded. Max 20 requests/min to protect proxy quota.', retryAfter: 60 }, 429);
+  }
+
+  const usernamesParam = c.req.query('usernames');
+  if (!usernamesParam) return c.json({ error: 'Missing "usernames" query parameter (comma-separated, 2-5 usernames)' }, 400);
+
+  const usernames = usernamesParam.split(',').map(u => u.trim()).filter(Boolean);
+  if (usernames.length < 2) return c.json({ error: 'At least 2 usernames required' }, 400);
+  if (usernames.length > 5) return c.json({ error: 'Maximum 5 usernames allowed' }, 400);
+
+  try {
+    const proxy = getProxy();
+    const result = await compareProfiles(usernames);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      meta: { proxy: { country: proxy.country, type: 'mobile' } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Instagram comparison failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/instagram/discover ────────────────────
+
+const IG_DISCOVER_PRICE = 0.03;
+
+serviceRouter.get('/instagram/discover', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/instagram/discover', 'Search/filter Instagram accounts by AI-derived attributes: niche, account type, sentiment, brand safety, engagement', IG_DISCOVER_PRICE, walletAddress, {
+      input: {
+        usernames: 'string (required) — comma-separated usernames to analyze and filter',
+        niche: 'string (optional) — filter by content niche (e.g. travel, food, fashion)',
+        account_type: 'string (optional) — filter by type: influencer, business, personal, bot_fake, meme_page, news_media',
+        sentiment: 'string (optional) — filter by sentiment: positive, neutral, negative, mixed',
+        brand_safe: 'boolean (optional) — only return brand-safe accounts (score >= 70)',
+        min_followers: 'number (optional) — minimum follower count',
+        max_followers: 'number (optional) — maximum follower count',
+        min_engagement: 'number (optional) — minimum engagement rate %',
+      },
+      output: {
+        results: '{ username, followers, engagement_rate, niche, account_type, sentiment, brand_safety_score, authenticity_score, match_score }[]',
+        filters_applied: 'object',
+        total_analyzed: 'number',
+        total_matched: 'number',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, IG_DISCOVER_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const clientIp = c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  if (!checkProxyRateLimit(clientIp)) {
+    c.header('Retry-After', '60');
+    return c.json({ error: 'Proxy rate limit exceeded. Max 20 requests/min to protect proxy quota.', retryAfter: 60 }, 429);
+  }
+
+  const usernamesParam = c.req.query('usernames');
+  if (!usernamesParam) return c.json({ error: 'Missing "usernames" query parameter (comma-separated list of Instagram usernames to analyze and filter)' }, 400);
+
+  const usernames = usernamesParam.split(',').map(u => u.trim()).filter(Boolean);
+  if (usernames.length === 0) return c.json({ error: 'At least 1 username required' }, 400);
+  if (usernames.length > 20) return c.json({ error: 'Maximum 20 usernames per discover request' }, 400);
+
+  const filters = {
+    niche: c.req.query('niche') || undefined,
+    account_type: c.req.query('account_type') || c.req.query('type') || undefined,
+    sentiment: c.req.query('sentiment') || undefined,
+    brand_safe: c.req.query('brand_safe') === 'true' ? true : undefined,
+    min_followers: c.req.query('min_followers') ? parseInt(c.req.query('min_followers')!) : undefined,
+    max_followers: c.req.query('max_followers') ? parseInt(c.req.query('max_followers')!) : undefined,
+    min_engagement: c.req.query('min_engagement') ? parseFloat(c.req.query('min_engagement')!) : undefined,
+  };
+
+  try {
+    const proxy = getProxy();
+    const results = await discoverProfiles(usernames, filters);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      results,
+      filters_applied: filters,
+      total_analyzed: usernames.length,
+      total_matched: results.length,
+      meta: { proxy: { country: proxy.country, type: 'mobile' } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Instagram discover failed', message: err?.message || String(err) }, 502);
   }
 });
 
