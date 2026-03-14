@@ -29,6 +29,7 @@ import {
 } from './scrapers/linkedin-enrichment';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
+import { scrapeAmazonProduct, scrapeAmazonBestSellers } from './scrapers/amazon-scraper';
 
 export const serviceRouter = new Hono();
 
@@ -41,6 +42,9 @@ const PRICE_USDC = 0.005;
 const DESCRIPTION = 'Job Market Intelligence API (Indeed/LinkedIn): title, company, location, salary, date, link, remote + proxy exit metadata.';
 const MAPS_PRICE_USDC = 0.005;
 const MAPS_DESCRIPTION = 'Extract structured business data from Google Maps: name, address, phone, website, email, hours, ratings, reviews, categories, and geocoordinates. Search by category + location with full pagination.';
+
+const AMAZON_PRODUCT_PRICE_USDC = 0.005;   // $0.005 per product lookup
+const AMAZON_BESTSELLERS_PRICE_USDC = 0.01; // $0.01 per best sellers query
 
 const MAPS_OUTPUT_SCHEMA = {
   input: {
@@ -1484,5 +1488,138 @@ serviceRouter.get('/serp', async (c) => {
     });
   } catch (err: any) {
     return c.json({ error: 'SERP scrape failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ═══════════════════════════════════════════════════════
+// ─── AMAZON PRODUCT & BSR TRACKER API (Bounty #72) ──
+// ═══════════════════════════════════════════════════════
+
+// ─── GET /api/amazon/product ────────────────────────
+
+serviceRouter.get('/amazon/product', async (c) => {
+  console.log(`[DEBUG] Received request for /api/amazon/product - ASIN: ${c.req.query('asin')}`);
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/amazon/product', 'Amazon Product & BSR Tracker — fetch product data, pricing, Best Sellers Rank, features, and images by ASIN', AMAZON_PRODUCT_PRICE_USDC, walletAddress, {
+      input: {
+        asin: 'string (required) — Amazon Standard Identification Number, e.g. B0D5CTKLJR',
+      },
+      output: {
+        product: '{ asin, title, url, price, currency, listPrice, rating, reviewCount, availability, brand, bsr: [{ rank, category }], features: string[], images: string[], categories: string[] }',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, AMAZON_PRODUCT_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const clientIp = c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  if (!checkProxyRateLimit(clientIp)) {
+    c.header('Retry-After', '60');
+    return c.json({ error: 'Proxy rate limit exceeded. Max 20 requests/min to protect proxy quota.', retryAfter: 60 }, 429);
+  }
+
+  const asin = c.req.query('asin');
+  if (!asin) {
+    return c.json({
+      error: 'Missing required parameter: asin',
+      hint: 'Provide an Amazon ASIN like ?asin=B0D5CTKLJR',
+      example: '/api/amazon/product?asin=B0D5CTKLJR',
+    }, 400);
+  }
+
+  if (!/^[A-Z0-9]{10}$/.test(asin)) {
+    return c.json({
+      error: 'Invalid ASIN format. Must be exactly 10 alphanumeric characters.',
+      example: 'B0D5CTKLJR',
+    }, 400);
+  }
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const product = await scrapeAmazonProduct(asin);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      product,
+      meta: {
+        proxy: { ip, country: proxy.country, host: proxy.host, type: 'mobile' },
+      },
+      payment: {
+        txHash: payment.txHash,
+        network: payment.network,
+        amount: verification.amount,
+        settled: true,
+      },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Amazon product scrape failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/amazon/bestsellers ────────────────────
+
+serviceRouter.get('/amazon/bestsellers', async (c) => {
+  console.log(`[DEBUG] Received request for /api/amazon/bestsellers - Category: ${c.req.query('category')}`);
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/amazon/bestsellers', 'Amazon Best Sellers — top-ranked products with BSR, pricing, ratings. Optionally filter by category.', AMAZON_BESTSELLERS_PRICE_USDC, walletAddress, {
+      input: {
+        category: 'string (optional) — Amazon category slug, e.g. "electronics", "books", "toys-and-games"',
+        limit: 'number (optional, default: 20, max: 50)',
+      },
+      output: {
+        bestsellers: '[{ rank, asin, title, url, price, currency, rating, reviewCount, image }]',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, AMAZON_BESTSELLERS_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const clientIp = c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  if (!checkProxyRateLimit(clientIp)) {
+    c.header('Retry-After', '60');
+    return c.json({ error: 'Proxy rate limit exceeded. Max 20 requests/min to protect proxy quota.', retryAfter: 60 }, 429);
+  }
+
+  const category = c.req.query('category') || '';
+  const limit = Math.min(Math.max(parseInt(c.req.query('limit') || '20') || 20, 1), 50);
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const bestsellers = await scrapeAmazonBestSellers(category, limit);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      bestsellers,
+      meta: {
+        category: category || 'all',
+        count: bestsellers.length,
+        limit,
+        proxy: { ip, country: proxy.country, host: proxy.host, type: 'mobile' },
+      },
+      payment: {
+        txHash: payment.txHash,
+        network: payment.network,
+        amount: verification.amount,
+        settled: true,
+      },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Amazon best sellers scrape failed', message: err?.message || String(err) }, 502);
   }
 });
