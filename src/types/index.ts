@@ -326,3 +326,98 @@ export interface ReviewSearchResponse {
   businesses: BusinessInfo[];
   totalFound: number;
 }
+
+// ─── AMAZON PRODUCT & BSR TRACKER TYPES (Bounty #72) ─
+
+export interface AmazonProduct {
+  asin: string;
+  title: string;
+  url: string;
+  price: number | null;
+  currency: string;
+  original_price: number | null;
+  rating: number | null;
+  reviews_count: number | null;
+  image: string | null;
+  is_prime: boolean;
+  is_sponsored: boolean;
+  seller: string | null;
+  badge: string | null;
+}
+
+export interface AmazonSearchResult {
+  query: string;
+  page: number;
+  total_results: number;
+  products: AmazonProduct[];
+}
+
+export interface BSREntry {
+  category: string;
+  rank: number;
+}
+
+export interface BSRData {
+  asin: string;
+  title: string;
+  url: string;
+  bsr: BSREntry[];
+  main_category: string | null;
+  main_rank: number | null;
+  price: number | null;
+  currency: string;
+  rating: number | null;
+  reviews_count: number | null;
+  availability: string | null;
+  tracked_at: string;
+}
+
+export interface PricePoint {
+  source: string;
+  price: number | null;
+  currency: string;
+  condition: string;
+  seller: string | null;
+  is_prime: boolean;
+  url: string;
+}
+
+export interface PriceComparison {
+  asin: string;
+  title: string;
+  current_price: number | null;
+  currency: string;
+  original_price: number | null;
+  discount_pct: number | null;
+  buy_box_seller: string | null;
+  offers: PricePoint[];
+  price_range: { low: number | null; high: number | null };
+  tracked_at: string;
+}
+
+export interface AmazonReviewBreakdown {
+  '5': number;
+  '4': number;
+  '3': number;
+  '2': number;
+  '1': number;
+}
+
+export interface ReviewSentimentResult {
+  asin: string;
+  title: string;
+  rating: number | null;
+  total_reviews: number | null;
+  rating_breakdown: AmazonReviewBreakdown;
+  sentiment: {
+    overall: 'positive' | 'neutral' | 'negative';
+    positive_pct: number;
+    neutral_pct: number;
+    negative_pct: number;
+  };
+  top_positive: string[];
+  top_negative: string[];
+  common_themes: string[];
+  analyzed_reviews: number;
+  tracked_at: string;
+}
