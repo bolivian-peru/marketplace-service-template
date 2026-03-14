@@ -29,6 +29,12 @@ import {
 } from './scrapers/linkedin-enrichment';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
+import {
+  searchProducts,
+  trackBSR,
+  comparePrices,
+  analyzeReviewSentiment,
+} from './scrapers/amazon-scraper';
 
 export const serviceRouter = new Hono();
 
@@ -1484,5 +1490,349 @@ serviceRouter.get('/serp', async (c) => {
     });
   } catch (err: any) {
     return c.json({ error: 'SERP scrape failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── AMAZON PRODUCT & BSR TRACKER (Bounty #72) ──────
+
+const AMAZON_PRICE_USDC = 0.01;
+const AMAZON_SEARCH_DESCRIPTION = 'Search Amazon products by keyword with pricing, ratings, and Prime/sponsored status.';
+const AMAZON_BSR_DESCRIPTION = 'Track Best Sellers Rank (BSR) for any Amazon product by ASIN, with category rankings.';
+const AMAZON_PRICE_DESCRIPTION = 'Compare prices across sellers for an Amazon product, including buy box, new, and used offers.';
+const AMAZON_SENTIMENT_DESCRIPTION = 'Analyze review sentiment for an Amazon product with rating breakdown, themes, and top reviews.';
+
+const AMAZON_SEARCH_SCHEMA = {
+  input: {
+    keyword: 'string — Search keyword (required)',
+    page: 'number — Page number (default: 1)',
+    department: 'string — Amazon department code (default: aps = all)',
+  },
+  output: {
+    query: 'string',
+    page: 'number',
+    total_results: 'number',
+    products: [{
+      asin: 'string',
+      title: 'string',
+      url: 'string',
+      price: 'number | null',
+      currency: 'string',
+      original_price: 'number | null',
+      rating: 'number | null',
+      reviews_count: 'number | null',
+      image: 'string | null',
+      is_prime: 'boolean',
+      is_sponsored: 'boolean',
+      seller: 'string | null',
+      badge: 'string | null',
+    }],
+  },
+};
+
+const AMAZON_BSR_SCHEMA = {
+  input: {
+    asin: 'string — Amazon Standard Identification Number (required)',
+  },
+  output: {
+    asin: 'string',
+    title: 'string',
+    bsr: [{ category: 'string', rank: 'number' }],
+    main_category: 'string | null',
+    main_rank: 'number | null',
+    price: 'number | null',
+    rating: 'number | null',
+    reviews_count: 'number | null',
+    availability: 'string | null',
+    tracked_at: 'string (ISO 8601)',
+  },
+};
+
+const AMAZON_PRICE_SCHEMA = {
+  input: {
+    asin: 'string — Amazon Standard Identification Number (required)',
+  },
+  output: {
+    asin: 'string',
+    title: 'string',
+    current_price: 'number | null',
+    original_price: 'number | null',
+    discount_pct: 'number | null',
+    buy_box_seller: 'string | null',
+    offers: [{ source: 'string', price: 'number | null', condition: 'string', seller: 'string | null', is_prime: 'boolean' }],
+    price_range: '{ low: number | null, high: number | null }',
+    tracked_at: 'string (ISO 8601)',
+  },
+};
+
+const AMAZON_SENTIMENT_SCHEMA = {
+  input: {
+    asin: 'string — Amazon Standard Identification Number (required)',
+  },
+  output: {
+    asin: 'string',
+    title: 'string',
+    rating: 'number | null',
+    total_reviews: 'number | null',
+    rating_breakdown: '{ "5": number, "4": number, "3": number, "2": number, "1": number }',
+    sentiment: '{ overall: string, positive_pct: number, neutral_pct: number, negative_pct: number }',
+    top_positive: 'string[]',
+    top_negative: 'string[]',
+    common_themes: 'string[]',
+    analyzed_reviews: 'number',
+  },
+};
+
+// GET /api/amazon/search — Search products by keyword
+serviceRouter.get('/amazon/search', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(
+      build402Response('/api/amazon/search', AMAZON_SEARCH_DESCRIPTION, AMAZON_PRICE_USDC, walletAddress, AMAZON_SEARCH_SCHEMA),
+      402,
+    );
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, AMAZON_PRICE_USDC);
+  if (!verification.valid) {
+    return c.json({
+      error: 'Payment verification failed',
+      reason: verification.error,
+      hint: 'Ensure the transaction is confirmed and sends the correct USDC amount to the recipient wallet.',
+    }, 402);
+  }
+
+  const clientIp = c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  if (!checkProxyRateLimit(clientIp)) {
+    c.header('Retry-After', '60');
+    return c.json({ error: 'Proxy rate limit exceeded. Max 20 requests/min to protect proxy quota.', retryAfter: 60 }, 429);
+  }
+
+  const keyword = c.req.query('keyword') || c.req.query('q');
+  if (!keyword) {
+    return c.json({
+      error: 'Missing required parameter: keyword',
+      hint: 'Provide a search keyword like ?keyword=wireless+earbuds',
+      example: '/api/amazon/search?keyword=wireless+earbuds&page=1',
+    }, 400);
+  }
+
+  const page = Math.max(1, parseInt(c.req.query('page') || '1'));
+  const department = c.req.query('department') || 'aps';
+
+  try {
+    const proxy = getProxy();
+    const result = await searchProducts(keyword, page, department);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      proxy: { country: proxy.country, type: 'mobile' },
+      payment: {
+        txHash: payment.txHash,
+        network: payment.network,
+        amount: verification.amount,
+        settled: true,
+      },
+    });
+  } catch (err: any) {
+    return c.json({
+      error: 'Amazon search failed',
+      message: err.message,
+      hint: 'Amazon may be temporarily blocking requests. Try again in a few minutes.',
+    }, 502);
+  }
+});
+
+// GET /api/amazon/bsr/:asin — Track BSR by ASIN
+serviceRouter.get('/amazon/bsr/:asin', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(
+      build402Response('/api/amazon/bsr/:asin', AMAZON_BSR_DESCRIPTION, AMAZON_PRICE_USDC, walletAddress, AMAZON_BSR_SCHEMA),
+      402,
+    );
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, AMAZON_PRICE_USDC);
+  if (!verification.valid) {
+    return c.json({
+      error: 'Payment verification failed',
+      reason: verification.error,
+      hint: 'Ensure the transaction is confirmed and sends the correct USDC amount to the recipient wallet.',
+    }, 402);
+  }
+
+  const clientIp = c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  if (!checkProxyRateLimit(clientIp)) {
+    c.header('Retry-After', '60');
+    return c.json({ error: 'Proxy rate limit exceeded. Max 20 requests/min to protect proxy quota.', retryAfter: 60 }, 429);
+  }
+
+  const asin = c.req.param('asin');
+  if (!asin || !/^[A-Z0-9]{10}$/i.test(asin)) {
+    return c.json({
+      error: 'Invalid ASIN format',
+      hint: 'ASIN must be exactly 10 alphanumeric characters, e.g., B09V3KXJPB',
+      example: '/api/amazon/bsr/B09V3KXJPB',
+    }, 400);
+  }
+
+  try {
+    const proxy = getProxy();
+    const result = await trackBSR(asin.toUpperCase());
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      proxy: { country: proxy.country, type: 'mobile' },
+      payment: {
+        txHash: payment.txHash,
+        network: payment.network,
+        amount: verification.amount,
+        settled: true,
+      },
+    });
+  } catch (err: any) {
+    return c.json({
+      error: 'BSR tracking failed',
+      message: err.message,
+      hint: 'Amazon may be temporarily blocking requests or the ASIN may be invalid.',
+    }, 502);
+  }
+});
+
+// GET /api/amazon/prices/:asin — Price comparison
+serviceRouter.get('/amazon/prices/:asin', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(
+      build402Response('/api/amazon/prices/:asin', AMAZON_PRICE_DESCRIPTION, AMAZON_PRICE_USDC, walletAddress, AMAZON_PRICE_SCHEMA),
+      402,
+    );
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, AMAZON_PRICE_USDC);
+  if (!verification.valid) {
+    return c.json({
+      error: 'Payment verification failed',
+      reason: verification.error,
+      hint: 'Ensure the transaction is confirmed and sends the correct USDC amount to the recipient wallet.',
+    }, 402);
+  }
+
+  const clientIp = c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  if (!checkProxyRateLimit(clientIp)) {
+    c.header('Retry-After', '60');
+    return c.json({ error: 'Proxy rate limit exceeded. Max 20 requests/min to protect proxy quota.', retryAfter: 60 }, 429);
+  }
+
+  const asin = c.req.param('asin');
+  if (!asin || !/^[A-Z0-9]{10}$/i.test(asin)) {
+    return c.json({
+      error: 'Invalid ASIN format',
+      hint: 'ASIN must be exactly 10 alphanumeric characters, e.g., B09V3KXJPB',
+      example: '/api/amazon/prices/B09V3KXJPB',
+    }, 400);
+  }
+
+  try {
+    const proxy = getProxy();
+    const result = await comparePrices(asin.toUpperCase());
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      proxy: { country: proxy.country, type: 'mobile' },
+      payment: {
+        txHash: payment.txHash,
+        network: payment.network,
+        amount: verification.amount,
+        settled: true,
+      },
+    });
+  } catch (err: any) {
+    return c.json({
+      error: 'Price comparison failed',
+      message: err.message,
+      hint: 'Amazon may be temporarily blocking requests or the ASIN may be invalid.',
+    }, 502);
+  }
+});
+
+// GET /api/amazon/sentiment/:asin — Review sentiment analysis
+serviceRouter.get('/amazon/sentiment/:asin', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(
+      build402Response('/api/amazon/sentiment/:asin', AMAZON_SENTIMENT_DESCRIPTION, AMAZON_PRICE_USDC, walletAddress, AMAZON_SENTIMENT_SCHEMA),
+      402,
+    );
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, AMAZON_PRICE_USDC);
+  if (!verification.valid) {
+    return c.json({
+      error: 'Payment verification failed',
+      reason: verification.error,
+      hint: 'Ensure the transaction is confirmed and sends the correct USDC amount to the recipient wallet.',
+    }, 402);
+  }
+
+  const clientIp = c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  if (!checkProxyRateLimit(clientIp)) {
+    c.header('Retry-After', '60');
+    return c.json({ error: 'Proxy rate limit exceeded. Max 20 requests/min to protect proxy quota.', retryAfter: 60 }, 429);
+  }
+
+  const asin = c.req.param('asin');
+  if (!asin || !/^[A-Z0-9]{10}$/i.test(asin)) {
+    return c.json({
+      error: 'Invalid ASIN format',
+      hint: 'ASIN must be exactly 10 alphanumeric characters, e.g., B09V3KXJPB',
+      example: '/api/amazon/sentiment/B09V3KXJPB',
+    }, 400);
+  }
+
+  try {
+    const proxy = getProxy();
+    const result = await analyzeReviewSentiment(asin.toUpperCase());
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      proxy: { country: proxy.country, type: 'mobile' },
+      payment: {
+        txHash: payment.txHash,
+        network: payment.network,
+        amount: verification.amount,
+        settled: true,
+      },
+    });
+  } catch (err: any) {
+    return c.json({
+      error: 'Sentiment analysis failed',
+      message: err.message,
+      hint: 'Amazon may be temporarily blocking requests or the ASIN may be invalid.',
+    }, 502);
   }
 });
