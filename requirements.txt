@@ -1,0 +1,7 @@
+# YouTube Transcript Scraper
+# Pure Python implementation - no external dependencies required!
+# All functionality uses Python standard library only.
+
+# Optional dependencies for production deployment:
+# requests>=2.28.0        # Alternative HTTP client (not required)
+# flask>=2.0.0            # Alternative web framework (not required)
