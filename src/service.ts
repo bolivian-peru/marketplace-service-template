@@ -10,6 +10,7 @@
  *   GET /api/reddit/*  (Reddit Intelligence)
  *   GET /api/instagram/* (Instagram Intelligence + AI Vision)
  *   GET /api/linkedin/* (LinkedIn Enrichment)
+ *   GET /api/tiktok/*  (TikTok Trend Intelligence)
  */
 
 import { Hono } from 'hono';
@@ -29,6 +30,16 @@ import {
 } from './scrapers/linkedin-enrichment';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
+import {
+  getTrending as getTikTokTrending,
+  getHashtagData,
+  getCreatorProfile,
+  getSoundData,
+  searchVideos as searchTikTokVideos,
+  getVideoAnalytics,
+  calculateTrendScore,
+  predictViralPotential,
+} from './scrapers/tiktok-scraper';
 
 export const serviceRouter = new Hono();
 
@@ -1484,5 +1495,316 @@ serviceRouter.get('/serp', async (c) => {
     });
   } catch (err: any) {
     return c.json({ error: 'SERP scrape failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── TIKTOK TREND INTELLIGENCE API (Bounty #51) ────
+// ═══════════════════════════════════════════════════════
+
+const TIKTOK_TRENDING_PRICE = 0.02;   // $0.02 per trending/hashtag/sound query
+const TIKTOK_CREATOR_PRICE = 0.03;    // $0.03 per creator profile
+const TIKTOK_ANALYTICS_PRICE = 0.02;  // $0.02 per video analytics
+const TIKTOK_SEARCH_PRICE = 0.02;     // $0.02 per search query
+
+// ─── GET /api/tiktok/trending ──────────────────────
+
+serviceRouter.get('/tiktok/trending', async (c) => {
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/tiktok/trending', 'Get trending TikTok videos, hashtags, and sounds by country via mobile proxy', TIKTOK_TRENDING_PRICE, walletAddress, {
+      input: {
+        country: 'string (default: "US") — country code: US, DE, GB, FR, ES, PL, BR, JP, KR, MX',
+        limit: 'number (default: 20, max: 30) — max videos to return',
+      },
+      output: {
+        type: '"trending"',
+        country: 'string — country code',
+        timestamp: 'string — ISO 8601',
+        data: {
+          videos: 'TikTokVideo[] — id, description, author {username, followers}, stats {views, likes, comments, shares, saves}, sound {name, author}, hashtags, createdAt, url, duration',
+          trending_hashtags: 'TikTokHashtag[] — name, views, velocity, videoCount',
+          trending_sounds: 'TikTokSoundTrend[] — name, uses, velocity, author, duration',
+        },
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, TIKTOK_TRENDING_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const country = (c.req.query('country') || 'US').toUpperCase();
+  const limit = Math.min(Math.max(parseInt(c.req.query('limit') || '20') || 20, 1), 30);
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const result = await getTikTokTrending(country, limit);
+
+    // Add trend scores and viral predictions
+    for (const video of result.data.videos) {
+      (video as any).trendScore = calculateTrendScore(video);
+      (video as any).viralPrediction = predictViralPotential(video);
+    }
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      proxy: { ip, country: proxy.country, carrier: proxy.host, type: 'mobile' },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, verified: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'TikTok trending fetch failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/tiktok/hashtag ───────────────────────
+
+serviceRouter.get('/tiktok/hashtag', async (c) => {
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/tiktok/hashtag', 'Get TikTok hashtag analytics — view count, growth velocity, related videos via mobile proxy', TIKTOK_TRENDING_PRICE, walletAddress, {
+      input: {
+        tag: 'string (required) — hashtag name (with or without #)',
+        country: 'string (default: "US") — country code',
+        limit: 'number (default: 20, max: 30) — max videos to return',
+      },
+      output: {
+        hashtag: 'string — cleaned hashtag name',
+        totalViews: 'number — total hashtag views',
+        velocity: 'string — growth rate (e.g., "+340% 24h")',
+        videos: 'TikTokVideo[] — videos using this hashtag',
+        relatedHashtags: 'string[] — related hashtags',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, TIKTOK_TRENDING_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const tag = c.req.query('tag');
+  if (!tag) return c.json({ error: 'Missing required parameter: tag', example: '/api/tiktok/hashtag?tag=ai&country=US' }, 400);
+
+  const country = (c.req.query('country') || 'US').toUpperCase();
+  const limit = Math.min(Math.max(parseInt(c.req.query('limit') || '20') || 20, 1), 30);
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const result = await getHashtagData(tag, country, limit);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      proxy: { ip, country: proxy.country, carrier: proxy.host, type: 'mobile' },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, verified: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'TikTok hashtag fetch failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/tiktok/creator ───────────────────────
+
+serviceRouter.get('/tiktok/creator', async (c) => {
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/tiktok/creator', 'Get TikTok creator profile — followers, engagement rate, recent videos via mobile proxy', TIKTOK_CREATOR_PRICE, walletAddress, {
+      input: {
+        username: 'string (required) — TikTok username (with or without @)',
+        country: 'string (default: "US") — country code for geo-targeted data',
+      },
+      output: {
+        username: 'string',
+        nickname: 'string',
+        bio: 'string',
+        followers: 'number',
+        following: 'number',
+        totalLikes: 'number',
+        verified: 'boolean',
+        avatar: 'string | null',
+        engagementRate: 'number — average likes/followers percentage',
+        recentVideos: 'TikTokVideo[] — up to 12 recent videos with full stats',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, TIKTOK_CREATOR_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const username = c.req.query('username');
+  if (!username) return c.json({ error: 'Missing required parameter: username', example: '/api/tiktok/creator?username=charlidamelio' }, 400);
+
+  const country = (c.req.query('country') || 'US').toUpperCase();
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const result = await getCreatorProfile(username, country);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      proxy: { ip, country: proxy.country, carrier: proxy.host, type: 'mobile' },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, verified: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'TikTok creator profile fetch failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/tiktok/sound ─────────────────────────
+
+serviceRouter.get('/tiktok/sound', async (c) => {
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/tiktok/sound', 'Get TikTok sound/audio details — usage count, trending status, videos using it via mobile proxy', TIKTOK_TRENDING_PRICE, walletAddress, {
+      input: {
+        id: 'string (required) — TikTok sound/music ID',
+        country: 'string (default: "US") — country code',
+        limit: 'number (default: 20, max: 30) — max videos to return',
+      },
+      output: {
+        sound: '{ id, name, author, duration, uses }',
+        videos: 'TikTokVideo[] — videos using this sound',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, TIKTOK_TRENDING_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const soundId = c.req.query('id');
+  if (!soundId) return c.json({ error: 'Missing required parameter: id', example: '/api/tiktok/sound?id=7341234567890&country=US' }, 400);
+
+  const country = (c.req.query('country') || 'US').toUpperCase();
+  const limit = Math.min(Math.max(parseInt(c.req.query('limit') || '20') || 20, 1), 30);
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const result = await getSoundData(soundId, country, limit);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      proxy: { ip, country: proxy.country, carrier: proxy.host, type: 'mobile' },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, verified: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'TikTok sound fetch failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/tiktok/search ────────────────────────
+
+serviceRouter.get('/tiktok/search', async (c) => {
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/tiktok/search', 'Search TikTok videos by keyword via mobile proxy', TIKTOK_SEARCH_PRICE, walletAddress, {
+      input: {
+        query: 'string (required) — search keywords',
+        country: 'string (default: "US") — country code',
+        limit: 'number (default: 20, max: 30) — max videos to return',
+      },
+      output: {
+        query: 'string — search query',
+        videos: 'TikTokVideo[] — matching videos with full stats',
+        count: 'number — number of results',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, TIKTOK_SEARCH_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const query = c.req.query('query');
+  if (!query) return c.json({ error: 'Missing required parameter: query', example: '/api/tiktok/search?query=artificial+intelligence&country=US' }, 400);
+
+  const country = (c.req.query('country') || 'US').toUpperCase();
+  const limit = Math.min(Math.max(parseInt(c.req.query('limit') || '20') || 20, 1), 30);
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const videos = await searchTikTokVideos(query, country, limit);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      query,
+      videos,
+      count: videos.length,
+      proxy: { ip, country: proxy.country, carrier: proxy.host, type: 'mobile' },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, verified: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'TikTok search failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/tiktok/video ─────────────────────────
+
+serviceRouter.get('/tiktok/video', async (c) => {
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/tiktok/video', 'Get TikTok video analytics — trend score, viral prediction, full engagement metrics via mobile proxy', TIKTOK_ANALYTICS_PRICE, walletAddress, {
+      input: {
+        id: 'string (required) — TikTok video ID or URL',
+        country: 'string (default: "US") — country code',
+      },
+      output: {
+        video: 'TikTokVideo — full video data with stats',
+        trendScore: 'number (0-100) — composite trend score',
+        viralPrediction: '{ score: number, verdict: string, factors: string[] }',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, TIKTOK_ANALYTICS_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const videoId = c.req.query('id');
+  if (!videoId) return c.json({ error: 'Missing required parameter: id', example: '/api/tiktok/video?id=7341234567890' }, 400);
+
+  const country = (c.req.query('country') || 'US').toUpperCase();
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const result = await getVideoAnalytics(videoId, country);
+
+    if (!result) return c.json({ error: 'Video not found' }, 404);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      proxy: { ip, country: proxy.country, carrier: proxy.host, type: 'mobile' },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, verified: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'TikTok video analytics failed', message: err?.message || String(err) }, 502);
   }
 });
