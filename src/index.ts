@@ -92,6 +92,10 @@ app.get('/health', (c) => c.json({
     '/api/airbnb/listing/:id',
     '/api/airbnb/reviews/:listing_id',
     '/api/airbnb/market-stats',
+    '/api/airbnb/price-analysis/:id',
+    '/api/airbnb/occupancy/:id',
+    '/api/airbnb/host-analysis/:id',
+    '/api/airbnb/revenue/:id',
     '/api/research',
     '/api/trending',
   ],
@@ -127,6 +131,10 @@ app.get('/', (c) => c.json({
     { method: 'GET', path: '/api/airbnb/listing/:id', description: 'Get detailed Airbnb listing', price: '0.01 USDC' },
     { method: 'GET', path: '/api/airbnb/reviews/:listing_id', description: 'Get Airbnb listing reviews', price: '0.01 USDC' },
     { method: 'GET', path: '/api/airbnb/market-stats', description: 'Airbnb market statistics', price: '0.05 USDC' },
+    { method: 'GET', path: '/api/airbnb/price-analysis/:id', description: 'Airbnb price intelligence and market comparison', price: '0.03 USDC' },
+    { method: 'GET', path: '/api/airbnb/occupancy/:id', description: 'Airbnb occupancy rate estimation with seasonality', price: '0.03 USDC' },
+    { method: 'GET', path: '/api/airbnb/host-analysis/:id', description: 'Airbnb host performance and sentiment analysis', price: '0.03 USDC' },
+    { method: 'GET', path: '/api/airbnb/revenue/:id', description: 'Airbnb revenue projection with scenarios', price: '0.05 USDC' },
     { method: 'GET', path: '/api/research', description: 'Multi-source research aggregation', price: '0.05 USDC' },
     { method: 'GET', path: '/api/trending', description: 'Trending topics intelligence', price: '0.01 USDC' },
   ],
@@ -162,7 +170,7 @@ app.get('/', (c) => c.json({
 
 app.route('/api', serviceRouter);
 
-app.notFound((c) => c.json({ error: 'Not found', endpoints: ['/', '/health', '/api/run', '/api/details', '/api/serp', '/api/jobs', '/api/reviews/search', '/api/reviews/:place_id', '/api/business/:place_id', '/api/reviews/summary/:place_id', '/api/linkedin/person', '/api/linkedin/company', '/api/linkedin/search/people', '/api/reddit/search', '/api/reddit/trending', '/api/reddit/subreddit/:name', '/api/reddit/thread/*', '/api/instagram/profile/:username', '/api/instagram/posts/:username', '/api/instagram/analyze/:username', '/api/instagram/audit/:username', '/api/airbnb/search', '/api/airbnb/listing/:id', '/api/airbnb/reviews/:listing_id', '/api/airbnb/market-stats', '/api/research', '/api/trending'] }, 404));
+app.notFound((c) => c.json({ error: 'Not found', endpoints: ['/', '/health', '/api/run', '/api/details', '/api/serp', '/api/jobs', '/api/reviews/search', '/api/reviews/:place_id', '/api/business/:place_id', '/api/reviews/summary/:place_id', '/api/linkedin/person', '/api/linkedin/company', '/api/linkedin/search/people', '/api/reddit/search', '/api/reddit/trending', '/api/reddit/subreddit/:name', '/api/reddit/thread/*', '/api/instagram/profile/:username', '/api/instagram/posts/:username', '/api/instagram/analyze/:username', '/api/instagram/audit/:username', '/api/airbnb/search', '/api/airbnb/listing/:id', '/api/airbnb/reviews/:listing_id', '/api/airbnb/market-stats', '/api/airbnb/price-analysis/:id', '/api/airbnb/occupancy/:id', '/api/airbnb/host-analysis/:id', '/api/airbnb/revenue/:id', '/api/research', '/api/trending'] }, 404));
 
 app.onError((err, c) => {
   console.error(`[ERROR] ${err.message}`);

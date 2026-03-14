@@ -21,6 +21,7 @@ import { scrapeGoogleMaps, extractDetailedBusiness } from './scrapers/maps-scrap
 import { researchRouter } from './routes/research';
 import { trendingRouter } from './routes/trending';
 import { searchAirbnb, getListingDetail, getListingReviews, getMarketStats } from './scrapers/airbnb-scraper';
+import { analyzePricing, estimateOccupancy, analyzeHost, projectRevenue } from './scrapers/airbnb-intelligence';
 import { 
   scrapeLinkedInPerson, 
   scrapeLinkedInCompany, 
@@ -1436,6 +1437,212 @@ serviceRouter.get('/airbnb/market-stats', async (c) => {
     });
   } catch (err: any) {
     return c.json({ error: 'Airbnb market stats failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── AIRBNB INTELLIGENCE API (Bounty #78 — Advanced) ────
+// ═══════════════════════════════════════════════════════
+
+const AIRBNB_PRICE_ANALYSIS_PRICE = 0.03;
+const AIRBNB_OCCUPANCY_PRICE = 0.03;
+const AIRBNB_HOST_ANALYSIS_PRICE = 0.03;
+const AIRBNB_REVENUE_PRICE = 0.05;
+
+// ─── GET /api/airbnb/price-analysis/:id ─────────────
+
+serviceRouter.get('/airbnb/price-analysis/:id', async (c) => {
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/airbnb/price-analysis/:id', 'Airbnb price intelligence: market comparison, percentile ranking, comparable listings, value score.', AIRBNB_PRICE_ANALYSIS_PRICE, walletAddress, {
+      input: {
+        id: 'string (required) — Airbnb listing ID (in URL path)',
+        location: 'string (optional) — market area for comparison',
+        checkin: 'string (optional) — YYYY-MM-DD',
+        checkout: 'string (optional) — YYYY-MM-DD',
+      },
+      output: {
+        listing_id: 'string',
+        price_per_night: 'number',
+        market_comparison: '{ market_avg, market_median, percentile, price_rating, difference_from_avg_pct }',
+        comparable_listings: 'ComparableListing[] — similar properties with prices',
+        value_score: 'number (0-200) — rating/price ratio vs market',
+        price_factors: 'string[] — factors affecting pricing',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, AIRBNB_PRICE_ANALYSIS_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const listingId = c.req.param('id');
+  if (!listingId) return c.json({ error: 'Missing listing ID' }, 400);
+
+  const location = c.req.query('location') || undefined;
+  const checkin = c.req.query('checkin') || undefined;
+  const checkout = c.req.query('checkout') || undefined;
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const analysis = await analyzePricing(listingId, location, checkin, checkout);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      analysis,
+      meta: { proxy: { ip, country: proxy.country, type: 'mobile' } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Airbnb price analysis failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/airbnb/occupancy/:id ──────────────────
+
+serviceRouter.get('/airbnb/occupancy/:id', async (c) => {
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/airbnb/occupancy/:id', 'Estimate Airbnb listing occupancy rate using review frequency analysis and seasonality modeling.', AIRBNB_OCCUPANCY_PRICE, walletAddress, {
+      input: {
+        id: 'string (required) — Airbnb listing ID (in URL path)',
+        location: 'string (optional) — market area for price comparison',
+      },
+      output: {
+        estimated_occupancy_rate: 'number (0-100)',
+        confidence: '"low" | "medium" | "high"',
+        methodology: 'string',
+        factors: '{ review_frequency, reviews_last_12_months, total_reviews, rating, superhost, price_competitiveness }',
+        monthly_breakdown: 'MonthlyOccupancy[] — per-month estimates with peak flagging',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, AIRBNB_OCCUPANCY_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const listingId = c.req.param('id');
+  if (!listingId) return c.json({ error: 'Missing listing ID' }, 400);
+
+  const location = c.req.query('location') || undefined;
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const estimate = await estimateOccupancy(listingId, location);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      occupancy: estimate,
+      meta: { proxy: { ip, country: proxy.country, type: 'mobile' } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Airbnb occupancy estimation failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/airbnb/host-analysis/:id ──────────────
+
+serviceRouter.get('/airbnb/host-analysis/:id', async (c) => {
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/airbnb/host-analysis/:id', 'Analyze Airbnb host performance: review sentiment, response metrics, portfolio stats, strengths and weaknesses.', AIRBNB_HOST_ANALYSIS_PRICE, walletAddress, {
+      input: {
+        id: 'string (required) — Airbnb listing ID (in URL path)',
+        location: 'string (optional) — area to search for other host listings',
+      },
+      output: {
+        host_name: 'string',
+        superhost: 'boolean',
+        response_rate: 'string | null',
+        portfolio_stats: '{ total_listings, avg_price, avg_rating, total_reviews, property_types }',
+        performance_indicators: '{ review_sentiment, strengths, areas_for_improvement, responsiveness_score }',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, AIRBNB_HOST_ANALYSIS_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const listingId = c.req.param('id');
+  if (!listingId) return c.json({ error: 'Missing listing ID' }, 400);
+
+  const location = c.req.query('location') || undefined;
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const analysis = await analyzeHost(listingId, location);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      host: analysis,
+      meta: { proxy: { ip, country: proxy.country, type: 'mobile' } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Airbnb host analysis failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/airbnb/revenue/:id ────────────────────
+
+serviceRouter.get('/airbnb/revenue/:id', async (c) => {
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/airbnb/revenue/:id', 'Revenue projection for Airbnb listing: conservative/moderate/optimistic scenarios with expenses, breakeven analysis, and market context.', AIRBNB_REVENUE_PRICE, walletAddress, {
+      input: {
+        id: 'string (required) — Airbnb listing ID (in URL path)',
+        location: 'string (optional) — market area for comparable analysis',
+        monthly_expenses: 'number (optional) — estimated monthly operating expenses in USD',
+      },
+      output: {
+        projections: '{ conservative, moderate, optimistic } — each with annual/monthly gross and net revenue',
+        assumptions: '{ occupancy_rates, avg_nightly_rate, cleaning_fee_estimate, service_fee_pct, monthly_expenses }',
+        market_context: '{ avg_daily_rate, total_comparable_listings, superhost_premium_pct }',
+        roi_metrics: '{ breakeven_occupancy_pct, revenue_per_available_night }',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, AIRBNB_REVENUE_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const listingId = c.req.param('id');
+  if (!listingId) return c.json({ error: 'Missing listing ID' }, 400);
+
+  const location = c.req.query('location') || undefined;
+  const monthlyExpenses = c.req.query('monthly_expenses') ? parseInt(c.req.query('monthly_expenses')!) : undefined;
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const projection = await projectRevenue(listingId, location, monthlyExpenses);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      revenue: projection,
+      meta: { proxy: { ip, country: proxy.country, type: 'mobile' } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Airbnb revenue projection failed', message: err?.message || String(err) }, 502);
   }
 });
 
