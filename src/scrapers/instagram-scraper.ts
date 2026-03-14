@@ -360,3 +360,302 @@ export async function auditProfile(username: string): Promise<{ profile: Instagr
   const full = await analyzeProfile(username);
   return { profile: full.profile, authenticity: full.ai_analysis.authenticity };
 }
+
+// ─── Hashtag Trend Analysis ────────────────────────
+
+export interface HashtagTrend {
+  hashtag: string;
+  count: number;
+  avg_likes: number;
+  avg_comments: number;
+  engagement_rate: number;
+  sample_posts: { shortcode: string; likes: number; comments: number }[];
+}
+
+export interface HashtagAnalysis {
+  username: string;
+  total_posts_analyzed: number;
+  total_unique_hashtags: number;
+  top_hashtags: HashtagTrend[];
+  hashtag_categories: Record<string, string[]>;
+  optimal_hashtag_count: number;
+  recommendations: string[];
+}
+
+export async function analyzeHashtags(username: string, limit: number = 12): Promise<HashtagAnalysis> {
+  const profile = await getProfile(username);
+  const posts = await getPosts(username, limit);
+
+  const hashtagMap = new Map<string, { count: number; likes: number[]; comments: number[]; posts: { shortcode: string; likes: number; comments: number }[] }>();
+
+  for (const post of posts) {
+    for (const tag of post.hashtags) {
+      const lower = tag.toLowerCase();
+      if (!hashtagMap.has(lower)) {
+        hashtagMap.set(lower, { count: 0, likes: [], comments: [], posts: [] });
+      }
+      const entry = hashtagMap.get(lower)!;
+      entry.count++;
+      entry.likes.push(post.likes);
+      entry.comments.push(post.comments);
+      entry.posts.push({ shortcode: post.shortcode, likes: post.likes, comments: post.comments });
+    }
+  }
+
+  const trends: HashtagTrend[] = [...hashtagMap.entries()]
+    .map(([hashtag, data]) => {
+      const avgLikes = Math.round(data.likes.reduce((a, b) => a + b, 0) / data.likes.length);
+      const avgComments = Math.round(data.comments.reduce((a, b) => a + b, 0) / data.comments.length);
+      return {
+        hashtag,
+        count: data.count,
+        avg_likes: avgLikes,
+        avg_comments: avgComments,
+        engagement_rate: profile.followers > 0 ? Math.round(((avgLikes + avgComments) / profile.followers) * 10000) / 100 : 0,
+        sample_posts: data.posts.slice(0, 3),
+      };
+    })
+    .sort((a, b) => b.count - a.count);
+
+  // Categorize hashtags
+  const categoryMap: Record<string, string[]> = {
+    branded: [], niche: [], community: [], location: [], campaign: [], generic: [],
+  };
+  const brandKeywords = ['brand', 'collab', 'partner', 'sponsor', 'ad'];
+  const communityKeywords = ['community', 'tribe', 'squad', 'fam', 'crew'];
+  const locationKeywords = ['city', 'town', 'country', 'travel', 'visit', 'explore'];
+
+  for (const t of trends) {
+    const tag = t.hashtag;
+    if (brandKeywords.some(k => tag.includes(k)) || t.count === 1) categoryMap.branded.push(tag);
+    else if (communityKeywords.some(k => tag.includes(k))) categoryMap.community.push(tag);
+    else if (locationKeywords.some(k => tag.includes(k))) categoryMap.location.push(tag);
+    else if (t.count >= 3) categoryMap.niche.push(tag);
+    else categoryMap.generic.push(tag);
+  }
+
+  // Find optimal hashtag count by correlating with engagement
+  const postHashtagCounts = posts.map(p => ({ count: p.hashtags.length, engagement: p.likes + p.comments }));
+  const sorted = [...postHashtagCounts].sort((a, b) => b.engagement - a.engagement);
+  const topHalf = sorted.slice(0, Math.ceil(sorted.length / 2));
+  const optimalCount = topHalf.length > 0 ? Math.round(topHalf.reduce((s, p) => s + p.count, 0) / topHalf.length) : 0;
+
+  const recommendations: string[] = [];
+  if (trends.length === 0) recommendations.push('No hashtags detected. Adding relevant hashtags can increase discoverability.');
+  if (optimalCount > 0 && optimalCount < 30) recommendations.push(`Optimal hashtag count appears to be ~${optimalCount} based on engagement correlation.`);
+  if (categoryMap.niche.length > 0) recommendations.push(`Strong niche hashtags: ${categoryMap.niche.slice(0, 5).map(h => '#' + h).join(', ')}`);
+  const topPerformer = trends.sort((a, b) => b.engagement_rate - a.engagement_rate)[0];
+  if (topPerformer) recommendations.push(`Highest engagement hashtag: #${topPerformer.hashtag} (${topPerformer.engagement_rate}% engagement)`);
+
+  return {
+    username: profile.username,
+    total_posts_analyzed: posts.length,
+    total_unique_hashtags: hashtagMap.size,
+    top_hashtags: trends.slice(0, 20),
+    hashtag_categories: categoryMap,
+    optimal_hashtag_count: optimalCount,
+    recommendations,
+  };
+}
+
+// ─── Competitor Comparison ─────────────────────────
+
+export interface CompetitorComparison {
+  profiles: {
+    username: string;
+    followers: number;
+    following: number;
+    posts_count: number;
+    engagement_rate: number;
+    avg_likes: number;
+    avg_comments: number;
+    posting_frequency: string;
+    is_verified: boolean;
+    is_business: boolean;
+    category: string | null;
+    bio: string;
+    top_hashtags: string[];
+  }[];
+  comparison: {
+    highest_followers: string;
+    highest_engagement: string;
+    most_active: string;
+    best_likes_ratio: string;
+    rankings: { metric: string; ranking: { username: string; value: number | string }[] }[];
+  };
+  insights: string[];
+}
+
+export async function compareProfiles(usernames: string[]): Promise<CompetitorComparison> {
+  if (usernames.length < 2) throw new Error('At least 2 usernames required for comparison');
+  if (usernames.length > 5) throw new Error('Maximum 5 usernames for comparison');
+
+  const results = await Promise.allSettled(
+    usernames.map(async (u) => {
+      const profile = await getProfile(u);
+      const posts = await getPosts(u, 12);
+      const hashtags = posts.flatMap(p => p.hashtags);
+      const hashtagFreq = new Map<string, number>();
+      for (const h of hashtags) {
+        hashtagFreq.set(h.toLowerCase(), (hashtagFreq.get(h.toLowerCase()) || 0) + 1);
+      }
+      const topHashtags = [...hashtagFreq.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10).map(([h]) => h);
+      return { profile, topHashtags };
+    })
+  );
+
+  const profiles: CompetitorComparison['profiles'] = [];
+  for (const r of results) {
+    if (r.status === 'fulfilled') {
+      const { profile: p, topHashtags } = r.value;
+      profiles.push({
+        username: p.username, followers: p.followers, following: p.following,
+        posts_count: p.posts_count, engagement_rate: p.engagement_rate,
+        avg_likes: p.avg_likes, avg_comments: p.avg_comments,
+        posting_frequency: p.posting_frequency, is_verified: p.is_verified,
+        is_business: p.is_business, category: p.category, bio: p.bio,
+        top_hashtags: topHashtags,
+      });
+    }
+  }
+
+  if (profiles.length < 2) throw new Error('Could not fetch enough profiles for comparison');
+
+  const byFollowers = [...profiles].sort((a, b) => b.followers - a.followers);
+  const byEngagement = [...profiles].sort((a, b) => b.engagement_rate - a.engagement_rate);
+  const byLikes = [...profiles].sort((a, b) => b.avg_likes - a.avg_likes);
+
+  // Parse posting frequency for comparison
+  const parseFreq = (f: string): number => {
+    const m = f.match(/([\d.]+)/);
+    if (!m) return 0;
+    const v = parseFloat(m[1]);
+    if (f.includes('day')) return v * 7;
+    return v;
+  };
+  const byActivity = [...profiles].sort((a, b) => parseFreq(b.posting_frequency) - parseFreq(a.posting_frequency));
+
+  const rankings = [
+    { metric: 'followers', ranking: byFollowers.map(p => ({ username: p.username, value: p.followers })) },
+    { metric: 'engagement_rate', ranking: byEngagement.map(p => ({ username: p.username, value: p.engagement_rate })) },
+    { metric: 'avg_likes', ranking: byLikes.map(p => ({ username: p.username, value: p.avg_likes })) },
+    { metric: 'avg_comments', ranking: [...profiles].sort((a, b) => b.avg_comments - a.avg_comments).map(p => ({ username: p.username, value: p.avg_comments })) },
+    { metric: 'posting_frequency', ranking: byActivity.map(p => ({ username: p.username, value: p.posting_frequency })) },
+  ];
+
+  const insights: string[] = [];
+  if (byFollowers[0].username !== byEngagement[0].username) {
+    insights.push(`@${byEngagement[0].username} has the highest engagement rate (${byEngagement[0].engagement_rate}%) despite @${byFollowers[0].username} having more followers.`);
+  }
+  const avgEng = profiles.reduce((s, p) => s + p.engagement_rate, 0) / profiles.length;
+  insights.push(`Average engagement rate across compared accounts: ${Math.round(avgEng * 100) / 100}%`);
+  const allHashtags = profiles.flatMap(p => p.top_hashtags);
+  const sharedHashtags = [...new Set(allHashtags)].filter(h => profiles.filter(p => p.top_hashtags.includes(h)).length >= 2);
+  if (sharedHashtags.length > 0) {
+    insights.push(`Shared hashtags across competitors: ${sharedHashtags.slice(0, 10).map(h => '#' + h).join(', ')}`);
+  }
+
+  return {
+    profiles,
+    comparison: {
+      highest_followers: byFollowers[0].username,
+      highest_engagement: byEngagement[0].username,
+      most_active: byActivity[0].username,
+      best_likes_ratio: byLikes[0].username,
+      rankings,
+    },
+    insights,
+  };
+}
+
+// ─── Discover / Search by AI Attributes ────────────
+
+export interface DiscoverFilters {
+  niche?: string;
+  min_followers?: number;
+  max_followers?: number;
+  account_type?: string;
+  sentiment?: string;
+  brand_safe?: boolean;
+  min_engagement?: number;
+}
+
+export interface DiscoverResult {
+  username: string;
+  followers: number;
+  engagement_rate: number;
+  niche: string;
+  account_type: string;
+  sentiment: string;
+  brand_safety_score: number;
+  authenticity_score: number;
+  match_score: number;
+}
+
+// In-memory analyzed profiles cache for discover queries
+const analyzedProfilesCache = new Map<string, { data: FullAnalysis; timestamp: number }>();
+const CACHE_TTL = 3600000; // 1 hour
+
+export function cacheAnalysis(username: string, analysis: FullAnalysis): void {
+  analyzedProfilesCache.set(username.toLowerCase(), { data: analysis, timestamp: Date.now() });
+}
+
+export async function discoverProfiles(usernames: string[], filters: DiscoverFilters): Promise<DiscoverResult[]> {
+  // Analyze all provided usernames (or use cache)
+  const results: DiscoverResult[] = [];
+
+  for (const username of usernames) {
+    const cached = analyzedProfilesCache.get(username.toLowerCase());
+    let analysis: FullAnalysis;
+
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+      analysis = cached.data;
+    } else {
+      try {
+        analysis = await analyzeProfile(username);
+        cacheAnalysis(username, analysis);
+      } catch {
+        continue; // Skip profiles that fail to fetch
+      }
+    }
+
+    const ai = analysis.ai_analysis;
+    let matchScore = 100;
+
+    // Apply filters and compute match score
+    if (filters.niche) {
+      const nicheMatch = ai.account_type.niche?.toLowerCase().includes(filters.niche.toLowerCase()) ||
+        ai.account_type.sub_niches?.some(s => s.toLowerCase().includes(filters.niche!.toLowerCase())) ||
+        ai.content_themes.top_themes?.some(t => t.toLowerCase().includes(filters.niche!.toLowerCase()));
+      if (!nicheMatch) continue;
+    }
+    if (filters.min_followers && analysis.profile.followers < filters.min_followers) continue;
+    if (filters.max_followers && analysis.profile.followers > filters.max_followers) continue;
+    if (filters.account_type && ai.account_type.primary?.toLowerCase() !== filters.account_type.toLowerCase()) continue;
+    if (filters.sentiment && ai.sentiment.overall?.toLowerCase() !== filters.sentiment.toLowerCase()) continue;
+    if (filters.brand_safe && ai.content_themes.brand_safety_score < 70) continue;
+    if (filters.min_engagement && analysis.profile.engagement_rate < filters.min_engagement) continue;
+
+    // Calculate match score based on confidence and quality
+    matchScore = Math.round(
+      (ai.account_type.confidence || 0.5) * 30 +
+      (ai.authenticity.score || 50) * 0.3 +
+      (ai.content_themes.brand_safety_score || 50) * 0.2 +
+      Math.min(analysis.profile.engagement_rate * 5, 20)
+    );
+
+    results.push({
+      username: analysis.profile.username,
+      followers: analysis.profile.followers,
+      engagement_rate: analysis.profile.engagement_rate,
+      niche: ai.account_type.niche || 'unknown',
+      account_type: ai.account_type.primary || 'unknown',
+      sentiment: ai.sentiment.overall || 'neutral',
+      brand_safety_score: ai.content_themes.brand_safety_score || 0,
+      authenticity_score: ai.authenticity.score || 0,
+      match_score: Math.min(matchScore, 100),
+    });
+  }
+
+  return results.sort((a, b) => b.match_score - a.match_score);
+}
