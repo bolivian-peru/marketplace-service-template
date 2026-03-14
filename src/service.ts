@@ -1486,3 +1486,218 @@ serviceRouter.get('/serp', async (c) => {
     return c.json({ error: 'SERP scrape failed', message: err?.message || String(err) }, 502);
   }
 });
+
+// ═══════════════════════════════════════════════════════
+// ─── TWITTER/X REAL-TIME SEARCH API (Bounty #73) ────
+// ═══════════════════════════════════════════════════════
+
+import { searchTweets, lookupUser, detectTrends, analyzeSentiment } from './scrapers/twitter-search';
+
+const TWITTER_SEARCH_PRICE = 0.005;   // $0.005 per search
+const TWITTER_PROFILE_PRICE = 0.01;   // $0.01 per profile lookup
+const TWITTER_TRENDS_PRICE = 0.005;   // $0.005 per trends request
+const TWITTER_SENTIMENT_PRICE = 0.02; // $0.02 per sentiment analysis
+
+// ─── GET /api/twitter/search ────────────────────────
+
+serviceRouter.get('/twitter/search', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/twitter/search', 'Real-time tweet search by keyword, hashtag, or phrase. Returns tweets with author, text, engagement, hashtags, timestamps.', TWITTER_SEARCH_PRICE, walletAddress, {
+      input: {
+        query: 'string (required) — search keyword, hashtag (#topic), or phrase',
+        days: 'number (optional, default: 30) — look back period in days',
+        limit: 'number (optional, default: 20, max: 50)',
+        sort: 'string (optional, "relevance" | "date", default: "relevance")',
+        language: 'string (optional) — ISO language code (e.g., "en")',
+      },
+      output: {
+        query: 'string — the search query',
+        tweets: 'Tweet[] — tweetId, author, handle, text, url, likes, retweets, replies, engagementScore, publishedAt, hashtags, isRetweet, isReply',
+        totalResults: 'number — estimated total results',
+        hasMore: 'boolean — whether more results are available',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, TWITTER_SEARCH_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const query = c.req.query('query') || c.req.query('q');
+  if (!query) return c.json({ error: 'Missing required parameter: query', example: '/api/twitter/search?query=AI+agents&days=7&limit=20' }, 400);
+
+  const days = parseInt(c.req.query('days') || '30') || 30;
+  const limit = Math.min(Math.max(parseInt(c.req.query('limit') || '20') || 20, 1), 50);
+  const sort = (c.req.query('sort') === 'date' ? 'date' : 'relevance') as 'relevance' | 'date';
+  const language = c.req.query('language') || c.req.query('lang') || undefined;
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const result = await searchTweets(query, { days, limit, sort, language });
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      meta: {
+        days, limit, sort, language: language || null,
+        proxy: { ip, country: proxy.country, type: 'mobile' },
+      },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Twitter search failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/twitter/user/:username ────────────────
+
+serviceRouter.get('/twitter/user/:username', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/twitter/user/:username', 'Twitter/X user profile lookup: display name, bio, follower counts, recent tweets.', TWITTER_PROFILE_PRICE, walletAddress, {
+      input: {
+        username: 'string (required, in URL path) — Twitter/X username without @',
+      },
+      output: {
+        profile: 'TwitterUserProfile — username, displayName, bio, url, followers, following, tweetCount, verified, joinedAt, location, website, recentTweets[]',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, TWITTER_PROFILE_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const username = c.req.param('username');
+  if (!username) return c.json({ error: 'Missing username in URL path' }, 400);
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const profile = await lookupUser(username);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      profile,
+      meta: {
+        proxy: { ip, country: proxy.country, type: 'mobile' },
+      },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Twitter user lookup failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/twitter/trends ────────────────────────
+
+serviceRouter.get('/twitter/trends', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/twitter/trends', 'Detect trending topics on Twitter/X by country. Returns topics with engagement scores, categories, and sample tweets.', TWITTER_TRENDS_PRICE, walletAddress, {
+      input: {
+        country: 'string (optional, default: "US") — ISO-3166-1 alpha-2 country code',
+        limit: 'number (optional, default: 20, max: 50)',
+      },
+      output: {
+        country: 'string — country code used',
+        trends: 'TrendingTopic[] — topic, tweetVolume, url, category, engagementScore, sampleTweets[]',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, TWITTER_TRENDS_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const country = c.req.query('country') || 'US';
+  const limit = Math.min(Math.max(parseInt(c.req.query('limit') || '20') || 20, 1), 50);
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const trends = await detectTrends(country, limit);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      country,
+      trends,
+      totalTopics: trends.length,
+      generated_at: new Date().toISOString(),
+      meta: {
+        proxy: { ip, country: proxy.country, type: 'mobile' },
+      },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Twitter trends detection failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/twitter/sentiment ─────────────────────
+
+serviceRouter.get('/twitter/sentiment', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/twitter/sentiment', 'Sentiment analysis on Twitter/X search results. Analyzes tweets for positive/neutral/negative sentiment with word cloud and breakdown.', TWITTER_SENTIMENT_PRICE, walletAddress, {
+      input: {
+        query: 'string (required) — keyword or hashtag to analyze',
+        days: 'number (optional, default: 7) — look back period',
+        limit: 'number (optional, default: 30, max: 50) — number of tweets to analyze',
+      },
+      output: {
+        query: 'string',
+        totalAnalyzed: 'number — tweets analyzed',
+        sentiment: '{ overall, positive%, neutral%, negative% }',
+        breakdown: '{ positive: Tweet[], neutral: Tweet[], negative: Tweet[] }',
+        wordCloud: '{ word, count }[] — top 30 most frequent words',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, TWITTER_SENTIMENT_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const query = c.req.query('query') || c.req.query('q');
+  if (!query) return c.json({ error: 'Missing required parameter: query', example: '/api/twitter/sentiment?query=bitcoin&days=7' }, 400);
+
+  const days = parseInt(c.req.query('days') || '7') || 7;
+  const limit = Math.min(Math.max(parseInt(c.req.query('limit') || '30') || 30, 5), 50);
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const result = await analyzeSentiment(query, { days, limit });
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      meta: {
+        days, limit,
+        proxy: { ip, country: proxy.country, type: 'mobile' },
+      },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Twitter sentiment analysis failed', message: err?.message || String(err) }, 502);
+  }
+});

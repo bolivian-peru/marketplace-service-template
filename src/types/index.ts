@@ -132,6 +132,64 @@ export interface TrendingResponse {
   };
 }
 
+// ─── TWITTER/X SEARCH API TYPES (Bounty #73) ────────
+
+export interface Tweet {
+  tweetId: string | null;
+  author: string | null;
+  handle: string | null;
+  text: string;
+  url: string;
+  likes: number | null;
+  retweets: number | null;
+  replies: number | null;
+  engagementScore: number;
+  publishedAt: string | null;
+  hashtags: string[];
+  isRetweet: boolean;
+  isReply: boolean;
+  platform: 'twitter';
+}
+
+export interface TwitterUserProfile {
+  username: string;
+  displayName: string | null;
+  bio: string | null;
+  url: string;
+  followers: number | null;
+  following: number | null;
+  tweetCount: number | null;
+  verified: boolean;
+  joinedAt: string | null;
+  profileImageUrl: string | null;
+  bannerUrl: string | null;
+  location: string | null;
+  website: string | null;
+  recentTweets: Tweet[];
+}
+
+export interface TrendingTopic {
+  topic: string;
+  tweetVolume: number | null;
+  url: string | null;
+  category: string | null;
+  engagementScore: number;
+  sampleTweets: Tweet[];
+}
+
+export interface TweetSentimentResult {
+  query: string;
+  totalAnalyzed: number;
+  sentiment: PlatformSentimentBreakdown;
+  breakdown: {
+    positive: Tweet[];
+    neutral: Tweet[];
+    negative: Tweet[];
+  };
+  wordCloud: { word: string; count: number }[];
+  timeline: { period: string; sentiment: string; count: number }[];
+}
+
 // ─── GOOGLE MAPS TYPES ──────────────────────────────
 
 export interface BusinessData {
