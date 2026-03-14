@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: airbnb-intelligence
+    env: node
+    plan: starter
+    buildCommand: pnpm install
+    startCommand: pnpm start
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - fromDatabase:
+          name: marketplace-prod
+          property: DATABASE_URL
+      - key: WALLET_ADDRESS
+        generateValue: true
+      - key: PROXY_API_KEY
+        generateValue: true
+    autoDeploy: false

@@ -16,6 +16,7 @@ import { fetchReviews, fetchBusinessDetails, fetchReviewSummary, searchBusinesse
 import { scrapeGoogleMaps, extractDetailedBusiness } from './scrapers/maps-scraper';
 import { researchRouter } from './routes/research';
 import { trendingRouter } from './routes/trending';
+import airbnbRouter from './routes/airbnb';
 import { handleSignalRequest } from './routes/signal';
 
 export const serviceRouter = new Hono();
@@ -547,3 +548,4 @@ serviceRouter.get('/business/:place_id', async (c) => {
     return c.json({ error: 'Business details fetch failed', message: err?.message || String(err) }, 502);
   }
 });
+;
