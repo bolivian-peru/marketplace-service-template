@@ -326,3 +326,118 @@ export interface ReviewSearchResponse {
   businesses: BusinessInfo[];
   totalFound: number;
 }
+
+// ─── AIRBNB INTELLIGENCE TYPES (Bounty #78) ─────────
+
+export type OccupancyConfidence = 'low' | 'medium' | 'high';
+export type PriceRating = 'budget' | 'below_average' | 'average' | 'above_average' | 'premium';
+
+export interface AirbnbPriceAnalysis {
+  listing_id: string;
+  listing_title: string;
+  price_per_night: number | null;
+  market_comparison: {
+    market_avg: number | null;
+    market_median: number | null;
+    percentile: number | null;
+    price_rating: PriceRating;
+    difference_from_avg_pct: number | null;
+  };
+  comparable_listings: AirbnbComparableListing[];
+  value_score: number | null;
+  price_factors: string[];
+}
+
+export interface AirbnbComparableListing {
+  id: string;
+  title: string;
+  price_per_night: number | null;
+  rating: number | null;
+  bedrooms: number;
+  type: string;
+  url: string;
+}
+
+export interface AirbnbOccupancyEstimate {
+  listing_id: string;
+  listing_title: string;
+  estimated_occupancy_rate: number;
+  confidence: OccupancyConfidence;
+  methodology: string;
+  factors: {
+    review_frequency: number | null;
+    reviews_last_12_months: number | null;
+    total_reviews: number | null;
+    rating: number | null;
+    superhost: boolean;
+    price_competitiveness: string | null;
+  };
+  monthly_breakdown: AirbnbMonthlyOccupancy[];
+}
+
+export interface AirbnbMonthlyOccupancy {
+  month: string;
+  estimated_occupancy_pct: number;
+  is_peak: boolean;
+}
+
+export interface AirbnbHostAnalysis {
+  host_name: string;
+  superhost: boolean;
+  response_rate: string | null;
+  response_time: string | null;
+  portfolio_stats: {
+    total_listings: number;
+    avg_price: number | null;
+    avg_rating: number | null;
+    total_reviews: number;
+    property_types: Record<string, number>;
+  };
+  performance_indicators: {
+    review_sentiment: {
+      overall: string;
+      positive_pct: number;
+      neutral_pct: number;
+      negative_pct: number;
+    };
+    strengths: string[];
+    areas_for_improvement: string[];
+    responsiveness_score: string;
+  };
+}
+
+export interface AirbnbRevenueProjection {
+  listing_id: string;
+  listing_title: string;
+  price_per_night: number | null;
+  projections: {
+    conservative: AirbnbRevenueScenario;
+    moderate: AirbnbRevenueScenario;
+    optimistic: AirbnbRevenueScenario;
+  };
+  assumptions: {
+    occupancy_rates: { conservative: number; moderate: number; optimistic: number };
+    avg_nightly_rate: number | null;
+    cleaning_fee_estimate: number;
+    service_fee_pct: number;
+    monthly_expenses_estimate: number;
+  };
+  market_context: {
+    avg_daily_rate: number | null;
+    total_comparable_listings: number;
+    superhost_premium_pct: number;
+  };
+  roi_metrics: {
+    breakeven_occupancy_pct: number | null;
+    revenue_per_available_night: number | null;
+  };
+}
+
+export interface AirbnbRevenueScenario {
+  annual_gross_revenue: number;
+  monthly_avg_revenue: number;
+  annual_net_revenue: number;
+  monthly_avg_net: number;
+  occupancy_rate: number;
+  booked_nights_per_year: number;
+}
