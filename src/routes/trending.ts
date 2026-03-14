@@ -13,12 +13,14 @@ import { getRedditTrending } from '../scrapers/reddit';
 import { getTrendingWeb } from '../scrapers/web';
 import { getYouTubeTrending } from '../scrapers/youtube';
 import { getTwitterTrending } from '../scrapers/twitter';
+import { getTikTokTrending } from '../scrapers/tiktok';
+import { getDailyTrends } from '../scrapers/google-trends';
 import type { TrendingResponse, TrendingItem } from '../types/index';
 
 const WALLET_ADDRESS = process.env.WALLET_ADDRESS ?? '';
 const PRICE_USDC = 0.10;
 
-const SUPPORTED_PLATFORMS = new Set(['reddit', 'web', 'youtube', 'twitter', 'x']);
+const SUPPORTED_PLATFORMS = new Set(['reddit', 'web', 'youtube', 'twitter', 'x', 'tiktok', 'google_trends', 'trends', 'google']);
 const DEFAULT_PLATFORMS = ['reddit', 'web'];
 const MAX_LIMIT = 50;
 const MIN_LIMIT = 1;
@@ -108,7 +110,7 @@ function parsePlatforms(platformParam: string | undefined): { platforms: string[
   const normalized = platformParam
     .split(',')
     .map((p) => p.trim().toLowerCase())
-    .map((p) => (p === 'x' ? 'twitter' : p))
+    .map((p) => (p === 'x' ? 'twitter' : p === 'trends' || p === 'google' ? 'google_trends' : p))
     .filter((p) => SUPPORTED_PLATFORMS.has(p));
 
   const unique = Array.from(new Set(normalized));
@@ -202,12 +204,16 @@ trendingRouter.get('/', async (c) => {
     requestedPlatforms.includes('web') ? getTrendingWeb(country, limit) : Promise.resolve([]),
     requestedPlatforms.includes('youtube') ? getYouTubeTrending(country, limit) : Promise.resolve([]),
     requestedPlatforms.includes('twitter') ? getTwitterTrending(country, limit) : Promise.resolve([]),
+    requestedPlatforms.includes('tiktok') ? getTikTokTrending(country, limit) : Promise.resolve([]),
+    requestedPlatforms.includes('google_trends') ? getDailyTrends(country, limit) : Promise.resolve([]),
   ]);
 
   const redditTrending = fetches[0].status === 'fulfilled' ? fetches[0].value : [];
   const webTrending = fetches[1].status === 'fulfilled' ? fetches[1].value : [];
   const youtubeTrending = fetches[2].status === 'fulfilled' ? fetches[2].value : [];
   const twitterTrending = fetches[3].status === 'fulfilled' ? fetches[3].value : [];
+  const tiktokTrending = fetches[4].status === 'fulfilled' ? fetches[4].value : [];
+  const googleTrendsItems = fetches[5].status === 'fulfilled' ? fetches[5].value : [];
 
   for (const result of fetches) {
     if (result.status === 'rejected') {
@@ -241,6 +247,19 @@ trendingRouter.get('/', async (c) => {
       engagement: Math.round(tweet.engagementScore),
       url: tweet.url,
     })),
+    ...tiktokTrending.map((video): TrendingItem => ({
+      topic: video.description.slice(0, 120),
+      platform: 'tiktok',
+      engagement: Math.round(video.engagementScore),
+      url: video.url,
+    })),
+    ...googleTrendsItems.map((trend): TrendingItem => ({
+      topic: trend.title,
+      platform: 'google_trends',
+      engagement: null,
+      traffic: trend.traffic,
+      url: trend.articles[0]?.url,
+    })),
   ];
 
   trendingItems.sort((a, b) => {
@@ -255,6 +274,8 @@ trendingRouter.get('/', async (c) => {
     webTrending.length > 0 ? 'web' : null,
     youtubeTrending.length > 0 ? 'youtube' : null,
     twitterTrending.length > 0 ? 'twitter' : null,
+    tiktokTrending.length > 0 ? 'tiktok' : null,
+    googleTrendsItems.length > 0 ? 'google_trends' : null,
   ].filter(Boolean) as string[];
 
   c.header('X-Payment-Settled', 'true');

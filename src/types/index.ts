@@ -6,8 +6,9 @@
 
 // ─── TREND INTELLIGENCE TYPES (Bounty #70) ──────────
 
-export type Platform = 'reddit' | 'web' | 'x' | 'youtube' | 'twitter';
+export type Platform = 'reddit' | 'web' | 'x' | 'youtube' | 'twitter' | 'tiktok' | 'google_trends';
 export type SignalStrength = 'established' | 'reinforced' | 'emerging';
+export type BreakoutClassification = 'explosive' | 'accelerating' | 'steady' | 'cooling';
 export type SentimentLabel = 'positive' | 'neutral' | 'negative';
 
 export interface PatternEvidence {
@@ -27,9 +28,69 @@ export interface PatternEvidence {
 export interface TrendPattern {
   pattern: string;
   strength: SignalStrength;
-  sources: ('reddit' | 'web' | 'youtube' | 'twitter')[];
+  sources: ('reddit' | 'web' | 'youtube' | 'twitter' | 'tiktok' | 'google_trends')[];
   totalEngagement: number;
+  trendScore?: number;
   evidence: PatternEvidence[];
+}
+
+// ─── TIKTOK TYPES ───────────────────────────────────
+
+export interface TikTokResult {
+  videoId: string | null;
+  author: string | null;
+  description: string;
+  url: string;
+  likes: number | null;
+  views: number | null;
+  engagementScore: number;
+  publishedAt: string | null;
+  platform: 'tiktok';
+}
+
+// ─── BREAKOUT TYPES ─────────────────────────────────
+
+export interface BreakoutSignal {
+  topic: string;
+  breakoutScore: number;
+  velocityScore: number;
+  platformCoverage: number;
+  classification: BreakoutClassification;
+  evidence: BreakoutEvidence[];
+}
+
+export interface BreakoutEvidence {
+  platform: string;
+  metric: string;
+  currentValue: number;
+  baselineValue: number;
+  multiplier: number;
+}
+
+// ─── GOOGLE TRENDS TYPES ────────────────────────────
+
+export interface GoogleTrendsTopic {
+  title: string;
+  traffic: string | null;
+  articles: { title: string; url: string; source: string }[];
+  relatedQueries: string[];
+  platform: 'google_trends';
+}
+
+export interface TrendInterestPoint {
+  date: string;
+  value: number;
+}
+
+export interface TrendInterestData {
+  topic: string;
+  country: string;
+  timeframe: string;
+  interestOverTime: TrendInterestPoint[];
+  relatedTopics: { topic: string; value: number }[];
+  risingQueries: { query: string; growth: string }[];
+  breakoutDetected: boolean;
+  breakoutScore: number;
 }
 
 // ─── YOUTUBE TYPES ───────────────────────────────────
@@ -88,6 +149,8 @@ export interface ResearchResponse {
   topic: string;
   timeframe: string;
   patterns: TrendPattern[];
+  breakouts: BreakoutSignal[];
+  trend_interest?: TrendInterestData;
   sentiment: {
     overall: SentimentLabel;
     by_platform: Record<string, PlatformSentimentBreakdown>;

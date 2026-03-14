@@ -5,6 +5,10 @@
 
 import type { RedditPost } from '../scrapers/reddit';
 import type { WebResult, TrendingTopic } from '../scrapers/web';
+import type { YouTubeResult } from '../scrapers/youtube';
+import type { TwitterResult } from '../scrapers/twitter';
+import type { TikTokResult } from '../scrapers/tiktok';
+import type { GoogleTrendsTopic } from '../scrapers/google-trends';
 import type { SignalStrength, TrendPattern, PatternEvidence } from '../types/index';
 
 const STOPWORDS = new Set([
@@ -230,10 +234,159 @@ function classifyStrength(
   return 'emerging';
 }
 
+function youtubeEngagement(video: YouTubeResult): number {
+  return Math.max(10, video.engagementScore * 2 + (video.viewCount ? Math.log1p(video.viewCount) * 3 : 0));
+}
+
+function twitterEngagement(tweet: TwitterResult): number {
+  const likes = tweet.likes ?? 0;
+  const retweets = tweet.retweets ?? 0;
+  return Math.max(10, Math.log1p(likes) * 8 + Math.log1p(retweets) * 12 + tweet.engagementScore);
+}
+
+function tiktokEngagement(video: TikTokResult): number {
+  const likes = video.likes ?? 0;
+  const views = video.views ?? 0;
+  return Math.max(10, Math.log1p(likes) * 8 + Math.log1p(views) * 3 + video.engagementScore);
+}
+
+function extractYouTubeKeywords(
+  videos: YouTubeResult[],
+): Map<string, { weight: number; evidence: PatternEvidence[] }> {
+  const keywords = new Map<string, { weight: number; evidence: PatternEvidence[] }>();
+
+  for (const video of videos.slice(0, MAX_ITEMS_PER_PLATFORM)) {
+    const text = `${video.title} ${video.description}`;
+    const tokens = tokenizeText(text);
+    const bigrams = extractBigrams(tokens);
+    const allTerms = Array.from(new Set([...tokens, ...bigrams])).slice(0, MAX_TERMS_PER_TEXT);
+    const engagement = youtubeEngagement(video);
+
+    const evidence: PatternEvidence = {
+      platform: 'youtube',
+      title: video.title,
+      url: video.url,
+      engagement: Math.round(engagement),
+    };
+
+    for (const rawTerm of allTerms) {
+      const term = normalizeKeyword(rawTerm);
+      if (!term) continue;
+      addKeyword(keywords, term, engagement, evidence);
+    }
+  }
+
+  return keywords;
+}
+
+function extractTwitterKeywords(
+  tweets: TwitterResult[],
+): Map<string, { weight: number; evidence: PatternEvidence[] }> {
+  const keywords = new Map<string, { weight: number; evidence: PatternEvidence[] }>();
+
+  for (const tweet of tweets.slice(0, MAX_ITEMS_PER_PLATFORM)) {
+    const tokens = tokenizeText(tweet.text);
+    const bigrams = extractBigrams(tokens);
+    const allTerms = Array.from(new Set([...tokens, ...bigrams])).slice(0, MAX_TERMS_PER_TEXT);
+    const engagement = twitterEngagement(tweet);
+
+    const evidence: PatternEvidence = {
+      platform: 'twitter',
+      title: tweet.text.slice(0, 120),
+      url: tweet.url,
+      engagement: Math.round(engagement),
+    };
+
+    for (const rawTerm of allTerms) {
+      const term = normalizeKeyword(rawTerm);
+      if (!term) continue;
+      addKeyword(keywords, term, engagement, evidence);
+    }
+  }
+
+  return keywords;
+}
+
+function extractTikTokKeywords(
+  videos: TikTokResult[],
+): Map<string, { weight: number; evidence: PatternEvidence[] }> {
+  const keywords = new Map<string, { weight: number; evidence: PatternEvidence[] }>();
+
+  for (const video of videos.slice(0, MAX_ITEMS_PER_PLATFORM)) {
+    const tokens = tokenizeText(video.description);
+    const bigrams = extractBigrams(tokens);
+    const allTerms = Array.from(new Set([...tokens, ...bigrams])).slice(0, MAX_TERMS_PER_TEXT);
+    const engagement = tiktokEngagement(video);
+
+    const evidence: PatternEvidence = {
+      platform: 'tiktok',
+      title: video.description.slice(0, 120),
+      url: video.url,
+      engagement: Math.round(engagement),
+    };
+
+    for (const rawTerm of allTerms) {
+      const term = normalizeKeyword(rawTerm);
+      if (!term) continue;
+      addKeyword(keywords, term, engagement, evidence);
+    }
+  }
+
+  return keywords;
+}
+
+function extractGoogleTrendsKeywords(
+  topics: GoogleTrendsTopic[],
+): Map<string, { weight: number; evidence: PatternEvidence[] }> {
+  const keywords = new Map<string, { weight: number; evidence: PatternEvidence[] }>();
+
+  for (const topic of topics.slice(0, MAX_ITEMS_PER_PLATFORM)) {
+    let trafficWeight = 50;
+    if (topic.traffic) {
+      const m = topic.traffic.replace(/[+,]/g, '').match(/([\d.]+)\s*([KkMm]?)/);
+      if (m) {
+        let n = parseFloat(m[1]);
+        if (m[2]?.toLowerCase() === 'k') n *= 1000;
+        if (m[2]?.toLowerCase() === 'm') n *= 1_000_000;
+        trafficWeight = Math.log1p(Math.max(0, n)) * 5;
+      }
+    }
+
+    const tokens = tokenizeText(topic.title);
+    const bigrams = extractBigrams(tokens);
+    // Also include related queries as tokens
+    for (const rq of topic.relatedQueries) {
+      const rqTokens = tokenizeText(rq);
+      tokens.push(...rqTokens);
+    }
+    const allTerms = Array.from(new Set([...tokens, ...bigrams])).slice(0, MAX_TERMS_PER_TEXT);
+
+    const evidence: PatternEvidence = {
+      platform: 'google_trends',
+      title: topic.title,
+      url: topic.articles[0]?.url ?? '',
+      engagement: Math.round(trafficWeight),
+      source: 'Google Trends',
+    };
+
+    for (const rawTerm of allTerms) {
+      const term = normalizeKeyword(rawTerm);
+      if (!term) continue;
+      addKeyword(keywords, term, trafficWeight, evidence);
+    }
+  }
+
+  return keywords;
+}
+
 export interface PlatformData {
   reddit?: RedditPost[];
   web?: WebResult[];
   webTrending?: TrendingTopic[];
+  youtube?: YouTubeResult[];
+  twitter?: TwitterResult[];
+  tiktok?: TikTokResult[];
+  googleTrends?: GoogleTrendsTopic[];
 }
 
 export function detectPatterns(data: PlatformData): TrendPattern[] {
@@ -247,6 +400,18 @@ export function detectPatterns(data: PlatformData): TrendPattern[] {
   }
   if (data.webTrending && data.webTrending.length > 0) {
     platformMaps.push({ platform: 'web_trending', map: extractTrendingKeywords(data.webTrending) });
+  }
+  if (data.youtube && data.youtube.length > 0) {
+    platformMaps.push({ platform: 'youtube', map: extractYouTubeKeywords(data.youtube) });
+  }
+  if (data.twitter && data.twitter.length > 0) {
+    platformMaps.push({ platform: 'twitter', map: extractTwitterKeywords(data.twitter) });
+  }
+  if (data.tiktok && data.tiktok.length > 0) {
+    platformMaps.push({ platform: 'tiktok', map: extractTikTokKeywords(data.tiktok) });
+  }
+  if (data.googleTrends && data.googleTrends.length > 0) {
+    platformMaps.push({ platform: 'google_trends', map: extractGoogleTrendsKeywords(data.googleTrends) });
   }
 
   if (platformMaps.length === 0) return [];
@@ -296,9 +461,9 @@ export function detectPatterns(data: PlatformData): TrendPattern[] {
     const strength = classifyStrength(platformCount, signal.totalEngagement);
     const platformList = Array.from(signal.platforms).map((p) =>
       p === 'web_trending' ? 'web' : p,
-    ) as ('reddit' | 'web')[];
+    ) as ('reddit' | 'web' | 'youtube' | 'twitter' | 'tiktok' | 'google_trends')[];
 
-    const uniquePlatforms = Array.from(new Set(platformList)) as ('reddit' | 'web')[];
+    const uniquePlatforms = Array.from(new Set(platformList)) as ('reddit' | 'web' | 'youtube' | 'twitter' | 'tiktok' | 'google_trends')[];
 
     scored.push({
       pattern: signal.keyword,

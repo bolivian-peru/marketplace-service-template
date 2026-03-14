@@ -18,14 +18,19 @@ import { searchReddit } from '../scrapers/reddit';
 import { searchWeb, getTrendingWeb } from '../scrapers/web';
 import { searchYouTube, getYouTubeTrending } from '../scrapers/youtube';
 import { searchTwitter, getTwitterTrending } from '../scrapers/twitter';
+import { searchTikTok, getTikTokTrending } from '../scrapers/tiktok';
+import { getDailyTrends, analyzeTrendInterest } from '../scrapers/google-trends';
 import { aggregateSentiment } from '../analysis/sentiment';
 import { detectPatterns } from '../analysis/patterns';
+import { detectBreakouts, rankTrends } from '../analysis/breakout';
+import { recordSnapshot, getEngagementBaselines } from '../analysis/trend-store';
 import type {
   ResearchRequest,
   ResearchResponse,
   PlatformSentimentBreakdown,
   TopDiscussion,
   Platform,
+  BreakoutSignal,
 } from '../types/index';
 
 // Constants
@@ -36,8 +41,8 @@ const PRICE_SINGLE = 0.10;
 const PRICE_MULTI = 0.50;
 const PRICE_FULL = 1.00;
 
-const SUPPORTED_PLATFORMS: Platform[] = ['reddit', 'web', 'youtube', 'twitter'];
-const PLATFORM_ALIASES: Record<string, Platform> = { x: 'twitter', twitter: 'twitter' };
+const SUPPORTED_PLATFORMS: Platform[] = ['reddit', 'web', 'youtube', 'twitter', 'tiktok', 'google_trends'];
+const PLATFORM_ALIASES: Record<string, Platform> = { x: 'twitter', twitter: 'twitter', trends: 'google_trends', google: 'google_trends' };
 const DEFAULT_PLATFORMS: Platform[] = ['reddit', 'web'];
 
 const MAX_TOPIC_LENGTH = 200;
@@ -49,6 +54,8 @@ const MAX_WEB_RESULTS = 20;
 const MAX_TRENDING_RESULTS = 20;
 const MAX_YOUTUBE_RESULTS = 20;
 const MAX_TWITTER_RESULTS = 20;
+const MAX_TIKTOK_RESULTS = 20;
+const MAX_GOOGLE_TRENDS_RESULTS = 20;
 
 const RESEARCH_RATE_LIMIT_PER_MIN = Math.max(
   1,
@@ -58,20 +65,23 @@ const RATE_LIMIT_WINDOW_MS = 60_000;
 const rateLimits = new Map<string, { count: number; resetAt: number }>();
 
 const DESCRIPTION =
-  'Trend Intelligence API: cross-platform research synthesis with pattern detection and sentiment analysis. ' +
-  'Scrapes Reddit, web, YouTube, and Twitter/X simultaneously, finds cross-platform signals, returns structured intelligence report.';
+  'Trend Intelligence API: cross-platform research synthesis with pattern detection, sentiment analysis, and breakout detection. ' +
+  'Aggregates Reddit, web, YouTube, Twitter/X, TikTok, and Google Trends simultaneously. ' +
+  'Finds cross-platform signals, detects breakout trends, scores and ranks patterns, returns structured intelligence report.';
 
 const OUTPUT_SCHEMA = {
   input: {
     topic: 'string (required) - topic or keyword to research',
-    platforms: '("reddit" | "web" | "youtube" | "twitter" | "x")[] (optional, default: ["reddit", "web"])',
+    platforms: '("reddit" | "web" | "youtube" | "twitter" | "x" | "tiktok" | "google_trends")[] (optional, default: ["reddit", "web"])',
     days: 'number (optional, default: 30, max: 90)',
     country: 'string (optional, default: "US") - ISO country code',
   },
   output: {
     topic: 'string',
     timeframe: 'string',
-    patterns: 'TrendPattern[] - cross-platform signals with strength classification',
+    patterns: 'TrendPattern[] - cross-platform signals with strength classification and trend scores',
+    breakouts: 'BreakoutSignal[] - detected trend breakouts with velocity and classification',
+    trend_interest: 'TrendInterestData - Google Trends interest-over-time data with breakout detection',
     sentiment: '{ overall, by_platform: Record<platform, { positive%, neutral%, negative% }> }',
     top_discussions: 'TopDiscussion[] - highest-engagement posts across platforms',
     emerging_topics: 'string[] - single-platform high-engagement signals',
@@ -80,7 +90,7 @@ const OUTPUT_SCHEMA = {
   pricing: {
     single_platform: '$0.10 USDC',
     cross_platform: '$0.50 USDC (2-3 platforms)',
-    full_report: '$1.00 USDC (4 platforms)',
+    full_report: '$1.00 USDC (4+ platforms)',
   },
 };
 
@@ -299,6 +309,10 @@ researchRouter.post('/', async (c) => {
     platforms.includes('youtube') ? getYouTubeTrending(country, MAX_TRENDING_RESULTS) : Promise.resolve([]),
     platforms.includes('twitter') ? searchTwitter(topic, days, MAX_TWITTER_RESULTS) : Promise.resolve([]),
     platforms.includes('twitter') ? getTwitterTrending(country, MAX_TRENDING_RESULTS) : Promise.resolve([]),
+    platforms.includes('tiktok') ? searchTikTok(topic, days, MAX_TIKTOK_RESULTS) : Promise.resolve([]),
+    platforms.includes('tiktok') ? getTikTokTrending(country, MAX_TRENDING_RESULTS) : Promise.resolve([]),
+    platforms.includes('google_trends') ? getDailyTrends(country, MAX_GOOGLE_TRENDS_RESULTS) : Promise.resolve([]),
+    platforms.includes('google_trends') ? analyzeTrendInterest(topic, country, days) : Promise.resolve(null),
   ]);
 
   const redditPosts = scrapeResults[0].status === 'fulfilled' ? scrapeResults[0].value : [];
@@ -307,8 +321,11 @@ researchRouter.post('/', async (c) => {
   const youtubeResults = scrapeResults[3].status === 'fulfilled' ? scrapeResults[3].value : [];
   const youtubeTrending = scrapeResults[4].status === 'fulfilled' ? scrapeResults[4].value : [];
   const twitterResults = scrapeResults[5].status === 'fulfilled' ? scrapeResults[5].value : [];
-  // twitterTrending is fetched but merged into twitterResults for pattern detection
   const twitterTrending = scrapeResults[6].status === 'fulfilled' ? scrapeResults[6].value : [];
+  const tiktokResults = scrapeResults[7].status === 'fulfilled' ? scrapeResults[7].value : [];
+  const tiktokTrending = scrapeResults[8].status === 'fulfilled' ? scrapeResults[8].value : [];
+  const googleTrendsTopics = scrapeResults[9].status === 'fulfilled' ? scrapeResults[9].value : [];
+  const trendInterest = scrapeResults[10].status === 'fulfilled' ? scrapeResults[10].value : null;
 
   for (const result of scrapeResults) {
     if (result.status === 'rejected') {
@@ -339,11 +356,24 @@ researchRouter.post('/', async (c) => {
     sentimentByPlatform.twitter = aggregateSentiment(texts);
   }
 
+  const allTikTok = [...tiktokResults, ...tiktokTrending];
+  if (allTikTok.length > 0) {
+    const texts = allTikTok.map((t) => t.description.slice(0, 500));
+    sentimentByPlatform.tiktok = aggregateSentiment(texts);
+  }
+
+  if (googleTrendsTopics.length > 0) {
+    const texts = googleTrendsTopics.map((t) => `${t.title} ${t.articles.map(a => a.title).join(' ')}`.slice(0, 500));
+    sentimentByPlatform.google_trends = aggregateSentiment(texts);
+  }
+
   const allTexts = [
     ...redditPosts.map((p) => `${p.title.slice(0, 300)} ${p.selftext.slice(0, 1000)}`),
     ...webResults.map((r) => `${r.title.slice(0, 300)} ${r.snippet.slice(0, 1000)}`),
     ...youtubeResults.map((v) => `${v.title.slice(0, 300)} ${v.description.slice(0, 1000)}`),
     ...allTwitter.map((t) => t.text.slice(0, 500)),
+    ...allTikTok.map((t) => t.description.slice(0, 500)),
+    ...googleTrendsTopics.map((t) => t.title.slice(0, 300)),
   ];
   const overallSentiment = aggregateSentiment(allTexts);
 
@@ -351,6 +381,38 @@ researchRouter.post('/', async (c) => {
     reddit: redditPosts,
     web: webResults,
     webTrending,
+    youtube: youtubeResults,
+    twitter: allTwitter,
+    tiktok: allTikTok,
+    googleTrends: googleTrendsTopics,
+  });
+
+  // Breakout detection
+  const patternTopics = patterns.map(p => p.pattern);
+  const baselines = getEngagementBaselines(patternTopics);
+  const breakouts = detectBreakouts(patterns, baselines);
+
+  // Rank trends with composite scoring
+  const rankedTrends = rankTrends(patterns, breakouts);
+  for (const ranked of rankedTrends) {
+    ranked.pattern.trendScore = ranked.score;
+  }
+
+  // Record snapshots for historical tracking
+  const platformEngagement: Record<string, number> = {};
+  if (redditPosts.length > 0) platformEngagement.reddit = redditPosts.reduce((s, p) => s + p.score, 0);
+  if (webResults.length > 0) platformEngagement.web = webResults.length * 20;
+  if (youtubeResults.length > 0) platformEngagement.youtube = youtubeResults.reduce((s, v) => s + v.engagementScore, 0);
+  if (allTwitter.length > 0) platformEngagement.twitter = allTwitter.reduce((s, t) => s + t.engagementScore, 0);
+  if (allTikTok.length > 0) platformEngagement.tiktok = allTikTok.reduce((s, t) => s + t.engagementScore, 0);
+
+  recordSnapshot({
+    topic,
+    timestamp: Date.now(),
+    platforms: Object.keys(platformEngagement),
+    totalEngagement: Object.values(platformEngagement).reduce((s, v) => s + v, 0),
+    platformEngagement,
+    sentimentScore: overallSentiment.overall === 'positive' ? 0.5 : overallSentiment.overall === 'negative' ? -0.5 : 0,
   });
 
   const topDiscussions: TopDiscussion[] = [
@@ -394,6 +456,24 @@ researchRouter.post('/', async (c) => {
         url: t.url,
         engagement: Math.round(t.engagementScore),
       })),
+    ...allTikTok
+      .slice()
+      .sort((a, b) => b.engagementScore - a.engagementScore)
+      .slice(0, 3)
+      .map((t) => ({
+        platform: 'tiktok',
+        title: t.description.slice(0, 120),
+        url: t.url,
+        engagement: Math.round(t.engagementScore),
+      })),
+    ...googleTrendsTopics
+      .slice(0, 3)
+      .map((t) => ({
+        platform: 'google_trends',
+        title: t.title,
+        url: t.articles[0]?.url ?? '',
+        engagement: 0,
+      })),
   ]
     .sort((a, b) => b.engagement - a.engagement)
     .slice(0, 10);
@@ -404,13 +484,17 @@ researchRouter.post('/', async (c) => {
   const sourcesChecked =
     redditPosts.length + webResults.length + webTrending.length +
     youtubeResults.length + youtubeTrending.length +
-    twitterResults.length + twitterTrending.length;
+    twitterResults.length + twitterTrending.length +
+    tiktokResults.length + tiktokTrending.length +
+    googleTrendsTopics.length;
 
   const platformsUsed = [
     redditPosts.length > 0 ? 'reddit' : null,
     webResults.length > 0 || webTrending.length > 0 ? 'web' : null,
     youtubeResults.length > 0 || youtubeTrending.length > 0 ? 'youtube' : null,
     allTwitter.length > 0 ? 'twitter' : null,
+    allTikTok.length > 0 ? 'tiktok' : null,
+    googleTrendsTopics.length > 0 ? 'google_trends' : null,
   ].filter(Boolean) as string[];
 
   c.header('X-Payment-Settled', 'true');
@@ -420,6 +504,8 @@ researchRouter.post('/', async (c) => {
     topic,
     timeframe: `last ${days} days`,
     patterns,
+    breakouts,
+    ...(trendInterest ? { trend_interest: trendInterest } : {}),
     sentiment: {
       overall: overallSentiment.overall,
       by_platform: sentimentByPlatform,
