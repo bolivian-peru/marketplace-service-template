@@ -21,11 +21,12 @@ import { scrapeGoogleMaps, extractDetailedBusiness } from './scrapers/maps-scrap
 import { researchRouter } from './routes/research';
 import { trendingRouter } from './routes/trending';
 import { searchAirbnb, getListingDetail, getListingReviews, getMarketStats } from './scrapers/airbnb-scraper';
-import { 
-  scrapeLinkedInPerson, 
-  scrapeLinkedInCompany, 
-  searchLinkedInPeople, 
-  findCompanyEmployees 
+import {
+  scrapeLinkedInPerson,
+  scrapeLinkedInCompany,
+  searchLinkedInPeople,
+  findCompanyEmployees,
+  searchLinkedInJobs
 } from './scrapers/linkedin-enrichment';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
@@ -794,6 +795,65 @@ serviceRouter.get('/linkedin/company/:id/employees', async (c) => {
     });
   } catch (err: any) {
     return c.json({ error: 'Employee search failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/linkedin/jobs ────────────────────────
+serviceRouter.get('/linkedin/jobs', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) {
+    return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+  }
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(
+      build402Response('/api/linkedin/jobs', 'LinkedIn Job Posting Search', LINKEDIN_SEARCH_PRICE_USDC, walletAddress, {
+        input: {
+          keywords: 'string — Job title or keywords (required)',
+          location: 'string — Location filter (optional)',
+          company: 'string — Company name filter (optional)',
+          limit: 'number — Max results (default: 10, max: 20)'
+        },
+        output: { jobs: 'LinkedInJobPosting[] — title, company, location, description, posted_date, job_url', meta: 'proxy info' },
+      }),
+      402,
+    );
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, LINKEDIN_SEARCH_PRICE_USDC);
+  if (!verification.valid) {
+    return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+  }
+
+  const keywords = c.req.query('keywords');
+  if (!keywords) {
+    return c.json({ error: 'Missing required parameter: keywords', example: '/api/linkedin/jobs?keywords=software+engineer&location=New+York' }, 400);
+  }
+
+  const location = c.req.query('location') || undefined;
+  const company = c.req.query('company') || undefined;
+  const limit = Math.min(Math.max(parseInt(c.req.query('limit') || '10') || 10, 1), 20);
+
+  try {
+    const proxy = getProxy();
+    const jobs = await searchLinkedInJobs(keywords, location, company, limit);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      jobs,
+      meta: { proxy: { country: proxy.country, type: 'mobile' } },
+      payment: {
+        txHash: payment.txHash,
+        network: payment.network,
+        amount: verification.amount,
+        settled: true,
+      },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Job search failed', message: err?.message || String(err) }, 502);
   }
 });
 
