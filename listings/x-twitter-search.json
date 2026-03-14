@@ -1,0 +1,43 @@
+{
+  "id": "x-twitter-realtime-search",
+  "name": "X/Twitter Real-Time Search API",
+  "description": "Search tweets by keyword/hashtag, fetch regional trending topics, profile enrichment, and thread extraction via mobile proxy routing.",
+  "endpoint": "https://marketplace-service-template-production.up.railway.app/api/x",
+  "docsUrl": "https://github.com/bolivian-peru/marketplace-service-template",
+  "category": "scraper",
+  "tags": [
+    "twitter",
+    "x",
+    "social-intelligence",
+    "real-time",
+    "thread-extraction",
+    "mobile-proxy"
+  ],
+  "pricing": {
+    "search": "0.01 USDC",
+    "trending": "0.005 USDC",
+    "profile": "0.01 USDC",
+    "thread": "0.02 USDC"
+  },
+  "routes": [
+    "/api/x/search",
+    "/api/x/trending",
+    "/api/x/user/:handle",
+    "/api/x/user/:handle/tweets",
+    "/api/x/thread/:tweet_id"
+  ],
+  "networks": {
+    "solana": {
+      "asset": "USDC",
+      "recipient": "${WALLET_ADDRESS}"
+    },
+    "base": {
+      "asset": "USDC",
+      "recipient": "${WALLET_ADDRESS_BASE}"
+    }
+  },
+  "owner": {
+    "name": "Samfresh",
+    "github": "Samfresh-ai"
+  }
+}

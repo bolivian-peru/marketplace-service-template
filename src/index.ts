@@ -9,6 +9,9 @@ import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { serviceRouter } from './service';
 
+const SERVICE_NAME = 'x-twitter-realtime-search';
+const SERVICE_DESCRIPTION = 'X/Twitter Real-Time Search API';
+
 const app = new Hono();
 
 // ─── MIDDLEWARE ──────────────────────────────────────
@@ -63,7 +66,7 @@ setInterval(() => {
 
 app.get('/health', (c) => c.json({
   status: 'healthy',
-  service: process.env.SERVICE_NAME || 'marketplace-service',
+  service: SERVICE_NAME,
   version: '2.0.0',
   timestamp: new Date().toISOString(),
   endpoints: [
@@ -98,8 +101,8 @@ app.get('/health', (c) => c.json({
 }));
 
 app.get('/', (c) => c.json({
-  name: process.env.SERVICE_NAME || 'marketplace-service-hub',
-  description: process.env.SERVICE_DESCRIPTION || 'AI agent intelligence services powered by real 4G/5G mobile proxies.',
+  name: SERVICE_NAME,
+  description: SERVICE_DESCRIPTION,
   version: '2.0.0',
   endpoints: [
     { method: 'GET', path: '/api/run', description: 'Google Maps Lead Generator — search businesses by category + location', price: '0.005 USDC' },
