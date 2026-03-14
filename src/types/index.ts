@@ -326,3 +326,55 @@ export interface ReviewSearchResponse {
   businesses: BusinessInfo[];
   totalFound: number;
 }
+
+// ─── FACEBOOK MARKETPLACE TYPES (Bounty #75) ───────
+
+export interface FBMarketplaceListing {
+  id: string;
+  title: string;
+  price: number | null;
+  currency: string;
+  location: string | null;
+  image_url: string | null;
+  url: string;
+  condition: string | null;
+  category: string | null;
+  date_listed: string | null;
+  description: string | null;
+  is_shipping_available: boolean;
+}
+
+export interface FBSellerProfile {
+  id: string | null;
+  name: string;
+  profile_url: string | null;
+  joined_date: string | null;
+  location: string | null;
+  rating: number | null;
+  response_rate: string | null;
+  is_verified: boolean;
+  listings_count: number | null;
+  badges: string[];
+}
+
+export interface FBDealScore {
+  listing_id: string;
+  title: string;
+  price: number | null;
+  score: number;
+  rating: string;
+  factors: { name: string; score: number; weight: number; detail: string }[];
+  url: string;
+}
+
+export interface FBPriceAlert {
+  listing_id: string;
+  title: string;
+  current_price: number | null;
+  target_price: number;
+  currency: string;
+  url: string;
+  below_target: boolean;
+  price_diff: number | null;
+  price_diff_pct: number | null;
+}
