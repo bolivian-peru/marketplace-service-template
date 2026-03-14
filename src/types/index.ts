@@ -326,3 +326,144 @@ export interface ReviewSearchResponse {
   businesses: BusinessInfo[];
   totalFound: number;
 }
+
+// ─── GOOGLE DISCOVER FEED INTELLIGENCE TYPES ────────
+
+export interface DiscoverFeedItem {
+  title: string;
+  url: string;
+  source: string | null;
+  sourceUrl: string | null;
+  publishedAt: string | null;
+  description: string | null;
+  topic: string;
+  freshnessScore: number;
+  eligibilitySignals: {
+    score: number;
+    factors: string[];
+  };
+}
+
+export interface DiscoverTopicCluster {
+  topic: string;
+  articleCount: number;
+  articles: {
+    title: string;
+    url: string;
+    source: string | null;
+    publishedAt: string | null;
+  }[];
+  avgFreshnessScore: number;
+  avgEligibilityScore: number;
+  sources: string[];
+  velocity: 'rising' | 'stable' | 'declining';
+}
+
+export interface DiscoverPerformanceEstimate {
+  url: string;
+  title: string;
+  siteName: string;
+  overallScore: number;
+  signals: {
+    factor: string;
+    score: number;
+    weight: number;
+  }[];
+  recommendation: string;
+  improvements: string[];
+  metadata: {
+    hasStructuredData: boolean;
+    hasAmpVersion: boolean;
+    hasMobileViewport: boolean;
+    hasLargeImage: boolean;
+    imageOptimal: boolean;
+    ogComplete: boolean;
+    publishDate: string | null;
+    type: string;
+  };
+}
+
+export interface DiscoverTrendSignal {
+  topic: string;
+  traffic: string | null;
+  velocity: number;
+  publishedAt: string | null;
+  trendUrl: string | null;
+  description: string | null;
+  relatedArticles: {
+    title: string;
+    url: string;
+    source: string;
+  }[];
+  source: string;
+  detectedAt: string;
+}
+
+export interface DiscoverFeedResponse {
+  topics: string[];
+  items: DiscoverFeedItem[];
+  clusters: DiscoverTopicCluster[];
+  topSources: { source: string; count: number }[];
+  avgEligibilityScore: number;
+  meta: {
+    proxy: { ip: string | null; country: string; type: string };
+    generated_at: string;
+  };
+  payment: {
+    txHash: string;
+    network: string;
+    amount: number;
+    settled: boolean;
+  };
+}
+
+export interface DiscoverTrendingResponse {
+  country: string;
+  category: string;
+  trends: DiscoverTrendSignal[];
+  clusters: DiscoverTopicCluster[];
+  emergingTopics: string[];
+  meta: {
+    totalSignals: number;
+    clusterCount: number;
+    topCategories: string[];
+    proxy: { ip: string | null; country: string; type: string };
+    generated_at: string;
+  };
+  payment: {
+    txHash: string;
+    network: string;
+    amount: number;
+    settled: boolean;
+  };
+}
+
+export interface DiscoverAnalyzeResponse extends DiscoverPerformanceEstimate {
+  meta: {
+    proxy: { ip: string | null; country: string; type: string };
+    generated_at: string;
+  };
+  payment: {
+    txHash: string;
+    network: string;
+    amount: number;
+    settled: boolean;
+  };
+}
+
+export interface DiscoverTopicsResponse {
+  query: string;
+  articles: DiscoverFeedItem[];
+  clusters: DiscoverTopicCluster[];
+  topSources: { source: string; count: number }[];
+  meta: {
+    proxy: { ip: string | null; country: string; type: string };
+    generated_at: string;
+  };
+  payment: {
+    txHash: string;
+    network: string;
+    amount: number;
+    settled: boolean;
+  };
+}
