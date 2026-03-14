@@ -326,3 +326,7 @@ export interface ReviewSearchResponse {
   businesses: BusinessInfo[];
   totalFound: number;
 }
+
+// ─── ZILLOW REAL ESTATE TYPES (Bounty #79) ─────────
+
+export type { ZillowProperty, ZillowPropertyDetail, ZillowComparable, ZillowMarketTrends, NeighborhoodStats, ZestimateData } from '../scrapers/zillow-scraper';
