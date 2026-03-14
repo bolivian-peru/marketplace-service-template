@@ -59,6 +59,18 @@ export interface LinkedInSearchResult {
   profile_url: string;
 }
 
+// Job posting interface
+export interface LinkedInJobPosting {
+  title: string;
+  company: string;
+  location: string;
+  description: string;
+  employment_type?: string;
+  seniority_level?: string;
+  posted_date?: string;
+  job_url: string;
+}
+
 // Extract username from LinkedIn URL
 function extractUsername(url: string): string | null {
   const match = url.match(/linkedin\.com\/in\/([^\/\?]+)/);
@@ -348,6 +360,111 @@ export async function scrapeLinkedInPerson(username: string): Promise<LinkedInPe
 export async function scrapeLinkedInCompany(companyName: string): Promise<LinkedInCompany | null> {
   const url = `https://linkedin.com/company/${companyName}`;
   return fetchLinkedInCompany(url);
+}
+
+// Search LinkedIn job postings using Google
+export async function searchLinkedInJobs(
+  keywords: string,
+  location?: string,
+  companyName?: string,
+  limit: number = 10
+): Promise<LinkedInJobPosting[]> {
+  try {
+    let query = `site:linkedin.com/jobs/view "${keywords}"`;
+    if (location) query += ` "${location}"`;
+    if (companyName) query += ` "${companyName}"`;
+
+    const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}&num=${limit * 2}`;
+
+    const response = await proxyFetch(searchUrl, {
+      headers: {
+        'Accept': 'text/html,application/xhtml+xml',
+        'Accept-Language': 'en-US,en;q=0.9',
+      },
+      timeoutMs: 30_000,
+      maxRetries: 2,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Job search failed: ${response.status}`);
+    }
+
+    const html = await response.text();
+    return parseJobSearchResults(html, limit);
+  } catch (error: any) {
+    console.error('Error searching LinkedIn jobs:', error.message);
+    return [];
+  }
+}
+
+// Parse Google search results for LinkedIn job postings
+function parseJobSearchResults(html: string, limit: number): LinkedInJobPosting[] {
+  const results: LinkedInJobPosting[] = [];
+
+  try {
+    // Match LinkedIn job URLs from Google results
+    const linkRegex = /<a[^>]*href="(https:\/\/[^"]*linkedin\.com\/jobs\/view\/[^"]+)"[^>]*>/gi;
+    const snippetRegex = /<div[^>]*class="[^"]*VwiC3b[^"]*"[^>]*>([\s\S]*?)<\/div>/gi;
+    const titleRegex = /<h3[^>]*>(.*?)<\/h3>/gi;
+
+    const links: string[] = [];
+    let match;
+
+    while ((match = linkRegex.exec(html)) !== null && links.length < limit * 2) {
+      const url = match[1].replace(/&amp;/g, '&');
+      if (!links.includes(url)) links.push(url);
+    }
+
+    const titles: string[] = [];
+    while ((match = titleRegex.exec(html)) !== null && titles.length < limit * 2) {
+      titles.push(
+        match[1]
+          .replace(/<[^>]+>/g, '')
+          .replace(/&#39;/g, "'")
+          .replace(/&quot;/g, '"')
+          .replace(/&amp;/g, '&')
+          .trim()
+      );
+    }
+
+    const snippets: string[] = [];
+    while ((match = snippetRegex.exec(html)) !== null && snippets.length < limit * 2) {
+      snippets.push(
+        match[1]
+          .replace(/<[^>]+>/g, '')
+          .replace(/&#39;/g, "'")
+          .replace(/&quot;/g, '"')
+          .replace(/&amp;/g, '&')
+          .trim()
+      );
+    }
+
+    for (let i = 0; i < Math.min(links.length, limit); i++) {
+      const rawTitle = titles[i] || '';
+      // LinkedIn job titles typically: "Job Title - Company | LinkedIn"
+      const titleParts = rawTitle.split(/\s*[-|]\s*/);
+      const jobTitle = titleParts[0] || 'Unknown Position';
+      const company = titleParts[1] || '';
+
+      const snippet = snippets[i] || '';
+      // Try to extract location from snippet
+      const locMatch = snippet.match(/(?:in\s+|Location:\s*)([A-Z][^.·,]+(?:,\s*[A-Z]{2})?)/);
+      const dateMatch = snippet.match(/(\d+\s+(?:day|week|month|hour)s?\s+ago)/i);
+
+      results.push({
+        title: jobTitle.trim(),
+        company: company.replace(/\s*\|\s*LinkedIn.*$/i, '').trim(),
+        location: locMatch?.[1]?.trim() || '',
+        description: snippet.slice(0, 300),
+        posted_date: dateMatch?.[1] || undefined,
+        job_url: links[i],
+      });
+    }
+  } catch (error) {
+    console.error('Error parsing job search results:', error);
+  }
+
+  return results;
 }
 
 export { searchCompanyEmployees as findCompanyEmployees };

@@ -35,6 +35,13 @@
       "price": 0.10,
       "description": "Find employees of a company by title filter",
       "params": ["id", "title?", "limit?"]
+    },
+    {
+      "path": "/api/linkedin/jobs",
+      "method": "GET",
+      "price": 0.10,
+      "description": "Search LinkedIn job postings by keywords, location, and company",
+      "params": ["keywords", "location?", "company?", "limit?"]
     }
   ],
   "wallet": "6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv",
