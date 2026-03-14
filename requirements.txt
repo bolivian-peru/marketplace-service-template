@@ -1,0 +1,16 @@
+# YouTube Transcript Scraper
+# Pure Python implementation - no external dependencies required!
+# All functionality uses Python standard library only.
+
+# Optional dependencies for production deployment:
+# requests>=2.28.0        # Alternative HTTP client (not required)
+# flask>=2.0.0            # Alternative web framework (not required)
+
+# Amazon BSR Tracker Dependencies
+fastapi>=0.109.0
+uvicorn>=0.27.0
+httpx>=0.26.0
+beautifulsoup4>=4.12.0
+lxml>=5.1.0
+pydantic>=2.0.0
+requests>=2.31.0

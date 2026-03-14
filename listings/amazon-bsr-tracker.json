@@ -1,0 +1,108 @@
+{
+  "name": "Amazon BSR Tracker",
+  "description": "Real-time Amazon product data extraction API with Best Seller Rank (BSR), price, reviews, and buy box data. Supports US, UK, DE, FR, ES, IT marketplaces via mobile proxies.",
+  "version": "1.0.0",
+  "category": "ecommerce",
+  "tags": ["amazon", "bsr", "ecommerce", "product-data", "price-tracking"],
+  "endpoints": [
+    {
+      "method": "GET",
+      "path": "/api/amazon/product/:asin",
+      "description": "Get product details by ASIN including price, BSR, reviews, buy box",
+      "params": {
+        "asin": "Amazon ASIN (e.g., B0BSHF7WHW)",
+        "marketplace": "US, UK, DE, FR, ES, IT (default: US)"
+      },
+      "price": "0.005 USDC"
+    },
+    {
+      "method": "GET",
+      "path": "/api/amazon/search",
+      "description": "Search products by keyword with optional category filter",
+      "params": {
+        "query": "Search keyword",
+        "category": "Optional category filter",
+        "marketplace": "US, UK, DE, FR, ES, IT (default: US)"
+      },
+      "price": "0.01 USDC"
+    },
+    {
+      "method": "GET",
+      "path": "/api/amazon/bestsellers",
+      "description": "Get bestsellers in a category",
+      "params": {
+        "category": "Category (electronics, books, home, toys, clothing)",
+        "marketplace": "US, UK, DE, FR, ES, IT (default: US)"
+      },
+      "price": "0.01 USDC"
+    },
+    {
+      "method": "GET",
+      "path": "/api/amazon/reviews/:asin",
+      "description": "Get product reviews with ratings",
+      "params": {
+        "asin": "Amazon ASIN",
+        "sort": "recent or helpful (default: recent)",
+        "limit": "Number of reviews (default: 10)",
+        "marketplace": "US, UK, DE, FR, ES, IT (default: US)"
+      },
+      "price": "0.02 USDC"
+    },
+    {
+      "method": "GET",
+      "path": "/x402/info",
+      "description": "Get x402 payment protocol information",
+      "price": "free"
+    },
+    {
+      "method": "GET",
+      "path": "/health",
+      "description": "Health check endpoint",
+      "price": "free"
+    }
+  ],
+  "pricing": {
+    "model": "pay-per-request",
+    "currency": "USDC",
+    "rates": {
+      "product_lookup": 0.005,
+      "search_query": 0.01,
+      "bestsellers": 0.01,
+      "reviews_fetch": 0.02
+    }
+  },
+  "payment": {
+    "protocol": "x402",
+    "version": "1.0",
+    "networks": ["base", "ethereum"],
+    "usdc_address": "0xd10A6AbFED84dDD28F89bB3d836BD20D5da8fEBf"
+  },
+  "tech_stack": {
+    "language": "Python 3.10+",
+    "framework": "FastAPI",
+    "scraping": ["httpx", "BeautifulSoup4", "lxml"],
+    "proxy": "Proxies.sx mobile proxies"
+  },
+  "features": [
+    "Real-time Amazon product data",
+    "Best Seller Rank (BSR) extraction",
+    "Price tracking with discount detection",
+    "Buy box winner identification",
+    "Review count and rating",
+    "Multi-marketplace support (6 regions)",
+    "Mobile proxy rotation",
+    "CAPTCHA handling with retry logic",
+    "x402 micropayment integration"
+  ],
+  "use_cases": [
+    "Competitor price monitoring",
+    "BSR tracking for sellers",
+    "Product research",
+    "Market analysis",
+    "Dynamic pricing optimization"
+  ],
+  "repository": "https://github.com/bolivian-peru/marketplace-service-template",
+  "bounty": "https://github.com/bolivian-peru/marketplace-service-template/issues/72",
+  "author": "niuma",
+  "license": "MIT"
+}
