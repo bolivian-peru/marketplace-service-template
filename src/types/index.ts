@@ -132,6 +132,48 @@ export interface TrendingResponse {
   };
 }
 
+// ─── PREDICTION MARKET TYPES (Bounty #55) ───────────
+
+export interface PredictionMarketOdds {
+  yes: number;
+  no: number;
+  volume24h: number | null;
+  liquidity: number | null;
+}
+
+export interface PredictionSignalResponse {
+  type: 'signal' | 'arbitrage' | 'sentiment' | 'trending';
+  market?: string;
+  topic?: string;
+  timestamp: string;
+  odds?: {
+    polymarket: PredictionMarketOdds | null;
+    kalshi: PredictionMarketOdds | null;
+    metaculus: { median: number; forecasters: number | null } | null;
+  };
+  sentiment?: {
+    twitter: PredictionSentimentBreakdown | null;
+    reddit: PredictionSentimentBreakdown | null;
+  };
+  signals?: {
+    arbitrage: { detected: boolean; spread: number; direction: string; confidence: number };
+    sentimentDivergence: { detected: boolean; description: string; magnitude: string };
+    volumeSpike: { detected: boolean; platform?: string; volume24h?: number; description?: string };
+  };
+  proxy: { country: string; type: string };
+  payment: { txHash: string; network: string; amount: number; settled: boolean };
+}
+
+export interface PredictionSentimentBreakdown {
+  positive: number;
+  negative: number;
+  neutral: number;
+  volume: number;
+  trending: boolean;
+  topTweets?: { text: string; likes: number | null; retweets: number | null; author: string | null; timestamp: string | null }[];
+  topSubreddits?: string[];
+}
+
 // ─── GOOGLE MAPS TYPES ──────────────────────────────
 
 export interface BusinessData {
