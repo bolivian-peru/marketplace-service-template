@@ -10,6 +10,7 @@
  *   GET /api/reddit/*  (Reddit Intelligence)
  *   GET /api/instagram/* (Instagram Intelligence + AI Vision)
  *   GET /api/linkedin/* (LinkedIn Enrichment)
+ *   GET /api/food/*    (Food Delivery Price Intelligence)
  */
 
 import { Hono } from 'hono';
@@ -29,6 +30,13 @@ import {
 } from './scrapers/linkedin-enrichment';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
+import {
+  searchRestaurants,
+  getRestaurantDetail,
+  comparePrices,
+  analyzeDeliveryFees,
+  aggregateRatings
+} from './scrapers/food-delivery-scraper';
 
 export const serviceRouter = new Hono();
 
@@ -1484,5 +1492,239 @@ serviceRouter.get('/serp', async (c) => {
     });
   } catch (err: any) {
     return c.json({ error: 'SERP scrape failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── FOOD DELIVERY PRICE INTELLIGENCE API (Bounty #76) ──
+// ═══════════════════════════════════════════════════════
+
+const FOOD_SEARCH_PRICE = 0.02;
+const FOOD_DETAIL_PRICE = 0.01;
+const FOOD_COMPARE_PRICE = 0.05;
+const FOOD_FEES_PRICE = 0.03;
+const FOOD_RATINGS_PRICE = 0.02;
+
+// ─── GET /api/food/search ──────────────────────────
+
+serviceRouter.get('/food/search', async (c) => {
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/food/search', 'Search restaurants by location and cuisine across DoorDash, Uber Eats, Grubhub. Returns pricing, ratings, delivery fees, and estimated times.', FOOD_SEARCH_PRICE, walletAddress, {
+      input: {
+        location: 'string (required) — city, neighborhood, or address',
+        cuisine: 'string (optional) — cuisine type filter (e.g. pizza, sushi, mexican)',
+        platforms: 'string (optional) — comma-separated: doordash,ubereats,grubhub (default: all)',
+        limit: 'number (optional, default: 20, max: 50)',
+      },
+      output: {
+        restaurants: 'FoodRestaurant[] — id, name, cuisine, rating, review_count, delivery_fee, delivery_time, price_level, offers',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, FOOD_SEARCH_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const location = c.req.query('location');
+  if (!location) return c.json({ error: 'Missing required parameter: location' }, 400);
+
+  const cuisine = c.req.query('cuisine') || undefined;
+  const platformsParam = c.req.query('platforms') || 'doordash,ubereats,grubhub';
+  const platforms = platformsParam.split(',').map(p => p.trim().toLowerCase());
+  const limit = Math.min(Math.max(parseInt(c.req.query('limit') || '20') || 20, 1), 50);
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const results = await searchRestaurants(location, cuisine, platforms, limit);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      restaurants: results,
+      meta: { location, cuisine: cuisine || null, platforms, count: results.length, proxy: { ip, country: proxy.country, type: 'mobile' } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Food delivery search failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/food/restaurant/:platform/:id ────────
+
+serviceRouter.get('/food/restaurant/:platform/:id', async (c) => {
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/food/restaurant/:platform/:id', 'Get detailed restaurant info including full menu with prices, delivery fees, service fees, hours, and more.', FOOD_DETAIL_PRICE, walletAddress, {
+      input: {
+        platform: 'string (required, in URL path) — doordash, ubereats, or grubhub',
+        id: 'string (required, in URL path) — restaurant/store slug or ID',
+      },
+      output: {
+        restaurant: 'RestaurantDetail — name, menu_items[], delivery_fee, service_fee, hours, rating, cuisine, offers',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, FOOD_DETAIL_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const platform = c.req.param('platform');
+  const storeId = c.req.param('id');
+  if (!platform || !storeId) return c.json({ error: 'Missing platform or restaurant ID' }, 400);
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const detail = await getRestaurantDetail(platform, storeId);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      restaurant: detail,
+      meta: { platform, store_id: storeId, menu_items_count: detail.menu_items.length, proxy: { ip, country: proxy.country, type: 'mobile' } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Restaurant detail fetch failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/food/compare ─────────────────────────
+
+serviceRouter.get('/food/compare', async (c) => {
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/food/compare', 'Compare menu item prices across DoorDash, Uber Eats, and Grubhub including delivery fees and estimated totals. Identifies best value.', FOOD_COMPARE_PRICE, walletAddress, {
+      input: {
+        restaurant: 'string (required) — restaurant name to compare',
+        location: 'string (required) — delivery location',
+        item: 'string (optional) — specific menu item to compare (default: compares popular items)',
+      },
+      output: {
+        comparisons: 'PriceComparison[] — item_name, prices per platform, best_value, price_spread',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, FOOD_COMPARE_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const restaurant = c.req.query('restaurant');
+  const location = c.req.query('location');
+  if (!restaurant || !location) return c.json({ error: 'Missing required parameters: restaurant, location' }, 400);
+
+  const item = c.req.query('item') || undefined;
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const comparisons = await comparePrices(restaurant, location, item);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      comparisons,
+      meta: { restaurant, location, item: item || null, platforms_compared: ['doordash', 'ubereats', 'grubhub'], proxy: { ip, country: proxy.country, type: 'mobile' } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Price comparison failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/food/fees ────────────────────────────
+
+serviceRouter.get('/food/fees', async (c) => {
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/food/fees', 'Analyze delivery fee distribution across restaurants in a location. Returns avg, median, min/max fees and free delivery percentage.', FOOD_FEES_PRICE, walletAddress, {
+      input: {
+        location: 'string (required) — city or area to analyze',
+        platform: 'string (optional) — doordash, ubereats, or grubhub (default: doordash)',
+      },
+      output: {
+        analysis: 'DeliveryFeeAnalysis — avg, median, min, max fees, distribution breakdown, free delivery %',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, FOOD_FEES_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const location = c.req.query('location');
+  if (!location) return c.json({ error: 'Missing required parameter: location' }, 400);
+
+  const platform = c.req.query('platform') || 'doordash';
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const analysis = await analyzeDeliveryFees(location, platform);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      analysis,
+      meta: { location, platform, proxy: { ip, country: proxy.country, type: 'mobile' } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Delivery fee analysis failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/food/ratings ─────────────────────────
+
+serviceRouter.get('/food/ratings', async (c) => {
+  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/food/ratings', 'Aggregate restaurant ratings across DoorDash, Uber Eats, and Grubhub. Returns per-platform ratings and overall average.', FOOD_RATINGS_PRICE, walletAddress, {
+      input: {
+        restaurant: 'string (required) — restaurant name to look up',
+        location: 'string (required) — delivery location for search context',
+      },
+      output: {
+        aggregation: 'RatingAggregation — per-platform ratings, avg_rating, total_reviews, best_rated_platform',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, FOOD_RATINGS_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const restaurant = c.req.query('restaurant');
+  const location = c.req.query('location');
+  if (!restaurant || !location) return c.json({ error: 'Missing required parameters: restaurant, location' }, 400);
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const aggregation = await aggregateRatings(restaurant, location);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      aggregation,
+      meta: { restaurant, location, platforms_checked: ['doordash', 'ubereats', 'grubhub'], proxy: { ip, country: proxy.country, type: 'mobile' } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Rating aggregation failed', message: err?.message || String(err) }, 502);
   }
 });
