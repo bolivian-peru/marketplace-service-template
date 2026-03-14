@@ -94,6 +94,12 @@ app.get('/health', (c) => c.json({
     '/api/airbnb/market-stats',
     '/api/research',
     '/api/trending',
+    '/api/tiktok/trending',
+    '/api/tiktok/hashtag',
+    '/api/tiktok/creator',
+    '/api/tiktok/sound',
+    '/api/tiktok/search',
+    '/api/tiktok/video',
   ],
 }));
 
@@ -129,6 +135,12 @@ app.get('/', (c) => c.json({
     { method: 'GET', path: '/api/airbnb/market-stats', description: 'Airbnb market statistics', price: '0.05 USDC' },
     { method: 'GET', path: '/api/research', description: 'Multi-source research aggregation', price: '0.05 USDC' },
     { method: 'GET', path: '/api/trending', description: 'Trending topics intelligence', price: '0.01 USDC' },
+    { method: 'GET', path: '/api/tiktok/trending', description: 'TikTok trending videos, hashtags, and sounds by country', price: '0.02 USDC' },
+    { method: 'GET', path: '/api/tiktok/hashtag', description: 'TikTok hashtag analytics — views, velocity, related videos', price: '0.02 USDC' },
+    { method: 'GET', path: '/api/tiktok/creator', description: 'TikTok creator profile — followers, engagement, recent videos', price: '0.03 USDC' },
+    { method: 'GET', path: '/api/tiktok/sound', description: 'TikTok sound/audio details — usage count, trending videos', price: '0.02 USDC' },
+    { method: 'GET', path: '/api/tiktok/search', description: 'Search TikTok videos by keyword', price: '0.02 USDC' },
+    { method: 'GET', path: '/api/tiktok/video', description: 'TikTok video analytics — trend score, viral prediction', price: '0.02 USDC' },
   ],
   pricing: {
     amount: process.env.PRICE_USDC || '0.005',
@@ -162,7 +174,7 @@ app.get('/', (c) => c.json({
 
 app.route('/api', serviceRouter);
 
-app.notFound((c) => c.json({ error: 'Not found', endpoints: ['/', '/health', '/api/run', '/api/details', '/api/serp', '/api/jobs', '/api/reviews/search', '/api/reviews/:place_id', '/api/business/:place_id', '/api/reviews/summary/:place_id', '/api/linkedin/person', '/api/linkedin/company', '/api/linkedin/search/people', '/api/reddit/search', '/api/reddit/trending', '/api/reddit/subreddit/:name', '/api/reddit/thread/*', '/api/instagram/profile/:username', '/api/instagram/posts/:username', '/api/instagram/analyze/:username', '/api/instagram/audit/:username', '/api/airbnb/search', '/api/airbnb/listing/:id', '/api/airbnb/reviews/:listing_id', '/api/airbnb/market-stats', '/api/research', '/api/trending'] }, 404));
+app.notFound((c) => c.json({ error: 'Not found', endpoints: ['/', '/health', '/api/run', '/api/details', '/api/serp', '/api/jobs', '/api/reviews/search', '/api/reviews/:place_id', '/api/business/:place_id', '/api/reviews/summary/:place_id', '/api/linkedin/person', '/api/linkedin/company', '/api/linkedin/search/people', '/api/reddit/search', '/api/reddit/trending', '/api/reddit/subreddit/:name', '/api/reddit/thread/*', '/api/instagram/profile/:username', '/api/instagram/posts/:username', '/api/instagram/analyze/:username', '/api/instagram/audit/:username', '/api/airbnb/search', '/api/airbnb/listing/:id', '/api/airbnb/reviews/:listing_id', '/api/airbnb/market-stats', '/api/research', '/api/trending', '/api/tiktok/trending', '/api/tiktok/hashtag', '/api/tiktok/creator', '/api/tiktok/sound', '/api/tiktok/search', '/api/tiktok/video'] }, 404));
 
 app.onError((err, c) => {
   console.error(`[ERROR] ${err.message}`);
