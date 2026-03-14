@@ -326,3 +326,96 @@ export interface ReviewSearchResponse {
   businesses: BusinessInfo[];
   totalFound: number;
 }
+
+// ─── FOOD DELIVERY PRICE INTELLIGENCE TYPES (Bounty #76) ──
+
+export interface FoodRestaurant {
+  id: string;
+  name: string;
+  cuisine: string[];
+  rating: number | null;
+  review_count: number | null;
+  price_level: string | null;
+  delivery_fee: number | null;
+  delivery_time_min: number | null;
+  delivery_time_max: number | null;
+  distance_miles: number | null;
+  address: string | null;
+  image_url: string | null;
+  platform: string;
+  url: string;
+  is_promoted: boolean;
+  offers: string[];
+}
+
+export interface FoodMenuItem {
+  name: string;
+  description: string | null;
+  price: number | null;
+  category: string;
+  image_url: string | null;
+  popular: boolean;
+  calories: number | null;
+}
+
+export interface FoodRestaurantDetail extends FoodRestaurant {
+  description: string | null;
+  phone: string | null;
+  hours: Record<string, string>;
+  menu_categories: string[];
+  menu_items: FoodMenuItem[];
+  service_fee_pct: number | null;
+  small_order_fee: number | null;
+  min_order: number | null;
+  accepts_pickup: boolean;
+  dash_pass_eligible: boolean;
+}
+
+export interface FoodPriceComparison {
+  item_name: string;
+  restaurant_name: string;
+  prices: {
+    platform: string;
+    price: number | null;
+    delivery_fee: number | null;
+    service_fee_pct: number | null;
+    estimated_total: number | null;
+    delivery_time_min: number | null;
+    url: string;
+  }[];
+  best_value: string | null;
+  price_spread: number | null;
+}
+
+export interface FoodDeliveryFeeAnalysis {
+  location: string;
+  platform: string;
+  restaurants_sampled: number;
+  avg_delivery_fee: number | null;
+  median_delivery_fee: number | null;
+  min_delivery_fee: number | null;
+  max_delivery_fee: number | null;
+  free_delivery_pct: number | null;
+  fee_distribution: {
+    free: number;
+    under_3: number;
+    range_3_5: number;
+    range_5_8: number;
+    over_8: number;
+  };
+  avg_service_fee_pct: number | null;
+  avg_small_order_fee: number | null;
+}
+
+export interface FoodRatingAggregation {
+  restaurant_name: string;
+  ratings: {
+    platform: string;
+    rating: number | null;
+    review_count: number | null;
+    url: string;
+  }[];
+  avg_rating: number | null;
+  total_reviews: number;
+  best_rated_platform: string | null;
+}
