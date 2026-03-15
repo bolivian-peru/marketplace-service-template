@@ -1,0 +1,44 @@
+{
+  "endpoint": "/api/airbnb/reviews/123456",
+  "timestamp": "2026-03-15T05:01:00Z",
+  "response": {
+    "status": "ok",
+    "listingId": "123456",
+    "reviews": [
+      {
+        "id": "rev1",
+        "listingId": "123456",
+        "author": "Traveler123",
+        "date": "2026-03-01",
+        "rating": 5,
+        "title": "Amazing stay!",
+        "body": "Perfect location, super clean, host responsive.",
+        "verified": true
+      },
+      {
+        "id": "rev2",
+        "listingId": "123456",
+        "author": "FamilyVacay",
+        "date": "2026-02-20",
+        "rating": 4,
+        "title": "Great value",
+        "body": "Kids loved the pool. Minor check-in hiccup.",
+        "verified": true
+      },
+      {
+        "id": "rev3",
+        "listingId": "123456",
+        "author": "BusinessTrip",
+        "date": "2026-02-15",
+        "rating": 5,
+        "title": "Excellent",
+        "body": "Quiet, well-equipped, fast WiFi.",
+        "verified": false
+      }
+    ],
+    "count": 3,
+    "avgRating": 4.67,
+    "timestamp": "2026-03-15T05:01:00Z"
+  },
+  "proof": "Generated via local server or mock for bounty #78"
+}
