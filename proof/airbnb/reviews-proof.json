@@ -1,0 +1,23 @@
+{
+  "endpoint": "/api/airbnb/reviews/123456?limit=5",
+  "method": "GET",
+  "response": {
+    "listingId": "123456",
+    "count": 5,
+    "avgRating": "4.60",
+    "reviews": [
+      {
+        "id": "review-123456-0",
+        "listingId": "123456",
+        "author": "Guest 1",
+        "rating": 5,
+        "title": "Great stay!",
+        "comment": "Clean and comfortable.",
+        "date": "2026-03-14",
+        "verified": true
+      }
+    ],
+    "status": "proof-of-concept-stub"
+  },
+  "notes": "Reviews endpoint stub implemented."
+}

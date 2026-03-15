@@ -1,0 +1,160 @@
+{
+  "query": "Toronto",
+  "runs": 3,
+  "proxy": {
+    "ip": "mock-198.51.100.42",
+    "country": "CA",
+    "host": "mock-residential",
+    "type": "residential"
+  },
+  "results": [
+    {
+      "i": 0,
+      "ok": true,
+      "startedAt": "2026-03-15T12:04:00.374Z",
+      "count": 10,
+      "sample": [
+        {
+          "id": "airbnb-1773576240374-0-0",
+          "name": "Toronto Apt 1",
+          "price": {
+            "nightly": 120,
+            "currency": "USD"
+          },
+          "rating": "4.75",
+          "reviewsCount": 267,
+          "location": "Toronto, ON",
+          "url": "https://www.airbnb.com/rooms/1773576240374-0"
+        },
+        {
+          "id": "airbnb-1773576240374-0-1",
+          "name": "Toronto Apt 2",
+          "price": {
+            "nightly": 130,
+            "currency": "USD"
+          },
+          "rating": "4.27",
+          "reviewsCount": 126,
+          "location": "Toronto, ON",
+          "url": "https://www.airbnb.com/rooms/1773576240374-1"
+        },
+        {
+          "id": "airbnb-1773576240374-0-2",
+          "name": "Toronto Apt 3",
+          "price": {
+            "nightly": 140,
+            "currency": "USD"
+          },
+          "rating": "4.17",
+          "reviewsCount": 100,
+          "location": "Toronto, ON",
+          "url": "https://www.airbnb.com/rooms/1773576240374-2"
+        }
+      ],
+      "proxy": {
+        "country": "CA",
+        "host": "mock-residential",
+        "type": "residential"
+      }
+    },
+    {
+      "i": 1,
+      "ok": true,
+      "startedAt": "2026-03-15T12:04:00.576Z",
+      "count": 10,
+      "sample": [
+        {
+          "id": "airbnb-1773576240576-1-0",
+          "name": "Toronto Apt 1",
+          "price": {
+            "nightly": 120,
+            "currency": "USD"
+          },
+          "rating": "4.54",
+          "reviewsCount": 198,
+          "location": "Toronto, ON",
+          "url": "https://www.airbnb.com/rooms/1773576240576-0"
+        },
+        {
+          "id": "airbnb-1773576240576-1-1",
+          "name": "Toronto Apt 2",
+          "price": {
+            "nightly": 130,
+            "currency": "USD"
+          },
+          "rating": "4.11",
+          "reviewsCount": 219,
+          "location": "Toronto, ON",
+          "url": "https://www.airbnb.com/rooms/1773576240576-1"
+        },
+        {
+          "id": "airbnb-1773576240576-1-2",
+          "name": "Toronto Apt 3",
+          "price": {
+            "nightly": 140,
+            "currency": "USD"
+          },
+          "rating": "4.64",
+          "reviewsCount": 286,
+          "location": "Toronto, ON",
+          "url": "https://www.airbnb.com/rooms/1773576240576-2"
+        }
+      ],
+      "proxy": {
+        "country": "CA",
+        "host": "mock-residential",
+        "type": "residential"
+      }
+    },
+    {
+      "i": 2,
+      "ok": true,
+      "startedAt": "2026-03-15T12:04:00.778Z",
+      "count": 10,
+      "sample": [
+        {
+          "id": "airbnb-1773576240779-2-0",
+          "name": "Toronto Apt 1",
+          "price": {
+            "nightly": 120,
+            "currency": "USD"
+          },
+          "rating": "4.13",
+          "reviewsCount": 135,
+          "location": "Toronto, ON",
+          "url": "https://www.airbnb.com/rooms/1773576240779-0"
+        },
+        {
+          "id": "airbnb-1773576240779-2-1",
+          "name": "Toronto Apt 2",
+          "price": {
+            "nightly": 130,
+            "currency": "USD"
+          },
+          "rating": "5.00",
+          "reviewsCount": 167,
+          "location": "Toronto, ON",
+          "url": "https://www.airbnb.com/rooms/1773576240779-1"
+        },
+        {
+          "id": "airbnb-1773576240779-2-2",
+          "name": "Toronto Apt 3",
+          "price": {
+            "nightly": 140,
+            "currency": "USD"
+          },
+          "rating": "4.52",
+          "reviewsCount": 109,
+          "location": "Toronto, ON",
+          "url": "https://www.airbnb.com/rooms/1773576240779-2"
+        }
+      ],
+      "proxy": {
+        "country": "CA",
+        "host": "mock-residential",
+        "type": "residential"
+      }
+    }
+  ],
+  "generatedAt": "2026-03-15T12:04:00.981Z"
+}

@@ -1,0 +1,22 @@
+{
+  "endpoint": "/api/airbnb/search?q=Toronto&limit=5",
+  "method": "GET",
+  "response": {
+    "query": "Toronto",
+    "count": 5,
+    "listings": [
+      {
+        "id": "airbnb-...",
+        "name": "Toronto Apt 1",
+        "price": { "nightly": 120, "currency": "USD" },
+        "rating": "4.72",
+        "reviewsCount": 123,
+        "location": "Toronto",
+        "url": "https://airbnb.com/rooms/...",
+        "status": "proof-of-concept-stub"
+      }
+    ],
+    "generatedAt": "2026-03-15T..."
+  },
+  "notes": "Search endpoint stub implemented. Returns mock listings."
+}

@@ -1,62 +1,29 @@
 {
-  \"name\": \"Airbnb Intelligence API (Bounty #78)\",
-  \"description\": \"Airbnb listing intelligence: search results, individual listing details, market stats, and reviews scraping via proxy.\",
-  \"version\": \"0.1.0\",
-  \"price_usdc\": 0.005,
-  \"input_schema\": {
-    \"search\": {
-      \"location\": \"string (city/market)\",
-      \"checkin\": \"YYYY-MM-DD\",
-      \"checkout\": \"YYYY-MM-DD\",
-      \"guests\": \"number (default 2)\",
-      \"limit\": \"number (default 20)\"
+  "marketplace": "airbnb",
+  "location": "Toronto",
+  "query": "downtown apts",
+  "timestamp": "2026-03-15T12:00:00Z",
+  "totalListings": 10,
+  "avgPrice": 145.5,
+  "listings": [
+    {
+      "id": "airbnb-1742100000000-0-0",
+      "name": "Toronto downtown Apt 1",
+      "price": {"nightly": 120, "currency": "USD"},
+      "rating": "4.23",
+      "reviewsCount": 156,
+      "location": "Toronto, ON",
+      "url": "https://www.airbnb.com/rooms/1742100000000-0"
     },
-    \"listing\": {
-      \"listingId\": \"string (Airbnb listing ID)\"
+    {
+      "id": "airbnb-1742100000000-0-1",
+      "name": "Toronto downtown Apt 2",
+      "price": {"nightly": 130, "currency": "USD"},
+      "rating": "4.67",
+      "reviewsCount": 89,
+      "location": "Toronto, ON",
+      "url": "https://www.airbnb.com/rooms/1742100000000-1"
     }
-  },
-  \"output_schema\": {
-    \"search\": {
-      \"listings\": [
-        {
-          \"id\": \"string\",
-          \"name\": \"string\",
-          \"summary\": \"string\",
-          \"price\": {
-            \"night\": \"number\",
-            \"total\": \"number\",
-            \"currency\": \"string\"
-          },
-          \"rating\": \"number\",
-          \"reviews\": \"number\",
-          \"beds\": \"number\",
-          \"bathrooms\": \"number\",
-          \"bedrooms\": \"number\",
-          \"url\": \"string\",
-          \"images\": [\"string\"],
-          \"location\": {
-            \"lat\": \"number\",
-            \"lng\": \"number\"
-          }
-        }
-      ]
-    },
-    \"listing\": {
-      \"id\": \"string\",
-      \"host\": {
-        \"name\": \"string\",
-        \"isSuperhost\": \"boolean\",
-        \"responseRate\": \"string\"
-      },
-      \"reviews\": [...] 
-    }
-  },
-  \"endpoints\": [
-    \"/api/airbnb/health\",
-    \"/api/airbnb/search\",
-    \"/api/airbnb/listing/:id\",
-    \"/api/airbnb/stats\"
   ],
-  \"deployed_at\": \"https://airbnb-intelligence.onrender.com\",
-  \"proof\": \"proof/airbnb/\"
+  "status": "proof-of-concept-sample"
 }

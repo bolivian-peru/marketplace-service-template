@@ -1,0 +1,19 @@
+{
+  "endpoint": "/api/airbnb/listing/123456",
+  "method": "GET",
+  "response": {
+    "id": "123456",
+    "name": "Airbnb Listing 123456",
+    "description": "Cozy apartment in the heart of the city",
+    "price": {
+      "nightly": 120,
+      "currency": "USD"
+    },
+    "rating": 4.85,
+    "reviewsCount": 156,
+    "amenities": ["WiFi", "Kitchen", "AC"],
+    "location": "Toronto, ON",
+    "status": "proof-of-concept-stub"
+  },
+  "notes": "Listing endpoint stub implemented. Real scraper TODO."
+}
