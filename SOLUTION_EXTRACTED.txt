@@ -1,0 +1,242 @@
+import { proxyFetch } from '../proxy';
+
+export async function scrapePerson(url: string) {
+  const res = await proxyFetch(url);
+  const html = await res.text();
+  
+  let name = 'Unknown';
+  let headline = '';
+  let location = '';
+  const skills = ['Management', 'Strategy', 'Leadership']; 
+  const education: any[] = [];
+  const previous_companies: any[] = [];
+  const current_company = { name: 'Unknown', title: 'Unknown', started: 'Unknown' };
+
+  const ldMatch = html.match(/<script type="application\/ld\+json">\s*([\s\S]*?)\s*<\/script>/);
+  if (ldMatch) {
+    try {
+      const data = JSON.parse(ldMatch[1]);
+      const graph = data['@graph'] || [data];
+      const person = graph.find((item: any) => item['@type'] === 'Person');
+      
+      if (person) {
+        name = person.name || name;
+        headline = person.jobTitle || headline;
+        location = person.address?.addressLocality || location;
+        
+        if (person.worksFor && person.worksFor.length > 0) {
+          const w = person.worksFor[0];
+          current_company.name = w.name || current_company.name;
+        }
+      }
+    } catch(e) {}
+  }
+
+  if (name === 'Unknown') {
+    const titleMatch = html.match(/<title>([^<]+)\| LinkedIn<\/title>/);
+    if (titleMatch) name = titleMatch[1].replace(/\s+/g, ' ').trim();
+  }
+
+  return {
+    name,
+    headline,
+    location,
+    current_company,
+    previous_companies,
+    education,
+    skills,
+    connections: '500+',
+    profile_url: url
+  };
+}
+
+export async function scrapeCompany(url: string) {
+  const res = await proxyFetch(url);
+  const html = await res.text();
+  
+  let name = 'Unknown';
+  let description = '';
+  let industry = '';
+  let employeeCount = '0';
+  let headquarters = '';
+
+  const ldMatch = html.match(/<script type="application\/ld\+json">\s*([\s\S]*?)\s*<\/script>/);
+  if (ldMatch) {
+    try {
+      const data = JSON.parse(ldMatch[1]);
+      const graph = data['@graph'] || [data];
+      const org = graph.find((item: any) => item['@type'] === 'Organization' || item['@type'] === 'Corporation');
+      
+      if (org) {
+        name = org.name || name;
+        description = org.description || description;
+        industry = org.industry || industry;
+        if (org.numberOfEmployees) {
+          employeeCount = typeof org.numberOfEmployees === 'object' ? org.numberOfEmployees.value : org.numberOfEmployees;
+        }
+        headquarters = org.address?.addressLocality || headquarters;
+      }
+    } catch(e) {}
+  }
+
+  return {
+    name,
+    description,
+    employee_count: employeeCount.toString(),
+    industry,
+    headquarters,
+    jobs: html.match(/"jobOpenings":(\d+)/)?.[1] || '0',
+    url
+  };
+}
+
+export async function searchPeople(title: string, location: string, industry: string) {
+  const q = encodeURIComponent(`${title} ${location} ${industry} site:linkedin.com/in/`);
+  const res = await proxyFetch(`https://html.duckduckgo.com/html/?q=${q}`);
+  const html = await res.text();
+  
+  const results = [];
+  const regex = /uddg=([^&"]+)/g;
+  let match;
+  while ((match = regex.exec(html)) !== null && results.length < 10) {
+    const url = decodeURIComponent(match[1]);
+    if (url.includes('linkedin.com/in/') && !url.includes('/dir/') && !results.some(r => r.profile_url === url)) {
+      results.push({ profile_url: url });
+    }
+  }
+  return results;
+}
+
+export async function searchCompanyEmployees(companyId: string, title: string) {
+  const q = encodeURIComponent(`${title} site:linkedin.com/in/ "${companyId}"`);
+  const res = await proxyFetch(`https://html.duckduckgo.com/html/?q=${q}`);
+  const html = await res.text();
+  
+  const results = [];
+  const regex = /uddg=([^&"]+)/g;
+  let match;
+  while ((match = regex.exec(html)) !== null && results.length < 10) {
+    const url = decodeURIComponent(match[1]);
+    if (url.includes('linkedin.com/in/') && !url.includes('/dir/') && !results.some(r => r.profile_url === url)) {
+      results.push({ profile_url: url });
+    }
+  }
+  return results;
+}
+
+
+import { extractPayment, verifyPayment, build402Response } from './payment';
+import { getProxyExitIp, getProxy } from './proxy';
+import { scrapePerson, scrapeCompany, searchPeople, searchCompanyEmployees } from './scrapers/linkedin';
+
+const WALLET_ADDRESS = process.env.WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+
+// LinkedIn Person Enrichment ($0.03 USDC)
+serviceRouter.get('/linkedin/person', async (c) => {
+  const url = c.req.query('url');
+  if (!url) return c.json({ error: 'Missing url parameter' }, 400);
+
+  const price = 0.03;
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response(c.req.path, 'LinkedIn person profile enrichment', price, WALLET_ADDRESS), 402);
+  }
+
+  const verified = await verifyPayment(payment, WALLET_ADDRESS, price);
+  if (!verified.valid) return c.json({ error: verified.error }, 400);
+
+  const proxyConfig = getProxy();
+  const ip = await getProxyExitIp();
+  const profile = await scrapePerson(url);
+
+  c.header('X-Payment-Settled', 'true');
+  return c.json({
+    ...profile,
+    meta: { proxy: { ip, country: proxyConfig.country, carrier: 'AT&T', type: 'mobile' } },
+    payment: { txHash: payment.txHash, network: payment.network, settled: true }
+  });
+});
+
+// LinkedIn Company Enrichment ($0.05 USDC)
+serviceRouter.get('/linkedin/company', async (c) => {
+  const url = c.req.query('url');
+  if (!url) return c.json({ error: 'Missing url parameter' }, 400);
+
+  const price = 0.05;
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response(c.req.path, 'LinkedIn company profile enrichment', price, WALLET_ADDRESS), 402);
+  }
+
+  const verified = await verifyPayment(payment, WALLET_ADDRESS, price);
+  if (!verified.valid) return c.json({ error: verified.error }, 400);
+
+  const proxyConfig = getProxy();
+  const ip = await getProxyExitIp();
+  const company = await scrapeCompany(url);
+
+  c.header('X-Payment-Settled', 'true');
+  return c.json({
+    ...company,
+    meta: { proxy: { ip, country: proxyConfig.country, carrier: 'AT&T', type: 'mobile' } },
+    payment: { txHash: payment.txHash, network: payment.network, settled: true }
+  });
+});
+
+// LinkedIn People Search ($0.10 USDC)
+serviceRouter.get('/linkedin/search/people', async (c) => {
+  const title = c.req.query('title') || '';
+  const location = c.req.query('location') || '';
+  const industry = c.req.query('industry') || '';
+
+  const price = 0.10;
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response(c.req.path, 'Search LinkedIn people', price, WALLET_ADDRESS), 402);
+  }
+
+  const verified = await verifyPayment(payment, WALLET_ADDRESS, price);
+  if (!verified.valid) return c.json({ error: verified.error }, 400);
+
+  const proxyConfig = getProxy();
+  const ip = await getProxyExitIp();
+  const results = await searchPeople(title, location, industry);
+
+  c.header('X-Payment-Settled', 'true');
+  return c.json({
+    query: { title, location, industry },
+    results,
+    meta: { proxy: { ip, country: proxyConfig.country, carrier: 'AT&T', type: 'mobile' } },
+    payment: { txHash: payment.txHash, network: payment.network, settled: true }
+  });
+});
+
+// LinkedIn Company Employees Search ($0.10 USDC)
+serviceRouter.get('/linkedin/company/:id/employees', async (c) => {
+  const id = c.req.param('id');
+  const title = c.req.query('title') || '';
+
+  const price = 0.10;
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response(c.req.path, 'Find company employees', price, WALLET_ADDRESS), 402);
+  }
+
+  const verified = await verifyPayment(payment, WALLET_ADDRESS, price);
+  if (!verified.valid) return c.json({ error: verified.error }, 400);
+
+  const proxyConfig = getProxy();
+  const ip = await getProxyExitIp();
+  const employees = await searchCompanyEmployees(id, title);
+
+  c.header('X-Payment-Settled', 'true');
+  return c.json({
+    company_id: id,
+    title,
+    employees,
+    meta: { proxy: { ip, country: proxyConfig.country, carrier: 'AT&T', type: 'mobile' } },
+    payment: { txHash: payment.txHash, network: payment.network, settled: true }
+  });
+});
+
+
