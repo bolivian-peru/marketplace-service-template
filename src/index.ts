@@ -7,6 +7,7 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
+import { getAggregatedMarkets } from './scrapers/prediction';
 import { serviceRouter } from './service';
 
 const app = new Hono();
@@ -160,6 +161,11 @@ app.get('/', (c) => c.json({
   },
 }));
 
+app.get('/api/prediction', async (c) => {
+  const topic = c.req.query('topic');
+  const markets = await getAggregatedMarkets(topic);
+  return c.json({ markets, timestamp: new Date().toISOString() });
+});
 app.route('/api', serviceRouter);
 
 app.notFound((c) => c.json({ error: 'Not found', endpoints: ['/', '/health', '/api/run', '/api/details', '/api/serp', '/api/jobs', '/api/reviews/search', '/api/reviews/:place_id', '/api/business/:place_id', '/api/reviews/summary/:place_id', '/api/linkedin/person', '/api/linkedin/company', '/api/linkedin/search/people', '/api/reddit/search', '/api/reddit/trending', '/api/reddit/subreddit/:name', '/api/reddit/thread/*', '/api/instagram/profile/:username', '/api/instagram/posts/:username', '/api/instagram/analyze/:username', '/api/instagram/audit/:username', '/api/airbnb/search', '/api/airbnb/listing/:id', '/api/airbnb/reviews/:listing_id', '/api/airbnb/market-stats', '/api/research', '/api/trending'] }, 404));
