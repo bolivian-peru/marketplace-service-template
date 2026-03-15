@@ -7,6 +7,9 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
+import { extractPayment, verifyPayment, build402Response } from './payment';
+import { getProxy } from './proxy';
+import { scrapeDiscoverFeed } from './scrapers/discover';
 import { serviceRouter } from './service';
 
 const app = new Hono();
@@ -99,10 +102,10 @@ app.get('/health', (c) => c.json({
 
 app.get('/', (c) => c.json({
   name: process.env.SERVICE_NAME || 'marketplace-service-hub',
-  description: process.env.SERVICE_DESCRIPTION || 'AI agent intelligence services powered by real 4G/5G mobile proxies.',
+  description: process.env.SERVICE_DESCRIPTION || 'Google Discover Feed Intelligence API powered by real 4G/5G mobile proxies.',
   version: '2.0.0',
   endpoints: [
-    { method: 'GET', path: '/api/run', description: 'Google Maps Lead Generator — search businesses by category + location', price: '0.005 USDC' },
+    { method: 'GET', path: '/api/run', description: 'Google Discover Feed Intelligence API', price: '0.02 USDC' },
     { method: 'GET', path: '/api/details', description: 'Google Maps Place Details — detailed business info by Place ID', price: '0.005 USDC' },
     { method: 'GET', path: '/api/serp', description: 'Mobile SERP Tracker — Google search results with organic, ads, PAA, AI overview', price: '0.003 USDC' },
     { method: 'GET', path: '/api/jobs', description: 'Get job listings (Indeed/LinkedIn) with salary + date + proxy metadata' },
@@ -131,7 +134,7 @@ app.get('/', (c) => c.json({
     { method: 'GET', path: '/api/trending', description: 'Trending topics intelligence', price: '0.01 USDC' },
   ],
   pricing: {
-    amount: process.env.PRICE_USDC || '0.005',
+    amount: process.env.PRICE_USDC || '0.02',
     currency: 'USDC',
     networks: [
       {
@@ -159,6 +162,54 @@ app.get('/', (c) => c.json({
     github: 'https://github.com/bolivian-peru/marketplace-service-template',
   },
 }));
+
+// Inject new API Route for Discover
+app.get('/api/run', async (c) => {
+  const country = c.req.query('country') || 'US';
+  const category = c.req.query('category') || 'technology';
+
+  const paymentInfo = extractPayment(c);
+  const price = 0.02;
+  const wallet = process.env.WALLET_ADDRESS || '0xF8cD900794245fc36CBE65be9afc23CDF5103042';
+  
+  if (!paymentInfo) {
+    const schema = {
+      country: "US",
+      category: "technology",
+      timestamp: "2026-02-14T12:00:00Z",
+      discover_feed: [],
+      metadata: {},
+      proxy: {},
+      payment: {}
+    };
+    return c.json(build402Response('/api/run', 'Google Discover Feed Intelligence API', price, wallet, schema), 402);
+  }
+
+  const verification = await verifyPayment(paymentInfo, wallet, price);
+  if (!verification.valid) {
+    return c.json({ error: verification.error }, 400);
+  }
+
+  try {
+    const { feed, metadata } = await scrapeDiscoverFeed(country, category);
+    const proxy = getProxy();
+    
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', paymentInfo.txHash);
+    
+    return c.json({
+      country,
+      category,
+      timestamp: new Date().toISOString(),
+      discover_feed: feed,
+      metadata,
+      proxy: { country: proxy.country, carrier: metadata.proxyCarrier, type: 'mobile' },
+      payment: { txHash: paymentInfo.txHash, amount: price, verified: true, network: paymentInfo.network }
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Failed to fetch Discover feed', details: err.message }, 500);
+  }
+});
 
 app.route('/api', serviceRouter);
 

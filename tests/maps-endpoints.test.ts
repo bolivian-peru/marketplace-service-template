@@ -4,7 +4,7 @@ import app from '../src/index';
 const TEST_WALLET = '0x1111111111111111111111111111111111111111';
 const USDC_BASE = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913';
 const TRANSFER_TOPIC = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
-const USDC_AMOUNT_0_005 = '0x0000000000000000000000000000000000000000000000000000000000001388';
+const USDC_AMOUNT_0_02 = "0x0000000000000000000000000000000000000000000000000000000000004e20";
 const MAPS_HTML = '<html><head><title>Acme Plumbing - Google Maps</title></head><body></body></html>';
 
 let txCounter = 1;
@@ -52,7 +52,7 @@ function installFetchMock(recipientAddress: string): string[] {
               toTopicAddress('0x0000000000000000000000000000000000000000'),
               toTopicAddress(recipientAddress),
             ],
-            data: USDC_AMOUNT_0_005,
+            data: USDC_AMOUNT_0_02,
           }],
         },
       }), {
@@ -97,7 +97,7 @@ afterEach(() => {
 describe('Google Maps endpoints', () => {
   test('GET /api/run returns 402 with x402 payload when payment is missing', async () => {
     const res = await app.fetch(
-      new Request('http://localhost/api/run?query=plumbers&location=Austin+TX'),
+      new Request('http://localhost/api/run?country=US&category=technology'),
     );
 
     expect(res.status).toBe(402);
@@ -105,7 +105,7 @@ describe('Google Maps endpoints', () => {
 
     expect(body.status).toBe(402);
     expect(body.resource).toBe('/api/run');
-    expect(body.price.amount).toBe('0.005');
+    expect(body.price.amount).toBe('0.02');
     expect(body.message).toBe('Payment required');
     expect(body.outputSchema).toBeDefined();
   });
@@ -120,7 +120,7 @@ describe('Google Maps endpoints', () => {
 
     expect(body.status).toBe(402);
     expect(body.resource).toBe('/api/details');
-    expect(body.price.amount).toBe('0.005');
+    expect(body.price.amount).toBe('0.02');
     expect(body.message).toBe('Payment required');
   });
 
@@ -129,7 +129,7 @@ describe('Google Maps endpoints', () => {
     const txHash = nextBaseTxHash();
 
     const res = await app.fetch(
-      new Request('http://localhost/api/run?query=plumbers&location=Austin+TX&limit=1', {
+      new Request('http://localhost/api/run?country=US&category=technology', {
         headers: {
           'X-Payment-Signature': txHash,
           'X-Payment-Network': 'base',
