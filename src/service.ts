@@ -17,6 +17,8 @@ import { scrapeGoogleMaps, extractDetailedBusiness } from './scrapers/maps-scrap
 import { researchRouter } from './routes/research';
 import { trendingRouter } from './routes/trending';
 import airbnbRouter from './routes/airbnb';
+
+serviceRouter.route('/airbnb', airbnbRouter);
 import { handleSignalRequest } from './routes/signal';
 
 export const serviceRouter = new Hono();
