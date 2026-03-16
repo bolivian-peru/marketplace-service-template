@@ -13,9 +13,26 @@ airbnbRouter.get('/health', (c) => {
   });
 });
 
-// TODO: /intelligence endpoint with payment & scraper
-airbnbRouter.get('/intelligence', (c) => {
-  return c.json({ error: 'Not implemented yet. Coming soon: scrape Airbnb listings by city/query with structured output.' }, 501);
+import { scrapeIntelligence } from '../scrapers/airbnb/intelligence.js';
+
+// MVP scraper (mock data; real browser next)
+airbnbRouter.get('/intelligence', async (c) => {
+  const { searchParams } = new URL(c.req.url);
+  const city = searchParams.get('city');
+  const query = searchParams.get('query') || '';
+  const limit = parseInt(searchParams.get('limit') || '20');
+
+  if (!city) {
+    return c.json({ error: 'city required' }, 400);
+  }
+
+  try {
+    const data = await scrapeIntelligence(city, query, limit);
+    return c.json(data);
+  } catch (e) {
+    return c.json({ error: 'Scrape failed', details: e.message }, 500);
+  }
 });
+
 
 export default airbnbRouter;

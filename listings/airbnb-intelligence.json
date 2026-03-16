@@ -1,29 +1,40 @@
 {
-  "marketplace": "airbnb",
-  "location": "Toronto",
-  "query": "downtown apts",
-  "timestamp": "2026-03-15T12:00:00Z",
-  "totalListings": 10,
-  "avgPrice": 145.5,
-  "listings": [
+  "$schema": "https://platform.fusotao.com/schemas/service.json",
+  "name": "Airbnb Intelligence API",
+  "description": "Real-time Airbnb market intelligence: search listings, extract pricing/reviews/occupancy stats by city/query. Structured JSON output for listings, market stats, trends.",
+  "version": "0.1.0",
+  "endpoints": [
     {
-      "id": "airbnb-1742100000000-0-0",
-      "name": "Toronto downtown Apt 1",
-      "price": {"nightly": 120, "currency": "USD"},
-      "rating": "4.23",
-      "reviewsCount": 156,
-      "location": "Toronto, ON",
-      "url": "https://www.airbnb.com/rooms/1742100000000-0"
+      "path": "/api/airbnb/health",
+      "method": "GET",
+      "description": "Service health check (no auth)",
+      "response": { "type": "json", "schema": "health" }
     },
     {
-      "id": "airbnb-1742100000000-0-1",
-      "name": "Toronto downtown Apt 2",
-      "price": {"nightly": 130, "currency": "USD"},
-      "rating": "4.67",
-      "reviewsCount": 89,
-      "location": "Toronto, ON",
-      "url": "https://www.airbnb.com/rooms/1742100000000-1"
+      "path": "/api/airbnb/intelligence",
+      "method": "GET",
+      "description": "Search listings by city/query (paid: x402 gated)",
+      "params": [
+        { "name": "city", "type": "string", "required": true },
+        { "name": "query", "type": "string" },
+        { "name": "limit", "type": "number", "default": 20 }
+      ],
+      "response": { "type": "json", "schema": "airbnb-listings" }
+    },
+    {
+      "path": "/api/airbnb/listing/:id",
+      "method": "GET",
+      "description": "Fetch single listing details/reviews (paid)",
+      "response": { "type": "json", "schema": "airbnb-listing" }
     }
   ],
-  "status": "proof-of-concept-sample"
+  "pricing": {
+    "tiers": [
+      { "name": "free", "quota": "5 req/day", "endpoints": ["/health"] },
+      { "name": "basic", "$10/mo", "quota": "1000 req/mo" },
+      { "name": "pro", "$50/mo", "unlimited" }
+    ]
+  },
+  "deploy": "https://airbnb-intel.onrender.com",
+  "bounty": "#78"
 }
