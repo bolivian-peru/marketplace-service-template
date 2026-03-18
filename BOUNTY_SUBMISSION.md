@@ -1,4 +1,15 @@
-# Bounty Submission: Job Market Intelligence (Bounty #16)
+## Bounty Submission Guidelines
+
+### Proof of Work
+
+1. **Real JSON Output**: Post real JSON output showing actual app rankings from Apple App Store (US) and Google Play Store (DE) with real app names, real ratings, real review counts.
+2. **Country Differences**: Show the same category, different countries → different rankings.
+3. **Resilience**: Demonstrate 10+ consecutive successful scrapes from both stores without getting rate-limited.
+4. **Solana USDC Wallet Address**: Provide your Solana USDC wallet address.
+5. **Pull Request**: Submit a PR with your code.
+
+### Example JSON Output
+
 
 **PR:** https://github.com/bolivian-peru/marketplace-service-template/pull/48  
 **Live deployment:** https://bounty16-job-market-intelligence.onrender.com  
