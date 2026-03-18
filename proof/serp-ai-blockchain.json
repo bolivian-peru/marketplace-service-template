@@ -1,0 +1,18 @@
+{
+  "endpoint": "/api/serp/ai",
+  "query": "how does blockchain work",
+  "timestamp": "2026-03-18T19:20:18.595Z",
+  "liveEndpoint": "http://135.125.243.226:9000/api/serp/ai",
+  "response": {
+    "query": "how does blockchain work",
+    "available": false,
+    "text": null,
+    "sources": [],
+    "scrapedAt": "2026-03-18T19:20:32.356Z"
+  },
+  "proxy": {
+    "host": "168.119.243.180",
+    "port": 8048,
+    "type": "mobile"
+  }
+}

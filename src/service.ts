@@ -1486,3 +1486,159 @@ serviceRouter.get('/serp', async (c) => {
     return c.json({ error: 'SERP scrape failed', message: err?.message || String(err) }, 502);
   }
 });
+
+// ═══════════════════════════════════════════════════════
+// ─── GOOGLE SERP + AI OVERVIEW + SUGGEST (Bounty #149) ─
+// ═══════════════════════════════════════════════════════
+
+import { scrapeGoogleSERP, scrapeAIOverview, scrapeGoogleSuggest } from './scrapers/serp-scraper';
+
+const SERP_SEARCH_PRICE  = 0.01;
+const SERP_AI_PRICE      = 0.005;
+const SERP_SUGGEST_PRICE = 0.002;
+const SERP_WALLET        = '2fPV8uNxdP1VAm7mP9ks8NdcxhZgA2n5x62hxj48jzSL';
+
+// ─── GET /api/serp/search ────────────────────────────
+
+serviceRouter.get('/serp/search', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/serp/search',
+      'Full Google SERP: organic results, ads, People Also Ask, Featured Snippet, Related Searches',
+      SERP_SEARCH_PRICE, SERP_WALLET, {
+        input: {
+          q: 'string (required) — search query',
+          location: 'string (optional) — geo location e.g. "New York"',
+          num: 'number (optional, default: 10) — number of results',
+          lang: 'string (optional, default: "en") — language code',
+          country: 'string (optional, default: "us") — country code',
+        },
+        output: {
+          organic: '[{ position, title, url, displayUrl, description, siteLinks?, date? }]',
+          ads: '[{ position, title, url, displayUrl, description }]',
+          featuredSnippet: '{ title, description, url, type, items? } | null',
+          peopleAlsoAsk: '[{ question, answer?, url? }]',
+          relatedSearches: 'string[]',
+          totalResults: 'string',
+          proxy: '{ country, type: "mobile" }',
+        },
+      }), 402);
+  }
+
+  const verification = await verifyPayment(payment, SERP_WALLET, SERP_SEARCH_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const q = c.req.query('q') || c.req.query('query');
+  if (!q) return c.json({ error: 'Missing required parameter: q', example: '/api/serp/search?q=bitcoin+price' }, 400);
+
+  const opts = {
+    location: c.req.query('location') || undefined,
+    num: parseInt(c.req.query('num') || '10'),
+    lang: c.req.query('lang') || 'en',
+    country: c.req.query('country') || 'us',
+  };
+
+  try {
+    const proxy = getProxy();
+    const result = await scrapeGoogleSERP(q, opts);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      meta: { proxy: { country: proxy.country, type: 'mobile' } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'SERP scrape failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/serp/ai ────────────────────────────────
+
+serviceRouter.get('/serp/ai', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/serp/ai',
+      'Google AI Overview extraction — get AI-generated answer with sources for any query',
+      SERP_AI_PRICE, SERP_WALLET, {
+        input: { q: 'string (required) — search query' },
+        output: {
+          available: 'boolean — whether AI Overview was found',
+          text: 'string | null — AI-generated answer text',
+          sources: '[{ title, url }] — cited sources',
+          query: 'string',
+        },
+      }), 402);
+  }
+
+  const verification = await verifyPayment(payment, SERP_WALLET, SERP_AI_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const q = c.req.query('q') || c.req.query('query');
+  if (!q) return c.json({ error: 'Missing required parameter: q', example: '/api/serp/ai?q=how+does+bitcoin+work' }, 400);
+
+  try {
+    const proxy = getProxy();
+    const result = await scrapeAIOverview(q, {});
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      meta: { proxy: { country: proxy.country, type: 'mobile' } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'AI Overview scrape failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/serp/suggest ───────────────────────────
+
+serviceRouter.get('/serp/suggest', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/serp/suggest',
+      'Google Autocomplete / Search Suggestions — real-time query suggestions from Google',
+      SERP_SUGGEST_PRICE, SERP_WALLET, {
+        input: {
+          q: 'string (required) — partial query',
+          lang: 'string (optional, default: "en") — language code',
+          country: 'string (optional, default: "us") — country code',
+        },
+        output: {
+          query: 'string',
+          suggestions: 'string[] — up to 10 autocomplete suggestions',
+        },
+      }), 402);
+  }
+
+  const verification = await verifyPayment(payment, SERP_WALLET, SERP_SUGGEST_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const q = c.req.query('q') || c.req.query('query');
+  if (!q) return c.json({ error: 'Missing required parameter: q', example: '/api/serp/suggest?q=bitcoin' }, 400);
+
+  const opts = {
+    lang: c.req.query('lang') || 'en',
+    country: c.req.query('country') || 'us',
+  };
+
+  try {
+    const result = await scrapeGoogleSuggest(q, opts);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      meta: { note: 'Google Suggest does not require proxy routing' },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Suggest scrape failed', message: err?.message || String(err) }, 502);
+  }
+});
