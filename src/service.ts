@@ -1,12 +1,14 @@
-/**
- * Service Router — Marketplace API
- *
- * Exposes:
- *   GET /api/run       (Google Maps Lead Generator)
- *   GET /api/details   (Google Maps Place details)
- *   GET /api/jobs      (Job Market Intelligence)
- *   GET /api/reviews/* (Google Reviews & Business Data)
- *   GET /api/airbnb/*  (Airbnb Market Intelligence)
+import { Hono } from 'hono';
+import { proxyFetch } from './proxy';
+import { verifyPayment } from './payment';
+import { parseAmazonProduct, parseAmazonSearch, parseAmazonBestsellers, parseAmazonReviews } from './scrapers/amazon';
+const SERVICE_NAME = 'amazon-tracker';
+const PRICE_USDC = 0.005;
+const DESCRIPTION = 'Amazon Product & BSR Tracker API';
+const serviceRouter = new Hono();
+serviceRouter.base('/api/amazon');
+serviceRouter.get('/run', async (c) => {
+  const { query, location } = c.req.query();
  *   GET /api/reddit/*  (Reddit Intelligence)
  *   GET /api/instagram/* (Instagram Intelligence + AI Vision)
  *   GET /api/linkedin/* (LinkedIn Enrichment)
@@ -17,9 +19,59 @@ import { proxyFetch, getProxy } from './proxy';
 import { extractPayment, verifyPayment, build402Response } from './payment';
 import { scrapeIndeed, scrapeLinkedIn, type JobListing } from './scrapers/job-scraper';
 import { fetchReviews, fetchBusinessDetails, fetchReviewSummary, searchBusinesses } from './scrapers/reviews';
-import { scrapeGoogleMaps, extractDetailedBusiness } from './scrapers/maps-scraper';
-import { researchRouter } from './routes/research';
-import { trendingRouter } from './routes/trending';
+  return c.json({ data: await result.text() });
+});
+serviceRouter.get('/product/:asin', async (c) => {
+  const { asin } = c.req.param();
+  const { marketplace } = c.req.query();
+  const payment = await verifyPayment(c, PRICE_USDC);
+  if (!payment) return c.json({ error: 'Payment required' }, 402);
+
+  const url = `https://www.amazon.${marketplace || 'com'}/dp/${asin}`;
+  const result = await proxyFetch(url);
+  const data = await result.text();
+  const productData = parseAmazonProduct(data, marketplace);
+  return c.json(productData);
+});
+
+serviceRouter.get('/search', async (c) => {
+  const { query, category, marketplace } = c.req.query();
+  const payment = await verifyPayment(c, 0.01);
+  if (!payment) return c.json({ error: 'Payment required' }, 402);
+
+  const url = `https://www.amazon.${marketplace || 'com'}/s?k=${encodeURIComponent(query)}&i=${category}`;
+  const result = await proxyFetch(url);
+  const data = await result.text();
+  const searchResults = parseAmazonSearch(data, marketplace);
+  return c.json(searchResults);
+});
+
+serviceRouter.get('/bestsellers', async (c) => {
+  const { category, marketplace } = c.req.query();
+  const payment = await verifyPayment(c, 0.02);
+  if (!payment) return c.json({ error: 'Payment required' }, 402);
+
+  const url = `https://www.amazon.${marketplace || 'com'}/best-sellers/${category}/zgbs`;
+  const result = await proxyFetch(url);
+  const data = await result.text();
+  const bestsellers = parseAmazonBestsellers(data, marketplace);
+  return c.json(bestsellers);
+});
+
+serviceRouter.get('/reviews/:asin', async (c) => {
+  const { asin } = c.req.param();
+  const { sort, limit } = c.req.query();
+  const payment = await verifyPayment(c, 0.02);
+  if (!payment) return c.json({ error: 'Payment required' }, 402);
+
+  const url = `https://www.amazon.${marketplace || 'com'}/product-reviews/${asin}?sortBy=${sort || 'recent'}&pageNumber=1`;
+  const result = await proxyFetch(url);
+  const data = await result.text();
+  const reviews = parseAmazonReviews(data, limit);
+  return c.json(reviews);
+});
+
+export default serviceRouter;
 import { searchAirbnb, getListingDetail, getListingReviews, getMarketStats } from './scrapers/airbnb-scraper';
 import { 
   scrapeLinkedInPerson, 
@@ -1436,5 +1488,53 @@ serviceRouter.get('/airbnb/market-stats', async (c) => {
     });
   } catch (err: any) {
     return c.json({ error: 'Airbnb market stats failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── MOBILE SERP TRACKER ────────────────────────────────
+
+import { scrapeMobileSERP } from './scrapers/serp-tracker';
+
+const SERP_PRICE_USDC = parseFloat(process.env.SERP_PRICE_USDC || '0.003');
+const SERP_DESCRIPTION = 'Mobile SERP Tracker — Google search results with organic, ads, PAA, AI overview, map pack, knowledge panel. Real mobile IP fingerprint.';
+const SERP_OUTPUT_SCHEMA = {
+  input: { query: 'string (required) — search query', location: 'string (optional) — geo location', num: 'number (optional) — results count, default 10' },
+  output: { organic: '[{ position, title, url, snippet, sitelinks? }]', ads: '[{ position, title, url, description }]', peopleAlsoAsk: '[{ question, snippet }]', aiOverview: '{ text, sources }', mapPack: '[{ name, rating, reviews, address }]', knowledgePanel: '{ title, description, attributes }' },
+};
+
+serviceRouter.get('/serp', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Wallet not configured' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/serp', SERP_DESCRIPTION, SERP_PRICE_USDC, walletAddress, SERP_OUTPUT_SCHEMA), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, SERP_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const query = c.req.query('query') || c.req.query('q');
+  if (!query) return c.json({ error: 'Missing required parameter: query' }, 400);
+
+  const location = c.req.query('location') || c.req.query('loc') || undefined;
+  const num = parseInt(c.req.query('num') || '10');
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const results = await scrapeMobileSERP(query, { location, num });
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      query,
+      results,
+      meta: { location, num, proxy: { ip, country: proxy.country, type: 'mobile' } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'SERP scrape failed', message: err?.message || String(err) }, 502);
   }
 });
