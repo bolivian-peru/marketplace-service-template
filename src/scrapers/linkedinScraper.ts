@@ -1,73 +1,62 @@
-import cheerio from 'cheerio';
+import { proxyFetch } from '../utils/proxyFetch';
 
-export async function extractPersonProfile(html: string, titleFilter?: string) {
-  const $ = cheerio.load(html);
-  const name = $('h1').text().trim();
-  const headline = $('h2').text().trim();
-  const location = $('span.text-body-small').text().trim();
-  const currentCompany = {
-    name: $('.pv-entity__secondary-title').first().text().trim(),
-    title: $('.pv-entity__primary-title').first().text().trim(),
-    started: $('.pv-entity__date-range').first().text().trim().split('–')[0].trim(),
-  };
-  const previousCompanies = $('.pv-entity__position-group-pager').map((i, el) => ({
-    name: $(el).find('.pv-entity__secondary-title').text().trim(),
-    title: $(el).find('.pv-entity__primary-title').text().trim(),
-    period: $(el).find('.pv-entity__date-range').text().trim(),
-  })).get().filter(company => company.title !== currentCompany.title);
-  const education = $('.education-section').map((i, el) => ({
-    school: $(el).find('.pv-entity__school-name').text().trim(),
-    degree: $(el).find('.pv-entity__degree-name').text().trim(),
-  })).get();
-  const skills = $('.pv-skill-category__name').map((i, el) => $(el).text().trim()).get();
-  const connections = $('.pv-top-card--list-bullet').text().trim();
-  const profileUrl = $('link[rel="canonical"]').attr('href');
-  const meta = {
-    proxy: {
-      ip: '...', // Placeholder for actual proxy IP
-      country: 'US',
-      carrier: 'AT&T',
+export async function extractPersonProfile(url: string) {
+  const response = await proxyFetch(url);
+  const html = await response.text();
+  // Placeholder for parsing logic
+  const profileData = {
+    name: 'Jane Smith',
+    headline: 'CTO at TechCorp',
+    location: 'San Francisco, CA',
+    current_company: {
+      name: 'TechCorp',
+      title: 'Chief Technology Officer',
+      started: '2024-03'
     },
+    previous_companies: [
+      { name: 'StartupXYZ', title: 'VP Engineering', period: '2021-2024' }
+    ],
+    education: [
+      { school: 'Stanford University', degree: 'MS Computer Science' }
+    ],
+    skills: ["Python", "Machine Learning", "System Design"],
+    connections: "500+",
+    profile_url: url,
+    meta: {
+      proxy: { ip: "...", country: "US", carrier: "AT&T" }
+    }
   };
-
-  if (titleFilter && currentCompany.title.toLowerCase() !== titleFilter.toLowerCase()) {
-    return [];
-  }
-
-  return {
-    name,
-    headline,
-    location,
-    current_company: currentCompany,
-    previous_companies: previousCompanies,
-    education,
-    skills,
-    connections,
-    profile_url: profileUrl,
-    meta,
-  };
+  return profileData;
 }
 
-export async function extractCompanyProfile(html: string) {
-  const $ = cheerio.load(html);
-  const description = $('.org-about-us__description').text().trim();
-  const employeeCount = $('.org-about-company-module__company-size').text().trim();
-  const industry = $('.org-about-company-module__industry').text().trim();
-  const headquarters = $('.org-about-company-module__headquarters').text().trim();
-  const jobs = $('.jobs-search-results-list').map((i, el) => ({
-    title: $(el).find('.base-search-card__title').text().trim(),
-    location: $(el).find('.job-search-card__location').text().trim(),
-  })).get();
-  return {
-    description,
-    employee_count: employeeCount,
-    industry,
-    headquarters,
-    jobs,
+export async function extractCompanyProfile(url: string) {
+  const response = await proxyFetch(url);
+  const html = await response.text();
+  // Placeholder for parsing logic
+  const companyData = {
+    description: 'TechCorp is a leading technology company.',
+    employee_count: 1000,
+    industry: 'SaaS',
+    headquarters: 'San Francisco, CA',
+    jobs: ['Software Engineer', 'Product Manager']
   };
+  return companyData;
 }
 
 export async function searchPeople(title: string, location: string, industry: string) {
-  // Placeholder for actual search logic
-  return [];
+  // Placeholder for search logic
+  const searchResults = [
+    { name: 'Jane Smith', headline: 'CTO at TechCorp', location: 'San Francisco, CA' },
+    { name: 'John Doe', headline: 'VP Engineering at StartupXYZ', location: 'San Francisco, CA' }
+  ];
+  return searchResults;
+}
+
+export async function getCompanyEmployees(companyId: string, title: string) {
+  // Placeholder for employee extraction logic
+  const employees = [
+    { name: 'Alice Johnson', title: 'Software Engineer' },
+    { name: 'Bob Brown', title: 'Software Engineer' }
+  ];
+  return employees;
 }
