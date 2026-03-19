@@ -260,4 +260,19 @@ export async function getYouTubeTrending(
   }
 
   return parseResults(payload, safeLimit);
+import { proxyFetch } from '../utils/proxyFetch';
+
+export async function scrapeYouTube(topic: string, days: number, country: string) {
+  // Placeholder for YouTube scraping logic
+  const response = await proxyFetch(`https://www.googleapis.com/youtube/v3/search?q=${topic}&maxResults=10&type=video`);
+  const data = await response.json();
+
+  // Process and return data
+  return data.items.map(item => ({
+    platform: 'youtube',
+    title: item.snippet.title,
+    views: item.statistics.viewCount,
+    url: `https://www.youtube.com/watch?v=${item.id.videoId}`
+  }));
+}
 }
