@@ -47,8 +47,8 @@ cd marketplace-service-template
 cp .env.example .env
 # Edit .env: set WALLET_ADDRESS + PROXY_* credentials
 
-bun install
-bun run dev
+
+
 ```
 
 Test it:
