@@ -7,12 +7,13 @@
     "start": "bun run src/index.ts",
     "test": "bun test",
     "typecheck": "tsc --noEmit",
-    "proof:indeed": "bun run scripts/proof-indeed.ts"
-  },
-  "dependencies": {
-    "hono": "^4.6.0"
+    "hono": "^2.0.0",
+    "proxy-agent": "^6.0.0",
+    "ts-node": "^10.9.1",
+    "cheerio": "^1.0.0-rc.12"
   },
   "devDependencies": {
+    "@types/node": "^18.16.18",
     "@types/bun": "latest",
     "typescript": "^5.0.0"
   },
