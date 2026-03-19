@@ -168,7 +168,7 @@ export async function getRedditSentiment(topic: string): Promise<SentimentResult
 
 export async function getTwitterSentiment(topic: string): Promise<SentimentResult> {
   try {
-    const TWITTER_API_KEY = 'new1_0ebf77fa363b4a189dca7138c9400471';
+    const TWITTER_API_KEY = process.env.TWITTER_API_KEY || '';
     const query = encodeURIComponent(topic);
 
     const res = await proxyFetch(
