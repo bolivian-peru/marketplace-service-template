@@ -13,62 +13,61 @@ serviceRouter.get('/api/linkedin/person', async (c) => {
     return c.json({ error: 'URL parameter is required' }, 400);
  */
 
-  if (!await verifyPayment(c, PRICE_USDC)) {
+  if (!paymentVerified) {
     return c.json({ error: 'Payment verification failed' }, 402);
   }
-  const profileData = await extractPersonProfile(url);
-  return c.json(profileData);
+  const result = await extractPersonProfile(url);
+  return c.json(result);
 });
 
-// Additional endpoints for company, search, and employees can be added similarly.
 import { trendingRouter } from './routes/trending';
-import { searchAirbnb, getListingDetail, getListingReviews, getMarketStats } from './scrapers/airbnb-scraper';
-import { 
-  scrapeLinkedInPerson, 
-  scrapeLinkedInCompany, 
-  searchLinkedInPeople, 
-  findCompanyEmployees 
-} from './scrapers/linkedin-enrichment';
+  const { url } = c.req.query();
+  if (!url) {
+    return c.json({ error: 'URL parameter is required' }, 400);
+  }
+  const paymentVerified = await verifyPayment(c, PRICE_USDC);
+  if (!paymentVerified) {
+    return c.json({ error: 'Payment verification failed' }, 402);
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
-import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
+  if (!paymentVerified) {
+    return c.json({ error: 'Payment verification failed' }, 402);
+  }
+  const result = await extractCompanyProfile(url);
+  return c.json(result);
+});
 
-export const serviceRouter = new Hono();
 
-// ─── TREND INTELLIGENCE ROUTES (Bounty #70) ─────────
-serviceRouter.route('/research', researchRouter);
-serviceRouter.route('/trending', trendingRouter);
-
-const SERVICE_NAME = 'job-market-intelligence';
-const PRICE_USDC = 0.005;
-const DESCRIPTION = 'Job Market Intelligence API (Indeed/LinkedIn): title, company, location, salary, date, link, remote + proxy exit metadata.';
-const MAPS_PRICE_USDC = 0.005;
-const MAPS_DESCRIPTION = 'Extract structured business data from Google Maps: name, address, phone, website, email, hours, ratings, reviews, categories, and geocoordinates. Search by category + location with full pagination.';
-
-const MAPS_OUTPUT_SCHEMA = {
+  const { title, location, industry } = c.req.query();
+  if (!title || !location || !industry) {
+    return c.json({ error: 'Title, location, and industry parameters are required' }, 400);
+  }
+  const paymentVerified = await verifyPayment(c, 0.10);
+  if (!paymentVerified) {
+    return c.json({ error: 'Payment verification failed' }, 402);
   input: {
-    query: 'string — Search query/category (required)',
-    location: 'string — Location to search (required)',
-    limit: 'number — Max results to return (default: 20, max: 100)',
-    pageToken: 'string — Pagination token for next page (optional)',
-  },
-  output: {
-    businesses: [{
+  if (!paymentVerified) {
+    return c.json({ error: 'Payment verification failed' }, 402);
+  }
+  const result = await searchPeople(title, location, industry);
+  return c.json(result);
+});
+
       name: 'string',
-      address: 'string | null',
-      phone: 'string | null',
-      website: 'string | null',
-      email: 'string | null',
-      hours: 'object | null',
-      rating: 'number | null',
-      reviewCount: 'number | null',
+  const { id, title } = c.req.query();
+  if (!id || !title) {
+    return c.json({ error: 'ID and title parameters are required' }, 400);
+  }
+  const paymentVerified = await verifyPayment(c, PRICE_USDC);
+  if (!paymentVerified) {
+    return c.json({ error: 'Payment verification failed' }, 402);
       categories: 'string[]',
-      coordinates: '{ latitude, longitude } | null',
-      placeId: 'string | null',
-      priceLevel: 'string | null',
-      permanentlyClosed: 'boolean',
-    }],
-    totalFound: 'number',
-    nextPageToken: 'string | null',
+  if (!paymentVerified) {
+    return c.json({ error: 'Payment verification failed' }, 402);
+  }
+  const result = await getCompanyEmployees(id, title);
+  return c.json(result);
+});
+
     searchQuery: 'string',
     location: 'string',
     proxy: '{ country: string, type: "mobile" }',
