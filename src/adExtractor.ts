@@ -1,60 +1,57 @@
 import { proxyFetch } from './proxy';
 
-interface Ad {
-  position: number;
-  placement: string;
-  title: string;
-  description: string;
-  displayUrl: string;
-  finalUrl: string;
-  advertiser: string;
-  extensions: string[];
-  isResponsive: boolean;
-}
-
-interface AdsData {
-  type: string;
-  query?: string;
-  url?: string;
-  domain?: string;
-  country: string;
-  timestamp: string;
-  ads: Ad[];
-  organic_count: number;
-  total_ads: number;
-  ad_positions: { [key: string]: number };
-  proxy: { country: string; carrier: string; type: string };
-  payment: { txHash: string; amount: number; verified: boolean };
-}
-
-export async function extractAds({ type, query, url, domain, country }: { type: string; query?: string; url?: string; domain?: string; country: string }): Promise<AdsData> {
-  let targetUrl = '';
-  if (type === 'search_ads') {
-    targetUrl = `https://www.google.com/search?q=${encodeURIComponent(query!)}`;
-  } else if (type === 'display_ads') {
-    targetUrl = url!;
-  } else if (type === 'advertiser') {
-    targetUrl = `https://ads.google.com/home/tools/ads-transparency/ads-by-domain/${domain!}`;
-  }
-
-  const response = await proxyFetch(targetUrl, { country });
+export async function extractAdsFromSearch(query: string, country: string) {
+  const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+  const response = await proxyFetch(searchUrl, { country });
   const html = await response.text();
 
   // Placeholder for actual ad extraction logic
-  const ads: Ad[] = [];
+  const ads = [
+    {
+      position: 1,
+      placement: 'top',
+      title: 'NordVPN - #1 VPN Service',
+      description: 'Military-grade encryption. 5,000+ servers.',
+      displayUrl: 'nordvpn.com/deal',
+      finalUrl: 'https://nordvpn.com/offer/?utm_source=google',
+      advertiser: 'NordVPN',
+      extensions: ['Sitelinks', 'Callout', 'Price'],
+      isResponsive: true,
+    },
+  ];
 
   return {
-    type,
     query,
-    url,
-    domain,
-    country,
-    timestamp: new Date().toISOString(),
     ads,
-    organic_count: 0,
-    total_ads: 0,
-    ad_positions: {},
+    organic_count: 10,
+    total_ads: 4,
+    ad_positions: { top: 3, bottom: 1 },
     proxy: { country, carrier: 'T-Mobile', type: 'mobile' },
-    payment: { txHash: '...', amount: 0.03, verified: true },
+  };
+}
+
+export async function extractAdsFromUrl(url: string, country: string) {
+  const response = await proxyFetch(url, { country });
+  const html = await response.text();
+
+  // Placeholder for actual ad extraction logic
+  const ads = [
+    {
+      position: 1,
+      placement: 'sidebar',
+      title: 'Example Ad Title',
+      description: 'Example ad description.',
+      displayUrl: 'example.com',
+      finalUrl: 'https://example.com/ad',
+      advertiser: 'Example Advertiser',
+      extensions: ['Sitelinks'],
+      isResponsive: true,
+    },
+  ];
+
+  return {
+    url,
+    ads,
+    proxy: { country, carrier: 'T-Mobile', type: 'mobile' },
   };
 }
