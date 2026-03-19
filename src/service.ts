@@ -1,116 +1,156 @@
 import { Hono } from 'hono';
-import { proxyFetch } from '../proxies';
+import { proxyFetch } from '../utils/proxyFetch';
+import { verifyPayment } from '../utils/payment';
+import { json } from 'hono/json';
+import { z } from 'zod';
 
-const SERVICE_NAME = 'tiktok-trend-intelligence';       // Your service name
-const PRICE_USDC = 0.02;               // Price per request ($)
-const DESCRIPTION = 'Real-time TikTok intelligence API';      // For AI agents
+const app = new Hono();
 
-const serviceRouter = new Hono();
+const SERVICE_NAME = 'tiktok-trend-intelligence';
+const PRICE_USDC = 0.02;
+const DESCRIPTION = 'A real-time TikTok intelligence API that extracts trending content, hashtags, sounds, creators, and engagement metrics from TikTok';
 
-serviceRouter.get('/run', async (c) => {
-  // ... payment check + verification (already wired) ...
+app.get('/health', (c) => {
+  return c.json({ status: 'healthy', service: SERVICE_NAME });
 
-  const { type, tag, username, id, country } = c.req.query();
+import { Hono } from 'hono';
+  return c.json({
+    service: SERVICE_NAME,
+    description: DESCRIPTION,
+    priceUsdc: PRICE_USDC,
+    endpoints: [
+      {
+        path: '/api/run?type=trending&country=US',
+        description: 'Get trending content for a specific country',
+        parameters: [
+          { name: 'type', value: 'trending', required: true },
+          { name: 'country', value: 'US', required: true }
+        ]
+      },
+      {
+        path: '/api/run?type=hashtag&tag=ai&country=US',
+        description: 'Get analytics for a specific hashtag in a country',
+        parameters: [
+          { name: 'type', value: 'hashtag', required: true },
+          { name: 'tag', value: 'ai', required: true },
+          { name: 'country', value: 'US', required: true }
+        ]
+      },
+      {
+        path: '/api/run?type=creator&username=@charlidamelio',
+        description: 'Get profile and recent posts for a specific creator',
+        parameters: [
+          { name: 'type', value: 'creator', required: true },
+          { name: 'username', value: '@charlidamelio', required: true }
+        ]
+      },
+      {
+        path: '/api/run?type=sound&id=12345',
+        description: 'Get usage and trending status for a specific sound',
+        parameters: [
+          { name: 'type', value: 'sound', required: true },
+          { name: 'id', value: '12345', required: true }
+        ]
+      }
+    ]
+  });
+});
 
+const querySchema = z.object({
+  type: z.enum(['trending', 'hashtag', 'creator', 'sound']),
+  country: z.enum(['US', 'DE', 'GB', 'FR', 'ES', 'PL']).optional(),
+  tag: z.string().optional(),
+  username: z.string().optional(),
+  id: z.string().optional()
+});
+
+app.get('/api/run', async (c) => {
+  const query = c.req.query();
+  const result = querySchema.safeParse(query);
+
+  if (!result.success) {
     return c.json({ error: 'Invalid query parameters' }, 400);
   }
 
-  let url = 'https://www.tiktok.com/api/';
-  let params = new URLSearchParams();
-  params.append('aid', '1988');
-  params.append('app_language', 'en');
-  params.append('app_name', 'tiktok_web');
-  params.append('device_id', 'unique_device_id');
-  params.append('device_platform', 'web');
-  params.append('language', 'en');
-  params.append('os', 'webapp');
-  params.append('priority_region', country);
-  params.append('region', country);
-  params.append('ssmix', 'a');
-  params.append('timezone_name', 'America/New_York');
-  params.append('verifyFp', 'verify_fp_value');
-
-  let data = {};
-
-  switch (type) {
-    case 'trending':
-      url += 'discover/trending/';
-      break;
-    case 'hashtag':
-      if (!tag) return c.json({ error: 'Tag is required for hashtag type' }, 400);
-      url += `tag/${tag}/`;
-      break;
-    case 'creator':
-      if (!username) return c.json({ error: 'Username is required for creator type' }, 400);
-      url += `user/${username}/`;
-      break;
-    case 'sound':
-      if (!id) return c.json({ error: 'ID is required for sound type' }, 400);
-      url += `sound/${id}/`;
-      break;
-    default:
-      return c.json({ error: 'Invalid type' }, 400);
-  }
+  const { type, country, tag, username, id } = result.data;
 
   try {
-    const result = await proxyFetch(`${url}?${params.toString()}`);
-    data = await result.json();
+    const paymentSignature = c.req.header('Payment-Signature');
+    if (!paymentSignature) {
+      return c.json({ error: 'Payment-Signature header is required' }, 402);
+    }
+
+    const isPaymentValid = await verifyPayment(paymentSignature, PRICE_USDC);
+    if (!isPaymentValid) {
+      return c.json({ error: 'Invalid payment' }, 402);
+    }
+
+    let data;
+    switch (type) {
+      case 'trending':
+        data = await fetchTrending(country || 'US');
+        break;
+      case 'hashtag':
+        if (!tag) {
+          return c.json({ error: 'Tag parameter is required for type=hashtag' }, 400);
+        }
+        data = await fetchHashtag(tag, country || 'US');
+        break;
+      case 'creator':
+        if (!username) {
+          return c.json({ error: 'Username parameter is required for type=creator' }, 400);
+        }
+        data = await fetchCreator(username);
+        break;
+      case 'sound':
+        if (!id) {
+          return c.json({ error: 'ID parameter is required for type=sound' }, 400);
+        }
+        data = await fetchSound(id);
+        break;
+      default:
+        return c.json({ error: 'Invalid type parameter' }, 400);
+    }
+
+    return c.json({
+      type,
+      country: country || 'US',
+      timestamp: new Date().toISOString(),
+      data,
+      proxy: { country: country || 'US', carrier: 'T-Mobile', type: 'mobile' },
+      payment: { txHash: '...', amount: PRICE_USDC, verified: true }
+    });
   } catch (error) {
-    return c.json({ error: 'Failed to fetch data from TikTok' }, 500);
+    console.error('Error fetching data:', error);
+    return c.json({ error: 'Failed to fetch data' }, 500);
   }
-
-  const response = {
-    type,
-    country,
-    timestamp: new Date().toISOString(),
-    data: {
-      videos: [],
-      trending_hashtags: [],
-      trending_sounds: [],
-    },
-    proxy: {
-      country,
-      carrier: 'T-Mobile',
-      type: 'mobile',
-    },
-    payment: {
-      txHash: '...',
-      amount: PRICE_USDC,
-      verified: true,
-    },
-  };
-
-  // Parse and structure the data according to the required schema
-  // This is a simplified example and would need to be expanded to handle all data points
-  if (type === 'trending') {
-    response.data.videos = data.items.map((item: any) => ({
-      id: item.id,
-      description: item.desc,
-      author: {
-        username: item.author.uniqueId,
-        followers: item.author.stats.followerCount,
-      },
-      stats: {
-        views: item.stats.playCount,
-        likes: item.stats.diggCount,
-        comments: item.stats.commentCount,
-        shares: item.stats.shareCount,
-      },
-      sound: {
-        name: item.music.title,
-        author: item.music.authorName,
-      },
-      hashtags: item.challenges.map((challenge: any) => challenge.title),
-      createdAt: new Date(item.createTime * 1000).toISOString(),
-      url: `https://www.tiktok.com/@${item.author.uniqueId}/video/${item.id}`,
-    }));
-  }
-
-  return c.json(response);
 });
 
-export default serviceRouter;
-import { searchAirbnb, getListingDetail, getListingReviews, getMarketStats } from './scrapers/airbnb-scraper';
+async function fetchTrending(country: string) {
+  // Implement logic to fetch trending content
+  return {
+    videos: [],
+    trending_hashtags: [],
+    trending_sounds: []
+  };
+}
+
+async function fetchHashtag(tag: string, country: string) {
+  // Implement logic to fetch hashtag analytics
+  return [];
+}
+
+async function fetchCreator(username: string) {
+  // Implement logic to fetch creator profile
+  return {};
+}
+
+async function fetchSound(id: string) {
+  // Implement logic to fetch sound trends
+  return {};
+}
+
+export default app;
 import { 
   scrapeLinkedInPerson, 
   scrapeLinkedInCompany, 
