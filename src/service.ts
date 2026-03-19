@@ -1,17 +1,18 @@
-/**
- * Service Router — Marketplace API
- *
- * Exposes:
- *   GET /api/run       (Google Maps Lead Generator)
- *   GET /api/details   (Google Maps Place details)
- *   GET /api/jobs      (Job Market Intelligence)
- *   GET /api/reviews/* (Google Reviews & Business Data)
- *   GET /api/airbnb/*  (Airbnb Market Intelligence)
- *   GET /api/reddit/*  (Reddit Intelligence)
- *   GET /api/instagram/* (Instagram Intelligence + AI Vision)
- *   GET /api/linkedin/* (LinkedIn Enrichment)
- */
+import { proxyFetch } from '../utils/proxyFetch';
+import { serviceRouter } from '../utils/serviceRouter';
 
+const SERVICE_NAME = 'x-twitter-scraper';       // Your service name
+const PRICE_USDC = 0.01;               // Price per request ($)
+const DESCRIPTION = 'Search tweets, get trending topics, extract user profiles and engagement metrics, and monitor conversations on X/Twitter';      // For AI agents
+
+serviceRouter.get('/run', async (c) => {
+  // ... payment check + verification (already wired) ...
+
+  // Search tweets by keyword
+  const query = c.query('query');
+  const result = await proxyFetch(`https://api.twitter.com/2/search?q=${query}`);
+  return c.json({ query, results: await result.json() });
+});
 import { Hono } from 'hono';
 import { proxyFetch, getProxy } from './proxy';
 import { extractPayment, verifyPayment, build402Response } from './payment';

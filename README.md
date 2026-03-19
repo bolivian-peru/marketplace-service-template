@@ -37,12 +37,12 @@ Your margin depends on what you're scraping:
 3. **Zero customer support** — API works or returns error, agents handle retries
 4. **Passive income** — deploy once, earn while you sleep
 
-## Quick Start
 
-```bash
-# Fork this repo, then:
-git clone https://github.com/YOUR_USERNAME/marketplace-service-template
-cd marketplace-service-template
+## Edit One File
+
+**`src/service.ts`** — change three values and the handler to implement X/Twitter search:
+
+
 
 cp .env.example .env
 # Edit .env: set WALLET_ADDRESS + PROXY_* credentials
