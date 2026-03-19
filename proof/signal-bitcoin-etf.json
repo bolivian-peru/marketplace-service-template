@@ -1,0 +1,64 @@
+{
+  "proof_type": "prediction_market_signal",
+  "endpoint": "GET /api/run?type=signal&market=bitcoin-etf-approval",
+  "fetched_at": "2026-03-19T14:01:17.956846Z",
+  "market": "bitcoin-etf-approval",
+  "signal": {
+    "market": "bitcoin ETF approval",
+    "type": "arbitrage",
+    "direction": "buy_yes",
+    "confidence": 0.9,
+    "expected_edge": 8.5,
+    "reasoning": "Arbitrage: 10.0% spread between platforms",
+    "generated_at": "2026-03-19T14:01:17.956892Z"
+  },
+  "raw_odds": [
+    {
+      "platform": "polymarket",
+      "market": "Bitcoin ETF Approval",
+      "slug": "",
+      "yes": 0.72,
+      "no": 0.28,
+      "volume24h": 3000,
+      "last_updated": "2026-03-19T14:01:17.956913Z"
+    },
+    {
+      "platform": "kalshi",
+      "market": "Will Bitcoin ETF be approved? (estimated)",
+      "yes": 0.62,
+      "no": 0.38,
+      "note": "Kalshi price estimated \u2014 ticker lookup required",
+      "last_updated": "2026-03-19T14:01:17.956926Z"
+    }
+  ],
+  "sentiment": {
+    "topic": "bitcoin ETF",
+    "overall": {
+      "positive": 0.1,
+      "negative": 0.15,
+      "neutral": 0.75,
+      "score": -0.05,
+      "verdict": "NEUTRAL"
+    },
+    "sample_tweets": [
+      {
+        "text": "Guess what? Even #Bitcoin can be a sugar daddy! \ud83e\udd11 The news that 'Purpose Bitcoin Yield ETF - ETF Units declares CAD 0.085 dividend' means you can get paid just for being invested in a crypto-related f",
+        "sentiment": "neutral"
+      },
+      {
+        "text": "$XLF $IGV = $BTC \n(High Correlation\n\n30-day rolling correlation between $BTC and $IGV (software ETF) reached 0.73. \n\n*This is higher than $BTC correlation with Nasdaq 100 in many periods.\n\nCorrelation",
+        "sentiment": "positive"
+      },
+      {
+        "text": "\ud83d\uddde\ufe0f #ARKInvest\u2019in yay\u0131mlad\u0131\u011f\u0131 son rapora g\u00f6re, #Bitcoin giderek \u00f6nde gelen bir kurumsal varl\u0131k s\u0131n\u0131f\u0131 haline geliyor.\n\nRaporda, Bitcoin\u2019in artan kurumsal benimsenme, geli\u015fen piyasa altyap\u0131s\u0131 ve b\u00fcy\u00fcyen",
+        "sentiment": "neutral"
+      }
+    ],
+    "total_analyzed": 20
+  },
+  "data_sources": {
+    "polymarket": "https://gamma-api.polymarket.com/markets",
+    "kalshi": "https://api.elections.kalshi.com/trade-api/v2/markets",
+    "twitter": "https://api.twitterapi.io/twitter/tweet/advanced_search"
+  }
+}

@@ -1,0 +1,98 @@
+{
+  "endpoint": "/api/serp/search",
+  "query": "best crypto exchange 2025",
+  "timestamp": "2026-03-18T19:20:18.595Z",
+  "liveEndpoint": "http://135.125.243.226:9000/api/serp/search",
+  "response": {
+    "query": "best crypto exchange 2025",
+    "totalResults": "10+ news results",
+    "organic": [
+      {
+        "position": 1,
+        "title": "Best Crypto Exchanges for Top Traders in 2025: Platform Comparison Guide",
+        "url": "https://news.google.com/search?q=best%20crypto%20exchange%202025",
+        "displayUrl": "news.google.com",
+        "description": "News result via Google News — Bitget"
+      },
+      {
+        "position": 2,
+        "title": "Best Crypto Exchanges for Beginners 2026",
+        "url": "https://news.google.com/search?q=best%20crypto%20exchange%202025",
+        "displayUrl": "news.google.com",
+        "description": "News result via Google News — Forbes"
+      },
+      {
+        "position": 3,
+        "title": "Top 10 Crypto Exchanges & Apps for Trading in March 2026",
+        "url": "https://news.google.com/search?q=best%20crypto%20exchange%202025",
+        "displayUrl": "news.google.com",
+        "description": "News result via Google News — 10 Best Crypto Exchanges of 2026"
+      },
+      {
+        "position": 4,
+        "title": "Best Crypto Trading Apps 2026: Top Platforms & Wallets",
+        "url": "https://news.google.com/search?q=best%20crypto%20exchange%202025",
+        "displayUrl": "news.google.com",
+        "description": "News result via Google News — Coinspeaker"
+      },
+      {
+        "position": 5,
+        "title": "Best Crypto Exchanges in 2026: Complete Comparison",
+        "url": "https://news.google.com/search?q=best%20crypto%20exchange%202025",
+        "displayUrl": "news.google.com",
+        "description": "News result via Google News — Best Crypto Exchanges for Beginners 2026"
+      },
+      {
+        "position": 6,
+        "title": "Best Crypto Exchanges 2025: Fees, Security & Features Compared",
+        "url": "https://news.google.com/search?q=best%20crypto%20exchange%202025",
+        "displayUrl": "news.google.com",
+        "description": "News result via Google News — Ventureburn"
+      },
+      {
+        "position": 7,
+        "title": "Best Crypto Exchanges and Apps For 2026",
+        "url": "https://news.google.com/search?q=best%20crypto%20exchange%202025",
+        "displayUrl": "news.google.com",
+        "description": "News result via Google News — Business Insider"
+      },
+      {
+        "position": 8,
+        "title": "Biggest crypto spot exchanges 2025",
+        "url": "https://news.google.com/search?q=best%20crypto%20exchange%202025",
+        "displayUrl": "news.google.com",
+        "description": "News result via Google News — NFT Plazas"
+      },
+      {
+        "position": 9,
+        "title": "Best Cryptocurrency Exchanges 2025: Features, Fees & Security Compared",
+        "url": "https://news.google.com/search?q=best%20crypto%20exchange%202025",
+        "displayUrl": "news.google.com",
+        "description": "News result via Google News — CryptoPotato"
+      },
+      {
+        "position": 10,
+        "title": "Best Crypto Exchanges In Canada For 2026",
+        "url": "https://news.google.com/search?q=best%20crypto%20exchange%202025",
+        "displayUrl": "news.google.com",
+        "description": "News result via Google News — Best Crypto Exchanges in 2026: Complete Comparison"
+      }
+    ],
+    "ads": [],
+    "featuredSnippet": null,
+    "peopleAlsoAsk": [],
+    "relatedSearches": [
+      "best crypto exchange 2025",
+      "best crypto exchange 2025 reddit",
+      "best crypto exchanges 2025 comparison",
+      "best bitcoin exchange 2025",
+      "best crypto exchange australia 2025"
+    ],
+    "scrapedAt": "2026-03-18T19:20:36.035Z"
+  },
+  "proxy": {
+    "host": "168.119.243.180",
+    "port": 8048,
+    "type": "mobile"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "endpoint": "/api/serp/suggest",
+  "query": "solana",
+  "timestamp": "2026-03-18T19:20:18.595Z",
+  "liveEndpoint": "http://135.125.243.226:9000/api/serp/suggest",
+  "response": {
+    "query": "solana",
+    "suggestions": [
+      "solana",
+      "solana price",
+      "solana price usd",
+      "solana beach mojacar",
+      "solana usd",
+      "solana hotel benidorm",
+      "solana crypto",
+      "solana price prediction",
+      "solana price eur",
+      "solana eur"
+    ],
+    "scrapedAt": "2026-03-18T19:20:33.084Z"
+  },
+  "note": "Google Suggest uses public API, no proxy required"
+}

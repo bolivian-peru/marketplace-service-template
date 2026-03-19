@@ -1,0 +1,99 @@
+{
+  "endpoint": "/api/serp/search",
+  "query": "bitcoin price 2025",
+  "timestamp": "2026-03-18T19:20:18.595Z",
+  "liveEndpoint": "http://135.125.243.226:9000/api/serp/search",
+  "response": {
+    "query": "bitcoin price 2025",
+    "totalResults": "10+ news results",
+    "organic": [
+      {
+        "position": 1,
+        "title": "BTC price analysis: Bitcoin set for best week since September 2025 as correlation with tech stocks weakens",
+        "url": "https://news.google.com/search?q=bitcoin%20price%202025",
+        "displayUrl": "news.google.com",
+        "description": "News result via Google News — CoinDesk"
+      },
+      {
+        "position": 2,
+        "title": "People Are ‘Mistaken’—Wikipedia Founder Issues Surprise Bitcoin Price Prediction",
+        "url": "https://news.google.com/search?q=bitcoin%20price%202025",
+        "displayUrl": "news.google.com",
+        "description": "News result via Google News — Forbes"
+      },
+      {
+        "position": 3,
+        "title": "Bitcoin Price: Bitcoin Is Down 43% From Its All-Time High—Is Now the Time to Buy?",
+        "url": "https://news.google.com/search?q=bitcoin%20price%202025",
+        "displayUrl": "news.google.com",
+        "description": "News result via Google News — 24/7 Wall St."
+      },
+      {
+        "position": 4,
+        "title": "In 2025, bitcoin showed how spectacularly wrong price forecasts can be",
+        "url": "https://news.google.com/search?q=bitcoin%20price%202025",
+        "displayUrl": "news.google.com",
+        "description": "News result via Google News — Yahoo Finance"
+      },
+      {
+        "position": 5,
+        "title": "Bears Claw Back Control: Can Bitcoin Defy The Odds And Bounce To $160K, Or Is $69K Next?",
+        "url": "https://news.google.com/search?q=bitcoin%20price%202025",
+        "displayUrl": "news.google.com",
+        "description": "News result via Google News — Bitcoin Magazine"
+      },
+      {
+        "position": 6,
+        "title": "Those Sky-High Bitcoin Prices Everyone Said Were Here to Stay? They Left.",
+        "url": "https://news.google.com/search?q=bitcoin%20price%202025",
+        "displayUrl": "news.google.com",
+        "description": "News result via Google News — The New York Times"
+      },
+      {
+        "position": 7,
+        "title": "By David Yaffe-Bellany & Kailyn Rhone",
+        "url": "https://news.google.com/search?q=bitcoin%20price%202025",
+        "displayUrl": "news.google.com",
+        "description": "News result via Google News — BBC"
+      },
+      {
+        "position": 8,
+        "title": "Bitcoin falls to lowest level since Trump took office",
+        "url": "https://news.google.com/search?q=bitcoin%20price%202025",
+        "displayUrl": "news.google.com",
+        "description": "News result via Google News — Finance Magnates"
+      },
+      {
+        "position": 9,
+        "title": "Bitcoin Price Prediction: Why BTC Price Is Rallying and Forecasts for 2025-2030",
+        "url": "https://news.google.com/search?q=bitcoin%20price%202025",
+        "displayUrl": "news.google.com",
+        "description": "News result via Google News — Financial Times"
+      },
+      {
+        "position": 10,
+        "title": "Bitcoin price slides to lowest level since 2025 tariff shock",
+        "url": "https://news.google.com/search?q=bitcoin%20price%202025",
+        "displayUrl": "news.google.com",
+        "description": "News result via Google News — Business Insider"
+      }
+    ],
+    "ads": [],
+    "featuredSnippet": null,
+    "peopleAlsoAsk": [],
+    "relatedSearches": [
+      "bitcoin price 2025",
+      "bitcoin price 2025 in india",
+      "bitcoin price 2025 in indian rupees",
+      "bitcoin price 2025 december",
+      "bitcoin price 2025 january"
+    ],
+    "scrapedAt": "2026-03-18T19:20:21.439Z"
+  },
+  "proxy": {
+    "host": "168.119.243.180",
+    "port": 8048,
+    "type": "mobile",
+    "note": "Real mobile IP via proxies.sx"
+  }
+}

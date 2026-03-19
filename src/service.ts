@@ -29,6 +29,7 @@ import {
 } from './scrapers/linkedin-enrichment';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
+import { getSignal, getArbitrage, getSentiment, getTrending as getPredTrending } from './scrapers/signal-generator';
 
 export const serviceRouter = new Hono();
 
@@ -89,7 +90,100 @@ async function getProxyExitIp(): Promise<string | null> {
   }
 }
 
+// ═══════════════════════════════════════════════════════
+// ─── PREDICTION MARKET SIGNAL AGGREGATOR (Bounty #55) ─
+// ═══════════════════════════════════════════════════════
+
+const SIGNAL_PRICE = 0.05;   // $0.05 per signal
+const PREDICTION_WALLET = '2fPV8uNxdP1VAm7mP9ks8NdcxhZgA2n5x62hxj48jzSL';
+
+// Prediction market types that intercept /api/run
+const PREDICTION_TYPES = new Set(['signal', 'arbitrage', 'sentiment', 'trending']);
+
 serviceRouter.get('/run', async (c) => {
+  // ── Prediction Market Signal routes ──────────────────
+  const typeParam = c.req.query('type');
+  if (typeParam && PREDICTION_TYPES.has(typeParam)) {
+    const payment = extractPayment(c);
+    if (!payment) {
+      return c.json({
+        service: 'Prediction Market Signal Aggregator',
+        description: 'Aggregates signals from Polymarket, Kalshi, Metaculus + social sentiment (Twitter, Reddit, TikTok)',
+        price: SIGNAL_PRICE,
+        wallet: PREDICTION_WALLET,
+        network: 'solana',
+        endpoints: {
+          signal: '/api/run?type=signal&market=bitcoin-etf-approval',
+          arbitrage: '/api/run?type=arbitrage',
+          sentiment: '/api/run?type=sentiment&topic=bitcoin+etf',
+          trending: '/api/run?type=trending',
+        },
+        paymentHeader: 'X-Payment: <solana_tx_hash>',
+      }, 402);
+    }
+
+    const verification = await verifyPayment(payment, PREDICTION_WALLET, SIGNAL_PRICE);
+    if (!verification.valid) {
+      return c.json({
+        error: 'Payment verification failed',
+        reason: verification.error,
+        wallet: PREDICTION_WALLET,
+        requiredAmount: SIGNAL_PRICE,
+      }, 402);
+    }
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    try {
+      if (typeParam === 'signal') {
+        const market = c.req.query('market') || 'bitcoin-etf-approval';
+        const result = await getSignal(market);
+        return c.json({
+          type: 'signal',
+          market,
+          ...result,
+          payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+        });
+      }
+
+      if (typeParam === 'arbitrage') {
+        const result = await getArbitrage();
+        return c.json({
+          type: 'arbitrage',
+          ...result,
+          payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+        });
+      }
+
+      if (typeParam === 'sentiment') {
+        const topic = c.req.query('topic') || 'bitcoin etf';
+        const result = await getSentiment(topic);
+        return c.json({
+          type: 'sentiment',
+          ...result,
+          payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+        });
+      }
+
+      if (typeParam === 'trending') {
+        const result = await getPredTrending();
+        return c.json({
+          type: 'trending',
+          ...result,
+          payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+        });
+      }
+    } catch (err: any) {
+      return c.json({
+        error: 'Prediction market fetch failed',
+        message: err?.message || String(err),
+        type: typeParam,
+      }, 502);
+    }
+  }
+
+  // ── Legacy Google Maps /run route ────────────────────
   const walletAddress = process.env.WALLET_ADDRESS;
   if (!walletAddress) {
     return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
@@ -1484,5 +1578,161 @@ serviceRouter.get('/serp', async (c) => {
     });
   } catch (err: any) {
     return c.json({ error: 'SERP scrape failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ═══════════════════════════════════════════════════════
+// ─── GOOGLE SERP + AI OVERVIEW + SUGGEST (Bounty #149) ─
+// ═══════════════════════════════════════════════════════
+
+import { scrapeGoogleSERP, scrapeAIOverview, scrapeGoogleSuggest } from './scrapers/serp-scraper';
+
+const SERP_SEARCH_PRICE  = 0.01;
+const SERP_AI_PRICE      = 0.005;
+const SERP_SUGGEST_PRICE = 0.002;
+const SERP_WALLET        = '2fPV8uNxdP1VAm7mP9ks8NdcxhZgA2n5x62hxj48jzSL';
+
+// ─── GET /api/serp/search ────────────────────────────
+
+serviceRouter.get('/serp/search', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/serp/search',
+      'Full Google SERP: organic results, ads, People Also Ask, Featured Snippet, Related Searches',
+      SERP_SEARCH_PRICE, SERP_WALLET, {
+        input: {
+          q: 'string (required) — search query',
+          location: 'string (optional) — geo location e.g. "New York"',
+          num: 'number (optional, default: 10) — number of results',
+          lang: 'string (optional, default: "en") — language code',
+          country: 'string (optional, default: "us") — country code',
+        },
+        output: {
+          organic: '[{ position, title, url, displayUrl, description, siteLinks?, date? }]',
+          ads: '[{ position, title, url, displayUrl, description }]',
+          featuredSnippet: '{ title, description, url, type, items? } | null',
+          peopleAlsoAsk: '[{ question, answer?, url? }]',
+          relatedSearches: 'string[]',
+          totalResults: 'string',
+          proxy: '{ country, type: "mobile" }',
+        },
+      }), 402);
+  }
+
+  const verification = await verifyPayment(payment, SERP_WALLET, SERP_SEARCH_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const q = c.req.query('q') || c.req.query('query');
+  if (!q) return c.json({ error: 'Missing required parameter: q', example: '/api/serp/search?q=bitcoin+price' }, 400);
+
+  const opts = {
+    location: c.req.query('location') || undefined,
+    num: parseInt(c.req.query('num') || '10'),
+    lang: c.req.query('lang') || 'en',
+    country: c.req.query('country') || 'us',
+  };
+
+  try {
+    const proxy = getProxy();
+    const result = await scrapeGoogleSERP(q, opts);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      meta: { proxy: { country: proxy.country, type: 'mobile' } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'SERP scrape failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/serp/ai ────────────────────────────────
+
+serviceRouter.get('/serp/ai', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/serp/ai',
+      'Google AI Overview extraction — get AI-generated answer with sources for any query',
+      SERP_AI_PRICE, SERP_WALLET, {
+        input: { q: 'string (required) — search query' },
+        output: {
+          available: 'boolean — whether AI Overview was found',
+          text: 'string | null — AI-generated answer text',
+          sources: '[{ title, url }] — cited sources',
+          query: 'string',
+        },
+      }), 402);
+  }
+
+  const verification = await verifyPayment(payment, SERP_WALLET, SERP_AI_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const q = c.req.query('q') || c.req.query('query');
+  if (!q) return c.json({ error: 'Missing required parameter: q', example: '/api/serp/ai?q=how+does+bitcoin+work' }, 400);
+
+  try {
+    const proxy = getProxy();
+    const result = await scrapeAIOverview(q, {});
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      meta: { proxy: { country: proxy.country, type: 'mobile' } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'AI Overview scrape failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/serp/suggest ───────────────────────────
+
+serviceRouter.get('/serp/suggest', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/serp/suggest',
+      'Google Autocomplete / Search Suggestions — real-time query suggestions from Google',
+      SERP_SUGGEST_PRICE, SERP_WALLET, {
+        input: {
+          q: 'string (required) — partial query',
+          lang: 'string (optional, default: "en") — language code',
+          country: 'string (optional, default: "us") — country code',
+        },
+        output: {
+          query: 'string',
+          suggestions: 'string[] — up to 10 autocomplete suggestions',
+        },
+      }), 402);
+  }
+
+  const verification = await verifyPayment(payment, SERP_WALLET, SERP_SUGGEST_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const q = c.req.query('q') || c.req.query('query');
+  if (!q) return c.json({ error: 'Missing required parameter: q', example: '/api/serp/suggest?q=bitcoin' }, 400);
+
+  const opts = {
+    lang: c.req.query('lang') || 'en',
+    country: c.req.query('country') || 'us',
+  };
+
+  try {
+    const result = await scrapeGoogleSuggest(q, opts);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      meta: { note: 'Google Suggest does not require proxy routing' },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Suggest scrape failed', message: err?.message || String(err) }, 502);
   }
 });

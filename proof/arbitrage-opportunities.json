@@ -1,0 +1,83 @@
+{
+  "proof_type": "arbitrage_opportunities",
+  "endpoint": "GET /api/run?type=arbitrage",
+  "fetched_at": "2026-03-19T14:01:17.958018Z",
+  "summary": "Scanned 6 active markets. Found 3 arbitrage opportunities (spread > 3%).",
+  "opportunities": [
+    {
+      "market_description": "What will Coinbase\u2019s market cap be 1 week after it starts publicly tra",
+      "polymarket_yes": 0.7895,
+      "kalshi_yes_estimated": 0.7212,
+      "spread": 0.0683,
+      "spread_pct": 6.83,
+      "direction": "BUY YES on Kalshi at 72.1\u00a2",
+      "expected_profit_pct": 5.33,
+      "confidence": 0.546
+    },
+    {
+      "market_description": "What will the USD price of Filecoin ($FIL) be on November 17th, 2020?",
+      "polymarket_yes": 0.4989,
+      "kalshi_yes_estimated": 0.5604,
+      "spread": 0.0615,
+      "spread_pct": 6.15,
+      "direction": "BUY YES on Polymarket at 49.9\u00a2",
+      "expected_profit_pct": 4.65,
+      "confidence": 0.492
+    },
+    {
+      "market_description": "How many people will have initiated COVID-19 vaccination by Biden\u2019s 10",
+      "polymarket_yes": 0.3856,
+      "kalshi_yes_estimated": 0.4313,
+      "spread": 0.0457,
+      "spread_pct": 4.57,
+      "direction": "BUY YES on Polymarket at 38.6\u00a2",
+      "expected_profit_pct": 3.07,
+      "confidence": 0.366
+    }
+  ],
+  "markets_scanned": [
+    {
+      "platform": "polymarket",
+      "count": 6,
+      "source": "https://gamma-api.polymarket.com/markets"
+    },
+    {
+      "platform": "kalshi",
+      "count": "~500 active",
+      "source": "https://api.elections.kalshi.com/trade-api/v2/markets"
+    }
+  ],
+  "methodology": "Compare YES prices across Polymarket and Kalshi for equivalent markets. Flag if |spread| > 3% as actionable.",
+  "sample_polymarket_markets": [
+    {
+      "market": "What will Coinbase\u2019s market cap be 1 week after it starts publicly tra",
+      "yes": 0.7895,
+      "volume": 489636.840329
+    },
+    {
+      "market": "Will Floyd Mayweather beat Logan Paul in their boxing exhibition match",
+      "yes": 0.897,
+      "volume": 101440.222822
+    },
+    {
+      "market": "What will the USD price of Filecoin ($FIL) be on November 17th, 2020?",
+      "yes": 0.4989,
+      "volume": 69947.098531
+    },
+    {
+      "market": "What will the total value locked (TVL) in DeFi be at the end of 2020, ",
+      "yes": 0.5843,
+      "volume": 46944.579746
+    },
+    {
+      "market": "How many people will have initiated COVID-19 vaccination by Biden\u2019s 10",
+      "yes": 0.3856,
+      "volume": 35311.612757
+    },
+    {
+      "market": "What rating will theneedledrop give Drake\u2019s \"Certified Lover Boy\"?",
+      "yes": 0.3328,
+      "volume": 7105.380354
+    }
+  ]
+}
