@@ -1,6 +1,6 @@
-# Marketplace Service Template
-
+# Marketplace Service Template - Enhanced with Mobile SERP Tracker, Google Maps Lead Generator, and Google Reviews & Business Data API
 **Turn AI agent traffic into passive USDC income.**
+
 
 Fork this repo → edit one file → deploy → start earning.
 
@@ -12,11 +12,17 @@ You provide the idea. We provide 155+ mobile devices across 6 countries, x402 pa
 
 You're arbitraging infrastructure. Buy proxy bandwidth wholesale, sell API calls retail.
 
-**Proxy cost:** $4/GB shared, $8/GB private ([live pricing](https://api.proxies.sx/v1/x402/pricing))
+> **Reference implementation included:** This repo ships with a working **Google Maps Lead Generator** (`src/service.ts` + `src/scrapers/`) built by [@aliraza556](https://github.com/aliraza556). Use it as-is or replace with your own service logic.
 
-Your margin depends on what you're scraping:
+> **Additional Services:**
+> - **Mobile SERP Tracker** (`src/service.ts` + `src/scrapers/`)
+> - **Google Maps Lead Generator** (`src/service.ts` + `src/scrapers/`)
+> - **Google Reviews & Business Data API** (`src/service.ts` + `src/scrapers/`)
 
-| Use Case | Avg Size | Reqs/GB | Cost/Req | You Charge | Margin |
+
+## The Economics
+
+You're arbitraging infrastructure. Buy proxy bandwidth wholesale, sell API calls retail.
 |----------|----------|---------|----------|------------|--------|
 | JSON APIs | ~10 KB | 100k | $0.00004 | $0.001 | **97%** |
 | Text extraction | ~50 KB | 20k | $0.0002 | $0.005 | **96%** |
@@ -101,12 +107,20 @@ AI Agent                         Your Service                    Blockchain
 ```
 
 Supports **Solana** (~400ms, ~$0.0001 gas) and **Base** (~2s, ~$0.01 gas).
+  // ... payment check + verification (already wired) ...
 
-## What's Included
-
-| File | Purpose | Edit? |
-|------|---------|-------|
-| `src/service.ts` | Your service logic, pricing, description | **Yes** |
+  // YOUR LOGIC HERE:
+  if (c.req.url.pathname === '/api/serp-tracker') {
+    const result = await proxyFetch('https://serp-tracker-api.com');
+    return c.json({ data: await result.text() });
+  }
+  if (c.req.url.pathname === '/api/google-maps-lead-generator') {
+    const result = await proxyFetch('https://google-maps-lead-generator-api.com');
+    return c.json({ data: await result.text() });
+  }
+  if (c.req.url.pathname === '/api/google-reviews') {
+    const result = await proxyFetch('https://google-reviews-api.com');
+    return c.json({ data: await result.text() });
 | `src/scrapers/maps-scraper.ts` | Google Maps scraping logic (reference impl) | Replace with yours |
 | `src/types/index.ts` | TypeScript interfaces | Replace with yours |
 | `src/utils/helpers.ts` | Extraction helper functions | Replace with yours |
