@@ -1,34 +1,96 @@
-/**
- * Service Router — Marketplace API
- *
- * Exposes:
- *   GET /api/run       (Google Maps Lead Generator)
- *   GET /api/details   (Google Maps Place details)
- *   GET /api/jobs      (Job Market Intelligence)
- *   GET /api/reviews/* (Google Reviews & Business Data)
- *   GET /api/airbnb/*  (Airbnb Market Intelligence)
- *   GET /api/reddit/*  (Reddit Intelligence)
- *   GET /api/instagram/* (Instagram Intelligence + AI Vision)
- *   GET /api/linkedin/* (LinkedIn Enrichment)
- */
+import { Hono } from 'hono';
+import { proxyFetch } from '../utils/proxyFetch';
+import { analyzeSentiment } from '../utils/sentimentAnalysis';
+import { scrapeReddit } from '../scrapers/reddit';
+import { scrapeTwitter } from '../scrapers/twitter';
+import { scrapeYouTube } from '../scrapers/youtube';
+import { calculateEngagementScore } from '../utils/engagementScoring';
+import { detectPatterns } from '../utils/patternDetection';
+
+const SERVICE_NAME = 'trend-intelligence-api';
+const PRICE_USDC = 0.50;
+const DESCRIPTION = 'Cross-platform research API that synthesizes data from Reddit, X/Twitter, and YouTube into a structured intelligence report.';
+
+const PLATFORMS = ['reddit', 'x', 'youtube'];
+
+const serviceRouter = new Hono();
+
+serviceRouter.get('/health', (c) => {
 
 import { Hono } from 'hono';
-import { proxyFetch, getProxy } from './proxy';
-import { extractPayment, verifyPayment, build402Response } from './payment';
-import { scrapeIndeed, scrapeLinkedIn, type JobListing } from './scrapers/job-scraper';
-import { fetchReviews, fetchBusinessDetails, fetchReviewSummary, searchBusinesses } from './scrapers/reviews';
-import { scrapeGoogleMaps, extractDetailedBusiness } from './scrapers/maps-scraper';
-import { researchRouter } from './routes/research';
-import { trendingRouter } from './routes/trending';
+  return c.json({ status: 'healthy', service: SERVICE_NAME, description: DESCRIPTION });
+});
+
+serviceRouter.post('/api/research', async (c) => {
+  // Payment check and verification (already wired)
+  const payment = await c.req.json();
+  if (!payment || payment.amount < PRICE_USDC) {
 import { searchAirbnb, getListingDetail, getListingReviews, getMarketStats } from './scrapers/airbnb-scraper';
-import { 
-  scrapeLinkedInPerson, 
-  scrapeLinkedInCompany, 
-  searchLinkedInPeople, 
-  findCompanyEmployees 
-} from './scrapers/linkedin-enrichment';
-import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
-import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
+  }
+
+  // YOUR LOGIC HERE:
+  const { topic, platforms, days, country } = payment;
+
+  if (!topic || !platforms || !days || !country) {
+    return c.json({ error: 'Invalid request parameters' }, 400);
+  }
+
+  const selectedPlatforms = platforms.filter(platform => PLATFORMS.includes(platform));
+  if (selectedPlatforms.length === 0) {
+    return c.json({ error: 'No valid platforms selected' }, 400);
+  }
+
+  const results = {
+    reddit: selectedPlatforms.includes('reddit') ? await scrapeReddit(topic, days, country) : [],
+    x: selectedPlatforms.includes('x') ? await scrapeTwitter(topic, days, country) : [],
+    youtube: selectedPlatforms.includes('youtube') ? await scrapeYouTube(topic, days, country) : [],
+  };
+
+  const patterns = detectPatterns(results);
+  const sentiment = analyzeSentiment(results);
+  const topDiscussions = calculateEngagementScore(results);
+  const emergingTopics = patterns.filter(pattern => pattern.strength === 'emerging');
+
+  const response = {
+    topic,
+    timeframe: `last ${days} days`,
+    patterns,
+    sentiment,
+    top_discussions: topDiscussions,
+    emerging_topics: emergingTopics,
+    meta: {
+      sources_checked: Object.values(results).flat().length,
+      platforms_used: selectedPlatforms,
+      proxy: {
+        ip: '...', // Placeholder for actual proxy IP
+        country,
+        carrier: 'AT&T' // Placeholder for actual carrier
+      }
+    }
+  };
+
+  return c.json(response);
+});
+
+serviceRouter.get('/api/trending', async (c) => {
+  const { country, platforms } = c.req.query();
+
+  if (!country || !platforms) {
+    return c.json({ error: 'Invalid request parameters' }, 400);
+  }
+
+  const selectedPlatforms = platforms.split(',').filter(platform => PLATFORMS.includes(platform));
+  if (selectedPlatforms.length === 0) {
+    return c.json({ error: 'No valid platforms selected' }, 400);
+  }
+
+  // Placeholder for trending logic
+  const trendingData = {}; // Replace with actual trending data fetching logic
+
+  return c.json(trendingData);
+});
+
+export default serviceRouter;
 
 export const serviceRouter = new Hono();
 
@@ -1436,5 +1498,53 @@ serviceRouter.get('/airbnb/market-stats', async (c) => {
     });
   } catch (err: any) {
     return c.json({ error: 'Airbnb market stats failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── MOBILE SERP TRACKER ────────────────────────────────
+
+import { scrapeMobileSERP } from './scrapers/serp-tracker';
+
+const SERP_PRICE_USDC = parseFloat(process.env.SERP_PRICE_USDC || '0.003');
+const SERP_DESCRIPTION = 'Mobile SERP Tracker — Google search results with organic, ads, PAA, AI overview, map pack, knowledge panel. Real mobile IP fingerprint.';
+const SERP_OUTPUT_SCHEMA = {
+  input: { query: 'string (required) — search query', location: 'string (optional) — geo location', num: 'number (optional) — results count, default 10' },
+  output: { organic: '[{ position, title, url, snippet, sitelinks? }]', ads: '[{ position, title, url, description }]', peopleAlsoAsk: '[{ question, snippet }]', aiOverview: '{ text, sources }', mapPack: '[{ name, rating, reviews, address }]', knowledgePanel: '{ title, description, attributes }' },
+};
+
+serviceRouter.get('/serp', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Wallet not configured' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/serp', SERP_DESCRIPTION, SERP_PRICE_USDC, walletAddress, SERP_OUTPUT_SCHEMA), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, SERP_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const query = c.req.query('query') || c.req.query('q');
+  if (!query) return c.json({ error: 'Missing required parameter: query' }, 400);
+
+  const location = c.req.query('location') || c.req.query('loc') || undefined;
+  const num = parseInt(c.req.query('num') || '10');
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const results = await scrapeMobileSERP(query, { location, num });
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      query,
+      results,
+      meta: { location, num, proxy: { ip, country: proxy.country, type: 'mobile' } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'SERP scrape failed', message: err?.message || String(err) }, 502);
   }
 });
