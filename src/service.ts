@@ -1,30 +1,110 @@
-/**
- * Service Router — Marketplace API
- *
- * Exposes:
- *   GET /api/run       (Google Maps Lead Generator)
- *   GET /api/details   (Google Maps Place details)
- *   GET /api/jobs      (Job Market Intelligence)
- *   GET /api/reviews/* (Google Reviews & Business Data)
- *   GET /api/airbnb/*  (Airbnb Market Intelligence)
- *   GET /api/reddit/*  (Reddit Intelligence)
- *   GET /api/instagram/* (Instagram Intelligence + AI Vision)
- *   GET /api/linkedin/* (LinkedIn Enrichment)
+import { Hono } from 'hono';
+import { proxyFetch } from '../utils/proxyFetch';
+import { verifyPayment } from '../utils/payment';
+import { parseQueryParams } from '../utils/queryParams';
+
+const SERVICE_NAME = 'facebook-marketplace-monitor';
+const PRICE_USDC = 0.01;
+const DESCRIPTION = 'Search and monitor Facebook Marketplace listings by category, keyword, location, and price range.';
+
+const serviceRouter = new Hono();
+const listingRouter = new Hono();
+
+serviceRouter.get('/run', async (c) => {
+  const { query, location, radius, min_price, max_price } = c.req.query();
  */
 
-import { Hono } from 'hono';
-import { proxyFetch, getProxy } from './proxy';
-import { extractPayment, verifyPayment, build402Response } from './payment';
-import { scrapeIndeed, scrapeLinkedIn, type JobListing } from './scrapers/job-scraper';
-import { fetchReviews, fetchBusinessDetails, fetchReviewSummary, searchBusinesses } from './scrapers/reviews';
-import { scrapeGoogleMaps, extractDetailedBusiness } from './scrapers/maps-scraper';
-import { researchRouter } from './routes/research';
+  if (!paymentVerified) {
+    return c.json({ error: 'Payment required' }, 402);
+  }
+  const result = await searchFacebookMarketplace(query, location, radius, min_price, max_price);
+  return c.json({ data: await result.text() });
+});
+
 import { trendingRouter } from './routes/trending';
 import { searchAirbnb, getListingDetail, getListingReviews, getMarketStats } from './scrapers/airbnb-scraper';
-import { 
-  scrapeLinkedInPerson, 
-  scrapeLinkedInCompany, 
-  searchLinkedInPeople, 
+  return c.json({ status: 'healthy', service: SERVICE_NAME, description: DESCRIPTION });
+});
+
+async function searchFacebookMarketplace(query: string, location: string, radius: string, min_price: string, max_price: string) {
+  // Construct the search URL with query parameters
+  const searchUrl = `https://facebook.com/marketplace/search/?query=${encodeURIComponent(query)}&location=${encodeURIComponent(location)}&radius=${encodeURIComponent(radius)}&min_price=${encodeURIComponent(min_price)}&max_price=${encodeURIComponent(max_price)}`;
+  const response = await proxyFetch(searchUrl);
+  const html = await response.text();
+  // Parse the HTML to extract listing details
+  const listings = parseListings(html);
+  return new Response(JSON.stringify({ results: listings, meta: { query, total_results: listings.length } }), { headers: { 'Content-Type': 'application/json' } });
+}
+
+function parseListings(html: string) {
+  // Simple regex to extract listing details (this is a placeholder and should be replaced with a proper parser)
+  const listings = [];
+  const regex = /<div class="[^"]*x1lkfr7t[^"]*">([^<]+)<\/div>[\s\S]*?<div class="[^"]*x1lkfr7t[^"]*">(\$[\d,]+)<\/div>/g;
+  let match;
+  while ((match = regex.exec(html)) !== null) {
+    listings.push({
+      title: match[1].trim(),
+      price: parseInt(match[2].replace('$', '').replace(',', ''), 10),
+      currency: 'USD',
+      location: 'Unknown', // Location parsing is complex and requires more sophisticated HTML parsing
+      seller: {
+        name: 'Unknown',
+        joined: 'Unknown',
+        rating: 'Unknown'
+      },
+      condition: 'Unknown',
+      posted_at: new Date().toISOString(),
+      images: [],
+      url: 'https://facebook.com/marketplace/item/unknown'
+    });
+  }
+  return listings;
+}
+
+listingRouter.get('/:id', async (c) => {
+  const { id } = c.req.param();
+  const paymentVerified = await verifyPayment(c, PRICE_USDC);
+  if (!paymentVerified) {
+    return c.json({ error: 'Payment required' }, 402);
+  }
+  const listingUrl = `https://facebook.com/marketplace/item/${id}`;
+  const response = await proxyFetch(listingUrl);
+  const html = await response.text();
+  // Parse the HTML to extract listing details
+  const listing = parseListing(html);
+  return c.json(listing);
+});
+
+function parseListing(html: string) {
+  // Simple regex to extract listing details (this is a placeholder and should be replaced with a proper parser)
+  const regexTitle = /<h1 class="[^"]*x1lkfr7t[^"]*">([^<]+)<\/h1>/;
+  const regexPrice = /<div class="[^"]*x1lkfr7t[^"]*">(\$[\d,]+)<\/div>/;
+  const matchTitle = regexTitle.exec(html);
+  const matchPrice = regexPrice.exec(html);
+  if (matchTitle && matchPrice) {
+    return {
+      id: 'unknown',
+      title: matchTitle[1].trim(),
+      price: parseInt(matchPrice[1].replace('$', '').replace(',', ''), 10),
+      currency: 'USD',
+      location: 'Unknown', // Location parsing is complex and requires more sophisticated HTML parsing
+      seller: {
+        name: 'Unknown',
+        joined: 'Unknown',
+        rating: 'Unknown'
+      },
+      condition: 'Unknown',
+      posted_at: new Date().toISOString(),
+      images: [],
+      url: 'https://facebook.com/marketplace/item/unknown'
+    };
+  }
+  return null;
+}
+
+serviceRouter.route('/listing', listingRouter);
+
+export default serviceRouter;
   findCompanyEmployees 
 } from './scrapers/linkedin-enrichment';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
@@ -1436,5 +1516,53 @@ serviceRouter.get('/airbnb/market-stats', async (c) => {
     });
   } catch (err: any) {
     return c.json({ error: 'Airbnb market stats failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── MOBILE SERP TRACKER ────────────────────────────────
+
+import { scrapeMobileSERP } from './scrapers/serp-tracker';
+
+const SERP_PRICE_USDC = parseFloat(process.env.SERP_PRICE_USDC || '0.003');
+const SERP_DESCRIPTION = 'Mobile SERP Tracker — Google search results with organic, ads, PAA, AI overview, map pack, knowledge panel. Real mobile IP fingerprint.';
+const SERP_OUTPUT_SCHEMA = {
+  input: { query: 'string (required) — search query', location: 'string (optional) — geo location', num: 'number (optional) — results count, default 10' },
+  output: { organic: '[{ position, title, url, snippet, sitelinks? }]', ads: '[{ position, title, url, description }]', peopleAlsoAsk: '[{ question, snippet }]', aiOverview: '{ text, sources }', mapPack: '[{ name, rating, reviews, address }]', knowledgePanel: '{ title, description, attributes }' },
+};
+
+serviceRouter.get('/serp', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Wallet not configured' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/serp', SERP_DESCRIPTION, SERP_PRICE_USDC, walletAddress, SERP_OUTPUT_SCHEMA), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, SERP_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const query = c.req.query('query') || c.req.query('q');
+  if (!query) return c.json({ error: 'Missing required parameter: query' }, 400);
+
+  const location = c.req.query('location') || c.req.query('loc') || undefined;
+  const num = parseInt(c.req.query('num') || '10');
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const results = await scrapeMobileSERP(query, { location, num });
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      query,
+      results,
+      meta: { location, num, proxy: { ip, country: proxy.country, type: 'mobile' } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'SERP scrape failed', message: err?.message || String(err) }, 502);
   }
 });
