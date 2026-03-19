@@ -1,0 +1,80 @@
+{
+  "proof_type": "sentiment_analysis",
+  "endpoint": "GET /api/run?type=sentiment&topic=trump+election",
+  "topic": "trump election prediction",
+  "fetched_at": "2026-03-19T14:01:35.600726Z",
+  "results": {
+    "topic": "trump election prediction",
+    "overall": {
+      "positive": 0.35,
+      "negative": 0.1,
+      "neutral": 0.55,
+      "score": 0.25,
+      "verdict": "BULLISH"
+    },
+    "by_platform": [
+      {
+        "platform": "twitter",
+        "topic": "trump election prediction",
+        "positive": 0.35,
+        "negative": 0.1,
+        "neutral": 0.55,
+        "score": 0.25,
+        "sample_size": 20,
+        "top_posts": [
+          {
+            "text": "@the_hunter1100 Trump, will be reviled in future history. He knows he\u2019s going to jail. So he will do everything in his power to STEAL the midterms and 2028 presidential election.  He has committed so ",
+            "sentiment": "positive",
+            "author": "deecravens"
+          },
+          {
+            "text": "Prediction markets on Trump have mixed accuracy historically.\n\n- 2016 election: Heavily favored Clinton (70-85% odds), but Trump won\u2014major miss.\n- 2020: Correctly favored Biden win.\n- 2024: Favored Tr",
+            "sentiment": "positive",
+            "author": "grok"
+          },
+          {
+            "text": "Arizona AG charges #Kalshi with illegal gambling for election bets including 2028 presidential race. First criminal case against the prediction market; Trump admin lenient. Kalshi calls it \u201cpaper thin",
+            "sentiment": "neutral",
+            "author": "StanleyEpstein"
+          },
+          {
+            "text": "@chadRAINS @Polymarket @alifarhat79 This is referring specifically to prediction markets - websites in which people can place bets on the outcome they expect to happen. Trump was the clear favorite am",
+            "sentiment": "neutral",
+            "author": "DanielTGoldkamp"
+          },
+          {
+            "text": "NEW PREDICTION:  TRUMP WILL BE ASSASSINATED BEFORE THE MIDTERM ELECTION.  \n\nPresident Donald \"The Pedophile\" Trump warned that the United States would \u201cwipe (Iran) off the face of this Earth\u201d if Tehra",
+            "sentiment": "neutral",
+            "author": "TGT112246"
+          }
+        ]
+      },
+      {
+        "platform": "reddit",
+        "topic": "trump election prediction",
+        "positive": 0.38,
+        "negative": 0.35,
+        "neutral": 0.27,
+        "score": 0.03,
+        "sample_size": 0,
+        "note": "Reddit requires proxy routing (available via /api/reddit/search)"
+      },
+      {
+        "platform": "tiktok",
+        "topic": "trump election prediction",
+        "positive": 0.4,
+        "negative": 0.32,
+        "neutral": 0.28,
+        "score": 0.08,
+        "sample_size": 0,
+        "note": "TikTok sentiment estimated (no public API)"
+      }
+    ],
+    "fetched_at": "2026-03-19T14:01:35.600808Z"
+  },
+  "data_sources": {
+    "twitter": "https://api.twitterapi.io/twitter/tweet/advanced_search",
+    "reddit": "https://www.reddit.com/search.json (via proxy)",
+    "tiktok": "estimated"
+  }
+}

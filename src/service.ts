@@ -29,6 +29,7 @@ import {
 } from './scrapers/linkedin-enrichment';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
+import { getSignal, getArbitrage, getSentiment, getTrending as getPredTrending } from './scrapers/signal-generator';
 
 export const serviceRouter = new Hono();
 
@@ -89,7 +90,100 @@ async function getProxyExitIp(): Promise<string | null> {
   }
 }
 
+// ═══════════════════════════════════════════════════════
+// ─── PREDICTION MARKET SIGNAL AGGREGATOR (Bounty #55) ─
+// ═══════════════════════════════════════════════════════
+
+const SIGNAL_PRICE = 0.05;   // $0.05 per signal
+const PREDICTION_WALLET = '2fPV8uNxdP1VAm7mP9ks8NdcxhZgA2n5x62hxj48jzSL';
+
+// Prediction market types that intercept /api/run
+const PREDICTION_TYPES = new Set(['signal', 'arbitrage', 'sentiment', 'trending']);
+
 serviceRouter.get('/run', async (c) => {
+  // ── Prediction Market Signal routes ──────────────────
+  const typeParam = c.req.query('type');
+  if (typeParam && PREDICTION_TYPES.has(typeParam)) {
+    const payment = extractPayment(c);
+    if (!payment) {
+      return c.json({
+        service: 'Prediction Market Signal Aggregator',
+        description: 'Aggregates signals from Polymarket, Kalshi, Metaculus + social sentiment (Twitter, Reddit, TikTok)',
+        price: SIGNAL_PRICE,
+        wallet: PREDICTION_WALLET,
+        network: 'solana',
+        endpoints: {
+          signal: '/api/run?type=signal&market=bitcoin-etf-approval',
+          arbitrage: '/api/run?type=arbitrage',
+          sentiment: '/api/run?type=sentiment&topic=bitcoin+etf',
+          trending: '/api/run?type=trending',
+        },
+        paymentHeader: 'X-Payment: <solana_tx_hash>',
+      }, 402);
+    }
+
+    const verification = await verifyPayment(payment, PREDICTION_WALLET, SIGNAL_PRICE);
+    if (!verification.valid) {
+      return c.json({
+        error: 'Payment verification failed',
+        reason: verification.error,
+        wallet: PREDICTION_WALLET,
+        requiredAmount: SIGNAL_PRICE,
+      }, 402);
+    }
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    try {
+      if (typeParam === 'signal') {
+        const market = c.req.query('market') || 'bitcoin-etf-approval';
+        const result = await getSignal(market);
+        return c.json({
+          type: 'signal',
+          market,
+          ...result,
+          payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+        });
+      }
+
+      if (typeParam === 'arbitrage') {
+        const result = await getArbitrage();
+        return c.json({
+          type: 'arbitrage',
+          ...result,
+          payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+        });
+      }
+
+      if (typeParam === 'sentiment') {
+        const topic = c.req.query('topic') || 'bitcoin etf';
+        const result = await getSentiment(topic);
+        return c.json({
+          type: 'sentiment',
+          ...result,
+          payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+        });
+      }
+
+      if (typeParam === 'trending') {
+        const result = await getPredTrending();
+        return c.json({
+          type: 'trending',
+          ...result,
+          payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+        });
+      }
+    } catch (err: any) {
+      return c.json({
+        error: 'Prediction market fetch failed',
+        message: err?.message || String(err),
+        type: typeParam,
+      }, 502);
+    }
+  }
+
+  // ── Legacy Google Maps /run route ────────────────────
   const walletAddress = process.env.WALLET_ADDRESS;
   if (!walletAddress) {
     return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
