@@ -1,13 +1,98 @@
-/**
- * Service Router — Marketplace API
- *
- * Exposes:
- *   GET /api/run       (Google Maps Lead Generator)
- *   GET /api/details   (Google Maps Place details)
- *   GET /api/jobs      (Job Market Intelligence)
- *   GET /api/reviews/* (Google Reviews & Business Data)
- *   GET /api/airbnb/*  (Airbnb Market Intelligence)
- *   GET /api/reddit/*  (Reddit Intelligence)
+import { Hono } from 'hono';
+import { proxyFetch } from './proxy';
+import { verifyPayment } from './payment';
+import { parseZillowProperty, parseZillowSearch, parseZillowMarket, parseZillowComps } from './parsers';
+serviceRouter.get('/api/realestate/property/:zpid', async (c) => {
+  const zpid = c.req.param('zpid');
+  if (!zpid) {
+    return c.json({ error: 'ZPID is required' }, 400);
+  }
+
+  const payment = await verifyPayment(c, PRICE_USDC);
+  if (!payment) {
+    return c.json({ error: 'Payment required' }, 402);
+  }
+
+  const url = `https://www.zillow.com/homes/${zpid}_zpid/`;
+  const result = await proxyFetch(url);
+  const html = await result.text();
+  const propertyData = parseZillowProperty(html);
+  return c.json(propertyData);
+});
+
+serviceRouter.get('/api/realestate/search', async (c) => {
+  const { address, zip, type, min_price, max_price, bedrooms, bathrooms } = c.req.query();
+  if (!address && !zip) {
+    return c.json({ error: 'Address or ZIP code is required' }, 400);
+  }
+
+  const payment = await verifyPayment(c, 0.01);
+  if (!payment) {
+    return c.json({ error: 'Payment required' }, 402);
+  }
+
+  let url = 'https://www.zillow.com/search/';
+  if (address) {
+    url += `?address=${encodeURIComponent(address)}`;
+  } else if (zip) {
+    url += `?searchQueryState=%7B%22pagination%22%3A%7B%7D%2C%22usersSearchTerm%22%3A%22${zip}%22%2C%22mapBounds%22%3A%7B%7D%2C%22regionSelection%22%3A%5B%7B%22regionId%22%3A${zip}%2C%22regionType%22%3A7%7D%5D%2C%22isMapVisible%22%3Atrue%2C%22filterState%22%3A%7B%7D%2C%22isListVisible%22%3Atrue%2C%22mapZoom%22%3A11%7D`;
+  }
+
+  if (type) url += `&type=${type}`;
+  if (min_price) url += `&min=${min_price}`;
+  if (max_price) url += `&max=${max_price}`;
+  if (bedrooms) url += `&beds=${bedrooms}`;
+  if (bathrooms) url += `&baths=${bathrooms}`;
+
+  const result = await proxyFetch(url);
+  const html = await result.text();
+  const searchResults = parseZillowSearch(html);
+  return c.json(searchResults);
+});
+
+serviceRouter.get('/api/realestate/market', async (c) => {
+  const zip = c.req.query('zip');
+  if (!zip) {
+    return c.json({ error: 'ZIP code is required' }, 400);
+  }
+
+  const payment = await verifyPayment(c, 0.05);
+  if (!payment) {
+    return c.json({ error: 'Payment required' }, 402);
+  }
+
+  const url = `https://www.zillow.com/homes/for_sale/${zip}_rb/`;
+  const result = await proxyFetch(url);
+  const html = await result.text();
+  const marketData = parseZillowMarket(html);
+  return c.json(marketData);
+});
+
+serviceRouter.get('/api/realestate/comps/:zpid', async (c) => {
+  const zpid = c.req.param('zpid');
+  const radius = c.req.query('radius') || '0.5mi';
+  if (!zpid) {
+    return c.json({ error: 'ZPID is required' }, 400);
+  }
+
+  const payment = await verifyPayment(c, 0.03);
+  if (!payment) {
+    return c.json({ error: 'Payment required' }, 402);
+  }
+
+  const url = `https://www.zillow.com/homes/comps/${zpid}_zpid/${radius}/`;
+  const result = await proxyFetch(url);
+  const html = await result.text();
+  const compsData = parseZillowComps(html);
+  return c.json(compsData);
+});
+
+serviceRouter.get('/run', async (c) => {
+  // ... payment check + verification (already wired) ...
+  // YOUR LOGIC HERE:
+  return c.json({ error: 'Endpoint not found' }, 404);
+});
+export default serviceRouter;
  *   GET /api/instagram/* (Instagram Intelligence + AI Vision)
  *   GET /api/linkedin/* (LinkedIn Enrichment)
  */
@@ -1436,5 +1521,53 @@ serviceRouter.get('/airbnb/market-stats', async (c) => {
     });
   } catch (err: any) {
     return c.json({ error: 'Airbnb market stats failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── MOBILE SERP TRACKER ────────────────────────────────
+
+import { scrapeMobileSERP } from './scrapers/serp-tracker';
+
+const SERP_PRICE_USDC = parseFloat(process.env.SERP_PRICE_USDC || '0.003');
+const SERP_DESCRIPTION = 'Mobile SERP Tracker — Google search results with organic, ads, PAA, AI overview, map pack, knowledge panel. Real mobile IP fingerprint.';
+const SERP_OUTPUT_SCHEMA = {
+  input: { query: 'string (required) — search query', location: 'string (optional) — geo location', num: 'number (optional) — results count, default 10' },
+  output: { organic: '[{ position, title, url, snippet, sitelinks? }]', ads: '[{ position, title, url, description }]', peopleAlsoAsk: '[{ question, snippet }]', aiOverview: '{ text, sources }', mapPack: '[{ name, rating, reviews, address }]', knowledgePanel: '{ title, description, attributes }' },
+};
+
+serviceRouter.get('/serp', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Wallet not configured' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/serp', SERP_DESCRIPTION, SERP_PRICE_USDC, walletAddress, SERP_OUTPUT_SCHEMA), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, SERP_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const query = c.req.query('query') || c.req.query('q');
+  if (!query) return c.json({ error: 'Missing required parameter: query' }, 400);
+
+  const location = c.req.query('location') || c.req.query('loc') || undefined;
+  const num = parseInt(c.req.query('num') || '10');
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const results = await scrapeMobileSERP(query, { location, num });
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      query,
+      results,
+      meta: { location, num, proxy: { ip, country: proxy.country, type: 'mobile' } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'SERP scrape failed', message: err?.message || String(err) }, 502);
   }
 });
