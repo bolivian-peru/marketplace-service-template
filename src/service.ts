@@ -7,35 +7,21 @@ const DESCRIPTION = 'Extracts restaurant menus, item prices, delivery fees, prom
 
 const serviceRouter = new Hono();
 
-serviceRouter.get('/food/search', async (c) => {
+serviceRouter.get('/api/food/search', async (c) => {
   // ... payment check + verification (already wired) ...
 
   // YOUR LOGIC HERE:
-
   const query = c.req.query('query');
   const address = c.req.query('address');
   const platform = c.req.query('platform');
-  
   if (!query || !address || !platform) {
-    return c.json({ error: 'query, address, and platform are required' }, 400);
+    return c.json({ error: 'Missing query, address, or platform parameter' }, 400);
   }
 
-  let url = '';
-  if (platform === 'ubereats') {
-    url = `https://api.ubereats.com/v2/search?query=${query}&address=${address}`;
-  } else if (platform === 'doordash') {
-    url = `https://api.doordash.com/v2/search?query=${query}&address=${address}`;
-  } else if (platform === 'grubhub') {
-    url = `https://api.grubhub.com/v2/search?query=${query}&address=${address}`;
-  } else {
-    return c.json({ error: 'Unsupported platform' }, 400);
-  }
-
-  const result = await proxyFetch(url);
+  const result = await proxyFetch(`https://${platform}.com/api/search?query=${query}&address=${address}`);
   return c.json({ data: await result.json() });
 });
-
-export default serviceRouter;
+import { scrapeGoogleMaps, extractDetailedBusiness } from './scrapers/maps-scraper';
 import { researchRouter } from './routes/research';
 import { trendingRouter } from './routes/trending';
 import { searchAirbnb, getListingDetail, getListingReviews, getMarketStats } from './scrapers/airbnb-scraper';
