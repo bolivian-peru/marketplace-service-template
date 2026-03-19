@@ -1,16 +1,16 @@
 import { Hono } from 'hono';
 import { proxyFetch } from './proxy';
 import { verifyPayment } from './payment';
-import { extractAds } from './adExtractor';
-
-const app = new Hono();
+import { extractAdsFromSearch, extractAdsFromUrl } from './adExtractor';
 
 const SERVICE_NAME = 'ad-verification-service';
 const PRICE_USDC = 0.01;
-const DESCRIPTION = 'API that shows exactly what ads appear for a given search query or URL from a real mobile device on a real carrier network in a specific country.';
+const DESCRIPTION = 'API that shows exactly what ads appear for a given search query or URL from a real mobile device on a real carrier network in a specific country';
 
-app.get('/health', (c) => {
-  return c.json({ status: 'healthy', service: SERVICE_NAME });
+const serviceRouter = new Hono();
+
+ *   GET /api/instagram/* (Instagram Intelligence + AI Vision)
+ *   GET /api/linkedin/* (LinkedIn Enrichment)
  */
 
 import { Hono } from 'hono';
@@ -21,31 +21,48 @@ import { fetchReviews, fetchBusinessDetails, fetchReviewSummary, searchBusinesse
     return c.json({ error: 'Payment verification failed' }, 402);
   }
 
-  const { type, query, url, country, domain } = c.req.query();
+  const { type, query, url, country } = c.req.query();
 
   if (!type || !country) {
-    return c.json({ error: 'Missing required parameters: type and country' }, 400);
+    return c.json({ error: 'Invalid request parameters' }, 400);
   }
 
   let adsData;
-  try {
-    if (type === 'search_ads' && query) {
-      adsData = await extractAds({ type, query, country });
-    } else if (type === 'display_ads' && url) {
-      adsData = await extractAds({ type, url, country });
-    } else if (type === 'advertiser' && domain) {
-      adsData = await extractAds({ type, domain, country });
-    } else {
-      return c.json({ error: 'Invalid request parameters' }, 400);
-    }
-  } catch (error) {
-    return c.json({ error: 'Failed to fetch ads' }, 500);
+
+  switch (type) {
+    case 'search_ads':
+      if (!query) {
+        return c.json({ error: 'Query parameter is required for search_ads type' }, 400);
+      }
+      adsData = await extractAdsFromSearch(query, country);
+      break;
+    case 'display_ads':
+      if (!url) {
+        return c.json({ error: 'URL parameter is required for display_ads type' }, 400);
+      }
+      adsData = await extractAdsFromUrl(url, country);
+      break;
+    case 'advertiser':
+      // Placeholder for advertiser lookup
+      return c.json({ error: 'Advertiser lookup is a bonus feature not yet implemented' }, 501);
+    default:
+      return c.json({ error: 'Invalid type parameter' }, 400);
   }
 
-  return c.json(adsData);
+  return c.json({
+    ...adsData,
+    type,
+    country,
+    timestamp: new Date().toISOString(),
+    payment: {
+      txHash: payment.txHash,
+      amount: PRICE_USDC,
+      verified: true,
+    },
+  });
 });
 
-export default app;
+export default serviceRouter;
   findCompanyEmployees 
 } from './scrapers/linkedin-enrichment';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
