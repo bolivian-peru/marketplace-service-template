@@ -4,24 +4,24 @@ import { prettyJSON } from 'hono/pretty-json';
 import { proxyFetch } from './utils/proxy';
 import { analyzeInstagramProfile } from './scrapers/instagram';
 const app = new Hono();
-const SERVICE_NAME = 'instagram-intelligence-api';
-const PRICE_USDC = 0.005;
-const DESCRIPTION = 'Instagram intelligence API with AI vision analysis';
+const SERVICE_NAME = 'my-scraper';       // Your service name
+const PRICE_USDC = 0.005;               // Price per request ($)
+const DESCRIPTION = 'Instagram Intelligence + AI Vision Analysis API';      // For AI agents
 app.use('*', cors());
 app.use('*', prettyJSON());
  *   GET /api/instagram/* (Instagram Intelligence + AI Vision)
  *   GET /api/linkedin/* (LinkedIn Enrichment)
  */
 
-  return c.json({ status: 'healthy', service: SERVICE_NAME });
-});
-app.get('/api/instagram/profile/:username', async (c) => {
   // ... payment check + verification (already wired) ...
   // YOUR LOGIC HERE:
-  const username = c.req.param('username');
-  const profileData = await analyzeInstagramProfile(username);
-  return c.json(profileData);
+  const username = c.req.query('username') || 'default_username';
+  const analysis = await analyzeInstagramProfile(username);
+  return c.json(analysis);
 });
+export default app;
+import { researchRouter } from './routes/research';
+import { trendingRouter } from './routes/trending';
 import { searchAirbnb, getListingDetail, getListingReviews, getMarketStats } from './scrapers/airbnb-scraper';
 import { 
   scrapeLinkedInPerson, 
