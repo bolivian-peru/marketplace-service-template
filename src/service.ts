@@ -1,24 +1,138 @@
 import { Hono } from 'hono';
 import { proxyFetch } from './proxies';
+import { verifyPayment } from './payment';
+import { parseAppleRankings, parseGoogleAppDetails, parseGoogleSearchResults, parseGoogleTrendingApps } from './scrapers';
 
-const SERVICE_NAME = 'app-store-intelligence';       // Your service name
-const PRICE_USDC = 0.01;               // Price per request ($)
-const DESCRIPTION = 'Provides real-time app rankings, reviews, and metadata from Apple App Store and Google Play Store';      // For AI agents
+const app = new Hono();
 
-const serviceRouter = new Hono();
+const SERVICE_NAME = 'app-store-intelligence';
+const PRICE_USDC = 0.01;
+const DESCRIPTION = 'App Store Intelligence API - Real-time app rankings, reviews, and metadata from Apple App Store and Google Play Store';
 
-serviceRouter.get('/run', async (c) => {
+app.get('/api/run', async (c) => {
   const { type, store, category, country, appId, query } = c.req.query();
 
-  // Placeholder for actual logic to fetch data from Apple App Store and Google Play Store
-  const result = await proxyFetch(`https://api.example.com/${store}/${type}?category=${category}&country=${country}&appId=${appId}&query=${query}`);
-  return c.json(await result.json());
+  // Verify payment
+  const paymentSignature = c.req.header('Payment-Signature');
+  if (!paymentSignature || !verifyPayment(paymentSignature, PRICE_USDC)) {
+    return c.json({ error: 'Payment verification failed' }, 402);
+  }
+
+  let result;
+  try {
+    if (type === 'rankings' && store === 'apple') {
+      const url = `https://itunes.apple.com/WebObjects/MZStoreServices.woa/ws/charts?cc=${country}&genreId=${category}&limit=200`;
+      const response = await proxyFetch(url);
+      const data = await response.json();
+      result = parseAppleRankings(data, type, store, category, country);
+    } else if (type === 'app' && store === 'google') {
+      const url = `https://play.google.com/store/apps/details?id=${appId}&hl=${country}`;
+      const response = await proxyFetch(url);
+      const data = await response.text();
+      result = parseGoogleAppDetails(data, type, store, appId, country);
+    } else if (type === 'search' && store === 'google') {
+      const url = `https://play.google.com/store/search?q=${encodeURIComponent(query)}&c=apps&hl=${country}`;
+      const response = await proxyFetch(url);
+      const data = await response.text();
+      result = parseGoogleSearchResults(data, type, store, query, country);
+    } else if (type === 'trending' && store === 'google') {
+      const url = `https://play.google.com/store/apps/collection/topselling_new_free?hl=${country}`;
+      const response = await proxyFetch(url);
+      const data = await response.text();
+      result = parseGoogleTrendingApps(data, type, store, country);
+    } else {
+      return c.json({ error: 'Invalid request parameters' }, 400);
+    }
+  } catch (error) {
+    return c.json({ error: 'Failed to fetch data' }, 500);
+  }
+
+  return c.json(result);
 });
 
-export default serviceRouter;
- *   GET /api/instagram/* (Instagram Intelligence + AI Vision)
- *   GET /api/linkedin/* (LinkedIn Enrichment)
- */
+// Example scraper functions
+// These should be moved to a separate file and properly implemented
+function parseAppleRankings(data, type, store, category, country) {
+  // Implement parsing logic for Apple rankings
+  return {
+    type,
+    store,
+    category,
+    country,
+    timestamp: new Date().toISOString(),
+    rankings: [],
+    metadata: {
+      totalRanked: 0,
+      scrapedAt: new Date().toISOString(),
+    },
+    proxy: { country, carrier: 'T-Mobile', type: 'mobile' },
+    payment: { txHash: '...', amount: PRICE_USDC, verified: true },
+  };
+}
+
+function parseGoogleAppDetails(data, type, store, appId, country) {
+  // Implement parsing logic for Google app details
+  return {
+    type,
+    store,
+    appId,
+    country,
+    timestamp: new Date().toISOString(),
+    appName: '',
+    developer: '',
+    rating: 0,
+    ratingCount: 0,
+    price: '',
+    inAppPurchases: false,
+    category: '',
+    lastUpdated: '',
+    size: '',
+    icon: '',
+    reviews: [],
+    metadata: {
+      scrapedAt: new Date().toISOString(),
+    },
+    proxy: { country, carrier: 'T-Mobile', type: 'mobile' },
+    payment: { txHash: '...', amount: PRICE_USDC, verified: true },
+  };
+}
+
+function parseGoogleSearchResults(data, type, store, query, country) {
+  // Implement parsing logic for Google search results
+  return {
+    type,
+    store,
+    query,
+    country,
+    timestamp: new Date().toISOString(),
+    results: [],
+    metadata: {
+      totalResults: 0,
+      scrapedAt: new Date().toISOString(),
+    },
+    proxy: { country, carrier: 'T-Mobile', type: 'mobile' },
+    payment: { txHash: '...', amount: PRICE_USDC, verified: true },
+  };
+}
+
+function parseGoogleTrendingApps(data, type, store, country) {
+  // Implement parsing logic for Google trending apps
+  return {
+    type,
+    store,
+    country,
+    timestamp: new Date().toISOString(),
+    trending: [],
+    metadata: {
+      totalTrending: 0,
+      scrapedAt: new Date().toISOString(),
+    },
+    proxy: { country, carrier: 'T-Mobile', type: 'mobile' },
+    payment: { txHash: '...', amount: PRICE_USDC, verified: true },
+  };
+}
+
+export default app;
 
 import { Hono } from 'hono';
 import { proxyFetch, getProxy } from './proxy';
