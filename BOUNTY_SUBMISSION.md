@@ -1,17 +1,19 @@
-# Bounty Submission Guidelines
-
-## App Store Intelligence API
+## Bounty Submission Guidelines
 
 ### Proof of Work
-1. Post real JSON output showing actual app rankings from Apple App Store (US) and Google Play Store (DE) with real app names, real ratings, real review counts.
-2. Show country differences: Same category, different countries → different rankings.
-3. Demonstrate resilience: 10+ consecutive successful scrapes from both stores without getting rate-limited.
-4. Provide your Solana USDC wallet address.
-5. Submit a PR with your code.
 
-## General Guidelines
-1. Fork this repo and build the service in `src/service.ts`.
-2. Show proof of your service working as described.
+1. **Real JSON Output**: Post real JSON output showing actual app rankings from Apple App Store (US) and Google Play Store (DE) with real app names, real ratings, real review counts.
+2. **Country Differences**: Show the same category, different countries → different rankings.
+3. **Resilience**: Demonstrate 10+ consecutive successful scrapes from both stores without getting rate-limited.
+4. **Solana USDC Wallet Address**: Provide your Solana USDC wallet address.
+5. **Pull Request**: Submit a PR with your code.
+
+### Example JSON Output
+
+
+**PR:** https://github.com/bolivian-peru/marketplace-service-template/pull/48  
+**Live deployment:** https://bounty16-job-market-intelligence.onrender.com  
+**Branch:** `bounty-16-jobs`
 
 ## What I built
 
