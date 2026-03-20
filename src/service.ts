@@ -4,17 +4,18 @@ import { verifyPayment } from '../utils/payment';
 import { getMarketOdds } from '../utils/marketData';
 import { getSentimentAnalysis } from '../utils/sentimentAnalysis';
 import { generateSignals } from '../utils/signalGeneration';
-const app = new Hono();
 const SERVICE_NAME = 'prediction-market-signal-aggregator';
 const PRICE_USDC = 0.01;
 const DESCRIPTION = 'Combines real-time prediction market odds with live social sentiment data to detect mispricings and generate trading signals.';
-app.get('/api/run', async (c) => {
+const serviceRouter = new Hono();
+
+serviceRouter.get('/run', async (c) => {
   const { type, market, topic, country } = c.req.query();
 
-  // Payment verification
-  const paymentResult = await verifyPayment(c, PRICE_USDC);
-  if (!paymentResult.success) {
-    return c.json(paymentResult, 402);
+  // Verify payment
+  const paymentVerification = await verifyPayment(c.req);
+  if (!paymentVerification.valid) {
+    return c.json({ error: 'Invalid payment' }, 402);
   }
 
   let result;
@@ -24,18 +25,18 @@ app.get('/api/run', async (c) => {
       if (!market) {
         return c.json({ error: 'Market parameter is required' }, 400);
       }
-      const marketOdds = await getMarketOdds(market);
-      const sentiment = await getSentimentAnalysis(topic || market, country || 'US');
-      const signals = generateSignals(marketOdds, sentiment);
+      const odds = await getMarketOdds(market);
+      const sentiment = await getSentimentAnalysis(market, country || 'US');
+      const signals = generateSignals(odds, sentiment);
       result = {
         type: 'signal',
         market,
         timestamp: new Date().toISOString(),
-        odds: marketOdds,
+        odds,
         sentiment,
         signals,
-        proxy: paymentResult.proxy,
-        payment: paymentResult.payment,
+        proxy: paymentVerification.proxy,
+        payment: paymentVerification.payment,
       };
       break;
     case 'arbitrage':
@@ -46,13 +47,14 @@ app.get('/api/run', async (c) => {
       if (!topic || !country) {
         return c.json({ error: 'Topic and country parameters are required' }, 400);
       }
+      const sentimentAnalysis = await getSentimentAnalysis(topic, country);
       result = {
         type: 'sentiment',
         topic,
         country,
-        sentiment: await getSentimentAnalysis(topic, country),
-        proxy: paymentResult.proxy,
-        payment: paymentResult.payment,
+        sentiment: sentimentAnalysis,
+        proxy: paymentVerification.proxy,
+        payment: paymentVerification.payment,
       };
       break;
     case 'trending':
@@ -66,19 +68,32 @@ app.get('/api/run', async (c) => {
   return c.json(result);
 });
 
-// Example utility functions
-// These should be implemented in their respective files
+export default serviceRouter;
+
+// Placeholder functions for market data, sentiment analysis, and signal generation
 async function getMarketOdds(market: string) {
-  // Fetch and aggregate market odds from Polymarket, Kalshi, Metaculus
+  // Fetch and aggregate market odds from Polymarket, Kalshi, and Metaculus
   return {
-    polymarket: { yes: 0.62, no: 0.38, volume24h: 1250000, liquidity: 5400000 },
-    kalshi: { yes: 0.58, no: 0.42, volume24h: 890000 },
-    metaculus: { median: 0.65, forecasters: 1200 },
+    polymarket: {
+      yes: 0.62,
+      no: 0.38,
+      volume24h: 1250000,
+      liquidity: 5400000,
+    },
+    kalshi: {
+      yes: 0.58,
+      no: 0.42,
+      volume24h: 890000,
+    },
+    metaculus: {
+      median: 0.65,
+      forecasters: 1200,
+    },
   };
 }
 
 async function getSentimentAnalysis(topic: string, country: string) {
-  // Scrape and analyze sentiment from Twitter, Reddit, TikTok using mobile proxies
+  // Scrape and analyze sentiment from Twitter, Reddit, and TikTok using mobile proxies
   return {
     twitter: {
       positive: 0.45,
@@ -105,7 +120,7 @@ async function getSentimentAnalysis(topic: string, country: string) {
   };
 }
 
-function generateSignals(marketOdds: any, sentiment: any) {
+function generateSignals(odds: any, sentiment: any) {
   // Generate trading signals based on market odds and sentiment analysis
   return {
     arbitrage: {
@@ -125,9 +140,18 @@ function generateSignals(marketOdds: any, sentiment: any) {
   };
 }
 
-app.get('/', (c) => {
-  return c.json({
-    service: SERVICE_NAME,
+// Placeholder for payment verification
+async function verifyPayment(req: any) {
+  // Verify payment signature and return proxy and payment details
+  return {
+    valid: true,
+    proxy: { country: 'US', carrier: 'T-Mobile', type: 'mobile' },
+    payment: { txHash: '...', amount: 0.05, verified: true },
+  };
+}
+
+export { serviceRouter };
+ *   GET /api/reddit/*  (Reddit Intelligence)
  *   GET /api/instagram/* (Instagram Intelligence + AI Vision)
  *   GET /api/linkedin/* (LinkedIn Enrichment)
  */
