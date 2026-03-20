@@ -20,13 +20,13 @@ serviceRouter.get('/run', async (c) => {
   params.append('aid', '1988');
   params.append('app_language', 'en');
   params.append('app_name', 'tiktok_web');
-  params.append('device_id', '69696969696969696969');
-  params.append('device_platform', 'web_pc');
-  params.append('device_type', 'SM-G973F');
+  params.append('device_id', 'unique_device_id');
+  params.append('device_platform', 'web');
   params.append('language', 'en');
-  params.append('os', 'windows');
-  params.append('os_version', '10');
-  params.append('region', country || 'US');
+  params.append('os', 'webapp');
+  params.append('priority_region', country);
+  params.append('region', country);
+  params.append('ssmix', 'a');
   params.append('timezone_name', 'America/New_York');
   params.append('verifyFp', 'verify_fp_value');
 
@@ -34,28 +34,26 @@ serviceRouter.get('/run', async (c) => {
 
   switch (type) {
     case 'trending':
-      url += 'discover/trending/search/?';
+      url += 'discover/trending/';
       break;
     case 'hashtag':
       if (!tag) return c.json({ error: 'Tag is required for hashtag type' }, 400);
-      url += `challenge/item_list/?challengeID=${encodeURIComponent(tag)}&`;
+      url += `tag/${tag}/`;
       break;
     case 'creator':
       if (!username) return c.json({ error: 'Username is required for creator type' }, 400);
-      url += `user/detail/?uniqueId=${encodeURIComponent(username)}&`;
+      url += `user/${username}/`;
       break;
     case 'sound':
       if (!id) return c.json({ error: 'ID is required for sound type' }, 400);
-      url += `sound/item_list/?musicID=${encodeURIComponent(id)}&`;
+      url += `sound/${id}/`;
       break;
     default:
       return c.json({ error: 'Invalid type' }, 400);
   }
 
-  url += params.toString();
-
   try {
-    const result = await proxyFetch(url);
+    const result = await proxyFetch(`${url}?${params.toString()}`);
     data = await result.json();
   } catch (error) {
     return c.json({ error: 'Failed to fetch data from TikTok' }, 500);
@@ -63,7 +61,7 @@ serviceRouter.get('/run', async (c) => {
 
   const response = {
     type,
-    country: country || 'US',
+    country,
     timestamp: new Date().toISOString(),
     data: {
       videos: [],
@@ -71,7 +69,7 @@ serviceRouter.get('/run', async (c) => {
       trending_sounds: [],
     },
     proxy: {
-      country: country || 'US',
+      country,
       carrier: 'T-Mobile',
       type: 'mobile',
     },
@@ -82,24 +80,20 @@ serviceRouter.get('/run', async (c) => {
     },
   };
 
+  // Parse and structure the data according to the required schema
+  // This is a simplified example and needs to be expanded based on the actual TikTok API response structure
   if (type === 'trending') {
-    response.data.videos = data.itemList.map((item: any) => ({
+    response.data.videos = data.items.map((item: any) => ({
       id: item.id,
       description: item.desc,
-      author: {
-        username: item.author.uniqueId,
-        followers: item.author.stats.followerCount,
-      },
+      author: { username: item.author.uniqueId, followers: item.author.stats.followerCount },
       stats: {
         views: item.stats.playCount,
         likes: item.stats.diggCount,
         comments: item.stats.commentCount,
         shares: item.stats.shareCount,
       },
-      sound: {
-        name: item.music.title,
-        author: item.music.authorName,
-      },
+      sound: { name: item.music.title, author: item.music.authorName },
       hashtags: item.challenges.map((challenge: any) => challenge.title),
       createdAt: new Date(item.createTime * 1000).toISOString(),
       url: `https://www.tiktok.com/@${item.author.uniqueId}/video/${item.id}`,
