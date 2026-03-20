@@ -1,13 +1,16 @@
-// Implement parsing logic for Apple rankings
-export function parseAppleRankings(data, type, store, category, country) {
-  // Implement parsing logic for Apple rankings
-  return {};
+// Implement actual parsing logic here
+export function parseAppleRankings(data: string, category: string, country: string) {
+  // Parse Apple rankings data
 }
 
-// Implement parsing logic for Google app details
-export function parseGoogleAppDetails(data, type, store, appId, country) {
-  // Implement parsing logic for Google app details
-  return {};
+export function parseGoogleAppDetails(data: string, appId: string, country: string) {
+  // Parse Google app details data
 }
 
-// Implement parsing logic for Google search results and trending apps similarly
+export function parseGoogleSearchResults(data: string, query: string, country: string) {
+  // Parse Google search results data
+}
+
+export function parseGoogleTrendingApps(data: string, country: string) {
+  // Parse Google trending apps data
+}
