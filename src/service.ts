@@ -5,9 +5,9 @@ const SERVICE_NAME = 'app-store-intelligence';       // Your service name
 const PRICE_USDC = 0.01;               // Price per request ($)
 const DESCRIPTION = 'Provides real-time app rankings, reviews, and metadata from Apple App Store and Google Play Store';      // For AI agents
 
-const app = new Hono();
+const serviceRouter = new Hono();
 
-app.get('/api/run', async (c) => {
+serviceRouter.get('/run', async (c) => {
   const { type, store, category, country, appId, query } = c.req.query();
 
   // Placeholder for actual logic to fetch data from Apple App Store and Google Play Store
@@ -15,9 +15,9 @@ app.get('/api/run', async (c) => {
   return c.json(await result.json());
 });
 
-app.get('/health', (c) => {
-  return c.json({ status: 'healthy', service: SERVICE_NAME });
-});
+export default serviceRouter;
+ *   GET /api/instagram/* (Instagram Intelligence + AI Vision)
+ *   GET /api/linkedin/* (LinkedIn Enrichment)
  */
 
 import { Hono } from 'hono';
