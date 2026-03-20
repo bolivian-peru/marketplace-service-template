@@ -1,24 +1,32 @@
-/**
- * Service Router — Marketplace API
- *
- * Exposes:
- *   GET /api/run       (Google Maps Lead Generator)
- *   GET /api/details   (Google Maps Place details)
- *   GET /api/jobs      (Job Market Intelligence)
- *   GET /api/reviews/* (Google Reviews & Business Data)
- *   GET /api/airbnb/*  (Airbnb Market Intelligence)
- *   GET /api/reddit/*  (Reddit Intelligence)
- *   GET /api/instagram/* (Instagram Intelligence + AI Vision)
- *   GET /api/linkedin/* (LinkedIn Enrichment)
+import { Hono } from 'hono';
+import { proxyFetch } from './utils/proxyFetch';
+import { verifyPayment } from './utils/payment';
+import { parseAmazonProductPage } from './parsers/amazon';
+const SERVICE_NAME = 'amazon-product-tracker';       // Your service name
+const PRICE_USDC = 0.005;               // Price per request ($)
+const DESCRIPTION = 'Extracts real-time Amazon product data by ASIN';      // For AI agents
+const serviceRouter = new Hono();
+
+serviceRouter.get('/api/amazon/product/:asin', async (c) => {
+  // ... payment check + verification (already wired) ...
+  const { asin } = c.req.param();
+  const { marketplace } = c.req.query();
  */
 
-import { Hono } from 'hono';
-import { proxyFetch, getProxy } from './proxy';
-import { extractPayment, verifyPayment, build402Response } from './payment';
-import { scrapeIndeed, scrapeLinkedIn, type JobListing } from './scrapers/job-scraper';
-import { fetchReviews, fetchBusinessDetails, fetchReviewSummary, searchBusinesses } from './scrapers/reviews';
-import { scrapeGoogleMaps, extractDetailedBusiness } from './scrapers/maps-scraper';
-import { researchRouter } from './routes/research';
+    return c.json({ error: 'Payment required' }, 402);
+  }
+
+  const url = `https://www.amazon.${marketplace || 'com'}/dp/${asin}`;
+  const response = await proxyFetch(url);
+  if (!response.ok) {
+    return c.json({ error: 'Failed to fetch product data' }, response.status);
+  }
+  const productData = await parseAmazonProductPage(await response.text());
+
+  return c.json(productData);
+});
+
+export default serviceRouter;
 import { trendingRouter } from './routes/trending';
 import { searchAirbnb, getListingDetail, getListingReviews, getMarketStats } from './scrapers/airbnb-scraper';
 import { 
