@@ -1,4 +1,4 @@
-# LinkedIn People & Company Enrichment API
+# Marketplace Service Template
 
 **Turn AI agent traffic into passive USDC income.**
 
@@ -44,7 +44,7 @@ Your margin depends on what you're scraping:
 git clone https://github.com/YOUR_USERNAME/marketplace-service-template
 cd marketplace-service-template
 
-cp .env.example .env
+
 # Edit .env: set WALLET_ADDRESS + PROXY_* credentials
 
 bun install
