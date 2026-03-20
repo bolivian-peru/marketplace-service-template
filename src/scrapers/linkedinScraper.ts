@@ -2,9 +2,9 @@ import { proxyFetch } from '../utils/proxyFetch';
 
 export async function extractPersonProfile(url: string) {
   const response = await proxyFetch(url);
-  const html = await response.text();
-  // Placeholder for parsing logic
-  const profileData = {
+  const text = await response.text();
+  // Implement parsing logic for person profile
+  return {
     name: 'Jane Smith',
     headline: 'CTO at TechCorp',
     location: 'San Francisco, CA',
@@ -19,44 +19,46 @@ export async function extractPersonProfile(url: string) {
     education: [
       { school: 'Stanford University', degree: 'MS Computer Science' }
     ],
-    skills: ["Python", "Machine Learning", "System Design"],
-    connections: "500+",
+    skills: ['Python', 'Machine Learning', 'System Design'],
+    connections: '500+',
     profile_url: url,
     meta: {
-      proxy: { ip: "...", country: "US", carrier: "AT&T" }
+      proxy: { ip: '...', country: 'US', carrier: 'AT&T' }
     }
   };
-  return profileData;
 }
 
 export async function extractCompanyProfile(url: string) {
   const response = await proxyFetch(url);
-  const html = await response.text();
-  // Placeholder for parsing logic
-  const companyData = {
-    description: 'TechCorp is a leading technology company.',
-    employee_count: 1000,
+  const text = await response.text();
+  // Implement parsing logic for company profile
+  return {
+    name: 'TechCorp',
+    description: 'Innovative tech company',
+    employee_count: 100,
     industry: 'SaaS',
     headquarters: 'San Francisco, CA',
-    jobs: ['Software Engineer', 'Product Manager']
+    jobs: ['Software Engineer', 'Product Manager'],
+    meta: {
+      proxy: { ip: '...', country: 'US', carrier: 'AT&T' }
+    }
   };
-  return companyData;
 }
 
 export async function searchPeople(title: string, location: string, industry: string) {
-  // Placeholder for search logic
-  const searchResults = [
-    { name: 'Jane Smith', headline: 'CTO at TechCorp', location: 'San Francisco, CA' },
-    { name: 'John Doe', headline: 'VP Engineering at StartupXYZ', location: 'San Francisco, CA' }
-  ];
-  return searchResults;
+  // Implement search logic
+  return {
+    results: [
+      { name: 'Jane Smith', headline: 'CTO at TechCorp', location: 'San Francisco, CA', profile_url: 'https://linkedin.com/in/janesmith' }
+    ]
+  };
 }
 
-export async function getCompanyEmployees(companyId: string, title: string) {
-  // Placeholder for employee extraction logic
-  const employees = [
-    { name: 'Alice Johnson', title: 'Software Engineer' },
-    { name: 'Bob Brown', title: 'Software Engineer' }
-  ];
-  return employees;
+export async function getCompanyEmployees(id: string, title: string) {
+  // Implement logic to get company employees
+  return {
+    employees: [
+      { name: 'John Doe', title: 'Software Engineer', profile_url: 'https://linkedin.com/in/johndoe' }
+    ]
+  };
 }
