@@ -1,8 +1,9 @@
 # Demo Endpoints
 
-### App rankings by category and country
+### App Store Intelligence API Endpoints
 
-All endpoints require x402 USDC payment via `X-Payment-Signature` and `X-Payment-Network` headers.
+#### App rankings by category and country
+
 
 ---
 
