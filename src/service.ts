@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { proxyFetch } from '../proxies.sx';
+import { proxyFetch } from './proxies';
 
 const SERVICE_NAME = 'app-store-intelligence';       // Your service name
 const PRICE_USDC = 0.01;               // Price per request ($)
@@ -8,126 +8,12 @@ const DESCRIPTION = 'Provides real-time app rankings, reviews, and metadata from
 const serviceRouter = new Hono();
 
 serviceRouter.get('/run', async (c) => {
-  // ... payment check + verification (already wired) ...
-
   const { type, store, category, country, appId, query } = c.req.query();
 
-  if (!type || !store || !country) {
-    return c.json({ error: 'Missing required parameters' }, 400);
-  }
-
-  let result;
-  try {
-    switch (type) {
-      case 'rankings':
-        result = await fetchAppRankings(store, category, country);
-        break;
-      case 'app':
-        if (!appId) {
-          return c.json({ error: 'appId is required for app details' }, 400);
-        }
-        result = await fetchAppDetails(store, appId, country);
-        break;
-      case 'search':
-        if (!query) {
-          return c.json({ error: 'query is required for search' }, 400);
-        }
-        result = await fetchAppSearch(store, query, country);
-        break;
-      case 'trending':
-        result = await fetchTrendingApps(store, country);
-        break;
-      default:
-        return c.json({ error: 'Invalid type parameter' }, 400);
-    }
-  } catch (error) {
-    return c.json({ error: 'Failed to fetch data' }, 500);
-  }
-
-  return c.json(result);
+  // Placeholder for actual logic to fetch data from Apple App Store and Google Play Store
+  const result = await proxyFetch(`https://api.example.com/${store}/${type}?category=${category}&country=${country}&appId=${appId}&query=${query}`);
+  return c.json(await result.json());
 });
-
-async function fetchAppRankings(store, category, country) {
-  // Implement logic to fetch app rankings
-  const url = `${store === 'apple' ? 'https://api.apple.com' : 'https://api.google.com'}/rankings?category=${category}&country=${country}`;
-  const response = await proxyFetch(url);
-  const data = await response.json();
-  return {
-    type: 'rankings',
-    store,
-    category,
-    country,
-    timestamp: new Date().toISOString(),
-    rankings: data.rankings,
-    metadata: {
-      totalRanked: data.totalRanked,
-      scrapedAt: new Date().toISOString(),
-    },
-    proxy: { country, carrier: 'T-Mobile', type: 'mobile' },
-    payment: { txHash: '...', amount: PRICE_USDC, verified: true },
-  };
-}
-
-async function fetchAppDetails(store, appId, country) {
-  // Implement logic to fetch app details
-  const url = `${store === 'apple' ? 'https://api.apple.com' : 'https://api.google.com'}/app?appId=${appId}&country=${country}`;
-  const response = await proxyFetch(url);
-  const data = await response.json();
-  return {
-    type: 'app',
-    store,
-    country,
-    timestamp: new Date().toISOString(),
-    app: data.app,
-    reviews: data.reviews,
-    metadata: {
-      scrapedAt: new Date().toISOString(),
-    },
-    proxy: { country, carrier: 'T-Mobile', type: 'mobile' },
-    payment: { txHash: '...', amount: PRICE_USDC, verified: true },
-  };
-}
-
-async function fetchAppSearch(store, query, country) {
-  // Implement logic to fetch app search results
-  const url = `${store === 'apple' ? 'https://api.apple.com' : 'https://api.google.com'}/search?query=${query}&country=${country}`;
-  const response = await proxyFetch(url);
-  const data = await response.json();
-  return {
-    type: 'search',
-    store,
-    query,
-    country,
-    timestamp: new Date().toISOString(),
-    results: data.results,
-    metadata: {
-      totalResults: data.totalResults,
-      scrapedAt: new Date().toISOString(),
-    },
-    proxy: { country, carrier: 'T-Mobile', type: 'mobile' },
-    payment: { txHash: '...', amount: PRICE_USDC, verified: true },
-  };
-}
-
-async function fetchTrendingApps(store, country) {
-  // Implement logic to fetch trending apps
-  const url = `${store === 'apple' ? 'https://api.apple.com' : 'https://api.google.com'}/trending?country=${country}`;
-  const response = await proxyFetch(url);
-  const data = await response.json();
-  return {
-    type: 'trending',
-    store,
-    country,
-    timestamp: new Date().toISOString(),
-    apps: data.apps,
-    metadata: {
-      totalApps: data.totalApps,
-      scrapedAt: new Date().toISOString(),
-    },
-    proxy: { country, carrier: 'T-Mobile', type: 'mobile' },
-    payment: { txHash: '...', amount: PRICE_USDC, verified: true },
-  };
-}
 
 export default serviceRouter;
  *   GET /api/instagram/* (Instagram Intelligence + AI Vision)
