@@ -1,4 +1,4 @@
-# Marketplace Service Template
+# LinkedIn People & Company Enrichment API
 
 **Turn AI agent traffic into passive USDC income.**
 
