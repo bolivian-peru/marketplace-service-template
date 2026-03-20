@@ -1,8 +1,15 @@
-# Security
+# Security Policy
 
-This template is designed for production use. Here's what's built in and what you should know.
+## API Security
+- Ensure that all API requests are properly authenticated and authorized.
+- Validate all input parameters to prevent injection attacks.
+- Use HTTPS to encrypt data in transit.
+- Implement rate limiting to prevent abuse.
+- Regularly update dependencies to patch known vulnerabilities.
 
-## What's Protected
+## Reporting a Vulnerability
+- If you discover a security vulnerability, please report it to us via email at security@example.com.
+- Include a detailed description of the vulnerability, steps to reproduce, and any relevant information.
 
 ### Payment Verification (payment.ts)
 - **On-chain verification** — Payments are verified against Solana and Base public RPCs. No trust-the-header.
