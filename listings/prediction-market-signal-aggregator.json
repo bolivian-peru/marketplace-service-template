@@ -1,0 +1,23 @@
+{
+  "name": "Prediction Market Signal Aggregator",
+  "description": "Cross-platform prediction market intelligence: real-time odds from Polymarket + Kalshi + Metaculus, combined with mobile-proxy-scraped social sentiment from Twitter/X and Reddit. Detects arbitrage opportunities and sentiment divergence.",
+  "pricing": {
+    "endpoints": [
+      { "path": "/api/prediction/signal", "price": "$0.05", "unit": "per request", "description": "Full signal with odds + sentiment + arbitrage detection" },
+      { "path": "/api/prediction/arbitrage", "price": "$0.03", "unit": "per request", "description": "Cross-platform arbitrage opportunities" },
+      { "path": "/api/prediction/sentiment", "price": "$0.02", "unit": "per request", "description": "Social sentiment analysis via mobile proxy" },
+      { "path": "/api/prediction/trending", "price": "$0.01", "unit": "per request", "description": "Trending prediction markets" }
+    ],
+    "comparison": "Polymarket Pro costs $50/month for advanced analytics. Kalshi data feeds start at $100/month. No existing service combines cross-platform odds with real-time social sentiment. Our mobile proxy IPs enable Twitter/Reddit scraping that datacenter IPs cannot achieve."
+  },
+  "whyMobileProxy": "Market data APIs (Polymarket, Kalshi) are public — no proxy needed. The unique value requiring mobile proxies is the SENTIMENT layer: Twitter/X aggressively blocks datacenter IPs for search scraping. Reddit's new anti-bot measures target datacenter traffic. Mobile carrier IPs from Proxies.sx bypass these blocks, enabling real-time sentiment signals that predict where prediction market odds will move before they move.",
+  "sampleOutput": "See proof/prediction-market/",
+  "uptime": "99%+ (market data from public APIs, sentiment via mobile proxy with retry logic)",
+  "limitations": [
+    "Twitter sentiment depends on mobile proxy availability",
+    "Kalshi requires auth for some endpoints — using public market data only",
+    "Metaculus API may require authentication for some queries",
+    "Sentiment analysis is keyword-based (not ML) — adequate for directional signals",
+    "Cross-platform event matching uses keyword similarity — may miss some matches"
+  ]
+}
