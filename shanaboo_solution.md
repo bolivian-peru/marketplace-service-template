@@ -51,11 +51,11 @@
 +
 +  return {
 +    twitter: {
-+      positive: 0.45, // Placeholder for actual sentiment analysis
++      positive: 0.45, // Placeholder sentiment analysis
 +      negative: 0.30,
 +      neutral: 0.25,
 +      volume: twitterData.meta.result_count,
-+      trending: twitterData.meta.trending,
++      trending: twitterData.meta.is_trending,
 +      topTweets: twitterData.data.map((tweet: any) => ({
 +        text: tweet.text,
 +        likes: tweet.public_metrics.like_count,
@@ -65,7 +65,7 @@
 +      })),
 +    },
 +    reddit: {
-+      positive: 0.52,
++      positive: 0.52, // Placeholder sentiment analysis
 +      negative: 0.28,
 +      neutral: 0.20,
 +      volume: redditData.data.children.length,
@@ -74,7 +74,7 @@
 +    tiktok: {
 +      relatedVideos: tiktokData.item_list.length,
 +      totalViews: tiktokData.item_list.reduce((sum: number, video: any) => sum + video.play_count, 0),
-+      sentiment: 'bullish', // Placeholder for actual sentiment analysis
++      sentiment: 'bullish', // Placeholder sentiment analysis
 +    },
 +  };
 +}
@@ -82,18 +82,18 @@
 +async function generateSignals(odds: any, sentiment: any) {
 +  return {
 +    arbitrage: {
-+      detected: odds.polymarket.yes - odds.kalshi.yes > 0.04,
-+      spread: odds.polymarket.yes - odds.kalshi.yes,
++      detected: Math.abs(odds.polymarket.yes - odds.kalshi.yes) > 0.02,
++      spread: Math.abs(odds.polymarket.yes - odds.kalshi.yes),
 +      direction: odds.polymarket.yes > odds.kalshi.yes ? 'Polymarket YES overpriced vs Kalshi' : 'Kalshi YES overpriced vs Polymarket',
-+      confidence: 0.72, // Placeholder for actual confidence calculation
++      confidence: 0.72, // Placeholder confidence score
 +    },
 +    sentimentDivergence: {
-+      detected: sentiment.twitter.positive > odds.polymarket.yes,
-+      description: sentiment.twitter.positive > odds.polymarket.yes ? 'Social sentiment 65% bullish but Polymarket only 62% — potential underpricing' : 'Social sentiment 65% bullish but Polymarket only 62% — potential overpricing',
-+      magnitude: 'moderate',
++      detected: Math.abs(sentiment.twitter.positive - odds.polymarket.yes) > 0.1,
++      description: sentiment.twitter.positive > odds.polymarket.yes ? 'Social sentiment bullish but Polymarket underpriced' : 'Social sentiment bearish but Polymarket overpriced',
++      magnitude: 'moderate', // Placeholder magnitude
 +    },
 +    volumeSpike: {
-+      detected: false, // Placeholder for actual volume spike detection
++      detected: false, // Placeholder volume spike detection
 +    },
 +  };
 +}
@@ -123,13 +123,13 @@
 +      payment: { txHash: '...', amount: PRICE_USDC, verified: true },
 +    };
 +  } else if (type === 'arbitrage') {
-+    // Placeholder for arbitrage detection logic
++    // Placeholder for arbitrage logic
 +    result = { type: 'arbitrage', opportunities: [] };
 +  } else if (type === 'sentiment' && topic && country) {
 +    const sentiment = await getSentiment(topic, country);
 +    result = { type: 'sentiment', topic, country, sentiment };
 +  } else if (type === 'trending') {
-+    // Placeholder for trending markets detection logic
++    // Placeholder for trending logic
 +    result = { type: 'trending', markets: [] };
 +  } else {
 +    return c.json({ error: 'Invalid query parameters' }, 400);
@@ -138,4 +138,5 @@
    return c.json(result);
  });
  
- export default
+ export default serviceRouter;
+``
