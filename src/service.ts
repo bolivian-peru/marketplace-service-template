@@ -2,120 +2,22 @@ import { Hono } from 'hono';
 import { proxyFetch } from './proxies';
 
 const SERVICE_NAME = 'app-store-intelligence';       // Your service name
-const PRICE_USDC = 0.005;               // Price per request ($)
+const PRICE_USDC = 0.01;               // Price per request ($)
 const DESCRIPTION = 'Provides real-time app rankings, reviews, and metadata from Apple App Store and Google Play Store';      // For AI agents
 
-const serviceRouter = new Hono();
+const app = new Hono();
 
-serviceRouter.get('/run', async (c) => {
-  // ... payment check + verification (already wired) ...
-
+app.get('/api/run', async (c) => {
   const { type, store, category, country, appId, query } = c.req.query();
 
-  if (!type || !store || !country) {
-    return c.json({ error: 'Missing required parameters' }, 400);
-  }
-
-  let result;
-
-  try {
-    if (type === 'rankings') {
-      if (!category) {
-        return c.json({ error: 'Category is required for rankings' }, 400);
-      }
-      result = await fetchAppRankings(store, category, country);
-    } else if (type === 'app') {
-      if (!appId) {
-        return c.json({ error: 'App ID is required for app details' }, 400);
-      }
-      result = await fetchAppDetails(store, appId, country);
-    } else if (type === 'search') {
-      if (!query) {
-        return c.json({ error: 'Query is required for search' }, 400);
-      }
-      result = await fetchAppSearch(store, query, country);
-    } else if (type === 'trending') {
-      result = await fetchTrendingApps(store, country);
-    } else {
-      return c.json({ error: 'Invalid type' }, 400);
-    }
-  } catch (error) {
-    return c.json({ error: 'Failed to fetch data' }, 500);
-  }
-
-  return c.json(result);
+  // Placeholder for actual logic to fetch data from Apple App Store and Google Play Store
+  const result = await proxyFetch(`https://api.example.com/${store}/${type}?category=${category}&country=${country}&appId=${appId}&query=${query}`);
+  return c.json(await result.json());
 });
 
-async function fetchAppRankings(store: string, category: string, country: string) {
-  // Implement logic to fetch app rankings
-  const response = await proxyFetch(`https://api.example.com/${store}/rankings?category=${category}&country=${country}`);
-  const data = await response.json();
-  return {
-    type: 'rankings',
-    store,
-    category,
-    country,
-    timestamp: new Date().toISOString(),
-    rankings: data.rankings,
-    metadata: data.metadata,
-    proxy: { country, carrier: 'T-Mobile', type: 'mobile' },
-    payment: { txHash: '...', amount: 0.01, verified: true }
-  };
-}
-
-async function fetchAppDetails(store: string, appId: string, country: string) {
-  // Implement logic to fetch app details
-  const response = await proxyFetch(`https://api.example.com/${store}/app?id=${appId}&country=${country}`);
-  const data = await response.json();
-  return {
-    type: 'app',
-    store,
-    country,
-    timestamp: new Date().toISOString(),
-    app: data.app,
-    reviews: data.reviews,
-    metadata: data.metadata,
-    proxy: { country, carrier: 'T-Mobile', type: 'mobile' },
-    payment: { txHash: '...', amount: 0.01, verified: true }
-  };
-}
-
-async function fetchAppSearch(store: string, query: string, country: string) {
-  // Implement logic to fetch app search results
-  const response = await proxyFetch(`https://api.example.com/${store}/search?q=${query}&country=${country}`);
-  const data = await response.json();
-  return {
-    type: 'search',
-    store,
-    query,
-    country,
-    timestamp: new Date().toISOString(),
-    results: data.results,
-    metadata: data.metadata,
-    proxy: { country, carrier: 'T-Mobile', type: 'mobile' },
-    payment: { txHash: '...', amount: 0.01, verified: true }
-  };
-}
-
-async function fetchTrendingApps(store: string, country: string) {
-  // Implement logic to fetch trending apps
-  const response = await proxyFetch(`https://api.example.com/${store}/trending?country=${country}`);
-  const data = await response.json();
-  return {
-    type: 'trending',
-    store,
-    country,
-    timestamp: new Date().toISOString(),
-    apps: data.apps,
-    metadata: data.metadata,
-    proxy: { country, carrier: 'T-Mobile', type: 'mobile' },
-    payment: { txHash: '...', amount: 0.01, verified: true }
-  };
-}
-
-export default serviceRouter;
- *   GET /api/instagram/* (Instagram Intelligence + AI Vision)
- *   GET /api/linkedin/* (LinkedIn Enrichment)
+app.get('/health', (c) => {
+  return c.json({ status: 'healthy', service: SERVICE_NAME });
+});
  */
 
 import { Hono } from 'hono';
