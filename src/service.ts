@@ -35,8 +35,9 @@ serviceRouter.get('/api/realestate/search', async (c) => {
   if (address) {
     url += `?address=${encodeURIComponent(address)}`;
   } else if (zip) {
-    url += `?searchQueryState=%7B%22pagination%22%3A%7B%7D%2C%22usersSearchTerm%22%3A%22${zip}%22%2C%22mapBounds%22%3A%7B%7D%2C%22regionSelection%22%3A%5B%7B%22regionId%22%3A${zip}%2C%22regionType%22%3A7%7D%5D%2C%22isMapVisible%22%3Atrue%2C%22filterState%22%3A%7B%7D%2C%22isListVisible%22%3Atrue%7D`;
+    url += `?searchQueryState=%7B%22pagination%22%3A%7B%7D%2C%22usersSearchTerm%22%3A%22${zip}%22%2C%22mapBounds%22%3A%7B%7D%2C%22regionSelection%22%3A%5B%7B%22regionId%22%3A${zip}%2C%22regionType%22%3A7%7D%5D%2C%22isMapVisible%22%3Atrue%2C%22filterState%22%3A%7B%7D%2C%22isListVisible%22%3Atrue%2C%22mapZoom%22%3A11%7D`;
   }
+
   if (type) url += `&type=${type}`;
   if (min_price) url += `&min=${min_price}`;
   if (max_price) url += `&max=${max_price}`;
@@ -89,8 +90,7 @@ serviceRouter.get('/api/realestate/comps/:zpid', async (c) => {
 serviceRouter.get('/run', async (c) => {
   // ... payment check + verification (already wired) ...
   // YOUR LOGIC HERE:
-  const result = await proxyFetch('https://target.com');
-  return c.json({ data: await result.text() });
+  return c.json({ error: 'Endpoint not found' }, 404);
 });
 export default serviceRouter;
  *   GET /api/instagram/* (Instagram Intelligence + AI Vision)
