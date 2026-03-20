@@ -37,22 +37,22 @@ Your margin depends on what you're scraping:
 3. **Zero customer support** — API works or returns error, agents handle retries
 4. **Passive income** — deploy once, earn while you sleep
 
+## Quick Start
+
+```bash
+# Fork this repo, then:
+git clone https://github.com/YOUR_USERNAME/marketplace-service-template
+cd marketplace-service-template
+
+cp .env.example .env
+# Edit .env: set WALLET_ADDRESS + PROXY_* credentials
+
 
 ## Edit One File
 
 **`src/service.ts`** — change three values and implement the handler for the App Store Intelligence API:
 
 
-
-cp .env.example .env
-# Edit .env: set WALLET_ADDRESS + PROXY_* credentials
-
-bun install
-bun run dev
-```
-
-Test it:
-```bash
 curl http://localhost:3000/health
 # → {"status":"healthy","service":"my-service",...}
 
