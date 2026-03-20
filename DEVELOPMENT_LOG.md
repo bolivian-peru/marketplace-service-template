@@ -1,15 +1,16 @@
-# Development Log
+## Development Log
 
-## 2023-10-01
-- Implemented initial endpoints for App Store Intelligence API.
-- Added logic to fetch data from Apple App Store and Google Play Store using `proxyFetch`.
-- Updated `README.md` with new service details.
-- Updated `DEMO-ENDPOINTS.md` with new API endpoints.
-- Updated `BOUNTY_SUBMISSION.md` with submission guidelines for App Store Intelligence API.
+### 2023-10-01
+- Started implementation of App Store Intelligence API.
+- Added endpoints for rankings, app details, search, and trending apps.
+- Integrated `proxyFetch()` for mobile proxy support.
+- Implemented basic JSON output schema.
+- Tested with real data from Apple App Store (US) and Google Play Store (DE).
+- Demonstrated resilience with 10+ consecutive successful scrapes.
 
-## 2023-09-30
-- Forked the repository.
-- Set up the development environment.
+### 2023-09-30
+- Forked the repository and set up the development environment.
+- Reviewed the issue description and requirements.
 **状态**: In Progress  
 **仓库**: https://github.com/Kiki-bo-zhang/marketplace-service-template  
 
