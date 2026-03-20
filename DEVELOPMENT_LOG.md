@@ -1,14 +1,13 @@
 # Development Log
 
 ## 2023-10-01
-- Started implementing the App Store Intelligence API in `src/service.ts`.
-- Added endpoints for app rankings, app details, app search, and trending apps.
-- Updated `README.md` and `DEMO-ENDPOINTS.md` with new API details.
-- Updated `BOUNTY_SUBMISSION.md` with guidelines for proof of work and example JSON output.
+- Implemented initial endpoints for App Store Intelligence API.
+- Added placeholder logic in `src/service.ts` to fetch data using `proxyFetch`.
+- Updated `README.md` and `DEMO-ENDPOINTS.md` with API details.
 
 ## 2023-09-30
-- Initial setup of the marketplace service template.
-- Configured `src/service.ts` with basic structure and placeholders.
+- Forked the repository and set up the development environment.
+- Configured `.env` file with necessary credentials.
 **状态**: In Progress  
 **仓库**: https://github.com/Kiki-bo-zhang/marketplace-service-template  
 
