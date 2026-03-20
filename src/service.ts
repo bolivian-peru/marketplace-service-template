@@ -81,19 +81,25 @@ serviceRouter.get('/run', async (c) => {
   };
 
   // Parse and structure the data according to the required schema
-  // This is a simplified example and needs to be expanded based on the actual TikTok API response structure
+  // This is a simplified example and would need to be expanded to handle all data points
   if (type === 'trending') {
     response.data.videos = data.items.map((item: any) => ({
       id: item.id,
       description: item.desc,
-      author: { username: item.author.uniqueId, followers: item.author.stats.followerCount },
+      author: {
+        username: item.author.uniqueId,
+        followers: item.author.stats.followerCount,
+      },
       stats: {
         views: item.stats.playCount,
         likes: item.stats.diggCount,
         comments: item.stats.commentCount,
         shares: item.stats.shareCount,
       },
-      sound: { name: item.music.title, author: item.music.authorName },
+      sound: {
+        name: item.music.title,
+        author: item.music.authorName,
+      },
       hashtags: item.challenges.map((challenge: any) => challenge.title),
       createdAt: new Date(item.createTime * 1000).toISOString(),
       url: `https://www.tiktok.com/@${item.author.uniqueId}/video/${item.id}`,
