@@ -25,19 +25,18 @@ import { trendingRouter } from './routes/trending';
   if (!url) {
     return c.json({ error: 'URL parameter is required' }, 400);
   }
-  const paymentVerified = await verifyPayment(c, 0.05);
+  const paymentVerified = await verifyPayment(c, PRICE_USDC);
+  if (!paymentVerified) {
+    return c.json({ error: 'Payment verification failed' }, 402);
+import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
   if (!paymentVerified) {
     return c.json({ error: 'Payment verification failed' }, 402);
   }
-  if (!result.ok) {
-    return c.json({ error: 'Failed to fetch company data' }, result.status);
-  }
-  const resultData = await extractCompanyProfile(url);
-  return c.json(resultData);
+  const result = await extractCompanyProfile(url);
+  return c.json(result);
 });
 
 
-const SERVICE_NAME = 'job-market-intelligence';
   const { title, location, industry } = c.req.query();
   if (!title || !location || !industry) {
     return c.json({ error: 'Title, location, and industry parameters are required' }, 400);
@@ -45,31 +44,32 @@ const SERVICE_NAME = 'job-market-intelligence';
   const paymentVerified = await verifyPayment(c, 0.10);
   if (!paymentVerified) {
     return c.json({ error: 'Payment verification failed' }, 402);
+  input: {
+  if (!paymentVerified) {
+    return c.json({ error: 'Payment verification failed' }, 402);
   }
-  if (!result.ok) {
-    return c.json({ error: 'Failed to search people' }, result.status);
-  }
-  const resultData = await searchPeople(title, location, industry);
-  return c.json(resultData);
+  const result = await searchPeople(title, location, industry);
+  return c.json(result);
 });
 
-      address: 'string | null',
-      phone: 'string | null',
+      name: 'string',
   const { id, title } = c.req.query();
   if (!id || !title) {
     return c.json({ error: 'ID and title parameters are required' }, 400);
   }
-  const paymentVerified = await verifyPayment(c, 0.05);
+  const paymentVerified = await verifyPayment(c, PRICE_USDC);
+  if (!paymentVerified) {
+    return c.json({ error: 'Payment verification failed' }, 402);
+      categories: 'string[]',
   if (!paymentVerified) {
     return c.json({ error: 'Payment verification failed' }, 402);
   }
-  if (!result.ok) {
-    return c.json({ error: 'Failed to fetch company employees' }, result.status);
-  }
-  const resultData = await getCompanyEmployees(id, title);
-  return c.json(resultData);
+  const result = await getCompanyEmployees(id, title);
+  return c.json(result);
 });
 
+    searchQuery: 'string',
+    location: 'string',
     proxy: '{ country: string, type: "mobile" }',
     payment: '{ txHash, network, amount, settled }',
   },
