@@ -1,6 +1,6 @@
 # Marketplace Service Template
 
-**Turn AI agent traffic into passive USDC income.**
+**Turn AI agent traffic into passive USDC income with real-time prediction market signals and sentiment analysis.**
 
 Fork this repo → edit one file → deploy → start earning.
 
@@ -18,13 +18,13 @@ Your margin depends on what you're scraping:
 
 | Use Case | Avg Size | Reqs/GB | Cost/Req | You Charge | Margin |
 |----------|----------|---------|----------|------------|--------|
-| JSON APIs | ~10 KB | 100k | $0.00004 | $0.001 | **97%** |
-| Text extraction | ~50 KB | 20k | $0.0002 | $0.005 | **96%** |
-| HTML (no images) | ~200 KB | 5k | $0.0008 | $0.005 | **84%** |
-| Full pages | ~2 MB | 500 | $0.008 | $0.02 | **60%** |
 
-**Example: Text scraper at 10k req/day**
-- Traffic: ~0.5 GB/day → $2/day proxy cost
+## The Economics
+
+You're arbitraging infrastructure. Buy proxy bandwidth wholesale, sell API calls retail, and generate trading signals from prediction markets and social sentiment.
+
+**Proxy cost:** $4/GB shared, $8/GB private ([live pricing](https://api.proxies.sx/v1/x402/pricing))
+
 - Revenue: $0.005 × 10k = $50/day
 - **Profit: $48/day (~$1,400/mo)**
 
@@ -41,10 +41,9 @@ Your margin depends on what you're scraping:
 
 ```bash
 # Fork this repo, then:
-git clone https://github.com/YOUR_USERNAME/marketplace-service-template
-cd marketplace-service-template
 
-cp .env.example .env
+## Quick Start
+
 # Edit .env: set WALLET_ADDRESS + PROXY_* credentials
 
 bun install

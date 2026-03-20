@@ -1,6 +1,12 @@
-# Demo Endpoints — Google Reviews & Business Data API
+# Demo Endpoints
 
-All endpoints require x402 USDC payment via `X-Payment-Signature` and `X-Payment-Network` headers.
+This document lists the demo endpoints for the Prediction Market Signal Aggregator.
+
+## Endpoints
+
+### Get signal for a specific market/event
+
+
 
 ---
 
