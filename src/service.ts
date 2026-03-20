@@ -1,34 +1,66 @@
 import { Hono } from 'hono';
 import { proxyFetch } from './proxies';
+import { verifyPayment } from './payment';
+import { parseAppleRankings, parseGoogleAppDetails, parseGoogleSearchResults, parseGoogleTrendingApps } from './scrapers';
 
-const SERVICE_NAME = 'app-store-intelligence';       // Your service name
-const PRICE_USDC = 0.01;               // Price per request ($)
-const DESCRIPTION = 'Provides real-time app rankings, reviews, and metadata from Apple App Store and Google Play Store';      // For AI agents
+const app = new Hono();
 
-const serviceRouter = new Hono();
+const SERVICE_NAME = 'app-store-intelligence';
+const PRICE_USDC = 0.01;
+const DESCRIPTION = 'Scrapes real-time app rankings, reviews, and metadata from Apple App Store and Google Play Store';
 
-serviceRouter.get('/run', async (c) => {
+app.get('/run', async (c) => {
   const { type, store, category, country, appId, query } = c.req.query();
 
-  // Placeholder for actual logic to fetch data from Apple App Store and Google Play Store
-  const result = await proxyFetch(`https://api.example.com/${store}/${type}?category=${category}&country=${country}&appId=${appId}&query=${query}`);
-  return c.json(await result.json());
+  // Payment verification
+  const paymentSignature = c.req.header('Payment-Signature');
+  if (!paymentSignature || !verifyPayment(paymentSignature, PRICE_USDC)) {
+    return c.json({ error: 'Invalid payment' }, 402);
+  }
+
+  let result;
+  try {
+    if (type === 'rankings' && store === 'apple') {
+      const url = `https://itunes.apple.com/us/rss/topfreeapplications/limit=50/genre=${category}/json`;
+      const response = await proxyFetch(url, { country });
+      result = parseAppleRankings(await response.json(), category, country);
+    } else if (type === 'app' && store === 'google') {
+      const url = `https://play.google.com/store/apps/details?id=${appId}&hl=${country}`;
+      const response = await proxyFetch(url, { country });
+      result = parseGoogleAppDetails(await response.text(), appId, country);
+    } else if (type === 'search' && store === 'google') {
+      const url = `https://play.google.com/store/search?q=${query}&c=apps&hl=${country}`;
+      const response = await proxyFetch(url, { country });
+      result = parseGoogleSearchResults(await response.text(), query, country);
+    } else if (type === 'trending' && store === 'google') {
+      const url = `https://play.google.com/store/apps/collection/topselling_new_paid?hl=${country}`;
+      const response = await proxyFetch(url, { country });
+      result = parseGoogleTrendingApps(await response.text(), country);
+    } else {
+      return c.json({ error: 'Invalid request parameters' }, 400);
+    }
+  } catch (error) {
+    return c.json({ error: 'Failed to fetch data' }, 500);
+  }
+
+  return c.json(result);
 });
 
-export default serviceRouter;
- *   GET /api/instagram/* (Instagram Intelligence + AI Vision)
- *   GET /api/linkedin/* (LinkedIn Enrichment)
+app.get('/', (c) => {
+  return c.json({
  */
+    description: DESCRIPTION,
+    priceUsdc: PRICE_USDC,
+    endpoints: [
+      '/run?type=rankings&store=apple&category=games&country=US',
+      '/run?type=app&store=google&appId=com.spotify.music&country=DE',
+      '/run?type=search&store=google&query=vpn&country=GB',
+      '/run?type=trending&store=google&country=US',
+    ],
+  });
+});
 
-import { Hono } from 'hono';
-import { proxyFetch, getProxy } from './proxy';
-import { extractPayment, verifyPayment, build402Response } from './payment';
-import { scrapeIndeed, scrapeLinkedIn, type JobListing } from './scrapers/job-scraper';
-import { fetchReviews, fetchBusinessDetails, fetchReviewSummary, searchBusinesses } from './scrapers/reviews';
-import { scrapeGoogleMaps, extractDetailedBusiness } from './scrapers/maps-scraper';
-import { researchRouter } from './routes/research';
-import { trendingRouter } from './routes/trending';
-import { searchAirbnb, getListingDetail, getListingReviews, getMarketStats } from './scrapers/airbnb-scraper';
+export default app;
 import { 
   scrapeLinkedInPerson, 
   scrapeLinkedInCompany, 
