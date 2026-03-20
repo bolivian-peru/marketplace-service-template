@@ -1,8 +1,15 @@
-# LinkedIn Enrichment API — 开发日志
+# Development Log
 
-## 任务: GitHub Bounty #77 — LinkedIn People & Company Enrichment API
-**赏金**: $100 (paid in $SX token)  
-**开始时间**: 2026-02-26  
+## 2023-10-01
+- Implemented initial endpoints for App Store Intelligence API.
+- Added logic to fetch data from Apple App Store and Google Play Store using `proxyFetch`.
+- Updated `README.md` with new service details.
+- Updated `DEMO-ENDPOINTS.md` with new API endpoints.
+- Updated `BOUNTY_SUBMISSION.md` with submission guidelines for App Store Intelligence API.
+
+## 2023-09-30
+- Forked the repository.
+- Set up the development environment.
 **状态**: In Progress  
 **仓库**: https://github.com/Kiki-bo-zhang/marketplace-service-template  
 
