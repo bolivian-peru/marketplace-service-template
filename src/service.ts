@@ -78,15 +78,15 @@ async function getSentiment(topic: string, country: string) {
 async function generateSignals(odds: any, sentiment: any) {
   return {
     arbitrage: {
-      detected: odds.polymarket.yes - odds.kalshi.yes > 0.02,
+      detected: Math.abs(odds.polymarket.yes - odds.kalshi.yes) > 0.02,
       spread: Math.abs(odds.polymarket.yes - odds.kalshi.yes),
       direction: odds.polymarket.yes > odds.kalshi.yes ? 'Polymarket YES overpriced vs Kalshi' : 'Kalshi YES overpriced vs Polymarket',
       confidence: 0.72, // Placeholder confidence score
     },
     sentimentDivergence: {
-      detected: sentiment.twitter.positive > odds.polymarket.yes + 0.1,
-      description: 'Social sentiment 65% bullish but Polymarket only 62% — potential underpricing',
-      magnitude: 'moderate',
+      detected: Math.abs(sentiment.twitter.positive - odds.polymarket.yes) > 0.1,
+      description: sentiment.twitter.positive > odds.polymarket.yes ? 'Social sentiment bullish but Polymarket underpriced' : 'Social sentiment bearish but Polymarket overpriced',
+      magnitude: 'moderate', // Placeholder magnitude
     },
     volumeSpike: {
       detected: false, // Placeholder volume spike detection
@@ -101,12 +101,14 @@ serviceRouter.get('/run', async (c) => {
     return c.json({ error: 'Payment required' }, 402);
   }
 
+  let result = {};
+
   if (type === 'signal' && market) {
     const odds = await getMarketOdds(market);
     const sentiment = await getSentiment(topic || market, country || 'US');
     const signals = await generateSignals(odds, sentiment);
 
-    return c.json({
+    result = {
       type: 'signal',
       market,
       timestamp: new Date().toISOString(),
@@ -115,25 +117,21 @@ serviceRouter.get('/run', async (c) => {
       signals,
       proxy: { country: country || 'US', carrier: 'T-Mobile', type: 'mobile' },
       payment: { txHash: '...', amount: PRICE_USDC, verified: true },
-    });
-  }
-
-  if (type === 'arbitrage') {
-    // Placeholder for arbitrage opportunities
-    return c.json({ type: 'arbitrage', opportunities: [] });
-  }
-
-  if (type === 'sentiment' && topic && country) {
+    };
+  } else if (type === 'arbitrage') {
+    // Placeholder for arbitrage logic
+    result = { type: 'arbitrage', opportunities: [] };
+  } else if (type === 'sentiment' && topic && country) {
     const sentiment = await getSentiment(topic, country);
-    return c.json({ type: 'sentiment', topic, country, sentiment });
+    result = { type: 'sentiment', topic, country, sentiment };
+  } else if (type === 'trending') {
+    // Placeholder for trending logic
+    result = { type: 'trending', markets: [] };
+  } else {
+    return c.json({ error: 'Invalid query parameters' }, 400);
   }
 
-  if (type === 'trending') {
-    // Placeholder for trending prediction markets with sentiment divergence
-    return c.json({ type: 'trending', markets: [] });
-  }
-
-  return c.json({ error: 'Invalid request parameters' }, 400);
+  return c.json(result);
 });
 
 export default serviceRouter;
