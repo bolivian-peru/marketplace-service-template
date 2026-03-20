@@ -52,4 +52,8 @@ The search page (`/s/New-York--NY/homes`) was also fetched (695,906 bytes). The 
 
 ### What the Service Returns
 
+# Proof of Work for App Store Intelligence API
+
+## Real JSON Output
+
 The Airbnb Intelligence service (PR #98) indexes listing data from the explore API, enriches it with pricing and host information, and surfaces it through a normalized REST API for consumption by downstream agents and services.
