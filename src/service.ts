@@ -39,7 +39,7 @@ async function getMarketOdds(market: string) {
 async function getSentiment(topic: string, country: string) {
   const twitterResponse = await proxyFetch(`https://api.twitter.com/2/tweets/search/recent?query=${topic}&country=${country}`);
   const redditResponse = await proxyFetch(`https://www.reddit.com/search.json?q=${topic}&country=${country}`);
-  const tiktokResponse = await proxyFetch(`https://api.tiktok.com/search/item_list/?keyword=${topic}&country=${country}`);
+  const tiktokResponse = await proxyFetch(`https://api.tiktok.com/search/item/?keyword=${topic}&country=${country}`);
 
   const twitterData = await twitterResponse.json();
   const redditData = await redditResponse.json();
@@ -51,7 +51,7 @@ async function getSentiment(topic: string, country: string) {
       negative: 0.30,
       neutral: 0.25,
       volume: twitterData.meta.result_count,
-      trending: twitterData.meta.is_trending,
+      trending: twitterData.meta.trending,
       topTweets: twitterData.data.map((tweet: any) => ({
         text: tweet.text,
         likes: tweet.public_metrics.like_count,
@@ -85,7 +85,7 @@ async function generateSignals(odds: any, sentiment: any) {
     },
     sentimentDivergence: {
       detected: Math.abs(sentiment.twitter.positive - odds.polymarket.yes) > 0.1,
-      description: sentiment.twitter.positive > odds.polymarket.yes ? 'Social sentiment bullish but Polymarket underpriced' : 'Social sentiment bearish but Polymarket overpriced',
+      description: 'Social sentiment disagrees with market price',
       magnitude: 'moderate', // Placeholder magnitude
     },
     volumeSpike: {
