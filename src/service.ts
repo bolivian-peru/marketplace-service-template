@@ -13,13 +13,9 @@ serviceRouter.get('/api/realestate/property/:zpid', async (c) => {
     return c.json({ error: 'Payment required' }, 402);
   }
 
-  const url = `https://www.zillow.com/homedetails/${zpid}_zpid/`;
-  const response = await proxyFetch(url);
-  if (!response.ok) {
-    return c.json({ error: 'Failed to fetch property data' }, 500);
-  }
-
-  const html = await response.text();
+  const url = `https://www.zillow.com/homes/${zpid}_zpid/`;
+  const result = await proxyFetch(url);
+  const html = await result.text();
   const propertyData = parseZillowProperty(html);
   return c.json(propertyData);
 });
@@ -30,7 +26,7 @@ serviceRouter.get('/api/realestate/search', async (c) => {
     return c.json({ error: 'Address or ZIP code is required' }, 400);
   }
 
-  const payment = await verifyPayment(c, PRICE_USDC);
+  const payment = await verifyPayment(c, 0.01);
   if (!payment) {
     return c.json({ error: 'Payment required' }, 402);
   }
@@ -43,17 +39,13 @@ serviceRouter.get('/api/realestate/search', async (c) => {
   }
 
   if (type) url += `&type=${type}`;
-  if (min_price) url += `&minPrice=${min_price}`;
-  if (max_price) url += `&maxPrice=${max_price}`;
+  if (min_price) url += `&min=${min_price}`;
+  if (max_price) url += `&max=${max_price}`;
   if (bedrooms) url += `&beds=${bedrooms}`;
   if (bathrooms) url += `&baths=${bathrooms}`;
 
-  const response = await proxyFetch(url);
-  if (!response.ok) {
-    return c.json({ error: 'Failed to fetch search results' }, 500);
-  }
-
-  const html = await response.text();
+  const result = await proxyFetch(url);
+  const html = await result.text();
   const searchResults = parseZillowSearch(html);
   return c.json(searchResults);
 });
@@ -70,12 +62,8 @@ serviceRouter.get('/api/realestate/market', async (c) => {
   }
 
   const url = `https://www.zillow.com/homes/for_sale/${zip}_rb/`;
-  const response = await proxyFetch(url);
-  if (!response.ok) {
-    return c.json({ error: 'Failed to fetch market data' }, 500);
-  }
-
-  const html = await response.text();
+  const result = await proxyFetch(url);
+  const html = await result.text();
   const marketData = parseZillowMarket(html);
   return c.json(marketData);
 });
@@ -93,12 +81,8 @@ serviceRouter.get('/api/realestate/comps/:zpid', async (c) => {
   }
 
   const url = `https://www.zillow.com/homes/comps/${zpid}_zpid/${radius}/`;
-  const response = await proxyFetch(url);
-  if (!response.ok) {
-    return c.json({ error: 'Failed to fetch comparable sales' }, 500);
-  }
-
-  const html = await response.text();
+  const result = await proxyFetch(url);
+  const html = await result.text();
   const compsData = parseZillowComps(html);
   return c.json(compsData);
 });
@@ -106,8 +90,7 @@ serviceRouter.get('/api/realestate/comps/:zpid', async (c) => {
 serviceRouter.get('/run', async (c) => {
   // ... payment check + verification (already wired) ...
   // YOUR LOGIC HERE:
-  const result = await proxyFetch('https://target.com');
-  return c.json({ data: await result.text() });
+  return c.json({ error: 'Endpoint not found' }, 404);
 });
 export default serviceRouter;
  *   GET /api/instagram/* (Instagram Intelligence + AI Vision)
