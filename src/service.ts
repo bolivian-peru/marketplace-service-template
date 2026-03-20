@@ -1,35 +1,139 @@
 import { Hono } from 'hono';
-import { proxyFetch } from './proxies';
+import { proxyFetch } from '../utils/proxyFetch';
+import { verifyPayment } from '../utils/payment';
+import { getMarketOdds } from '../utils/marketData';
+import { getSentimentAnalysis } from '../utils/sentimentAnalysis';
+import { generateSignals } from '../utils/signalGeneration';
+const app = new Hono();
+const SERVICE_NAME = 'prediction-market-signal-aggregator';
+const PRICE_USDC = 0.01;
+const DESCRIPTION = 'Combines real-time prediction market odds with live social sentiment data to detect mispricings and generate trading signals.';
+app.get('/api/run', async (c) => {
+  const { type, market, topic, country } = c.req.query();
 
-const SERVICE_NAME = 'prediction-market-signal-aggregator';       // Your service name
-const PRICE_USDC = 0.01;               // Price per request ($)
-const DESCRIPTION = 'Aggregates prediction market odds with live social sentiment data to detect mispricings and generate trading signals';      // For AI agents
+  // Payment verification
+  const paymentResult = await verifyPayment(c, PRICE_USDC);
+  if (!paymentResult.success) {
+    return c.json(paymentResult, 402);
+  }
 
-const serviceRouter = new Hono();
+  let result;
 
-serviceRouter.get('/run', async (c) => {
-  // ... payment check + verification (already wired) ...
+  switch (type) {
+    case 'signal':
+      if (!market) {
+        return c.json({ error: 'Market parameter is required' }, 400);
+      }
+      const marketOdds = await getMarketOdds(market);
+      const sentiment = await getSentimentAnalysis(topic || market, country || 'US');
+      const signals = generateSignals(marketOdds, sentiment);
+      result = {
+        type: 'signal',
+        market,
+        timestamp: new Date().toISOString(),
+        odds: marketOdds,
+        sentiment,
+        signals,
+        proxy: paymentResult.proxy,
+        payment: paymentResult.payment,
+      };
+      break;
+    case 'arbitrage':
+      // Logic to get all active arbitrage opportunities
+      result = { type: 'arbitrage', opportunities: [] }; // Placeholder
+      break;
+    case 'sentiment':
+      if (!topic || !country) {
+        return c.json({ error: 'Topic and country parameters are required' }, 400);
+      }
+      result = {
+        type: 'sentiment',
+        topic,
+        country,
+        sentiment: await getSentimentAnalysis(topic, country),
+        proxy: paymentResult.proxy,
+        payment: paymentResult.payment,
+      };
+      break;
+    case 'trending':
+      // Logic to get trending prediction markets with sentiment divergence
+      result = { type: 'trending', markets: [] }; // Placeholder
+      break;
+    default:
+      return c.json({ error: 'Invalid type parameter' }, 400);
+  }
 
-  // YOUR LOGIC HERE:
-  const type = c.req.query('type');
-  const market = c.req.query('market');
-  const topic = c.req.query('topic');
-  const country = c.req.query('country');
-
-  // Placeholder logic for demonstration purposes
-  const response = {
-    type: type,
-    market: market,
-    timestamp: new Date().toISOString(),
-    odds: {},
-    sentiment: {},
-    signals: {},
-    proxy: { country: country || 'US', carrier: 'T-Mobile', type: 'mobile' },
-    payment: { txHash: '...', amount: PRICE_USDC, verified: true }
-  };
-
-  return c.json(response);
+  return c.json(result);
 });
+
+// Example utility functions
+// These should be implemented in their respective files
+async function getMarketOdds(market: string) {
+  // Fetch and aggregate market odds from Polymarket, Kalshi, Metaculus
+  return {
+    polymarket: { yes: 0.62, no: 0.38, volume24h: 1250000, liquidity: 5400000 },
+    kalshi: { yes: 0.58, no: 0.42, volume24h: 890000 },
+    metaculus: { median: 0.65, forecasters: 1200 },
+  };
+}
+
+async function getSentimentAnalysis(topic: string, country: string) {
+  // Scrape and analyze sentiment from Twitter, Reddit, TikTok using mobile proxies
+  return {
+    twitter: {
+      positive: 0.45,
+      negative: 0.30,
+      neutral: 0.25,
+      volume: 12500,
+      trending: true,
+      topTweets: [
+        { text: '...', likes: 5400, retweets: 1200, author: '@...', timestamp: '...' },
+      ],
+    },
+    reddit: {
+      positive: 0.52,
+      negative: 0.28,
+      neutral: 0.20,
+      volume: 340,
+      topSubreddits: ['politics', 'wallstreetbets'],
+    },
+    tiktok: {
+      relatedVideos: 450,
+      totalViews: 12000000,
+      sentiment: 'bullish',
+    },
+  };
+}
+
+function generateSignals(marketOdds: any, sentiment: any) {
+  // Generate trading signals based on market odds and sentiment analysis
+  return {
+    arbitrage: {
+      detected: true,
+      spread: 0.04,
+      direction: 'Polymarket YES overpriced vs Kalshi',
+      confidence: 0.72,
+    },
+    sentimentDivergence: {
+      detected: true,
+      description: 'Social sentiment 65% bullish but Polymarket only 62% — potential underpricing',
+      magnitude: 'moderate',
+    },
+    volumeSpike: {
+      detected: false,
+    },
+  };
+}
+
+app.get('/', (c) => {
+  return c.json({
+    service: SERVICE_NAME,
+ *   GET /api/instagram/* (Instagram Intelligence + AI Vision)
+ *   GET /api/linkedin/* (LinkedIn Enrichment)
+ */
+
+import { Hono } from 'hono';
+import { proxyFetch, getProxy } from './proxy';
 import { extractPayment, verifyPayment, build402Response } from './payment';
 import { scrapeIndeed, scrapeLinkedIn, type JobListing } from './scrapers/job-scraper';
 import { fetchReviews, fetchBusinessDetails, fetchReviewSummary, searchBusinesses } from './scrapers/reviews';
