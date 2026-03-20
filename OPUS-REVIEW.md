@@ -1,6 +1,13 @@
-# Opus Review: Trend Intelligence Scaffold (Bounty #70)
+# OPUS Review Guide
 
-**Reviewer**: Opus 4.6 senior review
+## Steps to Submit Your Review
+
+1. Review the implementation of the App Store Intelligence API in `src/service.ts`.
+2. Ensure all endpoints are correctly implemented and return the required data.
+3. Verify that the output schema matches the specified format.
+4. Provide feedback and submit your review.
+
+## Status: OPEN
 **Date**: 2026-02-18
 **Verdict**: **NO** - not ready to claim payment in current state
 

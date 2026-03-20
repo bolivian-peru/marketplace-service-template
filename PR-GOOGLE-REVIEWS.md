@@ -1,6 +1,13 @@
-# Google Reviews & Business Data API — PR Details
+# Google Play Store Reviews PR Guide
 
----
+## Steps to Submit Your PR
+
+1. Implement the logic to fetch Google Play Store reviews in `src/service.ts`.
+2. Ensure the output schema matches the required format.
+3. Test the endpoint with real data.
+4. Submit a PR with your changes.
+
+## Status: OPEN
 
 ## Branch Name
 

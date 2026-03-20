@@ -1,6 +1,9 @@
-# Demo Endpoints — Google Reviews & Business Data API
+# Demo Endpoints
 
-All endpoints require x402 USDC payment via `X-Payment-Signature` and `X-Payment-Network` headers.
+### App Store Intelligence API Endpoints
+
+#### App rankings by category and country
+
 
 ---
 

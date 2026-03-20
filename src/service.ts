@@ -1,15 +1,23 @@
-/**
- * Service Router — Marketplace API
- *
- * Exposes:
- *   GET /api/run       (Google Maps Lead Generator)
- *   GET /api/details   (Google Maps Place details)
- *   GET /api/jobs      (Job Market Intelligence)
- *   GET /api/reviews/* (Google Reviews & Business Data)
- *   GET /api/airbnb/*  (Airbnb Market Intelligence)
- *   GET /api/reddit/*  (Reddit Intelligence)
- *   GET /api/instagram/* (Instagram Intelligence + AI Vision)
- *   GET /api/linkedin/* (LinkedIn Enrichment)
+import { Hono } from 'hono';
+import { proxyFetch } from './proxies';
+
+const SERVICE_NAME = 'app-store-intelligence';       // Your service name
+const PRICE_USDC = 0.01;               // Price per request ($)
+const DESCRIPTION = 'Provides real-time app rankings, reviews, and metadata from Apple App Store and Google Play Store';      // For AI agents
+
+const app = new Hono();
+
+app.get('/api/run', async (c) => {
+  const { type, store, category, country, appId, query } = c.req.query();
+
+  // Placeholder for actual logic to fetch data from App Store and Google Play Store
+  const result = await proxyFetch(`https://api.example.com/${store}/${type}?category=${category}&country=${country}&appId=${appId}&query=${query}`);
+  return c.json(await result.json());
+});
+
+app.get('/health', (c) => {
+  return c.json({ status: 'healthy', service: SERVICE_NAME });
+});
  */
 
 import { Hono } from 'hono';

@@ -1,8 +1,15 @@
-# Bounty Submission: Job Market Intelligence (Bounty #16)
+# Bounty Submission Guide
 
-**PR:** https://github.com/bolivian-peru/marketplace-service-template/pull/48  
-**Live deployment:** https://bounty16-job-market-intelligence.onrender.com  
-**Branch:** `bounty-16-jobs`
+### Steps to Submit Your Bounty
+
+1. **Fork this repo** and build the service in `src/service.ts`.
+2. **Show proof**: Post real JSON output showing actual app rankings from Apple App Store (US) and Google Play Store (DE) with real app names, real ratings, real review counts.
+3. **Show country differences**: Same category, different countries → different rankings.
+4. **Demonstrate resilience**: 10+ consecutive successful scrapes from both stores without getting rate-limited.
+5. Provide your Solana USDC wallet address.
+6. Submit a PR with your code.
+
+**Status:** OPEN
 
 ## What I built
 

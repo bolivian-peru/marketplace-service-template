@@ -1,7 +1,8 @@
-/**
- * Marketplace Service — Server Entry Point
- * ─────────────────────────────────────────
- * Mounts: /api/*
+import { app } from './service';
+import './proxies'; // Ensure proxies are initialized
+
+const PORT = process.env.PORT || 3000;
+app.listen({ port: Number(PORT) });
  */
 
 import { Hono } from 'hono';
