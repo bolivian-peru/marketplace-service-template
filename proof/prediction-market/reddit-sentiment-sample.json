@@ -1,0 +1,44 @@
+{
+  "type": "sentiment",
+  "topic": "polymarket prediction bitcoin",
+  "timestamp": "2026-03-20T05:15:00Z",
+  "sentiment": {
+    "reddit": {
+      "positive": 0.45,
+      "negative": 0.25,
+      "neutral": 0.30,
+      "volume": 18,
+      "topSubreddits": ["CryptoCurrency", "wallstreetbets", "polymarket", "Bitcoin"],
+      "topPosts": [
+        {
+          "title": "Polymarket is seeing record volume on crypto prediction markets",
+          "score": 342,
+          "comments": 89,
+          "subreddit": "CryptoCurrency",
+          "url": "https://reddit.com/r/CryptoCurrency/comments/example1"
+        },
+        {
+          "title": "Bitcoin prediction markets show bullish divergence from spot price",
+          "score": 218,
+          "comments": 56,
+          "subreddit": "Bitcoin",
+          "url": "https://reddit.com/r/Bitcoin/comments/example2"
+        },
+        {
+          "title": "Kalshi vs Polymarket: which prediction market platform is better for crypto?",
+          "score": 156,
+          "comments": 73,
+          "subreddit": "wallstreetbets",
+          "url": "https://reddit.com/r/wallstreetbets/comments/example3"
+        }
+      ]
+    }
+  },
+  "proxy": {
+    "country": "US",
+    "carrier": "T-Mobile",
+    "type": "mobile",
+    "ip": "174.xxx.xxx.xxx"
+  },
+  "_note": "Sample output — real data requires Proxies.sx mobile proxy for Reddit anti-bot bypass"
+}

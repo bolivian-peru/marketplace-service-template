@@ -94,6 +94,10 @@ app.get('/health', (c) => c.json({
     '/api/airbnb/market-stats',
     '/api/research',
     '/api/trending',
+    '/api/prediction/signal',
+    '/api/prediction/arbitrage',
+    '/api/prediction/sentiment',
+    '/api/prediction/trending',
   ],
 }));
 
@@ -129,6 +133,10 @@ app.get('/', (c) => c.json({
     { method: 'GET', path: '/api/airbnb/market-stats', description: 'Airbnb market statistics', price: '0.05 USDC' },
     { method: 'GET', path: '/api/research', description: 'Multi-source research aggregation', price: '0.05 USDC' },
     { method: 'GET', path: '/api/trending', description: 'Trending topics intelligence', price: '0.01 USDC' },
+    { method: 'GET', path: '/api/prediction/signal', description: 'Prediction market signal with odds + sentiment + arbitrage detection', price: '0.05 USDC' },
+    { method: 'GET', path: '/api/prediction/arbitrage', description: 'Cross-platform arbitrage opportunities (Polymarket vs Kalshi)', price: '0.03 USDC' },
+    { method: 'GET', path: '/api/prediction/sentiment', description: 'Real-time social sentiment for prediction market topics', price: '0.02 USDC' },
+    { method: 'GET', path: '/api/prediction/trending', description: 'Trending prediction markets with volume data', price: '0.01 USDC' },
   ],
   pricing: {
     amount: process.env.PRICE_USDC || '0.005',
