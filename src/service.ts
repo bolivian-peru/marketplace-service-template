@@ -10,7 +10,7 @@ const app = new Hono();
 app.get('/api/run', async (c) => {
   const { type, store, category, country, appId, query } = c.req.query();
 
-  // Placeholder for actual logic to fetch data from Apple App Store and Google Play Store
+  // Placeholder for actual logic to fetch data from App Store and Google Play Store
   const result = await proxyFetch(`https://api.example.com/${store}/${type}?category=${category}&country=${country}&appId=${appId}&query=${query}`);
   return c.json(await result.json());
 });
