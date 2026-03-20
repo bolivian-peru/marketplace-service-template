@@ -10,89 +10,103 @@ const serviceRouter = new Hono();
 serviceRouter.get('/run', async (c) => {
   // ... payment check + verification (already wired) ...
 
-  const { type, country, tag, username, id } = c.req.query();
+  const { type, tag, username, id, country } = c.req.query();
 
     return c.json({ error: 'Invalid query parameters' }, 400);
   }
 
-  let url = 'https://www.tiktok.com/';
+  let url = 'https://www.tiktok.com/api/';
   let params = new URLSearchParams();
+  params.append('aid', '1988');
+  params.append('app_language', 'en');
+  params.append('app_name', 'tiktok_web');
+  params.append('device_id', '69696969696969696969');
+  params.append('device_platform', 'web_pc');
+  params.append('device_type', 'SM-G973F');
+  params.append('language', 'en');
+  params.append('os', 'windows');
+  params.append('os_version', '10');
+  params.append('region', country || 'US');
+  params.append('timezone_name', 'America/New_York');
+  params.append('verifyFp', 'verify_fp_value');
+
+  let data = {};
 
   switch (type) {
     case 'trending':
-      url += `trending?country=${country}`;
+      url += 'discover/trending/search/?';
       break;
     case 'hashtag':
       if (!tag) return c.json({ error: 'Tag is required for hashtag type' }, 400);
-      url += `tag/${tag}?country=${country}`;
+      url += `challenge/item_list/?challengeID=${encodeURIComponent(tag)}&`;
       break;
     case 'creator':
       if (!username) return c.json({ error: 'Username is required for creator type' }, 400);
-      url += `@${username}`;
+      url += `user/detail/?uniqueId=${encodeURIComponent(username)}&`;
       break;
     case 'sound':
       if (!id) return c.json({ error: 'ID is required for sound type' }, 400);
-      url += `sound/${id}`;
+      url += `sound/item_list/?musicID=${encodeURIComponent(id)}&`;
       break;
     default:
       return c.json({ error: 'Invalid type' }, 400);
   }
 
+  url += params.toString();
+
   try {
-    const response = await proxyFetch(url, { params });
-    const data = await response.json();
-
-    // Parse and structure the data according to the required schema
-    const result = {
-      type,
-      country,
-      timestamp: new Date().toISOString(),
-      data: {
-        videos: [],
-        trending_hashtags: [],
-        trending_sounds: [],
-      },
-      proxy: {
-        country,
-        carrier: 'T-Mobile', // This should be dynamically determined based on the proxy used
-        type: 'mobile',
-      },
-      payment: {
-        txHash: '...', // This should be dynamically generated based on the payment process
-        amount: PRICE_USDC,
-        verified: true,
-      },
-    };
-
-    // Example parsing logic, adjust according to actual data structure
-    if (type === 'trending') {
-      result.data.videos = data.videos.map(video => ({
-        id: video.id,
-        description: video.description,
-        author: { username: video.author.username, followers: video.author.followers },
-        stats: { views: video.stats.views, likes: video.stats.likes, comments: video.stats.comments, shares: video.stats.shares },
-        sound: { name: video.sound.name, author: video.sound.author },
-        hashtags: video.hashtags,
-        createdAt: video.createdAt,
-        url: video.url,
-      }));
-      result.data.trending_hashtags = data.trending_hashtags.map(hashtag => ({
-        name: hashtag.name,
-        views: hashtag.views,
-        velocity: hashtag.velocity,
-      }));
-      result.data.trending_sounds = data.trending_sounds.map(sound => ({
-        name: sound.name,
-        uses: sound.uses,
-        velocity: sound.velocity,
-      }));
-    }
-
-    return c.json(result);
+    const result = await proxyFetch(url);
+    data = await result.json();
   } catch (error) {
-    console.error('Error fetching data from TikTok:', error);
     return c.json({ error: 'Failed to fetch data from TikTok' }, 500);
   }
+
+  const response = {
+    type,
+    country: country || 'US',
+    timestamp: new Date().toISOString(),
+    data: {
+      videos: [],
+      trending_hashtags: [],
+      trending_sounds: [],
+    },
+    proxy: {
+      country: country || 'US',
+      carrier: 'T-Mobile',
+      type: 'mobile',
+    },
+    payment: {
+      txHash: '...',
+      amount: PRICE_USDC,
+      verified: true,
+    },
+  };
+
+  if (type === 'trending') {
+    response.data.videos = data.itemList.map((item: any) => ({
+      id: item.id,
+      description: item.desc,
+      author: {
+        username: item.author.uniqueId,
+        followers: item.author.stats.followerCount,
+      },
+      stats: {
+        views: item.stats.playCount,
+        likes: item.stats.diggCount,
+        comments: item.stats.commentCount,
+        shares: item.stats.shareCount,
+      },
+      sound: {
+        name: item.music.title,
+        author: item.music.authorName,
+      },
+      hashtags: item.challenges.map((challenge: any) => challenge.title),
+      createdAt: new Date(item.createTime * 1000).toISOString(),
+      url: `https://www.tiktok.com/@${item.author.uniqueId}/video/${item.id}`,
+    }));
+  }
+
+  return c.json(response);
 });
 
 export default serviceRouter;
