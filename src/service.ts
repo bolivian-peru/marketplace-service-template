@@ -35,19 +35,19 @@ serviceRouter.get('/api/realestate/search', async (c) => {
   if (address) {
     url += `?address=${encodeURIComponent(address)}`;
   } else if (zip) {
-    url += `?searchQueryState=%7B%22pagination%22%3A%7B%7D%2C%22usersSearchTerm%22%3A%22${zip}%22%2C%22mapBounds%22%3A%7B%7D%2C%22regionSelection%22%3A%5B%7B%22regionId%22%3A${zip}%2C%22regionType%22%3A7%7D%5D%2C%22isMapVisible%22%3Atrue%2C%22filterState%22%3A%7B%7D%2C%22isListVisible%22%3Atrue%2C%22mapZoom%22%3A11%7D`;
+    url += `?searchQueryState=%7B%22pagination%22%3A%7B%7D%2C%22usersSearchTerm%22%3A%22${zip}%22%2C%22mapBounds%22%3A%7B%7D%2C%22regionSelection%22%3A%5B%7B%22regionId%22%3A${zip}%2C%22regionType%22%3A7%7D%5D%2C%22isMapVisible%22%3Atrue%2C%22filterState%22%3A%7B`;
+    if (type) url += `%22isForSaleByAgent%22%3A%7B%22value%22%3A${type.toLowerCase() === 'for_sale' ? 'true' : 'false'}%7D%2C`;
+    if (min_price) url += `%22price%22%3A%7B%22min%22%3A${min_price}%7D%2C`;
+    if (max_price) url += `%22price%22%3A%7B%22max%22%3A${max_price}%7D%2C`;
+    if (bedrooms) url += `%22beds%22%3A%7B%22min%22%3A${bedrooms}%7D%2C`;
+    if (bathrooms) url += `%22baths%22%3A%7B%22min%22%3A${bathrooms}%7D%2C`;
+    url += `%7D%2C%22isListVisible%22%3Atrue%7D`;
   }
-
-  if (type) url += `&type=${type}`;
-  if (min_price) url += `&min=${min_price}`;
-  if (max_price) url += `&max=${max_price}`;
-  if (bedrooms) url += `&beds=${bedrooms}`;
-  if (bathrooms) url += `&baths=${bathrooms}`;
 
   const result = await proxyFetch(url);
   const html = await result.text();
-  const searchResults = parseZillowSearch(html);
-  return c.json(searchResults);
+  const searchData = parseZillowSearch(html);
+  return c.json(searchData);
 });
 
 serviceRouter.get('/api/realestate/market', async (c) => {
@@ -90,7 +90,8 @@ serviceRouter.get('/api/realestate/comps/:zpid', async (c) => {
 serviceRouter.get('/run', async (c) => {
   // ... payment check + verification (already wired) ...
   // YOUR LOGIC HERE:
-  return c.json({ error: 'Endpoint not found' }, 404);
+  const result = await proxyFetch('https://target.com');
+  return c.json({ data: await result.text() });
 });
 export default serviceRouter;
  *   GET /api/instagram/* (Instagram Intelligence + AI Vision)
