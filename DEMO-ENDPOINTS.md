@@ -1,4 +1,4 @@
-## Demo Endpoints
+# Demo Endpoints
 
 ### App rankings by category and country
 
