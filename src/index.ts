@@ -94,6 +94,10 @@ app.get('/health', (c) => c.json({
     '/api/airbnb/market-stats',
     '/api/research',
     '/api/trending',
+    '/api/appstore/rankings',
+    '/api/appstore/app',
+    '/api/appstore/search',
+    '/api/appstore/trending',
   ],
 }));
 
@@ -129,6 +133,10 @@ app.get('/', (c) => c.json({
     { method: 'GET', path: '/api/airbnb/market-stats', description: 'Airbnb market statistics', price: '0.05 USDC' },
     { method: 'GET', path: '/api/research', description: 'Multi-source research aggregation', price: '0.05 USDC' },
     { method: 'GET', path: '/api/trending', description: 'Trending topics intelligence', price: '0.01 USDC' },
+    { method: 'GET', path: '/api/appstore/rankings', description: 'App Store/Play Store top rankings by category + country', price: '0.01 USDC' },
+    { method: 'GET', path: '/api/appstore/app', description: 'Detailed app information by ID', price: '0.015 USDC' },
+    { method: 'GET', path: '/api/appstore/search', description: 'Search apps across Apple/Google stores', price: '0.005 USDC' },
+    { method: 'GET', path: '/api/appstore/trending', description: 'Trending and new apps', price: '0.01 USDC' },
   ],
   pricing: {
     amount: process.env.PRICE_USDC || '0.005',

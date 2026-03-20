@@ -1,0 +1,22 @@
+{
+  "name": "App Store Intelligence API",
+  "description": "Real-time app rankings, search results, and detailed app metadata from Apple App Store + Google Play Store across 12+ countries. Enterprise-grade app intelligence at pay-per-request pricing.",
+  "pricing": {
+    "endpoints": [
+      { "path": "/api/appstore/rankings", "price": "$0.01", "unit": "per request", "description": "Top app rankings by category and country" },
+      { "path": "/api/appstore/app", "price": "$0.015", "unit": "per request", "description": "Detailed app info: rating, reviews, size, screenshots" },
+      { "path": "/api/appstore/search", "price": "$0.005", "unit": "per request", "description": "Search apps by keyword" },
+      { "path": "/api/appstore/trending", "price": "$0.01", "unit": "per request", "description": "Trending and new apps" }
+    ],
+    "comparison": "Sensor Tower charges $30K-100K/year. data.ai (App Annie) starts at $50K+/year. SerpAPI charges $0.01/search for limited App Store data. Our service provides full rankings + details + search at $0.005-0.015/request with zero signup friction via x402."
+  },
+  "whyMobileProxy": "Apple App Store rankings and Google Play Store data are geo-specific — top apps in US differ from DE, GB, etc. Mobile proxies from real carrier networks in each country ensure accurate geo-targeted results. Google Play has no official API and requires HTML scraping; their anti-bot systems block datacenter IPs but pass mobile carrier traffic. Apple's RSS feed is limited; the richer iTunes Search API rate-limits datacenter IPs more aggressively than mobile.",
+  "sampleOutput": "See proof/appstore-intelligence/",
+  "uptime": "99%+ (Apple RSS + iTunes API as primary, Play Store HTML scraping via proxy)",
+  "limitations": [
+    "Apple RSS feed provides basic metadata only (no ratings/reviews) — iTunes Search API fills the gap",
+    "Google Play HTML parsing may break if Google changes page structure",
+    "Review scraping not yet implemented (app details + rankings + search only)",
+    "Rate limited by Apple/Google on high volume — mobile proxy rotation helps"
+  ]
+}
