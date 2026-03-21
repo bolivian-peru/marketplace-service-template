@@ -1,41 +1,25 @@
 import { Hono } from 'hono';
-import { proxyFetch } from '../utils/proxy';
-import type { InstagramProfile, InstagramPost, InstagramAnalysis } from '../types';
-
+import { cors } from 'hono/cors';
+import { prettyJSON } from 'hono/pretty-json';
+import { proxyFetch } from './utils/proxy';
+import { analyzeInstagramProfile } from './scrapers/instagram';
+const app = new Hono();
 const SERVICE_NAME = 'my-scraper';       // Your service name
 const PRICE_USDC = 0.005;               // Price per request ($)
-const DESCRIPTION = 'What it does';      // For AI agents
+const DESCRIPTION = 'Instagram Intelligence + AI Vision Analysis API';      // For AI agents
+app.use('*', cors());
+app.use('*', prettyJSON());
+ *   GET /api/instagram/* (Instagram Intelligence + AI Vision)
+ *   GET /api/linkedin/* (LinkedIn Enrichment)
+ */
 
-const app = new Hono();
-
-app.get('/api/instagram/profile/:username', async (c) => {
   // ... payment check + verification (already wired) ...
-
   // YOUR LOGIC HERE:
-  const username = c.req.param('username');
-  const profile: InstagramProfile = await fetchInstagramProfile(username);
-  return c.json(profile);
+  const username = c.req.query('username') || 'default_username';
+  const analysis = await analyzeInstagramProfile(username);
+  return c.json(analysis);
 });
-
-async function fetchInstagramProfile(username: string): Promise<InstagramProfile> {
-  // Placeholder for actual profile fetching logic
-  return {
-    username,
-    full_name: 'John Doe',
-    bio: 'Just a regular person',
-    followers: 1000,
-    following: 200,
-    posts_count: 50,
-    is_verified: false,
-    is_business: false,
-    engagement_rate: 1.5,
-    avg_likes: 100,
-    avg_comments: 20,
-    posting_frequency: '1 post/week'
-  };
-}
-import { fetchReviews, fetchBusinessDetails, fetchReviewSummary, searchBusinesses } from './scrapers/reviews';
-import { scrapeGoogleMaps, extractDetailedBusiness } from './scrapers/maps-scraper';
+export default app;
 import { researchRouter } from './routes/research';
 import { trendingRouter } from './routes/trending';
 import { searchAirbnb, getListingDetail, getListingReviews, getMarketStats } from './scrapers/airbnb-scraper';
