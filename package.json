@@ -1,13 +1,13 @@
 {
-  "name": "marketplace-service-template",
+  "name": "trend-intelligence-api",
   "version": "1.0.0",
-  "description": "Fork → edit one file → deploy → earn USDC. Build x402-gated services on Proxies.sx mobile proxy infrastructure.",
+  "description": "Cross-platform trend intelligence API: scrapes Reddit, X/Twitter, YouTube simultaneously and synthesizes structured intelligence reports. x402-gated, mobile-proxy-powered.",
   "scripts": {
     "dev": "bun run --hot src/index.ts",
     "start": "bun run src/index.ts",
     "test": "bun test",
     "typecheck": "tsc --noEmit",
-    "proof:indeed": "bun run scripts/proof-indeed.ts"
+    "proof": "bun run scripts/proof.ts"
   },
   "dependencies": {
     "hono": "^4.6.0"
@@ -19,16 +19,15 @@
   "keywords": [
     "x402",
     "proxy",
-    "marketplace",
+    "trend-intelligence",
+    "reddit",
+    "twitter",
+    "youtube",
     "usdc",
     "hono",
     "bun",
     "mobile-proxy",
     "ai-agents"
   ],
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/bolivian-peru/marketplace-service-template"
-  }
+  "license": "MIT"
 }
