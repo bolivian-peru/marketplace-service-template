@@ -1,13 +1,12 @@
 {
-  "name": "marketplace-service-template",
+  "name": "tiktok-trend-intelligence",
   "version": "1.0.0",
-  "description": "Fork → edit one file → deploy → earn USDC. Build x402-gated services on Proxies.sx mobile proxy infrastructure.",
+  "description": "TikTok Trend Intelligence API — real-time trending videos, hashtags, sounds, and creator profiles via Proxies.sx mobile 4G/5G IPs with x402 USDC payment gating.",
   "scripts": {
     "dev": "bun run --hot src/index.ts",
     "start": "bun run src/index.ts",
     "test": "bun test",
-    "typecheck": "tsc --noEmit",
-    "proof:indeed": "bun run scripts/proof-indeed.ts"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "hono": "^4.6.0"
@@ -19,16 +18,14 @@
   "keywords": [
     "x402",
     "proxy",
-    "marketplace",
+    "tiktok",
+    "trends",
+    "scraper",
     "usdc",
     "hono",
     "bun",
     "mobile-proxy",
     "ai-agents"
   ],
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/bolivian-peru/marketplace-service-template"
-  }
+  "license": "MIT"
 }
