@@ -1,16 +1,16 @@
 {
-  "name": "marketplace-service-template",
+  "name": "instagram-intelligence-api",
   "version": "1.0.0",
-  "description": "Fork → edit one file → deploy → earn USDC. Build x402-gated services on Proxies.sx mobile proxy infrastructure.",
+  "description": "Instagram Intelligence + AI Vision Analysis API — Full influencer analytics with mobile proxy scraping and GPT-4o vision analysis. x402 payment gated.",
   "scripts": {
     "dev": "bun run --hot src/index.ts",
     "start": "bun run src/index.ts",
     "test": "bun test",
-    "typecheck": "tsc --noEmit",
-    "proof:indeed": "bun run scripts/proof-indeed.ts"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "hono": "^4.6.0"
+    "hono": "^4.6.0",
+    "openai": "^4.47.0"
   },
   "devDependencies": {
     "@types/bun": "latest",
@@ -24,11 +24,11 @@
     "hono",
     "bun",
     "mobile-proxy",
-    "ai-agents"
+    "ai-agents",
+    "instagram",
+    "influencer-analytics",
+    "ai-vision",
+    "gpt-4o"
   ],
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/bolivian-peru/marketplace-service-template"
-  }
+  "license": "MIT"
 }

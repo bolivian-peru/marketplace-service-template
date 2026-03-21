@@ -80,10 +80,10 @@ export function getProxy(): ProxyConfig {
 /**
  * Get proxy exit IP for metadata
  */
-export async function getProxyExitIp(): Promise<string> {
+export async function getProxyExitIp(): Promise<{ ip: string; carrier?: string; country: string }> {
   try {
     const proxy = getProxy();
-    // Decrement index so we use the same proxy for the actual request
+    // Decrement index so we use same proxy for actual request
     proxyIndex--;
     const res = await fetch('https://api.ipify.org?format=json', {
       // @ts-ignore
@@ -91,9 +91,11 @@ export async function getProxyExitIp(): Promise<string> {
       signal: AbortSignal.timeout(10_000),
     });
     const data = await res.json() as any;
-    return data.ip || 'unknown';
+    return { ip: data.ip || 'unknown', country: proxy.country };
   } catch {
-    return 'unknown';
+    const proxy = getProxy();
+    proxyIndex--;
+    return { ip: 'unknown', country: proxy.country };
   }
 }
 
@@ -105,10 +107,15 @@ export async function proxyFetch(
 ): Promise<Response> {
   const { maxRetries = 2, timeoutMs = 30_000, ...fetchOptions } = options;
 
+  // Instagram mobile User-Agent (looks like real iPhone app traffic)
   const defaultHeaders: Record<string, string> = {
-    'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
-    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+    'User-Agent': 'Instagram 303.0.0.30.110 (iPhone14,3; iOS 17_0; en_US; en-US; scale=3.00; 1284x2778; 495222575)',
+    'Accept': '*/*',
     'Accept-Language': 'en-US,en;q=0.9',
+    'Accept-Encoding': 'gzip, deflate, br',
+    'X-IG-App-ID': '936619743392459',
+    'X-IG-WWW-Claim': '0',
+    'X-Requested-With': 'XMLHttpRequest',
   };
 
   let lastError: Error | null = null;

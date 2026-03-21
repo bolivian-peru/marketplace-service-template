@@ -128,7 +128,7 @@ export function build402Response(
       {
         network: 'base',
         chainId: 'eip155:8453',
-        recipient: process.env.WALLET_ADDRESS_BASE || '0xF8cD900794245fc36CBE65be9afc23CDF5103042',
+        recipient: process.env.WALLET_ADDRESS_BASE || walletAddress,
         asset: 'USDC',
         assetAddress: USDC_BASE,
       },
@@ -175,7 +175,6 @@ async function verifySolana(
   }
 
   // Build a map of token account address → owner wallet from postTokenBalances
-  // This lets us verify that a token account belongs to the expected recipient wallet
   const accountKeys = tx.transaction?.message?.accountKeys || [];
   const tokenAccountOwners = new Map<string, string>();
   for (const bal of tx.meta?.postTokenBalances || []) {
@@ -197,14 +196,12 @@ async function verifySolana(
     const parsed = ix.parsed;
     if (!parsed) continue;
 
-    // SPL Token transfer or transferChecked
     if (
       (parsed.type === 'transfer' || parsed.type === 'transferChecked') &&
       ix.program === 'spl-token'
     ) {
       const info = parsed.info;
 
-      // For transferChecked, verify this is actually USDC
       if (parsed.type === 'transferChecked' && info.mint !== USDC_SOLANA) {
         continue;
       }
@@ -215,8 +212,6 @@ async function verifySolana(
 
       if (amount < minAmount) continue;
 
-      // The destination is a token account (ATA), not the wallet address.
-      // Resolve the owner wallet via postTokenBalances.
       const destinationTokenAccount = info.destination;
       const recipientWallet = tokenAccountOwners.get(destinationTokenAccount) || destinationTokenAccount;
 
@@ -242,7 +237,6 @@ async function verifyBase(
   expectedAmountUSDC: number,
   tolerancePercent: number,
 ): Promise<VerifyResult> {
-  // Get transaction receipt
   const res = await fetch(BASE_RPC, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -262,13 +256,10 @@ async function verifyBase(
 
   const receipt = data.result;
 
-  // Check success
   if (receipt.status !== '0x1') {
     return { valid: false, error: 'Transaction reverted' };
   }
 
-  // Look for ERC-20 Transfer event from USDC contract
-  // Transfer(address from, address to, uint256 value)
   const transferTopic = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
 
   for (const log of receipt.logs || []) {
