@@ -1,328 +1,210 @@
 /**
- * Shared Type Definitions
- * ───────────────────────
- * All interfaces used across the service.
+ * TypeScript interfaces for Amazon Product & BSR Tracker API
  */
 
-// ─── TREND INTELLIGENCE TYPES (Bounty #70) ──────────
+// ─── PRICING ────────────────────────────────────────
 
-export type Platform = 'reddit' | 'web' | 'x' | 'youtube' | 'twitter';
-export type SignalStrength = 'established' | 'reinforced' | 'emerging';
-export type SentimentLabel = 'positive' | 'neutral' | 'negative';
-
-export interface PatternEvidence {
-  platform: string;
-  title: string;
-  url: string;
-  engagement: number;
-  // Reddit-specific
-  subreddit?: string;
-  score?: number;
-  numComments?: number;
-  created?: number;
-  // Web-specific
-  source?: string;
+export interface PriceData {
+  current: number | null;
+  currency: string;
+  was: number | null;
+  discount_pct: number | null;
+  deal_label: string | null;
 }
 
-export interface TrendPattern {
-  pattern: string;
-  strength: SignalStrength;
-  sources: ('reddit' | 'web' | 'youtube' | 'twitter')[];
-  totalEngagement: number;
-  evidence: PatternEvidence[];
+// ─── BSR ────────────────────────────────────────────
+
+export interface SubCategoryRank {
+  category: string;
+  rank: number;
 }
 
-// ─── YOUTUBE TYPES ───────────────────────────────────
-
-export interface YouTubeResult {
-  videoId: string;
-  title: string;
-  url: string;
-  channelName: string | null;
-  viewCount: number | null;
-  description: string;
-  publishedAt: string | null;
-  engagementScore: number;
-  platform: 'youtube';
+export interface BSRData {
+  rank: number | null;
+  category: string | null;
+  sub_category_ranks: SubCategoryRank[];
 }
 
-// ─── TWITTER TYPES ───────────────────────────────────
+// ─── BUY BOX ────────────────────────────────────────
 
-export interface TwitterResult {
-  tweetId: string | null;
-  author: string | null;
-  text: string;
-  url: string;
-  likes: number | null;
-  retweets: number | null;
-  engagementScore: number;
-  publishedAt: string | null;
-  platform: 'twitter';
+export interface BuyBoxData {
+  seller: string | null;
+  is_amazon: boolean;
+  fulfilled_by: string | null;
+  seller_rating: number | null;
+  seller_ratings_count: number | null;
 }
 
-export interface PlatformSentimentBreakdown {
-  overall: SentimentLabel;
-  positive: number;   // percentage 0-100
-  neutral: number;
-  negative: number;
+// ─── DIMENSIONS / SPECS ─────────────────────────────
+
+export interface ProductDimensions {
+  weight: string | null;
+  dimensions: string | null;
 }
 
-export interface ResearchRequest {
-  topic: string;
-  platforms: Platform[];
-  days: number;
-  country: string;
-}
+// ─── FULL PRODUCT ────────────────────────────────────
 
-export interface TopDiscussion {
-  platform: string;
-  title: string;
-  url: string;
-  engagement: number;
-  subreddit?: string;
-  score?: number;
-  numComments?: number;
-}
-
-export interface ResearchResponse {
-  topic: string;
-  timeframe: string;
-  patterns: TrendPattern[];
-  sentiment: {
-    overall: SentimentLabel;
-    by_platform: Record<string, PlatformSentimentBreakdown>;
-  };
-  top_discussions: TopDiscussion[];
-  emerging_topics: string[];
-  meta: {
-    sources_checked: number;
-    platforms_used: string[];
-    proxy: { ip: string | null; country: string; type: string };
-    generated_at: string;
-  };
-  payment: {
-    txHash: string;
-    network: string;
-    amount: number;
-    settled: boolean;
-  };
-}
-
-export interface TrendingItem {
-  topic: string;
-  platform: string;
-  engagement: number | null;
-  traffic?: string | null;
-  url?: string;
-}
-
-export interface TrendingResponse {
-  country: string;
-  platforms: string[];
-  trending: TrendingItem[];
-  generated_at: string;
-  meta: {
-    proxy: { ip: string | null; country: string; type: string };
-  };
-  payment: {
-    txHash: string;
-    network: string;
-    amount: number;
-    settled: boolean;
-  };
-}
-
-// ─── GOOGLE MAPS TYPES ──────────────────────────────
-
-export interface BusinessData {
-  name: string;
-  address: string | null;
-  phone: string | null;
-  website: string | null;
-  email: string | null;
-  hours: BusinessHours | null;
+export interface AmazonProduct {
+  asin: string;
+  title: string | null;
+  price: PriceData;
+  bsr: BSRData;
   rating: number | null;
-  reviewCount: number | null;
+  reviews_count: number | null;
+  buy_box: BuyBoxData;
+  availability: string | null;
+  brand: string | null;
+  images: string[];
+  features: string[];
   categories: string[];
-  coordinates: {
-    latitude: number;
-    longitude: number;
-  } | null;
-  placeId: string | null;
-  priceLevel: string | null;
-  permanentlyClosed: boolean;
+  dimensions: ProductDimensions;
+  aplus_content: boolean;
+  variations: ProductVariation[];
+  meta: ProductMeta;
 }
 
-export interface BusinessHours {
-  [day: string]: string;
+export interface ProductVariation {
+  asin: string;
+  title: string;
+  selected: boolean;
 }
+
+export interface ProductMeta {
+  marketplace: string;
+  url: string;
+  scraped_at: string;
+  proxy: ProxyMeta;
+}
+
+export interface ProxyMeta {
+  ip: string | null;
+  country: string;
+  carrier: string | null;
+  type: 'mobile';
+}
+
+// ─── SEARCH ─────────────────────────────────────────
 
 export interface SearchResult {
-  businesses: BusinessData[];
-  totalFound: number;
-  nextPageToken: string | null;
-  searchQuery: string;
-  location: string;
-}
-
-// ─── MOBILE SERP TRACKER TYPES ──────────────────────
-
-export interface OrganicResult {
-  position: number;
-  title: string;
-  url: string;
-  displayUrl: string;
-  snippet: string;
-  sitelinks: Sitelink[];
-  date: string | null;
-  cached: boolean;
-}
-
-export interface Sitelink {
-  title: string;
-  url: string;
-}
-
-export interface AdResult {
-  position: number;
-  title: string;
-  url: string;
-  displayUrl: string;
-  description: string;
-  isTop: boolean;
-}
-
-export interface PeopleAlsoAsk {
-  question: string;
-  snippet: string | null;
-  url: string | null;
-}
-
-export interface FeaturedSnippet {
-  text: string;
-  url: string;
-  title: string;
-  type: 'paragraph' | 'list' | 'table' | 'unknown';
-}
-
-export interface AiOverview {
-  text: string;
-  sources: { title: string; url: string }[];
-}
-
-export interface MapPackResult {
-  name: string;
-  address: string | null;
+  asin: string;
+  title: string | null;
+  price: Pick<PriceData, 'current' | 'currency' | 'was' | 'discount_pct'>;
   rating: number | null;
-  reviewCount: number | null;
-  category: string | null;
-  phone: string | null;
+  reviews_count: number | null;
+  bsr_rank: number | null;
+  bsr_category: string | null;
+  is_prime: boolean;
+  is_sponsored: boolean;
+  image: string | null;
+  url: string;
 }
 
-export interface KnowledgePanel {
-  title: string;
-  type: string | null;
-  description: string | null;
-  url: string | null;
-  attributes: Record<string, string>;
-}
-
-export interface SerpResponse {
+export interface SearchResponse {
   query: string;
-  country: string;
-  language: string;
-  location: string | null;
-  totalResults: string | null;
-  organic: OrganicResult[];
-  ads: AdResult[];
-  peopleAlsoAsk: PeopleAlsoAsk[];
-  featuredSnippet: FeaturedSnippet | null;
-  aiOverview: AiOverview | null;
-  mapPack: MapPackResult[];
-  knowledgePanel: KnowledgePanel | null;
-  relatedSearches: string[];
-}
-
-// ─── GOOGLE REVIEWS & BUSINESS DATA TYPES ───────────
-
-export interface ReviewData {
-  author: string;
-  rating: number;
-  text: string;
-  date: string;
-  relativeDate: string | null;
-  likes: number;
-  ownerResponse: string | null;
-  ownerResponseDate: string | null;
-  photos: string[];
-}
-
-export interface BusinessInfo {
-  name: string;
-  placeId: string;
-  rating: number | null;
-  totalReviews: number | null;
-  address: string | null;
-  phone: string | null;
-  website: string | null;
-  hours: BusinessHours | null;
   category: string | null;
-  categories: string[];
-  priceLevel: string | null;
-  photos: string[];
-  coordinates: { latitude: number; longitude: number } | null;
-  permanentlyClosed: boolean;
-}
-
-export interface RatingDistribution {
-  '5': number;
-  '4': number;
-  '3': number;
-  '2': number;
-  '1': number;
-}
-
-export interface ReviewSummary {
-  avgRating: number | null;
-  totalReviews: number | null;
-  ratingDistribution: RatingDistribution;
-  responseRate: number;
-  avgResponseTimeDays: number | null;
-  sentimentBreakdown: {
-    positive: number;
-    neutral: number;
-    negative: number;
+  marketplace: string;
+  total_results: number | null;
+  page: number;
+  results: SearchResult[];
+  meta: {
+    proxy: ProxyMeta;
   };
+}
+
+// ─── BESTSELLERS ─────────────────────────────────────
+
+export interface BestSellerItem {
+  rank: number;
+  asin: string;
+  title: string | null;
+  price: Pick<PriceData, 'current' | 'currency'>;
+  rating: number | null;
+  reviews_count: number | null;
+  image: string | null;
+  url: string;
+}
+
+export interface BestSellersResponse {
+  category: string;
+  marketplace: string;
+  category_url: string;
+  items: BestSellerItem[];
+  meta: {
+    proxy: ProxyMeta;
+  };
+}
+
+// ─── REVIEWS ─────────────────────────────────────────
+
+export interface Review {
+  id: string | null;
+  author: string | null;
+  author_url: string | null;
+  rating: number | null;
+  title: string | null;
+  body: string | null;
+  date: string | null;
+  date_raw: string | null;
+  verified_purchase: boolean;
+  helpful_votes: number | null;
+  images: string[];
 }
 
 export interface ReviewsResponse {
-  business: BusinessInfo;
-  reviews: ReviewData[];
-  pagination: {
-    total: number;
-    returned: number;
-    sort: string;
+  asin: string;
+  marketplace: string;
+  total_reviews: number | null;
+  average_rating: number | null;
+  rating_distribution: Record<string, number>;
+  sort: string;
+  page: number;
+  reviews: Review[];
+  meta: {
+    proxy: ProxyMeta;
   };
 }
 
-export interface BusinessResponse {
-  business: BusinessInfo;
-  summary: ReviewSummary;
+// ─── MARKETPLACE CONFIGS ─────────────────────────────
+
+export interface MarketplaceConfig {
+  domain: string;
+  currency: string;
+  language: string;
+  country: string;
 }
 
-export interface ReviewSummaryResponse {
-  business: {
-    name: string;
-    placeId: string;
-    rating: number | null;
-    totalReviews: number | null;
-  };
-  summary: ReviewSummary;
-}
+export const MARKETPLACES: Record<string, MarketplaceConfig> = {
+  US: { domain: 'www.amazon.com', currency: 'USD', language: 'en-US', country: 'US' },
+  UK: { domain: 'www.amazon.co.uk', currency: 'GBP', language: 'en-GB', country: 'GB' },
+  DE: { domain: 'www.amazon.de', currency: 'EUR', language: 'de-DE', country: 'DE' },
+  FR: { domain: 'www.amazon.fr', currency: 'EUR', language: 'fr-FR', country: 'FR' },
+  IT: { domain: 'www.amazon.it', currency: 'EUR', language: 'it-IT', country: 'IT' },
+  ES: { domain: 'www.amazon.es', currency: 'EUR', language: 'es-ES', country: 'ES' },
+  CA: { domain: 'www.amazon.ca', currency: 'CAD', language: 'en-CA', country: 'CA' },
+  JP: { domain: 'www.amazon.co.jp', currency: 'JPY', language: 'ja-JP', country: 'JP' },
+};
 
-export interface ReviewSearchResponse {
-  query: string;
-  location: string;
-  businesses: BusinessInfo[];
-  totalFound: number;
-}
+// ─── BESTSELLER CATEGORIES ───────────────────────────
+
+export const BESTSELLER_CATEGORIES: Record<string, string> = {
+  electronics: 'electronics',
+  books: 'books',
+  'home-kitchen': 'home-kitchen',
+  'toys-games': 'toys-and-games',
+  'sports-outdoors': 'sports-and-outdoors',
+  'health-personal-care': 'health-and-personal-care',
+  'beauty': 'beauty',
+  'clothing': 'apparel',
+  'automotive': 'automotive-parts-and-accessories',
+  'office-products': 'office-products',
+  'kitchen': 'kitchen',
+  'garden': 'lawn-and-garden',
+  'pet-supplies': 'pet-supplies',
+  'baby': 'baby-products',
+  'video-games': 'videogames',
+  'software': 'software',
+  'music': 'music',
+  'movies': 'movies-tv',
+  'tools': 'tools',
+  'grocery': 'grocery',
+};
