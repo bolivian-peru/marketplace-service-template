@@ -1,0 +1,34 @@
+{
+  "name": "instagram-intelligence-api",
+  "version": "1.0.0",
+  "description": "Instagram Intelligence + AI Vision Analysis API — Full influencer analytics with mobile proxy scraping and GPT-4o vision analysis. x402 payment gated.",
+  "scripts": {
+    "dev": "bun run --hot src/index.ts",
+    "start": "bun run src/index.ts",
+    "test": "bun test",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "hono": "^4.6.0",
+    "openai": "^4.47.0"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5.0.0"
+  },
+  "keywords": [
+    "x402",
+    "proxy",
+    "marketplace",
+    "usdc",
+    "hono",
+    "bun",
+    "mobile-proxy",
+    "ai-agents",
+    "instagram",
+    "influencer-analytics",
+    "ai-vision",
+    "gpt-4o"
+  ],
+  "license": "MIT"
+}
