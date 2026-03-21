@@ -1,0 +1,111 @@
+{
+  "id": "proxies-sx-browser",
+  "name": "Proxies.sx Antidetect Browser",
+  "description": "Cloud Chrome stealth browser sessions with auto mobile proxy, unique fingerprints. $0.005/min. x402 payments.",
+  "longDescription": "Chrome stealth v2.0 (nodriver-based antidetect) browser sessions in the cloud. Each session gets a unique fingerprint, clean storage, and a real 4G/5G mobile proxy auto-allocated from our 155+ device pool across 6 countries (DE/GB/FR/ES/PL/US). No proxy configuration needed — every session includes a real mobile IP. Identity Bundles v1.1.0 let you save and restore complete browser identity across sessions (cookies, localStorage, fingerprint, proxy device binding via IMEI pinning). 226 tests passing. Pay per minute with USDC on Solana or Base.",
+  "endpoint": "https://browser.proxies.sx",
+  "docsUrl": "https://browser.proxies.sx/docs",
+  "pricing": {
+    "model": "per-minute",
+    "amount": "0.005",
+    "minimum": "0.075",
+    "currency": "USDC",
+    "perHour": "0.30",
+    "networks": [
+      {
+        "network": "solana",
+        "chainId": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "recipient": "6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv",
+        "asset": "USDC",
+        "assetAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+      },
+      {
+        "network": "base",
+        "chainId": "eip155:8453",
+        "recipient": "0xF8cD900794245fc36CBE65be9afc23CDF5103042",
+        "asset": "USDC",
+        "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+      }
+    ]
+  },
+  "category": "browser",
+  "tags": [
+    "antidetect",
+    "chrome",
+    "nodriver",
+    "fingerprint",
+    "automation",
+    "scraping",
+    "stealth",
+    "isolated",
+    "identity-bundle",
+    "persistent-sessions",
+    "profile",
+    "mobile-proxy-included"
+  ],
+  "features": [
+    "Chrome stealth v2.0 (nodriver-based antidetect)",
+    "Auto mobile proxy allocation (6 countries: DE/GB/FR/ES/PL/US)",
+    "Unique fingerprint per session",
+    "Isolated Docker containers",
+    "CDP (Chrome DevTools Protocol) compatible",
+    "Playwright/Puppeteer support",
+    "Screenshot and PDF export",
+    "Human-like typing simulation",
+    "Country locale setting (timezone, language)",
+    "Identity Bundles — save/restore complete browser identity (v1.1.0)",
+    "Profile persistence — cookies, localStorage, fingerprint, proxy device binding"
+  ],
+  "commands": {
+    "navigate": {
+      "action": "navigate",
+      "url": "https://example.com"
+    },
+    "type": {
+      "action": "type_slow",
+      "selector": "input",
+      "text": "hello"
+    },
+    "click": {
+      "action": "click",
+      "selector": "button"
+    },
+    "screenshot": {
+      "action": "screenshot"
+    },
+    "evaluate": {
+      "action": "evaluate",
+      "script": "document.title"
+    }
+  },
+  "important": [
+    "Mobile proxy auto-allocated from 155+ device pool",
+    "Sessions include real 4G/5G mobile IP",
+    "Sessions auto-terminate after inactivity"
+  ],
+  "owner": {
+    "name": "Proxies.sx",
+    "github": "bolivian-peru",
+    "twitter": "sxproxies",
+    "telegram": "proxyforai",
+    "website": "https://proxies.sx"
+  },
+  "status": "active",
+  "featured": true,
+  "addedAt": "2025-06-01",
+  "updatedAt": "2026-02-15",
+  "x402": {
+    "discoveryUrl": "https://browser.proxies.sx/v1/sessions",
+    "flow": [
+      "POST /v1/sessions -> 402 with price",
+      "Pay USDC on Solana or Base",
+      "POST /v1/sessions with Payment-Signature header",
+      "Receive session credentials + WebSocket URL",
+      "POST /v1/sessions with profile_id to restore saved identity",
+      "POST /v1/sessions/:id/profile to save identity bundle"
+    ]
+  },
+  "version": "2.0.0",
+  "lastVerified": "2026-02-15T00:00:00Z",
+  "healthEndpoint": "https://browser.proxies.sx/health"
+}

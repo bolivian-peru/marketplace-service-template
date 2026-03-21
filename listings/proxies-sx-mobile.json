@@ -1,0 +1,154 @@
+{
+  "id": "proxies-sx-mobile",
+  "name": "Proxies.sx Mobile Proxy",
+  "description": "Real 4G/5G mobile proxies across 6 countries. HTTP + SOCKS5. Auto-rotation. x402 payments.",
+  "longDescription": "155+ physical devices on real carrier networks (AT&T, T-Mobile, Vodafone, Orange, etc). Not datacenter. Not residential VPN. Actual phones on actual cell towers. Websites see you as a real mobile user. Bypass Cloudflare, Akamai, PerimeterX, DataDome. Pool Gateway (gw.proxies.sx) provides instant access via HTTP and SOCKS5 with session-based sticky IPs. Pay per GB with USDC on Solana (~400ms) or Base (~2s). No accounts, no API keys — your agent pays and gets credentials instantly.",
+  "endpoint": "https://api.proxies.sx/v1/x402",
+  "docsUrl": "https://agents.proxies.sx/skill.md",
+  "pricing": {
+    "model": "per-gb",
+    "amount": "4.00",
+    "minimum": "0.40",
+    "currency": "USDC",
+    "tiers": {
+      "shared": {
+        "traffic": "4.00",
+        "port": "0.00",
+        "minimum": "0.40"
+      },
+      "private": {
+        "traffic": "8.00",
+        "port": "0.00",
+        "minimum": "0.80"
+      }
+    },
+    "networks": [
+      {
+        "network": "solana",
+        "chainId": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "recipient": "6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv",
+        "asset": "USDC",
+        "assetAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "settlementTime": "~400ms",
+        "gasCost": "~$0.0001"
+      },
+      {
+        "network": "base",
+        "chainId": "eip155:8453",
+        "recipient": "0xF8cD900794245fc36CBE65be9afc23CDF5103042",
+        "asset": "USDC",
+        "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        "settlementTime": "~2s",
+        "gasCost": "~$0.01"
+      }
+    ]
+  },
+  "category": "proxy",
+  "tags": [
+    "mobile",
+    "4g",
+    "5g",
+    "rotating",
+    "residential",
+    "anti-detect",
+    "scraping",
+    "automation",
+    "socks5",
+    "pool-gateway"
+  ],
+  "inventory": {
+    "totalDevices": 155,
+    "countries": {
+      "US": {
+        "devices": 42,
+        "carriers": [
+          "AT&T",
+          "T-Mobile",
+          "Verizon"
+        ]
+      },
+      "DE": {
+        "devices": 26,
+        "carriers": [
+          "Telekom",
+          "Vodafone",
+          "O2"
+        ]
+      },
+      "ES": {
+        "devices": 24,
+        "carriers": [
+          "Movistar",
+          "Vodafone",
+          "Orange"
+        ]
+      },
+      "GB": {
+        "devices": 22,
+        "carriers": [
+          "EE",
+          "Vodafone",
+          "Three"
+        ]
+      },
+      "PL": {
+        "devices": 21,
+        "carriers": [
+          "Orange",
+          "Play",
+          "Plus"
+        ]
+      },
+      "FR": {
+        "devices": 18,
+        "carriers": [
+          "Orange",
+          "SFR",
+          "Bouygues"
+        ]
+      }
+    }
+  },
+  "features": [
+    "HTTP + SOCKS5 protocols",
+    "Pool Gateway (gw.proxies.sx) — instant shared access on port 7000 (HTTP) and 7001 (SOCKS5)",
+    "Auto IP rotation (configurable interval)",
+    "City-level targeting",
+    "Carrier targeting",
+    "Sticky sessions (same IP for session duration)",
+    "Unlimited concurrent connections",
+    "Real browser fingerprints"
+  ],
+  "owner": {
+    "name": "Proxies.sx",
+    "github": "bolivian-peru",
+    "twitter": "sxproxies",
+    "telegram": "proxyforai",
+    "website": "https://proxies.sx"
+  },
+  "status": "active",
+  "featured": true,
+  "addedAt": "2024-01-01",
+  "updatedAt": "2026-02-15",
+  "x402": {
+    "discoveryUrl": "https://api.proxies.sx/v1/x402/proxy",
+    "wellKnown": "https://agents.proxies.sx/.well-known/x402.json",
+    "endpoints": {
+      "health": "GET /v1/x402/health",
+      "countries": "GET /v1/x402/countries",
+      "pricing": "GET /v1/x402/pricing",
+      "calculate": "GET /v1/x402/calculate?tier=shared&duration=3600&traffic=1",
+      "purchase": "GET /v1/x402/proxy?country=US&traffic=1",
+      "poolGatewayHttp": "gw.proxies.sx:7000 (HTTP CONNECT)",
+      "poolGatewaySocks5": "gw.proxies.sx:7001 (SOCKS5)"
+    }
+  },
+  "mcp": {
+    "package": "@proxies-sx/mcp-server",
+    "install": "npx -y @proxies-sx/mcp-server",
+    "tools": 59,
+    "github": "https://github.com/bolivian-peru/proxies-sx-mcp-server"
+  },
+  "lastVerified": "2026-02-15T00:00:00Z",
+  "healthEndpoint": "https://api.proxies.sx/v1/x402/health"
+}

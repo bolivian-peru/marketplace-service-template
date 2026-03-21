@@ -1,0 +1,45 @@
+{
+  "id": "your-service-id",
+  "name": "Your Service Name",
+  "description": "One-line description (max 200 chars). AI agents read this to decide if your service fits their need.",
+  "longDescription": "Optional longer description. Explain what makes your service unique, what problems it solves, typical use cases.",
+  "endpoint": "https://your-service.com/api",
+  "docsUrl": "https://your-service.com/docs",
+  "pricing": {
+    "model": "per-request",
+    "amount": "0.005",
+    "minimum": "0.005",
+    "currency": "USDC",
+    "networks": [
+      {
+        "network": "solana",
+        "chainId": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "recipient": "YOUR_SOLANA_WALLET_ADDRESS",
+        "asset": "USDC",
+        "assetAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+      },
+      {
+        "network": "base",
+        "chainId": "eip155:8453",
+        "recipient": "YOUR_BASE_WALLET_ADDRESS",
+        "asset": "USDC",
+        "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+      }
+    ]
+  },
+  "category": "scraper",
+  "tags": ["tag1", "tag2", "tag3"],
+  "owner": {
+    "name": "Your Name",
+    "github": "your-github-username",
+    "twitter": "your-twitter-handle",
+    "telegram": "your-telegram-handle"
+  },
+  "status": "pending",
+  "featured": false,
+  "addedAt": "2026-02-05",
+  "x402": {
+    "discoveryUrl": "https://your-service.com/api/run",
+    "wellKnown": "https://your-service.com/.well-known/x402.json"
+  }
+}

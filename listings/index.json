@@ -1,0 +1,211 @@
+{
+  "version": "1.0.0",
+  "updatedAt": "2026-02-15",
+  "count": 6,
+  "services": [
+    {
+      "id": "proxies-sx-mobile",
+      "name": "Proxies.sx Mobile Proxy",
+      "description": "Real 4G/5G mobile proxies across 6 countries. 155+ devices. HTTP + SOCKS5. Auto-rotation. x402 payments.",
+      "endpoint": "https://api.proxies.sx/v1/x402",
+      "docsUrl": "https://agents.proxies.sx/skill.md",
+      "pricing": {
+        "model": "per-gb",
+        "amount": "4.00",
+        "minimum": "0.40",
+        "currency": "USDC"
+      },
+      "category": "proxy",
+      "tags": [
+        "mobile",
+        "4g",
+        "5g",
+        "rotating",
+        "residential",
+        "scraping",
+        "socks5"
+      ],
+      "owner": {
+        "name": "Proxies.sx",
+        "twitter": "sxproxies",
+        "telegram": "proxyforai"
+      },
+      "status": "active",
+      "featured": true,
+      "detailsFile": "proxies-sx-mobile.json"
+    },
+    {
+      "id": "proxies-sx-browser",
+      "name": "Proxies.sx Antidetect Browser",
+      "description": "Cloud Chrome stealth browser sessions with auto mobile proxy, unique fingerprints. $0.005/min. x402 payments.",
+      "endpoint": "https://browser.proxies.sx",
+      "docsUrl": "https://browser.proxies.sx/docs",
+      "pricing": {
+        "model": "per-minute",
+        "amount": "0.005",
+        "minimum": "0.075",
+        "currency": "USDC"
+      },
+      "category": "browser",
+      "tags": [
+        "antidetect",
+        "chrome",
+        "nodriver",
+        "fingerprint",
+        "automation",
+        "stealth",
+        "mobile-proxy-included"
+      ],
+      "owner": {
+        "name": "Proxies.sx",
+        "twitter": "sxproxies",
+        "telegram": "proxyforai"
+      },
+      "status": "active",
+      "featured": true,
+      "detailsFile": "proxies-sx-browser.json"
+    },
+    {
+      "id": "google-maps-lead-generator",
+      "name": "Google Maps Lead Generator",
+      "description": "Extract structured business data from Google Maps. $0.005/record. x402 payments.",
+      "endpoint": "https://api.proxies.sx/v1/x402/maps",
+      "docsUrl": "https://agents.proxies.sx/marketplace/skill.md",
+      "pricing": {
+        "model": "per-request",
+        "amount": "0.005",
+        "minimum": "0.005",
+        "currency": "USDC"
+      },
+      "category": "scraper",
+      "tags": [
+        "google-maps",
+        "lead-generation",
+        "business-data",
+        "b2b",
+        "scraper"
+      ],
+      "owner": {
+        "name": "aliraza556",
+        "github": "aliraza556"
+      },
+      "status": "active",
+      "featured": true,
+      "detailsFile": "google-maps-lead-generator.json"
+    },
+    {
+      "id": "mobile-serp-tracker",
+      "name": "Mobile SERP Tracker",
+      "description": "Real Google mobile SERP results from 4G/5G carrier IPs. Structured JSON with organic results, PAA, snippets, AI Overviews. $0.003/query.",
+      "endpoint": "https://api.proxies.sx/v1/x402/serp",
+      "docsUrl": "https://agents.proxies.sx/marketplace/skill.md",
+      "pricing": {
+        "model": "per-request",
+        "amount": "0.003",
+        "minimum": "0.003",
+        "currency": "USDC"
+      },
+      "category": "scraper",
+      "tags": [
+        "serp",
+        "seo",
+        "google-search",
+        "mobile-serp",
+        "rank-tracking"
+      ],
+      "owner": {
+        "name": "aliraza556",
+        "github": "aliraza556"
+      },
+      "status": "active",
+      "featured": true,
+      "detailsFile": "mobile-serp-tracker.json"
+    },
+    {
+      "id": "job-market-intelligence",
+      "name": "Job Market Intelligence",
+      "description": "Real-time job market data from major job boards. Salary ranges, skills demand, location analysis. $0.005/query via x402.",
+      "endpoint": "https://bounty16-job-market-intelligence.onrender.com",
+      "docsUrl": "https://agents.proxies.sx/marketplace/skill.md",
+      "pricing": {
+        "model": "per-request",
+        "amount": "0.005",
+        "minimum": "0.005",
+        "currency": "USDC"
+      },
+      "category": "data",
+      "tags": [
+        "job-market",
+        "salary-data",
+        "hiring-trends",
+        "skills-demand"
+      ],
+      "owner": {
+        "name": "Lutra23",
+        "github": "Lutra23"
+      },
+      "status": "active",
+      "featured": false,
+      "detailsFile": "job-market-intelligence.json"
+    },
+    {
+      "id": "prediction-market-aggregator",
+      "name": "Prediction Market Aggregator",
+      "description": "Aggregated prediction market data from Polymarket, Kalshi, and more. Real-time odds, volume, and market signals. $0.05/query via x402.",
+      "endpoint": "https://marketplace-service-template.onrender.com",
+      "docsUrl": "https://agents.proxies.sx/marketplace/skill.md",
+      "pricing": {
+        "model": "per-request",
+        "amount": "0.05",
+        "minimum": "0.05",
+        "currency": "USDC"
+      },
+      "category": "data",
+      "tags": [
+        "prediction-market",
+        "polymarket",
+        "kalshi",
+        "forecasting"
+      ],
+      "owner": {
+        "name": "rakesh0x",
+        "github": "rakesh0x"
+      },
+      "status": "active",
+      "featured": false,
+      "detailsFile": "prediction-market-aggregator.json"
+    }
+  ],
+  "networks": {
+    "solana": {
+      "name": "Solana",
+      "chainId": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+      "asset": "USDC",
+      "assetAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      "settlementTime": "~400ms",
+      "gasCost": "~$0.0001"
+    },
+    "base": {
+      "name": "Base",
+      "chainId": "eip155:8453",
+      "asset": "USDC",
+      "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "settlementTime": "~2s",
+      "gasCost": "~$0.01"
+    }
+  },
+  "categories": [
+    "proxy",
+    "browser",
+    "scraper",
+    "data",
+    "automation",
+    "other"
+  ],
+  "links": {
+    "marketplace": "https://agents.proxies.sx/marketplace/",
+    "submit": "https://github.com/bolivian-peru/marketplace-service-template/pulls",
+    "template": "https://github.com/bolivian-peru/marketplace-service-template",
+    "skillFile": "https://agents.proxies.sx/skill.md"
+  }
+}

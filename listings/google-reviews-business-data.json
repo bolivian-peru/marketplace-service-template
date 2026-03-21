@@ -1,0 +1,79 @@
+{
+  "name": "google-reviews-business-data",
+  "title": "Google Reviews & Business Data API",
+  "description": "Extract Google Business reviews, ratings, response rates, photos, and business details for any location. Supports review sorting, rating distribution, owner response tracking, and business search by category + location.",
+  "version": "1.0.0",
+  "pricing": {
+    "reviews": {
+      "amount": "0.02",
+      "currency": "USDC",
+      "description": "Per reviews fetch (up to 20 reviews)"
+    },
+    "business": {
+      "amount": "0.01",
+      "currency": "USDC",
+      "description": "Per business lookup with full details"
+    },
+    "summary": {
+      "amount": "0.005",
+      "currency": "USDC",
+      "description": "Per review summary (aggregated stats only)"
+    }
+  },
+  "endpoints": [
+    {
+      "method": "GET",
+      "path": "/api/reviews/:place_id",
+      "description": "Fetch Google reviews for a business by Place ID",
+      "params": {
+        "place_id": "Google Place ID (required, in URL path)",
+        "sort": "newest | relevant | highest | lowest (default: newest)",
+        "limit": "1-50 (default: 20)"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/reviews/search",
+      "description": "Search businesses by query + location",
+      "params": {
+        "query": "Business type/category (required)",
+        "location": "Location to search (required)",
+        "limit": "1-20 (default: 10)"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/business/:place_id",
+      "description": "Get detailed business info + review summary",
+      "params": {
+        "place_id": "Google Place ID (required, in URL path)"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/reviews/summary/:place_id",
+      "description": "Get review summary stats only (cheaper)",
+      "params": {
+        "place_id": "Google Place ID (required, in URL path)"
+      }
+    }
+  ],
+  "features": [
+    "Individual review extraction (author, rating, text, date, likes, owner response)",
+    "Business details (name, address, phone, hours, category, photos, coordinates)",
+    "Rating distribution (1-5 star breakdown)",
+    "Owner response rate calculation",
+    "Sentiment breakdown (positive/neutral/negative)",
+    "Review sorting (newest, relevant, highest, lowest)",
+    "Business search by query + location",
+    "Mobile proxy for authentic Google data"
+  ],
+  "infrastructure": "Proxies.sx mobile proxies (real 4G/5G IPs)",
+  "networks": ["solana", "base"],
+  "wallets": {
+    "solana": "6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv",
+    "base": "0xF8cD900794245fc36CBE65be9afc23CDF5103042"
+  },
+  "category": "data",
+  "tags": ["google", "reviews", "business", "ratings", "maps", "local"]
+}
