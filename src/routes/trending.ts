@@ -1,284 +1,212 @@
 /**
- * GET /api/trending
- * Returns currently trending topics across requested platforms.
+ * GET /api/trending — Cross-Platform Trending Topics
  *
- * Price: $0.10 USDC
+ * Query params:
+ *   ?country=US&platforms=reddit,x,youtube
+ *
+ * Returns trending topics aggregated across platforms.
  */
 
 import { Hono } from 'hono';
-import type { Context } from 'hono';
 import { extractPayment, verifyPayment, build402Response } from '../payment';
-import { getProxy, proxyFetch } from '../proxy';
-import { getRedditTrending } from '../scrapers/reddit';
-import { getTrendingWeb } from '../scrapers/web';
-import { getYouTubeTrending } from '../scrapers/youtube';
-import { getTwitterTrending } from '../scrapers/twitter';
-import type { TrendingResponse, TrendingItem } from '../types/index';
+import { getProxy, getProxyExitIp } from '../proxy';
+import { getSubredditPosts } from '../scrapers/reddit-scraper';
+import { getXTrends } from '../scrapers/x-scraper';
+import { getYouTubeTrending } from '../scrapers/youtube-scraper';
+import { analyzeSentiment } from '../utils/synthesis';
+import type { Platform, Evidence, XTrend, TrendingResponse } from '../types';
 
-const WALLET_ADDRESS = process.env.WALLET_ADDRESS ?? '';
-const PRICE_USDC = 0.10;
+export const trendingRouter = new Hono();
 
-const SUPPORTED_PLATFORMS = new Set(['reddit', 'web', 'youtube', 'twitter', 'x']);
-const DEFAULT_PLATFORMS = ['reddit', 'web'];
-const MAX_LIMIT = 50;
-const MIN_LIMIT = 1;
-const MAX_PLATFORM_PARAM_LENGTH = 64;
-
-const TRENDING_RATE_LIMIT_PER_MIN = Math.max(
-  1,
-  Math.min(parseInt(process.env.TRENDING_RATE_LIMIT_PER_MIN ?? '30', 10) || 30, 300),
-);
-const RATE_LIMIT_WINDOW_MS = 60_000;
-const rateLimits = new Map<string, { count: number; resetAt: number }>();
-
-const DESCRIPTION =
-  'Trending Topics API: fetch what is trending right now on Reddit, web, YouTube, and Twitter/X. ' +
-  'Returns engagement-ranked topics with source URLs.';
+const PRICE_TRENDING = 0.10;
 
 const OUTPUT_SCHEMA = {
   input: {
-    country: 'string (optional, default: "US") - ISO country code for web/YouTube/Twitter trends',
-    platforms: 'string (optional, default: "reddit,web") - comma-separated platform list: reddit, web, youtube, twitter, x',
-    limit: 'number (optional, default: 20, max: 50) - topics per platform',
+    country: 'string — Country code (optional, default: "US")',
+    platforms: 'string — Comma-separated platforms (optional, default: "reddit,x,youtube")',
   },
   output: {
     country: 'string',
     platforms: 'string[]',
-    trending: 'TrendingItem[] - { topic, platform, engagement, traffic?, url? }',
-    generated_at: 'string (ISO 8601)',
-    meta: '{ proxy: { ip, country, type } }',
+    trends: 'Array<{ topic, platforms, volume, sentiment, samplePost? }>',
+    meta: '{ fetched_at, proxy: { ip, country } }',
   },
 };
 
-function normalizeClientIp(c: Context): string {
-  const forwarded = c.req.header('x-forwarded-for')?.split(',')[0]?.trim();
-  const realIp = c.req.header('x-real-ip')?.trim();
-  const cfIp = c.req.header('cf-connecting-ip')?.trim();
-  const candidate = forwarded || realIp || cfIp || 'unknown';
-
-  if (!candidate || candidate.length > 64 || /[\r\n]/.test(candidate)) {
-    return 'unknown';
-  }
-
-  return candidate;
-}
-
-function checkRateLimit(ip: string): { allowed: boolean; retryAfter: number } {
-  const now = Date.now();
-
-  if (rateLimits.size > 10_000) {
-    for (const [key, value] of rateLimits) {
-      if (now > value.resetAt) {
-        rateLimits.delete(key);
-      }
-    }
-  }
-
-  const entry = rateLimits.get(ip);
-  if (!entry || now > entry.resetAt) {
-    rateLimits.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
-    return { allowed: true, retryAfter: 0 };
-  }
-
-  entry.count += 1;
-  if (entry.count > TRENDING_RATE_LIMIT_PER_MIN) {
-    const retryAfter = Math.max(1, Math.ceil((entry.resetAt - now) / 1000));
-    return { allowed: false, retryAfter };
-  }
-
-  return { allowed: true, retryAfter: 0 };
-}
-
-function parseCountry(countryParam: string | undefined): string {
-  if (!countryParam) return 'US';
-  const normalized = countryParam.trim().toUpperCase();
-  if (!/^[A-Z]{2}$/.test(normalized)) return 'US';
-  return normalized;
-}
-
-function parsePlatforms(platformParam: string | undefined): { platforms: string[]; error?: string } {
-  if (!platformParam) {
-    return { platforms: [...DEFAULT_PLATFORMS] };
-  }
-
-  if (platformParam.length > MAX_PLATFORM_PARAM_LENGTH) {
-    return { platforms: [], error: `platforms query is too long. Max ${MAX_PLATFORM_PARAM_LENGTH} characters.` };
-  }
-
-  const normalized = platformParam
-    .split(',')
-    .map((p) => p.trim().toLowerCase())
-    .map((p) => (p === 'x' ? 'twitter' : p))
-    .filter((p) => SUPPORTED_PLATFORMS.has(p));
-
-  const unique = Array.from(new Set(normalized));
-  if (unique.length === 0) {
-    return { platforms: [], error: 'No supported platforms requested. Use reddit, web, youtube, and/or twitter (x is accepted as alias).' };
-  }
-
-  return { platforms: unique };
-}
-
-function parseLimit(limitParam: string | undefined): number {
-  const parsed = Number.parseInt(limitParam ?? '20', 10);
-  if (!Number.isFinite(parsed)) return 20;
-  return Math.min(Math.max(parsed, MIN_LIMIT), MAX_LIMIT);
-}
-
-function toSafeHeaderValue(value: string): string {
-  return value.replace(/[\r\n]/g, '').slice(0, 256);
-}
-
-async function getProxyExitIp(): Promise<string | null> {
-  try {
-    const ipRes = await proxyFetch('https://api.ipify.org?format=json', {
-      headers: { Accept: 'application/json' },
-      maxRetries: 1,
-      timeoutMs: 5_000,
-    });
-
-    if (!ipRes.ok) return null;
-
-    const ipData = await ipRes.json() as { ip?: string };
-    const ip = typeof ipData?.ip === 'string' ? ipData.ip.trim() : '';
-    if (!ip || ip.length > 64) return null;
-    return ip;
-  } catch {
-    return null;
-  }
-}
-
-export const trendingRouter = new Hono();
+// ─── GET /api/trending ────────────────────────────────
 
 trendingRouter.get('/', async (c) => {
-  if (!WALLET_ADDRESS) {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) {
     return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
-  }
-
-  const ip = normalizeClientIp(c);
-  const rateStatus = checkRateLimit(ip);
-  if (!rateStatus.allowed) {
-    c.header('Retry-After', String(rateStatus.retryAfter));
-    return c.json(
-      { error: 'Rate limit exceeded for /api/trending', retryAfter: rateStatus.retryAfter },
-      429,
-    );
   }
 
   const payment = extractPayment(c);
   if (!payment) {
     return c.json(
-      build402Response('/api/trending', DESCRIPTION, PRICE_USDC, WALLET_ADDRESS, OUTPUT_SCHEMA),
+      build402Response('/api/trending', 'Trending topics aggregated across Reddit, X/Twitter, and YouTube. Real-time intelligence via mobile proxies.', PRICE_TRENDING, walletAddress, OUTPUT_SCHEMA),
       402,
     );
   }
 
-  let verification: Awaited<ReturnType<typeof verifyPayment>>;
-  try {
-    verification = await verifyPayment(payment, WALLET_ADDRESS, PRICE_USDC);
-  } catch (error) {
-    console.error('[trending] Payment verification error:', error);
-    return c.json({ error: 'Payment verification temporarily unavailable' }, 502);
-  }
-
+  const verification = await verifyPayment(payment, walletAddress, PRICE_TRENDING);
   if (!verification.valid) {
-    return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+    return c.json({
+      error: 'Payment verification failed',
+      reason: verification.error,
+    }, 402);
   }
 
-  const country = parseCountry(c.req.query('country'));
-  const platformsParse = parsePlatforms(c.req.query('platforms'));
-  if (platformsParse.error) {
-    return c.json({ error: platformsParse.error }, 400);
+  const country = (c.req.query('country') || 'US').toUpperCase();
+  const validPlatforms: Platform[] = ['reddit', 'x', 'youtube'];
+  const platformsParam = c.req.query('platforms') || 'reddit,x,youtube';
+  const requestedPlatforms: Platform[] = platformsParam
+    .split(',')
+    .map(p => p.trim().toLowerCase() as Platform)
+    .filter(p => validPlatforms.includes(p));
+
+  if (requestedPlatforms.length === 0) {
+    return c.json({ error: 'No valid platforms. Use: reddit, x, youtube' }, 400);
   }
-  const requestedPlatforms = platformsParse.platforms;
 
-  const limit = parseLimit(c.req.query('limit'));
+  const proxy = getProxy();
 
-  const proxyConfig = getProxy();
-  const proxyIp = await getProxyExitIp();
+  // ─── PARALLEL TRENDING FETCH ─────────────────────────
 
-  const fetches = await Promise.allSettled([
-    requestedPlatforms.includes('reddit') ? getRedditTrending(limit) : Promise.resolve([]),
-    requestedPlatforms.includes('web') ? getTrendingWeb(country, limit) : Promise.resolve([]),
-    requestedPlatforms.includes('youtube') ? getYouTubeTrending(country, limit) : Promise.resolve([]),
-    requestedPlatforms.includes('twitter') ? getTwitterTrending(country, limit) : Promise.resolve([]),
-  ]);
+  const fetchJobs: Promise<any>[] = [];
 
-  const redditTrending = fetches[0].status === 'fulfilled' ? fetches[0].value : [];
-  const webTrending = fetches[1].status === 'fulfilled' ? fetches[1].value : [];
-  const youtubeTrending = fetches[2].status === 'fulfilled' ? fetches[2].value : [];
-  const twitterTrending = fetches[3].status === 'fulfilled' ? fetches[3].value : [];
+  if (requestedPlatforms.includes('reddit')) {
+    fetchJobs.push(
+      getSubredditPosts('popular', 'hot', 1, 30)
+        .then(posts => ({ type: 'reddit' as const, data: posts }))
+        .catch(() => ({ type: 'reddit' as const, data: [] }))
+    );
+  }
 
-  for (const result of fetches) {
-    if (result.status === 'rejected') {
-      console.error('[trending] Fetch error:', result.reason);
+  if (requestedPlatforms.includes('x')) {
+    fetchJobs.push(
+      getXTrends(country)
+        .then(trends => ({ type: 'x' as const, data: trends }))
+        .catch(() => ({ type: 'x' as const, data: [] }))
+    );
+  }
+
+  if (requestedPlatforms.includes('youtube')) {
+    fetchJobs.push(
+      getYouTubeTrending(country)
+        .then(videos => ({ type: 'youtube' as const, data: videos }))
+        .catch(() => ({ type: 'youtube' as const, data: [] }))
+    );
+  }
+
+  const fetchResults = await Promise.allSettled(fetchJobs);
+
+  // ─── AGGREGATE TRENDING DATA ─────────────────────────
+
+  // Collect topic mentions across platforms
+  const topicMap = new Map<string, {
+    platforms: Set<Platform>;
+    volume: number;
+    evidence: Evidence[];
+    xTrend?: XTrend;
+  }>();
+
+  for (const result of fetchResults) {
+    if (result.status !== 'fulfilled') continue;
+    const { type, data } = result.value;
+
+    if (type === 'reddit') {
+      for (const post of data) {
+        // Use subreddit + flair as topic signal
+        const topicKey = post.subreddit.replace('r/', '').toLowerCase();
+        if (!topicMap.has(topicKey)) {
+          topicMap.set(topicKey, { platforms: new Set(), volume: 0, evidence: [] });
+        }
+        const entry = topicMap.get(topicKey)!;
+        entry.platforms.add('reddit');
+        entry.volume += post.score;
+        if (entry.evidence.length < 2) entry.evidence.push(post);
+      }
+    }
+
+    if (type === 'x') {
+      for (const trend of data as XTrend[]) {
+        const key = trend.name.toLowerCase().replace(/^#/, '');
+        if (!topicMap.has(key)) {
+          topicMap.set(key, { platforms: new Set(), volume: 0, evidence: [] });
+        }
+        const entry = topicMap.get(key)!;
+        entry.platforms.add('x');
+        entry.volume += trend.tweetVolume || 1000;
+        entry.xTrend = trend;
+      }
+    }
+
+    if (type === 'youtube') {
+      for (const video of data) {
+        // Extract main topic words from title
+        const words = video.title.toLowerCase().split(/\s+/).filter((w: string) => w.length > 4);
+        const topicKey = words.slice(0, 2).join(' ') || 'trending';
+        if (!topicMap.has(topicKey)) {
+          topicMap.set(topicKey, { platforms: new Set(), volume: 0, evidence: [] });
+        }
+        const entry = topicMap.get(topicKey)!;
+        entry.platforms.add('youtube');
+        entry.volume += video.viewCount;
+        if (entry.evidence.length < 2) entry.evidence.push(video);
+      }
     }
   }
 
-  const trendingItems: TrendingItem[] = [
-    ...redditTrending.map((post): TrendingItem => ({
-      topic: post.title,
-      platform: 'reddit',
-      engagement: post.score,
-      url: post.permalink,
-    })),
-    ...webTrending.map((topic): TrendingItem => ({
-      topic: topic.title,
-      platform: 'web',
-      engagement: null,
-      traffic: topic.traffic,
-      url: topic.articles[0]?.url,
-    })),
-    ...youtubeTrending.map((video): TrendingItem => ({
-      topic: video.title,
-      platform: 'youtube',
-      engagement: Math.round(video.engagementScore),
-      url: video.url,
-    })),
-    ...twitterTrending.map((tweet): TrendingItem => ({
-      topic: tweet.text.slice(0, 120),
-      platform: 'twitter',
-      engagement: Math.round(tweet.engagementScore),
-      url: tweet.url,
-    })),
-  ];
+  // Sort by volume and cross-platform presence
+  const sortedTopics = [...topicMap.entries()]
+    .filter(([, v]) => v.volume > 0)
+    .sort((a, b) => {
+      const platformScore = b[1].platforms.size - a[1].platforms.size;
+      if (platformScore !== 0) return platformScore * 1000;
+      return b[1].volume - a[1].volume;
+    })
+    .slice(0, 20);
 
-  trendingItems.sort((a, b) => {
-    if (a.engagement !== null && b.engagement !== null) return b.engagement - a.engagement;
-    if (a.engagement !== null) return -1;
-    if (b.engagement !== null) return 1;
-    return 0;
+  // Build response
+  const trends: TrendingResponse['trends'] = sortedTopics.map(([topic, data]) => {
+    const evidenceByPlatform: Partial<Record<Platform, Evidence[]>> = {};
+    for (const e of data.evidence) {
+      if (!evidenceByPlatform[e.platform]) evidenceByPlatform[e.platform] = [];
+      evidenceByPlatform[e.platform]!.push(e);
+    }
+
+    const sentiment = analyzeSentiment(evidenceByPlatform);
+
+    return {
+      topic: topic.charAt(0).toUpperCase() + topic.slice(1),
+      platforms: [...data.platforms] as Platform[],
+      volume: data.volume,
+      sentiment: sentiment.overall,
+      samplePost: data.evidence[0],
+    };
   });
 
-  const platformsUsed = [
-    redditTrending.length > 0 ? 'reddit' : null,
-    webTrending.length > 0 ? 'web' : null,
-    youtubeTrending.length > 0 ? 'youtube' : null,
-    twitterTrending.length > 0 ? 'twitter' : null,
-  ].filter(Boolean) as string[];
-
-  c.header('X-Payment-Settled', 'true');
-  c.header('X-Payment-TxHash', toSafeHeaderValue(payment.txHash));
+  const ip = await getProxyExitIp().catch(() => 'unknown');
 
   const response: TrendingResponse = {
     country,
-    platforms: platformsUsed,
-    trending: trendingItems.slice(0, limit * requestedPlatforms.length),
-    generated_at: new Date().toISOString(),
+    platforms: requestedPlatforms,
+    trends,
     meta: {
-      proxy: {
-        ip: proxyIp,
-        country: proxyConfig.country,
-        type: 'mobile',
+      fetched_at: new Date().toISOString(),
+      proxy: { ip, country: proxy.country },
+      payment: {
+        txHash: payment.txHash,
+        network: payment.network,
+        amount: verification.amount!,
+        settled: true,
       },
     },
-    payment: {
-      txHash: payment.txHash,
-      network: payment.network,
-      amount: verification.amount ?? PRICE_USDC,
-      settled: true,
-    },
   };
+
+  c.header('X-Payment-Settled', 'true');
+  c.header('X-Payment-TxHash', payment.txHash);
 
   return c.json(response);
 });

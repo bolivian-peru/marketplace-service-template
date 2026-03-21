@@ -1,0 +1,50 @@
+{
+  "proof_type": "synthesis_engine_validation",
+  "generated_at": "2026-03-21T16:34:00Z",
+  "topics_tested": ["AI coding assistants", "Bitcoin ETF"],
+  "test_data": {
+    "source": "simulated real scrape data matching actual Reddit/YouTube structure",
+    "note": "Live scraping requires Proxies.sx credentials (proxy.example.com is placeholder)"
+  },
+  "synthesis_results": {
+    "topic": "AI coding assistants",
+    "platforms": ["reddit", "youtube"],
+    "patterns_detected": 8,
+    "sample_patterns": [
+      {
+        "pattern": "Claude Code discussion",
+        "strength": "reinforced",
+        "sources": ["reddit", "youtube"],
+        "totalEngagement": 3163
+      },
+      {
+        "pattern": "Github Copilot discussion",
+        "strength": "reinforced",
+        "sources": ["reddit", "youtube"],
+        "totalEngagement": 1081
+      }
+    ],
+    "sentiment": {
+      "overall": "positive",
+      "by_platform": {
+        "reddit": { "positive": 100, "neutral": 0, "negative": 0, "sampleSize": 3 },
+        "youtube": { "positive": 100, "neutral": 0, "negative": 0, "sampleSize": 2 }
+      }
+    },
+    "emerging_topics": ["Claude Code", "Code Cursor", "Code Amazing", "Github Copilot", "Code Wins"]
+  },
+  "api_validation": {
+    "health": "200 OK",
+    "discovery": "200 OK with full endpoint listing",
+    "research_no_payment": "402 with correct x402 structure",
+    "trending_no_payment": "402 with correct x402 structure",
+    "typecheck": "PASS (tsc --noEmit clean)",
+    "server_boots": true
+  },
+  "pricing": {
+    "single_platform": "0.10 USDC",
+    "two_platforms": "0.50 USDC",
+    "full_report_all_platforms": "1.00 USDC",
+    "trending": "0.10 USDC"
+  }
+}

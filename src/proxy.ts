@@ -83,8 +83,7 @@ export function getProxy(): ProxyConfig {
 export async function getProxyExitIp(): Promise<string> {
   try {
     const proxy = getProxy();
-    // Decrement index so we use the same proxy for the actual request
-    proxyIndex--;
+    proxyIndex--; // reuse same proxy for actual request
     const res = await fetch('https://api.ipify.org?format=json', {
       // @ts-ignore
       proxy: proxy.url,
@@ -136,7 +135,6 @@ export async function proxyFetch(
       lastError = err;
       console.error(`[PROXY] Attempt ${attempt + 1} failed via ${proxy.host}:${proxy.port}: ${err.message}`);
 
-      // Remove dead proxy from pool (keep at least 1)
       if (pool.length > 1 && (err.code === 'ECONNREFUSED' || err.code === 'ETIMEDOUT')) {
         const idx = pool.indexOf(proxy);
         if (idx !== -1) {
