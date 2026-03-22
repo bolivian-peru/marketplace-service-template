@@ -1,34 +1,18 @@
 {
-  "name": "marketplace-service-template",
+  "name": "x-intelligence-search",
   "version": "1.0.0",
-  "description": "Fork → edit one file → deploy → earn USDC. Build x402-gated services on Proxies.sx mobile proxy infrastructure.",
+  "description": "X/Twitter Real-Time Search API powered by Proxies.sx mobile proxies with x402 payment gating",
+  "main": "src/index.ts",
   "scripts": {
-    "dev": "bun run --hot src/index.ts",
+    "dev": "bun run --watch src/index.ts",
     "start": "bun run src/index.ts",
-    "test": "bun test",
-    "typecheck": "tsc --noEmit",
-    "proof:indeed": "bun run scripts/proof-indeed.ts"
+    "build": "bun build src/index.ts --outdir dist --target bun",
+    "test": "bun test"
   },
   "dependencies": {
-    "hono": "^4.6.0"
+    "hono": "^4.7.4"
   },
   "devDependencies": {
-    "@types/bun": "latest",
-    "typescript": "^5.0.0"
-  },
-  "keywords": [
-    "x402",
-    "proxy",
-    "marketplace",
-    "usdc",
-    "hono",
-    "bun",
-    "mobile-proxy",
-    "ai-agents"
-  ],
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/bolivian-peru/marketplace-service-template"
+    "@types/bun": "latest"
   }
 }
