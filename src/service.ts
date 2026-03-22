@@ -1251,6 +1251,147 @@ serviceRouter.get('/instagram/audit/:username', async (c) => {
   }
 });
 
+// ─── POST /api/instagram/filter ─────────────────────
+// Smart filtering of Instagram accounts by AI-derived attributes.
+// Accepts a list of usernames + filter criteria, returns accounts that match.
+
+const IG_FILTER_PRICE = 0.05; // $0.05 per batch filter (up to 10 accounts)
+
+serviceRouter.post('/instagram/filter', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/instagram/filter', 'Filter Instagram accounts by AI-derived attributes: account type, niche, min followers, min engagement, authenticity score, brand safety', IG_FILTER_PRICE, walletAddress, {
+      input: {
+        usernames: 'string[] (required) — list of Instagram usernames to evaluate (max 10)',
+        filters: {
+          account_type: 'string (optional) — one of: influencer, business, personal, bot_fake, meme_page, news_media',
+          niche: 'string (optional) — content niche keyword (e.g. fitness, travel, food)',
+          min_followers: 'number (optional) — minimum follower count',
+          max_followers: 'number (optional) — maximum follower count',
+          min_engagement_rate: 'number (optional) — minimum engagement rate %',
+          min_authenticity_score: 'number (optional, 0–100) — minimum authenticity score',
+          max_risk_level: 'string (optional) — max risk level: low | medium | high',
+          is_verified: 'boolean (optional) — filter to verified accounts only',
+          is_business: 'boolean (optional) — filter to business accounts only',
+          min_brand_safety_score: 'number (optional, 0–100) — minimum brand safety score',
+          content_theme: 'string (optional) — required content theme keyword',
+        },
+      },
+      output: {
+        matched: 'FullAnalysis[] — accounts matching all filter criteria',
+        skipped: '{ username, reason }[] — accounts that did not match or failed',
+        total_evaluated: 'number',
+        total_matched: 'number',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, IG_FILTER_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const clientIp = c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  if (!checkProxyRateLimit(clientIp)) {
+    c.header('Retry-After', '60');
+    return c.json({ error: 'Proxy rate limit exceeded. Max 20 requests/min to protect proxy quota.', retryAfter: 60 }, 429);
+  }
+
+  let body: any;
+  try {
+    body = await c.req.json();
+  } catch {
+    return c.json({ error: 'Invalid JSON body' }, 400);
+  }
+
+  const usernames: string[] = Array.isArray(body?.usernames) ? body.usernames.slice(0, 10) : [];
+  if (!usernames.length) return c.json({ error: 'Missing required field: usernames (array of Instagram usernames)' }, 400);
+
+  const filters: Record<string, any> = body?.filters || {};
+
+  const matched: any[] = [];
+  const skipped: { username: string; reason: string }[] = [];
+
+  for (const username of usernames) {
+    try {
+      const result = await analyzeProfile(username);
+      const { profile, ai_analysis } = result;
+
+      // Apply filters
+      if (filters.account_type && ai_analysis.account_type?.primary !== filters.account_type) {
+        skipped.push({ username, reason: `account_type '${ai_analysis.account_type?.primary}' !== '${filters.account_type}'` });
+        continue;
+      }
+      if (filters.niche && !ai_analysis.account_type?.niche?.toLowerCase().includes(filters.niche.toLowerCase()) &&
+          !ai_analysis.account_type?.sub_niches?.some((n: string) => n.toLowerCase().includes(filters.niche.toLowerCase()))) {
+        skipped.push({ username, reason: `niche '${ai_analysis.account_type?.niche}' does not match '${filters.niche}'` });
+        continue;
+      }
+      if (filters.min_followers != null && profile.followers < filters.min_followers) {
+        skipped.push({ username, reason: `followers ${profile.followers} < min ${filters.min_followers}` });
+        continue;
+      }
+      if (filters.max_followers != null && profile.followers > filters.max_followers) {
+        skipped.push({ username, reason: `followers ${profile.followers} > max ${filters.max_followers}` });
+        continue;
+      }
+      if (filters.min_engagement_rate != null && profile.engagement_rate < filters.min_engagement_rate) {
+        skipped.push({ username, reason: `engagement_rate ${profile.engagement_rate}% < min ${filters.min_engagement_rate}%` });
+        continue;
+      }
+      if (filters.min_authenticity_score != null && ai_analysis.authenticity?.score < filters.min_authenticity_score) {
+        skipped.push({ username, reason: `authenticity_score ${ai_analysis.authenticity?.score} < min ${filters.min_authenticity_score}` });
+        continue;
+      }
+      if (filters.max_risk_level != null) {
+        const riskOrder: Record<string, number> = { low: 0, medium: 1, high: 2 };
+        const accountRisk = ai_analysis.recommendations?.risk_level || 'high';
+        if ((riskOrder[accountRisk] ?? 2) > (riskOrder[filters.max_risk_level] ?? 2)) {
+          skipped.push({ username, reason: `risk_level '${accountRisk}' exceeds max '${filters.max_risk_level}'` });
+          continue;
+        }
+      }
+      if (filters.is_verified != null && profile.is_verified !== filters.is_verified) {
+        skipped.push({ username, reason: `is_verified ${profile.is_verified} !== ${filters.is_verified}` });
+        continue;
+      }
+      if (filters.is_business != null && profile.is_business !== filters.is_business) {
+        skipped.push({ username, reason: `is_business ${profile.is_business} !== ${filters.is_business}` });
+        continue;
+      }
+      if (filters.min_brand_safety_score != null && (ai_analysis.content_themes?.brand_safety_score ?? 0) < filters.min_brand_safety_score) {
+        skipped.push({ username, reason: `brand_safety_score ${ai_analysis.content_themes?.brand_safety_score} < min ${filters.min_brand_safety_score}` });
+        continue;
+      }
+      if (filters.content_theme) {
+        const themes = ai_analysis.content_themes?.top_themes || [];
+        if (!themes.some((t: string) => t.toLowerCase().includes(filters.content_theme.toLowerCase()))) {
+          skipped.push({ username, reason: `content_themes ${JSON.stringify(themes)} do not include '${filters.content_theme}'` });
+          continue;
+        }
+      }
+
+      matched.push(result);
+    } catch (err: any) {
+      skipped.push({ username, reason: err?.message || 'Analysis failed' });
+    }
+  }
+
+  const proxy = getProxy();
+  c.header('X-Payment-Settled', 'true');
+  c.header('X-Payment-TxHash', payment.txHash);
+
+  return c.json({
+    matched,
+    skipped,
+    total_evaluated: usernames.length,
+    total_matched: matched.length,
+    meta: { proxy: { country: proxy.country, type: 'mobile' } },
+    payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+  });
+});
+
 // ═══════════════════════════════════════════════════════
 // ─── AIRBNB MARKET INTELLIGENCE API (Bounty #78) ────
 // ═══════════════════════════════════════════════════════
@@ -1471,7 +1612,7 @@ serviceRouter.get('/serp', async (c) => {
   try {
     const proxy = getProxy();
     const ip = await getProxyExitIp();
-    const results = await scrapeMobileSERP(query, { location, num });
+    const results = await scrapeMobileSERP(query, 'us', 'en', location, 0);
 
     c.header('X-Payment-Settled', 'true');
     c.header('X-Payment-TxHash', payment.txHash);
