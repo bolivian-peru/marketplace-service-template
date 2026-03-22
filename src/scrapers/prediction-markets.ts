@@ -1,450 +1,325 @@
 /**
- * Prediction Market Scrapers
- * ───────────────────────────
- * Fetches market odds from Polymarket, Kalshi, and Metaculus.
- * All three expose public JSON APIs requiring no authentication.
+ * Prediction Market Scraper
  *
- * Bounty #55 — Prediction Market Signal Aggregator
+ * Fetches real-time odds from:
+ * - Polymarket (https://gamma-api.polymarket.com)
+ * - Kalshi (https://trading-api.kalshi.com)
+ * - Metaculus (https://www.metaculus.com/api2)
+ *
+ * All requests use direct fetch — these are public APIs that don't require auth.
  */
 
-const BOT_UA = 'PredictionSignalBot/1.0 (https://github.com/bolivian-peru/marketplace-service-template)';
 const TIMEOUT_MS = 20_000;
-const MAX_SLUG_LENGTH = 200;
-const MAX_TITLE_LENGTH = 300;
-const MAX_URL_LENGTH = 2048;
-
-// ─── SHARED TYPES ────────────────────────────────────
+const MOBILE_UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1';
 
 export interface MarketOdds {
   platform: 'polymarket' | 'kalshi' | 'metaculus';
   marketId: string;
-  title: string;
+  question: string;
+  probability: number; // 0-100 percent
+  volume24h: number | null;
+  totalVolume: number | null;
+  endDate: string | null;
   url: string;
-  /** Probability YES 0-100 */
-  yesOdds: number | null;
-  /** Probability NO 0-100 */
-  noOdds: number | null;
-  /** Total volume in USD (when available) */
-  volume: number | null;
-  /** Liquidity in USD (when available) */
-  liquidity: number | null;
-  /** Number of traders/forecasters (when available) */
-  forecasters: number | null;
-  /** ISO timestamp */
-  resolvesAt: string | null;
-  /** Raw category tags */
-  categories: string[];
-  fetchedAt: string;
+  outcomes: Array<{ name: string; probability: number }>;
+  lastUpdated: string;
 }
 
 export interface ArbitrageOpportunity {
-  market: string;
-  platforms: string[];
-  yesOdds: Record<string, number>;
-  noOdds: Record<string, number>;
-  /** Spread in percentage points — higher = more profitable */
-  spread: number;
-  description: string;
+  question: string;
+  markets: Array<{
+    platform: string;
+    probability: number;
+    marketId: string;
+    url: string;
+  }>;
+  spread: number; // max - min probability in percentage points
+  signal: 'buy_low' | 'sell_high' | 'neutral';
+  confidence: 'high' | 'medium' | 'low';
 }
 
-// ─── HELPERS ─────────────────────────────────────────
+async function apiFetch(url: string): Promise<unknown> {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
+  try {
+    const res = await fetch(url, {
+      signal: ctrl.signal,
+      headers: {
+        'User-Agent': MOBILE_UA,
+        Accept: 'application/json',
+      },
+    });
+    clearTimeout(timer);
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status} from ${url}`);
+    }
+    return await res.json();
+  } catch (err) {
+    clearTimeout(timer);
+    throw err;
+  }
+}
 
 function sanitizeText(value: unknown, maxLen: number): string {
   if (typeof value !== 'string') return '';
   return value.replace(/[\r\n\0]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, maxLen);
 }
 
-function sanitizeUrl(value: unknown): string | null {
-  if (typeof value !== 'string') return null;
-  const trimmed = value.trim();
-  if (!trimmed) return null;
-  try {
-    const parsed = new URL(trimmed);
-    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return null;
-    return parsed.toString().slice(0, MAX_URL_LENGTH);
-  } catch {
-    return null;
-  }
+function toFloat(value: unknown, fallback = 0): number {
+  const n = parseFloat(String(value));
+  return Number.isFinite(n) ? n : fallback;
 }
 
-function safeNumber(value: unknown, fallback: number | null = null): number | null {
-  if (typeof value === 'number' && Number.isFinite(value)) return value;
-  if (typeof value === 'string') {
-    const n = parseFloat(value);
-    if (Number.isFinite(n)) return n;
-  }
-  return fallback;
-}
-
-async function safeFetch(url: string, headers: Record<string, string> = {}): Promise<unknown> {
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
-  try {
-    const res = await fetch(url, {
-      signal: ctrl.signal,
-      headers: { 'User-Agent': BOT_UA, Accept: 'application/json', ...headers },
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}: ${url}`);
-    return await res.json();
-  } finally {
-    clearTimeout(timer);
-  }
-}
-
-// ─── POLYMARKET ──────────────────────────────────────
-// Public Gamma API — no auth required
-// https://gamma-api.polymarket.com/markets?slug=<slug>&limit=5
-
-const POLYMARKET_API = 'https://gamma-api.polymarket.com';
+// ─── Polymarket ─────────────────────────────────────────────────────────────
 
 interface PolymarketMarket {
-  id?: unknown;
-  question?: unknown;
-  conditionId?: unknown;
-  slug?: unknown;
-  endDate?: unknown;
-  outcomePrices?: unknown;
-  volume?: unknown;
-  liquidity?: unknown;
-  tags?: unknown;
-  active?: unknown;
-  closed?: unknown;
-  groupItemTitle?: unknown;
+  conditionId?: string;
+  id?: string;
+  question?: string;
+  outcomePrices?: string | string[];
+  outcomes?: string | string[];
+  volume?: string | number;
+  volume24hr?: string | number;
+  endDateIso?: string;
+  active?: boolean;
+  closed?: boolean;
 }
 
-function parsePolymarketMarket(raw: PolymarketMarket, fetchedAt: string): MarketOdds | null {
-  const title = sanitizeText(raw.question || raw.groupItemTitle, MAX_TITLE_LENGTH);
-  if (!title) return null;
+function parsePolymarketMarket(raw: PolymarketMarket): MarketOdds | null {
+  const question = sanitizeText(raw.question, 300);
+  if (!question) return null;
 
-  const slug = sanitizeText(raw.slug, MAX_SLUG_LENGTH);
-  const marketId = sanitizeText(raw.id ?? raw.conditionId, 64);
-  if (!marketId && !slug) return null;
+  const marketId = sanitizeText(raw.conditionId || raw.id, 128);
+  if (!marketId) return null;
 
-  const url = slug
-    ? `https://polymarket.com/event/${slug}`
-    : `https://polymarket.com`;
-
-  // outcomePrices is a JSON-encoded array like '["0.72", "0.28"]'
-  let yesOdds: number | null = null;
-  let noOdds: number | null = null;
+  // outcomePrices is a JSON string like "[\"0.65\",\"0.35\"]"
+  let prices: number[] = [];
   try {
-    const prices = typeof raw.outcomePrices === 'string'
+    const priceArr = typeof raw.outcomePrices === 'string'
       ? JSON.parse(raw.outcomePrices)
-      : raw.outcomePrices;
-    if (Array.isArray(prices) && prices.length >= 2) {
-      const y = parseFloat(prices[0]);
-      const n = parseFloat(prices[1]);
-      if (Number.isFinite(y)) yesOdds = Math.round(y * 100 * 100) / 100;
-      if (Number.isFinite(n)) noOdds = Math.round(n * 100 * 100) / 100;
-    }
-  } catch { /* ignore */ }
-
-  const volume = safeNumber(raw.volume);
-  const liquidity = safeNumber(raw.liquidity);
-
-  const rawTags = raw.tags;
-  let categories: string[] = [];
-  if (Array.isArray(rawTags)) {
-    categories = rawTags
-      .map((t: unknown) => {
-        if (typeof t === 'string') return sanitizeText(t, 64);
-        if (t && typeof t === 'object' && 'label' in t) return sanitizeText((t as { label: unknown }).label, 64);
-        return '';
-      })
-      .filter(Boolean);
+      : (Array.isArray(raw.outcomePrices) ? raw.outcomePrices : []);
+    prices = priceArr.map((p: unknown) => toFloat(p) * 100);
+  } catch {
+    prices = [];
   }
 
-  let resolvesAt: string | null = null;
-  if (typeof raw.endDate === 'string' && raw.endDate.trim()) {
-    resolvesAt = raw.endDate.trim().slice(0, 64);
+  let outcomeNames: string[] = [];
+  try {
+    const namesArr = typeof raw.outcomes === 'string'
+      ? JSON.parse(raw.outcomes)
+      : (Array.isArray(raw.outcomes) ? raw.outcomes : []);
+    outcomeNames = namesArr.map((n: unknown) => String(n).slice(0, 64));
+  } catch {
+    outcomeNames = ['Yes', 'No'];
   }
+
+  const outcomes = prices.map((prob, i) => ({
+    name: outcomeNames[i] || `Outcome ${i + 1}`,
+    probability: Math.round(prob * 100) / 100,
+  }));
+
+  // Primary probability = "Yes" (first outcome)
+  const probability = outcomes.length > 0 ? outcomes[0].probability : 50;
+
+  const totalVolume = toFloat(raw.volume, 0);
+  const volume24h = toFloat(raw.volume24hr, 0);
 
   return {
     platform: 'polymarket',
-    marketId: marketId || slug || 'unknown',
-    title,
-    url,
-    yesOdds,
-    noOdds,
-    volume: volume !== null ? Math.round(volume * 100) / 100 : null,
-    liquidity: liquidity !== null ? Math.round(liquidity * 100) / 100 : null,
-    forecasters: null,
-    resolvesAt,
-    categories,
-    fetchedAt,
+    marketId,
+    question,
+    probability,
+    volume24h: volume24h || null,
+    totalVolume: totalVolume || null,
+    endDate: typeof raw.endDateIso === 'string' ? raw.endDateIso.slice(0, 32) : null,
+    url: `https://polymarket.com/event/${encodeURIComponent(marketId)}`,
+    outcomes,
+    lastUpdated: new Date().toISOString(),
   };
 }
 
-export async function fetchPolymarketOdds(slug?: string): Promise<MarketOdds[]> {
-  const fetchedAt = new Date().toISOString();
-  let url: string;
-
-  if (slug) {
-    const safeSlug = sanitizeText(slug, MAX_SLUG_LENGTH);
-    url = `${POLYMARKET_API}/markets?slug=${encodeURIComponent(safeSlug)}&limit=5`;
-  } else {
-    url = `${POLYMARKET_API}/markets?active=true&closed=false&limit=20&order=volumeNum&ascending=false`;
-  }
-
+export async function fetchPolymarketMarkets(topic?: string, limit = 20): Promise<MarketOdds[]> {
   try {
-    const data = await safeFetch(url);
-    const markets: PolymarketMarket[] = Array.isArray(data) ? data : [];
-    return markets
-      .map((m) => parsePolymarketMarket(m, fetchedAt))
-      .filter((m): m is MarketOdds => m !== null)
-      .slice(0, 20);
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : String(err);
-    console.error(`[polymarket] fetch failed: ${msg}`);
+    const params = new URLSearchParams({
+      limit: String(Math.min(limit * 3, 100)),
+      active: 'true',
+      closed: 'false',
+      order: 'volume24hr',
+      ascending: 'false',
+    });
+    if (topic) params.set('q', topic);
+
+    const data = await apiFetch(`https://gamma-api.polymarket.com/markets?${params}`);
+    const markets = Array.isArray(data) ? data : [];
+
+    const results: MarketOdds[] = [];
+    for (const raw of markets) {
+      if (results.length >= limit) break;
+      if (!raw || typeof raw !== 'object') continue;
+      const parsed = parsePolymarketMarket(raw as PolymarketMarket);
+      if (parsed) results.push(parsed);
+    }
+    return results;
+  } catch (err) {
+    console.warn('[prediction-markets] Polymarket fetch failed:', err instanceof Error ? err.message : String(err));
     return [];
   }
 }
 
-// ─── KALSHI ──────────────────────────────────────────
-// Public trading API v2 — no auth for market listing
-// https://trading-api.kalshi.com/trade-api/v2/markets
-
-const KALSHI_API = 'https://trading-api.kalshi.com/trade-api/v2';
+// ─── Kalshi ─────────────────────────────────────────────────────────────────
 
 interface KalshiMarket {
-  ticker?: unknown;
-  title?: unknown;
-  yes_bid?: unknown;
-  yes_ask?: unknown;
-  no_bid?: unknown;
-  no_ask?: unknown;
-  volume?: unknown;
-  liquidity?: unknown;
-  close_time?: unknown;
-  tags?: unknown;
-  category?: unknown;
-  status?: unknown;
-  result?: unknown;
-  subtitle?: unknown;
+  ticker?: string;
+  title?: string;
+  yes_bid?: number;
+  yes_ask?: number;
+  no_bid?: number;
+  volume?: number;
+  volume_24h?: number;
+  close_time?: string;
+  status?: string;
 }
 
-function parseKalshiMarket(raw: KalshiMarket, fetchedAt: string): MarketOdds | null {
-  const title = sanitizeText(raw.title ?? raw.subtitle, MAX_TITLE_LENGTH);
-  if (!title) return null;
+function parseKalshiMarket(raw: KalshiMarket): MarketOdds | null {
+  const question = sanitizeText(raw.title, 300);
+  if (!question) return null;
 
-  const ticker = sanitizeText(raw.ticker, 64);
-  if (!ticker) return null;
+  const marketId = sanitizeText(raw.ticker, 64);
+  if (!marketId) return null;
 
-  // yes_bid / yes_ask are in cents (0–100), mid = (bid + ask) / 2
-  let yesOdds: number | null = null;
-  let noOdds: number | null = null;
-
-  const yesBid = safeNumber(raw.yes_bid);
-  const yesAsk = safeNumber(raw.yes_ask);
-  if (yesBid !== null && yesAsk !== null) {
-    yesOdds = Math.round((yesBid + yesAsk) / 2 * 100) / 100;
-    noOdds = Math.round((100 - yesOdds) * 100) / 100;
-  } else if (yesBid !== null) {
-    yesOdds = yesBid;
-    noOdds = Math.round((100 - yesBid) * 100) / 100;
-  }
-
-  const volume = safeNumber(raw.volume);
-  const liquidity = safeNumber(raw.liquidity);
-
-  const rawTags = raw.tags;
-  let categories: string[] = [];
-  if (Array.isArray(rawTags)) {
-    categories = rawTags.map((t: unknown) => sanitizeText(t, 64)).filter(Boolean);
-  } else if (typeof raw.category === 'string') {
-    categories = [sanitizeText(raw.category, 64)].filter(Boolean);
-  }
-
-  let resolvesAt: string | null = null;
-  if (typeof raw.close_time === 'string' && raw.close_time.trim()) {
-    resolvesAt = raw.close_time.trim().slice(0, 64);
-  }
+  // Kalshi prices are in cents (0-100)
+  const yesBid = typeof raw.yes_bid === 'number' ? raw.yes_bid : 50;
+  const yesAsk = typeof raw.yes_ask === 'number' ? raw.yes_ask : 50;
+  const midpoint = (yesBid + yesAsk) / 2;
+  const probability = Math.round(midpoint * 100) / 100;
 
   return {
     platform: 'kalshi',
-    marketId: ticker,
-    title,
-    url: `https://kalshi.com/markets/${ticker.toLowerCase()}`,
-    yesOdds,
-    noOdds,
-    volume: volume !== null ? Math.round(volume * 100) / 100 : null,
-    liquidity: liquidity !== null ? Math.round(liquidity * 100) / 100 : null,
-    forecasters: null,
-    resolvesAt,
-    categories,
-    fetchedAt,
+    marketId,
+    question,
+    probability,
+    volume24h: typeof raw.volume_24h === 'number' ? raw.volume_24h : null,
+    totalVolume: typeof raw.volume === 'number' ? raw.volume : null,
+    endDate: typeof raw.close_time === 'string' ? raw.close_time.slice(0, 32) : null,
+    url: `https://kalshi.com/markets/${encodeURIComponent(marketId)}`,
+    outcomes: [
+      { name: 'Yes', probability },
+      { name: 'No', probability: Math.round((100 - probability) * 100) / 100 },
+    ],
+    lastUpdated: new Date().toISOString(),
   };
 }
 
-export async function fetchKalshiOdds(ticker?: string): Promise<MarketOdds[]> {
-  const fetchedAt = new Date().toISOString();
-  let url: string;
-
-  if (ticker) {
-    const safeTicker = sanitizeText(ticker, 64).toUpperCase();
-    url = `${KALSHI_API}/markets/${encodeURIComponent(safeTicker)}`;
-  } else {
-    url = `${KALSHI_API}/markets?limit=20&status=open`;
-  }
-
+export async function fetchKalshiMarkets(topic?: string, limit = 20): Promise<MarketOdds[]> {
   try {
-    const data = await safeFetch(url);
+    const params = new URLSearchParams({
+      limit: String(Math.min(limit * 3, 200)),
+      status: 'open',
+      order_by: 'volume',
+    });
+    if (topic) params.set('search', topic);
 
-    let markets: KalshiMarket[] = [];
-    if (data && typeof data === 'object') {
-      const d = data as Record<string, unknown>;
-      if (Array.isArray(d.markets)) {
-        markets = d.markets as KalshiMarket[];
-      } else if ('market' in d) {
-        markets = [d.market as KalshiMarket];
-      } else if (Array.isArray(data)) {
-        markets = data as KalshiMarket[];
-      }
+    const data = await apiFetch(`https://trading-api.kalshi.com/trade-api/v2/markets?${params}`);
+    const markets = (data as { markets?: KalshiMarket[] })?.markets;
+    if (!Array.isArray(markets)) return [];
+
+    const results: MarketOdds[] = [];
+    for (const raw of markets) {
+      if (results.length >= limit) break;
+      if (!raw || typeof raw !== 'object') continue;
+      const parsed = parseKalshiMarket(raw);
+      if (parsed) results.push(parsed);
     }
-
-    return markets
-      .map((m) => parseKalshiMarket(m, fetchedAt))
-      .filter((m): m is MarketOdds => m !== null)
-      .slice(0, 20);
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : String(err);
-    console.error(`[kalshi] fetch failed: ${msg}`);
+    return results;
+  } catch (err) {
+    console.warn('[prediction-markets] Kalshi fetch failed:', err instanceof Error ? err.message : String(err));
     return [];
   }
 }
 
-// ─── METACULUS ───────────────────────────────────────
-// Public API — no auth required
-// https://www.metaculus.com/api2/questions/?search=<term>&order_by=-activity
-
-const METACULUS_API = 'https://www.metaculus.com/api2';
+// ─── Metaculus ───────────────────────────────────────────────────────────────
 
 interface MetaculusQuestion {
-  id?: unknown;
-  title?: unknown;
-  page_url?: unknown;
-  community_prediction?: {
-    full?: {
-      q2?: number;  // median probability
-      avg?: number;
-    };
-  };
-  resolution?: unknown;
-  resolve_time?: unknown;
-  created_time?: unknown;
-  prediction_count?: unknown;
-  possibilities?: {
-    type?: string;
-  };
-  tags?: Array<{ name?: unknown; slug?: unknown }>;
+  id?: number;
+  title?: string;
+  community_prediction?: { full?: { q2?: number } };
+  effected_close_time?: string;
+  page_url?: string;
+  number_of_predictions?: number;
 }
 
-function parseMetaculusQuestion(raw: MetaculusQuestion, fetchedAt: string): MarketOdds | null {
-  const title = sanitizeText(raw.title, MAX_TITLE_LENGTH);
-  if (!title) return null;
+function parseMetaculusQuestion(raw: MetaculusQuestion): MarketOdds | null {
+  const question = sanitizeText(raw.title, 300);
+  if (!question) return null;
 
-  const id = String(raw.id ?? '').trim().slice(0, 32);
-  if (!id || id === 'undefined') return null;
+  const marketId = String(raw.id || '');
+  if (!marketId) return null;
 
-  const urlPath = sanitizeText(raw.page_url, 200);
-  const url = urlPath
-    ? (urlPath.startsWith('http') ? urlPath : `https://www.metaculus.com${urlPath}`)
-    : `https://www.metaculus.com/questions/${id}/`;
+  // q2 is the median community forecast (0-1)
+  const rawProb = raw.community_prediction?.full?.q2;
+  const probability = typeof rawProb === 'number' && Number.isFinite(rawProb)
+    ? Math.round(rawProb * 10000) / 100  // convert 0-1 to 0-100
+    : 50;
 
-  const safeUrl = sanitizeUrl(url) ?? `https://www.metaculus.com/questions/${id}/`;
-
-  // community_prediction.full.q2 = community median (0-1 scale)
-  let yesOdds: number | null = null;
-  let noOdds: number | null = null;
-  const cp = raw.community_prediction?.full;
-  if (cp) {
-    const raw_val = cp.q2 ?? cp.avg;
-    if (typeof raw_val === 'number' && Number.isFinite(raw_val)) {
-      yesOdds = Math.round(raw_val * 100 * 100) / 100;
-      noOdds = Math.round((100 - yesOdds) * 100) / 100;
-    }
-  }
-
-  const forecasters = safeNumber(raw.prediction_count);
-
-  let resolvesAt: string | null = null;
-  if (typeof raw.resolve_time === 'string' && raw.resolve_time.trim()) {
-    resolvesAt = raw.resolve_time.trim().slice(0, 64);
-  }
-
-  const rawTags = raw.tags ?? [];
-  const categories = Array.isArray(rawTags)
-    ? rawTags.map((t: unknown) => {
-        if (t && typeof t === 'object') {
-          const tag = t as { name?: unknown; slug?: unknown };
-          return sanitizeText(tag.name ?? tag.slug, 64);
-        }
-        return '';
-      }).filter(Boolean)
-    : [];
+  const url = typeof raw.page_url === 'string' && raw.page_url.startsWith('/')
+    ? `https://www.metaculus.com${raw.page_url}`
+    : `https://www.metaculus.com/questions/${marketId}/`;
 
   return {
     platform: 'metaculus',
-    marketId: id,
-    title,
-    url: safeUrl,
-    yesOdds,
-    noOdds,
-    volume: null,
-    liquidity: null,
-    forecasters: forecasters !== null ? Math.round(forecasters) : null,
-    resolvesAt,
-    categories,
-    fetchedAt,
+    marketId,
+    question,
+    probability,
+    volume24h: null,
+    totalVolume: typeof raw.number_of_predictions === 'number' ? raw.number_of_predictions : null,
+    endDate: typeof raw.effected_close_time === 'string' ? raw.effected_close_time.slice(0, 32) : null,
+    url,
+    outcomes: [
+      { name: 'Yes', probability },
+      { name: 'No', probability: Math.round((100 - probability) * 100) / 100 },
+    ],
+    lastUpdated: new Date().toISOString(),
   };
 }
 
-export async function fetchMetaculusOdds(search?: string): Promise<MarketOdds[]> {
-  const fetchedAt = new Date().toISOString();
-  let url: string;
-
-  if (search) {
-    const safeSearch = sanitizeText(search, MAX_SLUG_LENGTH);
-    url = `${METACULUS_API}/questions/?search=${encodeURIComponent(safeSearch)}&order_by=-activity&limit=20&type=forecast`;
-  } else {
-    url = `${METACULUS_API}/questions/?order_by=-activity&limit=20&type=forecast`;
-  }
-
+export async function fetchMetaculusMarkets(topic?: string, limit = 20): Promise<MarketOdds[]> {
   try {
-    const data = await safeFetch(url);
-    const results: MetaculusQuestion[] = [];
+    const params = new URLSearchParams({
+      status: 'open',
+      limit: String(Math.min(limit * 2, 50)),
+      format: 'json',
+      order_by: '-activity',
+    });
+    if (topic) params.set('search', topic);
 
-    if (data && typeof data === 'object') {
-      const d = data as Record<string, unknown>;
-      if (Array.isArray(d.results)) {
-        results.push(...(d.results as MetaculusQuestion[]));
-      } else if (Array.isArray(data)) {
-        results.push(...(data as MetaculusQuestion[]));
-      }
+    const data = await apiFetch(`https://www.metaculus.com/api2/questions/?${params}`);
+    const results_arr = (data as { results?: MetaculusQuestion[] })?.results;
+    if (!Array.isArray(results_arr)) return [];
+
+    const results: MarketOdds[] = [];
+    for (const raw of results_arr) {
+      if (results.length >= limit) break;
+      if (!raw || typeof raw !== 'object') continue;
+      const parsed = parseMetaculusQuestion(raw);
+      if (parsed) results.push(parsed);
     }
-
-    return results
-      .map((q) => parseMetaculusQuestion(q, fetchedAt))
-      .filter((m): m is MarketOdds => m !== null)
-      .slice(0, 20);
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : String(err);
-    console.error(`[metaculus] fetch failed: ${msg}`);
+    return results;
+  } catch (err) {
+    console.warn('[prediction-markets] Metaculus fetch failed:', err instanceof Error ? err.message : String(err));
     return [];
   }
 }
 
-// ─── ALL PLATFORMS ────────────────────────────────────
+// ─── Cross-platform aggregation ──────────────────────────────────────────────
 
 /**
- * Fetch odds from all three platforms in parallel.
- * Returns combined array sorted by platform.
+ * Fetch markets from all platforms in parallel and combine results.
  */
-export async function fetchAllMarketOdds(query?: string): Promise<MarketOdds[]> {
+export async function fetchAllMarkets(topic?: string, limitPerPlatform = 10): Promise<MarketOdds[]> {
   const [poly, kalshi, meta] = await Promise.allSettled([
-    fetchPolymarketOdds(query),
-    fetchKalshiOdds(undefined),
-    fetchMetaculusOdds(query),
+    fetchPolymarketMarkets(topic, limitPerPlatform),
+    fetchKalshiMarkets(topic, limitPerPlatform),
+    fetchMetaculusMarkets(topic, limitPerPlatform),
   ]);
 
   const results: MarketOdds[] = [];
@@ -454,16 +329,14 @@ export async function fetchAllMarketOdds(query?: string): Promise<MarketOdds[]> 
   return results;
 }
 
-// ─── ARBITRAGE DETECTION ─────────────────────────────
-
 /**
- * Detect arbitrage opportunities across platforms for the same event.
- * Uses fuzzy title matching (shared keywords) to find equivalent markets.
+ * Detect arbitrage opportunities by fuzzy-matching questions across platforms.
+ * Returns pairs/groups with the largest probability spread.
  */
-export function detectArbitrageOpportunities(markets: MarketOdds[]): ArbitrageOpportunity[] {
+export function detectArbitrage(markets: MarketOdds[], minSpread = 5): ArbitrageOpportunity[] {
   const opportunities: ArbitrageOpportunity[] = [];
 
-  // Group markets by keyword similarity
+  // Group by similar questions using simple keyword overlap
   const groups: MarketOdds[][] = [];
   const assigned = new Set<number>();
 
@@ -472,13 +345,17 @@ export function detectArbitrageOpportunities(markets: MarketOdds[]): ArbitrageOp
     const group: MarketOdds[] = [markets[i]];
     assigned.add(i);
 
-    const keysA = extractKeywords(markets[i].title);
+    const wordsI = new Set(
+      markets[i].question.toLowerCase().split(/\W+/).filter((w) => w.length > 4),
+    );
 
     for (let j = i + 1; j < markets.length; j++) {
       if (assigned.has(j)) continue;
-      const keysB = extractKeywords(markets[j].title);
-      const overlap = keysA.filter((k) => keysB.includes(k)).length;
-      const similarity = overlap / Math.max(keysA.length, keysB.length, 1);
+      if (markets[j].platform === markets[i].platform) continue;
+
+      const wordsJ = markets[j].question.toLowerCase().split(/\W+/).filter((w) => w.length > 4);
+      const overlap = wordsJ.filter((w) => wordsI.has(w)).length;
+      const similarity = overlap / Math.max(wordsI.size, wordsJ.length, 1);
 
       if (similarity >= 0.4) {
         group.push(markets[j]);
@@ -489,51 +366,33 @@ export function detectArbitrageOpportunities(markets: MarketOdds[]): ArbitrageOp
     if (group.length >= 2) groups.push(group);
   }
 
-  // For each group, check for odds divergence
   for (const group of groups) {
-    const withOdds = group.filter((m) => m.yesOdds !== null);
-    if (withOdds.length < 2) continue;
+    const probs = group.map((m) => m.probability);
+    const maxProb = Math.max(...probs);
+    const minProb = Math.min(...probs);
+    const spread = Math.round((maxProb - minProb) * 100) / 100;
 
-    const yesOddsMap: Record<string, number> = {};
-    const noOddsMap: Record<string, number> = {};
-    for (const m of withOdds) {
-      yesOddsMap[m.platform] = m.yesOdds!;
-      noOddsMap[m.platform] = m.noOdds ?? (100 - m.yesOdds!);
-    }
+    if (spread < minSpread) continue;
 
-    const yesValues = Object.values(yesOddsMap);
-    const spread = Math.max(...yesValues) - Math.min(...yesValues);
+    const confidence: 'high' | 'medium' | 'low' =
+      spread >= 15 ? 'high' : spread >= 8 ? 'medium' : 'low';
+    const signal: 'buy_low' | 'sell_high' | 'neutral' =
+      spread >= 10 ? 'buy_low' : spread >= 5 ? 'sell_high' : 'neutral';
 
-    if (spread >= 3) {
-      // Title for arbitrage is the most common/prominent market title
-      const marketTitle = group.sort((a, b) => (b.volume ?? 0) - (a.volume ?? 0))[0].title;
-
-      opportunities.push({
-        market: marketTitle,
-        platforms: withOdds.map((m) => m.platform),
-        yesOdds: yesOddsMap,
-        noOdds: noOddsMap,
-        spread: Math.round(spread * 100) / 100,
-        description: `${spread.toFixed(1)}pp spread detected across ${withOdds.map((m) => m.platform).join(', ')}`,
-      });
-    }
+    opportunities.push({
+      question: group[0].question,
+      markets: group.map((m) => ({
+        platform: m.platform,
+        probability: m.probability,
+        marketId: m.marketId,
+        url: m.url,
+      })),
+      spread,
+      signal,
+      confidence,
+    });
   }
 
+  // Sort by spread descending
   return opportunities.sort((a, b) => b.spread - a.spread);
-}
-
-function extractKeywords(title: string): string[] {
-  const stopwords = new Set([
-    'the', 'a', 'an', 'will', 'be', 'in', 'of', 'to', 'by', 'for', 'on',
-    'at', 'or', 'and', 'is', 'are', 'was', 'were', 'has', 'have', 'had',
-    'it', 'its', 'that', 'this', 'with', 'as', 'from', 'than', 'not',
-    'do', 'does', 'did', 'get', 'got', 'who', 'what', 'when', 'where',
-    'how', 'which', 'into', 'up', 'out', 'about', 'over', 'after', 'before',
-  ]);
-  return title
-    .toLowerCase()
-    .replace(/[^\w\s]/g, ' ')
-    .split(/\s+/)
-    .filter((w) => w.length >= 3 && !stopwords.has(w))
-    .slice(0, 15);
 }

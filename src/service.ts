@@ -23,6 +23,7 @@ import { scrapeGoogleMaps, extractDetailedBusiness } from './scrapers/maps-scrap
 import { researchRouter } from './routes/research';
 import { trendingRouter } from './routes/trending';
 import { signalsRouter } from './routes/signals';
+import { predictionRouter } from './routes/prediction-markets';
 import { searchAirbnb, getListingDetail, getListingReviews, getMarketStats } from './scrapers/airbnb-scraper';
 import { 
   scrapeLinkedInPerson, 
@@ -41,6 +42,7 @@ serviceRouter.route('/', signalsRouter);
 // ─── TREND INTELLIGENCE ROUTES (Bounty #70) ─────────
 serviceRouter.route('/research', researchRouter);
 serviceRouter.route('/trending', trendingRouter);
+serviceRouter.route('/prediction', predictionRouter);
 
 const SERVICE_NAME = 'job-market-intelligence';
 const PRICE_USDC = 0.005;
