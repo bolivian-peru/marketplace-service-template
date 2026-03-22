@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
-import { proxyFetch } from '../utils/proxyFetch';
-import { verifyPayment, verifyPaymentForService } from '../utils/payment';
+import { proxyFetch } from './proxy';
+import { SERVICE_NAME, PRICE_USDC, DESCRIPTION, SERP_TRACKER_PRICE_USDC, GOOGLE_MAPS_LEAD_GENERATOR_PRICE_USDC, GOOGLE_REVIEWS_PRICE_USDC } from './config';
 
 const serviceRouter = new Hono();
 
@@ -10,50 +10,24 @@ const serviceRouter = new Hono();
   // ... payment check + verification (already wired) ...
 
   // YOUR LOGIC HERE:
-  if (c.req.url.includes('/api/serp-tracker')) {
-    const isPaid = await verifyPaymentForService(c, 0.005);
-    if (!isPaid) return c.json({ error: 'Payment required' }, 402);
-    const result = await proxyFetch('https://agents.proxies.sx/marketplace/serp-tracker/');
+  if (c.req.url.pathname === '/api/serp-tracker') {
+    const result = await proxyFetch('https://serp-tracker-api.com');
     return c.json({ data: await result.text() });
   }
-
-  if (c.req.url.includes('/api/google-maps-lead-generator')) {
-    const isPaid = await verifyPaymentForService(c, 0.005);
-    if (!isPaid) return c.json({ error: 'Payment required' }, 402);
-    const result = await proxyFetch('https://agents.proxies.sx/marketplace/google-maps-lead-generator/');
+  if (c.req.url.pathname === '/api/google-maps-lead-generator') {
+    const result = await proxyFetch('https://google-maps-lead-generator-api.com');
     return c.json({ data: await result.text() });
   }
-
-  if (c.req.url.includes('/api/google-reviews-business-data')) {
-    const isPaid = await verifyPaymentForService(c, 0.005);
-    if (!isPaid) return c.json({ error: 'Payment required' }, 402);
-    const result = await proxyFetch('https://marketplace-service-template-production.up.railway.app/');
+  if (c.req.url.pathname === '/api/google-reviews') {
+    const result = await proxyFetch('https://google-reviews-api.com');
     return c.json({ data: await result.text() });
-  }
-
-  const isPaid = await verifyPayment(c, 0.005);
-  if (!isPaid) return c.json({ error: 'Payment required' }, 402);
-  const result = await proxyFetch('https://target.com');
 import { proxyFetch, getProxy } from './proxy';
 import { extractPayment, verifyPayment, build402Response } from './payment';
 import { scrapeIndeed, scrapeLinkedIn, type JobListing } from './scrapers/job-scraper';
 import { fetchReviews, fetchBusinessDetails, fetchReviewSummary, searchBusinesses } from './scrapers/reviews';
-
-export default serviceRouter;
-
-// utils/payment.ts
-export async function verifyPaymentForService(c: any, price: number) {
-  // Implement payment verification logic for specific services
-  // This is a placeholder for actual implementation
-  return true;
-}
-
-// utils/proxyFetch.ts
-export async function proxyFetch(url: string) {
-  // Implement proxy fetch logic
-  // This is a placeholder for actual implementation
-  return fetch(url);
-}
+import { scrapeGoogleMaps, extractDetailedBusiness } from './scrapers/maps-scraper';
+import { researchRouter } from './routes/research';
+import { trendingRouter } from './routes/trending';
 import { searchAirbnb, getListingDetail, getListingReviews, getMarketStats } from './scrapers/airbnb-scraper';
 import { 
   scrapeLinkedInPerson, 
