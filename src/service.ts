@@ -1,18 +1,26 @@
-/**
- * Service Router — Marketplace API
- *
- * Exposes:
- *   GET /api/run       (Google Maps Lead Generator)
- *   GET /api/details   (Google Maps Place details)
+import { Hono } from 'hono';
+import { proxyFetch } from './proxy';
+import { SERVICE_NAME, PRICE_USDC, DESCRIPTION, SERP_TRACKER_PRICE_USDC, GOOGLE_MAPS_LEAD_GENERATOR_PRICE_USDC, GOOGLE_REVIEWS_PRICE_USDC } from './config';
+
+const serviceRouter = new Hono();
+
  *   GET /api/jobs      (Job Market Intelligence)
  *   GET /api/reviews/* (Google Reviews & Business Data)
  *   GET /api/airbnb/*  (Airbnb Market Intelligence)
- *   GET /api/reddit/*  (Reddit Intelligence)
- *   GET /api/instagram/* (Instagram Intelligence + AI Vision)
- *   GET /api/linkedin/* (LinkedIn Enrichment)
- */
+  // ... payment check + verification (already wired) ...
 
-import { Hono } from 'hono';
+  // YOUR LOGIC HERE:
+  if (c.req.url.pathname === '/api/serp-tracker') {
+    const result = await proxyFetch('https://serp-tracker-api.com');
+    return c.json({ data: await result.text() });
+  }
+  if (c.req.url.pathname === '/api/google-maps-lead-generator') {
+    const result = await proxyFetch('https://google-maps-lead-generator-api.com');
+    return c.json({ data: await result.text() });
+  }
+  if (c.req.url.pathname === '/api/google-reviews') {
+    const result = await proxyFetch('https://google-reviews-api.com');
+    return c.json({ data: await result.text() });
 import { proxyFetch, getProxy } from './proxy';
 import { extractPayment, verifyPayment, build402Response } from './payment';
 import { scrapeIndeed, scrapeLinkedIn, type JobListing } from './scrapers/job-scraper';

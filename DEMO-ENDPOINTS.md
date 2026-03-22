@@ -1,4 +1,7 @@
-# Demo Endpoints — Google Reviews & Business Data API
+- [Google Maps Lead Generator](https://agents.proxies.sx/marketplace/google-maps-lead-generator/)
+- [Mobile SERP Tracker](https://agents.proxies.sx/marketplace/serp-tracker/)
+- [Google Maps Lead Generator](https://agents.proxies.sx/marketplace/google-maps-lead-generator/)
+- [Google Reviews & Business Data API](https://marketplace-service-template-production.up.railway.app/)
 
 All endpoints require x402 USDC payment via `X-Payment-Signature` and `X-Payment-Network` headers.
 
