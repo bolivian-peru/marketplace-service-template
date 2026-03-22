@@ -213,150 +213,156 @@ export async function getPosts(username: string, limit: number = 12): Promise<In
   return edges.slice(0, limit).map((e: any) => edgeToPost(e.node));
 }
 
-// ─── AI Vision Analysis ─────────────────────────────
+// ─── AI Vision Analysis (Expert Batching) ───────────
 
-const VISION_PROMPT = `Analyze these Instagram post images from a single account. Return a JSON object with:
-1. "account_type": { "primary": one of "influencer"/"business"/"personal"/"bot_fake"/"meme_page"/"news_media", "niche": string, "confidence": 0-1, "sub_niches": string[], "signals": string[] }
-2. "content_themes": { "top_themes": string[] (up to 5), "style": string (e.g. "professional_photography", "casual_mobile", "graphic_design"), "aesthetic_consistency": "high"/"medium"/"low", "brand_safety_score": 0-100 }
-3. "sentiment": { "overall": "positive"/"neutral"/"negative"/"mixed", "breakdown": { "positive": %, "neutral": %, "negative": % }, "emotional_themes": string[], "brand_alignment": string[] }
-4. "authenticity": { "score": 0-100, "verdict": "authentic"/"likely_authentic"/"suspicious"/"likely_fake", "face_consistency": "same_person"/"multiple_people"/"no_faces"/"stock_photos", "engagement_pattern": "organic"/"suspicious"/"bot_like" }
-5. "recommendations": { "good_for_brands": string[], "estimated_post_value": string (e.g. "$500-800"), "risk_level": "low"/"medium"/"high" }
-Return ONLY valid JSON, no markdown.`;
+const VISION_SYSTEM_PROMPT = `
+You are an expert forensic analyst specializing in social media account authenticity.
+You receive a batch of recent Instagram post images from a single account.
 
-async function analyzeWithVision(imageUrls: string[], captions: string[], profileSummary: string): Promise<any> {
-  // Try OpenAI GPT-4o first, then Claude
-  const openaiKey = process.env.OPENAI_API_KEY;
-  const anthropicKey = process.env.ANTHROPIC_API_KEY;
-  
-  if (openaiKey) {
-    return analyzeOpenAI(openaiKey, imageUrls, captions, profileSummary);
-  } else if (anthropicKey) {
-    return analyzeClaude(anthropicKey, imageUrls, captions, profileSummary);
-  }
-  // Fallback: heuristic analysis without vision model
-  return heuristicAnalysis(captions, profileSummary);
+YOUR JOB: Identify signals of authenticity OR artificial/bot behavior.
+
+## ANALYSIS DIMENSIONS
+
+1. Face Consistency: Same real human faces? Natural variation vs. GAN/Stock?
+2. Image Authenticity: AI-generated red flags? Stock watermarks?
+3. Content Consistency: Coherent personal brand? Logical narrative?
+4. Engagement Bait: Giveaway templates? Low-effort reposts?
+
+OUTPUT FORMAT (strict JSON, no markdown):
+{
+  "face_consistency_score": 0.0-1.0,
+  "faces_detected": boolean,
+  "face_notes": "string",
+  "ai_generated_probability": 0.0-1.0,
+  "stock_photo_probability": 0.0-1.0,
+  "content_themes": ["string"],
+  "content_consistency_score": 0.0-1.0,
+  "account_type_signals": ["influencer", "business", "bot", "personal", "meme_page"],
+  "primary_account_type": "string",
+  "confidence": 0.0-1.0,
+  "red_flags": ["string"],
+  "positive_signals": ["string"],
+  "sentiment": "positive|neutral|negative|mixed",
+  "brand_safe": boolean
+}
+`;
+
+async function analyzeBatch(imageUrls: string[], batchIdx: number): Promise<any> {
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) throw new Error("Missing OPENAI_API_KEY");
+
+    const content: any[] = [
+        { type: 'text', text: `Batch ${batchIdx}. Analyze these ${imageUrls.length} images. Return JSON only.` }
+    ];
+
+    for (const url of imageUrls) {
+        content.push({ type: 'image_url', image_url: { url, detail: 'low' } });
+    }
+
+    const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+        body: JSON.stringify({
+            model: 'gpt-4o',
+            messages: [
+                { role: 'system', content: VISION_SYSTEM_PROMPT },
+                { role: 'user', content }
+            ],
+            response_format: { type: 'json_object' },
+            temperature: 0.3
+        })
+    });
+
+    if (!resp.ok) throw new Error(`Vision API error: ${resp.status}`);
+    const data = await resp.json();
+    return JSON.parse(data.choices[0].message.content);
 }
 
-async function analyzeOpenAI(apiKey: string, imageUrls: string[], captions: string[], profileSummary: string): Promise<any> {
-  const content: any[] = [
-    { type: 'text', text: `${VISION_PROMPT}\n\nProfile: ${profileSummary}\n\nCaptions:\n${captions.map((c, i) => `${i + 1}. ${c.slice(0, 200)}`).join('\n')}` },
-  ];
-  // Include up to 6 images to keep costs reasonable
-  for (const url of imageUrls.slice(0, 6)) {
-    content.push({ type: 'image_url', image_url: { url, detail: 'low' } });
-  }
-  const resp = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-    body: JSON.stringify({ model: 'gpt-4o', messages: [{ role: 'user', content }], max_tokens: 1500, temperature: 0.3 }),
-  });
-  if (!resp.ok) throw new Error(`OpenAI API error: ${resp.status}`);
-  const data = await resp.json();
-  const text = data.choices?.[0]?.message?.content || '';
-  try { return { ...JSON.parse(text.replace(/```json?\n?/g, '').replace(/```/g, '').trim()), model_used: 'gpt-4o' }; }
-  catch { return { ...heuristicAnalysis(captions, profileSummary), model_used: 'gpt-4o-fallback' }; }
-}
+// ─── Trust Score Algorithm (0-100) ──────────────────
 
-async function analyzeClaude(apiKey: string, imageUrls: string[], captions: string[], profileSummary: string): Promise<any> {
-  // Download images and convert to base64 for Claude
-  const imageContent: any[] = [];
-  for (const url of imageUrls.slice(0, 6)) {
-    try {
-      const r = await fetch(url); if (!r.ok) continue;
-      const buf = await r.arrayBuffer();
-      const b64 = Buffer.from(buf).toString('base64');
-      const ct = r.headers.get('content-type') || 'image/jpeg';
-      imageContent.push({ type: 'image', source: { type: 'base64', media_type: ct, data: b64 } });
-    } catch {}
-  }
-  const content: any[] = [
-    ...imageContent,
-    { type: 'text', text: `${VISION_PROMPT}\n\nProfile: ${profileSummary}\n\nCaptions:\n${captions.map((c, i) => `${i + 1}. ${c.slice(0, 200)}`).join('\n')}` },
-  ];
-  const resp = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST', headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
-    body: JSON.stringify({ model: 'claude-sonnet-4-5-20250929', max_tokens: 1500, messages: [{ role: 'user', content }] }),
-  });
-  if (!resp.ok) throw new Error(`Claude API error: ${resp.status}`);
-  const data = await resp.json();
-  const text = data.content?.[0]?.text || '';
-  try { return { ...JSON.parse(text.replace(/```json?\n?/g, '').replace(/```/g, '').trim()), model_used: 'claude-sonnet-4-5' }; }
-  catch { return { ...heuristicAnalysis(captions, profileSummary), model_used: 'claude-fallback' }; }
-}
+function calculateTrustScore(profile: InstagramProfile, visionResults: any[]): any {
+    const avgVision = {
+        face_consistency: visionResults.reduce((s, v) => s + (v.face_consistency_score || 0), 0) / visionResults.length,
+        ai_prob: visionResults.reduce((s, v) => s + (v.ai_generated_probability || 0), 0) / visionResults.length,
+        stock_prob: visionResults.reduce((s, v) => s + (v.stock_photo_probability || 0), 0) / visionResults.length,
+        coherence: visionResults.reduce((s, v) => s + (v.content_consistency_score || 0), 0) / visionResults.length,
+        red_flags: visionResults.flatMap(v => v.red_flags || [])
+    };
 
-function heuristicAnalysis(captions: string[], profileSummary: string): any {
-  const allText = (captions.join(' ') + ' ' + profileSummary).toLowerCase();
-  const themes: string[] = [];
-  const themeMap: Record<string, string[]> = {
-    travel: ['travel', 'wanderlust', 'explore', 'adventure', 'destination', 'vacation'],
-    food: ['food', 'recipe', 'cooking', 'restaurant', 'delicious', 'foodie'],
-    fashion: ['fashion', 'style', 'outfit', 'wear', 'clothing', 'ootd'],
-    fitness: ['fitness', 'workout', 'gym', 'health', 'training', 'exercise'],
-    tech: ['tech', 'coding', 'developer', 'software', 'startup', 'ai'],
-    beauty: ['beauty', 'makeup', 'skincare', 'cosmetics', 'glow'],
-    lifestyle: ['lifestyle', 'life', 'daily', 'routine', 'morning'],
-    photography: ['photography', 'photo', 'camera', 'canon', 'nikon', 'lens'],
-    business: ['business', 'entrepreneur', 'ceo', 'founder', 'startup'],
-    music: ['music', 'song', 'album', 'concert', 'artist'],
-  };
-  for (const [theme, keywords] of Object.entries(themeMap)) {
-    if (keywords.some(k => allText.includes(k))) themes.push(theme);
-  }
-  if (!themes.length) themes.push('general');
+    const scores: Record<string, number> = {};
 
-  const hashtagCount = captions.reduce((s, c) => s + (c.match(/#/g) || []).length, 0);
-  const avgHashtags = hashtagCount / Math.max(captions.length, 1);
-  const hasAds = captions.some(c => /#(ad|sponsored|partner|collab)\b/i.test(c));
-  const isBot = avgHashtags > 20 || allText.includes('follow for follow') || allText.includes('f4f');
+    // 1. Engagement Quality (25 pts)
+    const er = profile.engagement_rate / 100;
+    let engScore = 0;
+    if (er >= 0.005 && er <= 0.08) engScore = 25;
+    else if (er > 0.08) engScore = Math.max(0, 25 - (er - 0.08) * 100);
+    else engScore = (er / 0.005) * 25;
+    
+    const ffRatio = profile.following / Math.max(profile.followers, 1);
+    if (ffRatio > 2.0) engScore *= 0.7;
+    scores.engagement = Math.min(25, engScore);
 
-  let accountType = 'personal';
-  if (isBot) accountType = 'bot_fake';
-  else if (hasAds || profileSummary.includes('business')) accountType = allText.includes('brand') ? 'business' : 'influencer';
+    // 2. Visual Authenticity (25 pts)
+    let visScore = 25;
+    visScore -= avgVision.ai_prob * 20;
+    visScore -= avgVision.stock_prob * 15;
+    visScore += avgVision.face_consistency * 5;
+    scores.visual = Math.max(0, Math.min(25, visScore));
 
-  return {
-    account_type: { primary: accountType, niche: themes[0], confidence: 0.6, sub_niches: themes.slice(1, 4), signals: ['heuristic_analysis'] },
-    content_themes: { top_themes: themes.slice(0, 5), style: 'unknown', aesthetic_consistency: 'unknown', brand_safety_score: isBot ? 20 : 75 },
-    sentiment: { overall: 'neutral', breakdown: { positive: 50, neutral: 40, negative: 10 }, emotional_themes: [], brand_alignment: themes.slice(0, 3) },
-    authenticity: { score: isBot ? 15 : 70, verdict: isBot ? 'likely_fake' : 'likely_authentic', face_consistency: 'unknown', engagement_pattern: 'unknown', follower_quality: 'unknown', comment_analysis: 'unknown', fake_signals: { heuristic_only: true } },
-    recommendations: { good_for_brands: themes.slice(0, 3), estimated_post_value: 'unknown', risk_level: isBot ? 'high' : 'medium' },
-    model_used: 'heuristic',
-  };
+    // 3. Content Coherence (25 pts)
+    let cohScore = avgVision.coherence * 20;
+    if (profile.posts_count > 50) cohScore += 5;
+    scores.coherence = Math.max(0, Math.min(25, cohScore));
+
+    // 4. Profile Legitimacy (25 pts)
+    let legScore = 10;
+    if (profile.is_verified) legScore += 10;
+    if (profile.followers > 1000) legScore += 5;
+    legScore -= avgVision.red_flags.length * 2;
+    scores.legitimacy = Math.max(0, Math.min(25, legScore));
+
+    const total = Object.values(scores).reduce((a, b) => a + b, 0);
+    
+    return {
+        trust_score: Math.round(total),
+        components: scores,
+        verdict: total >= 70 ? 'high_trust' : total >= 45 ? 'medium_trust' : 'low_trust'
+    };
 }
 
 // ─── Full Analysis ──────────────────────────────────
 
-export async function analyzeProfile(username: string): Promise<FullAnalysis> {
-  const profile = await getProfile(username);
-  const posts = await getPosts(username, 12);
-  const imageUrls = posts.filter(p => p.image_url).map(p => p.image_url);
-  const captions = posts.map(p => p.caption);
-  const profileSummary = `@${profile.username} | ${profile.full_name} | ${profile.followers} followers | ${profile.following} following | ${profile.posts_count} posts | Bio: ${profile.bio} | Category: ${profile.category || 'none'} | Verified: ${profile.is_verified} | Business: ${profile.is_business}`;
-  
-  const raw = await analyzeWithVision(imageUrls, captions, profileSummary);
-  
-  return {
-    profile,
-    posts,
-    ai_analysis: {
-      account_type: raw.account_type || { primary: 'unknown', niche: 'unknown', confidence: 0, sub_niches: [], signals: [] },
-      content_themes: raw.content_themes || { top_themes: [], style: 'unknown', aesthetic_consistency: 'unknown', brand_safety_score: 0 },
-      sentiment: raw.sentiment || { overall: 'neutral', breakdown: { positive: 33, neutral: 34, negative: 33 }, emotional_themes: [], brand_alignment: [] },
-      authenticity: raw.authenticity || { score: 0, verdict: 'unknown', face_consistency: 'unknown', engagement_pattern: 'unknown', follower_quality: 'unknown', comment_analysis: 'unknown', fake_signals: {} },
-      images_analyzed: imageUrls.length,
-      model_used: raw.model_used || 'unknown',
-      recommendations: raw.recommendations || { good_for_brands: [], estimated_post_value: 'unknown', risk_level: 'unknown' },
-    },
-  };
+export async function analyzeProfile(username: string): Promise<any> {
+    const profile = await getProfile(username);
+    const posts = await getPosts(username, 12);
+    
+    const imageUrls = posts.filter(p => p.image_url).map(p => p.image_url);
+    const batches = [imageUrls.slice(0, 4), imageUrls.slice(4, 8), imageUrls.slice(8, 12)].filter(b => b.length > 0);
+    
+    const visionResults = await Promise.all(batches.map((batch, idx) => analyzeBatch(batch, idx + 1)));
+    const trust = calculateTrustScore(profile, visionResults);
+
+    return {
+        profile,
+        posts,
+        ai_analysis: {
+            ...trust,
+            vision_details: visionResults,
+            images_analyzed: imageUrls.length,
+            model_used: 'gpt-4o'
+        }
+    };
 }
 
-export async function analyzeImages(username: string): Promise<{ images_analyzed: number; analysis: any }> {
-  const posts = await getPosts(username, 12);
-  const imageUrls = posts.filter(p => p.image_url).map(p => p.image_url);
-  const captions = posts.map(p => p.caption);
-  const raw = await analyzeWithVision(imageUrls, captions, `@${username}`);
-  return { images_analyzed: imageUrls.length, analysis: raw };
+export async function analyzeImages(username: string): Promise<any> {
+    const posts = await getPosts(username, 12);
+    const imageUrls = posts.filter(p => p.image_url).map(p => p.image_url);
+    const batches = [imageUrls.slice(0, 4), imageUrls.slice(4, 8), imageUrls.slice(8, 12)].filter(b => b.length > 0);
+    const results = await Promise.all(batches.map((batch, idx) => analyzeBatch(batch, idx + 1)));
+    return { images_analyzed: imageUrls.length, vision_details: results };
 }
 
-export async function auditProfile(username: string): Promise<{ profile: InstagramProfile; authenticity: AuthenticityAnalysis }> {
-  const full = await analyzeProfile(username);
-  return { profile: full.profile, authenticity: full.ai_analysis.authenticity };
+export async function auditProfile(username: string): Promise<any> {
+    const full = await analyzeProfile(username);
+    return { profile: full.profile, authenticity: full.ai_analysis };
 }
