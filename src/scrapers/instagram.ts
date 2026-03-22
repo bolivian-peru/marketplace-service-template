@@ -54,10 +54,10 @@ export async function analyzeInstagramProfile(username: string): Promise<{ profi
   // Extract profile data
   const profileData = extractProfileData(profileHtml);
 
-  // Extract AI analysis data
-  const aiAnalysisData = extractAIAnalysisData(profileHtml);
+  // Perform AI analysis
+  const aiAnalysis = performAIAnalysis(profileHtml);
 
-  return { profile: profileData, ai_analysis: aiAnalysisData };
+  return { profile: profileData, ai_analysis: aiAnalysis };
 }
 
 function extractProfileData(html: string): InstagramProfile {
@@ -76,28 +76,27 @@ function extractProfileData(html: string): InstagramProfile {
     posting_frequency: '',
   };
 
-  // Example extraction logic (needs to be refined)
-  const scriptPattern = /<script type="text\/javascript">window\._sharedData = (.*);<\/script>/;
-  const match = html.match(scriptPattern);
-  if (match) {
-    const jsonData = JSON.parse(match[1]);
-    const user = jsonData.entry_data.ProfilePage[0].graphql.user;
-    profile.username = user.username;
-    profile.full_name = user.full_name;
-    profile.bio = user.biography;
-    profile.followers = user.edge_followed_by.count;
-    profile.following = user.edge_follow.count;
-    profile.posts_count = user.edge_owner_to_timeline_media.count;
-    profile.is_verified = user.is_verified;
-    profile.is_business = user.is_business_account;
-    // Additional fields like engagement_rate, avg_likes, avg_comments, posting_frequency need to be calculated
-  }
+  // Example extraction logic (to be replaced with actual parsing)
+  profile.username = decodeHtmlEntities(html.match(/"username":"([^"]+)"/)?.[1] || '');
+  profile.full_name = decodeHtmlEntities(html.match(/"full_name":"([^"]+)"/)?.[1] || '');
+  profile.bio = decodeHtmlEntities(html.match(/"biography":"([^"]+)"/)?.[1] || '');
+  profile.followers = parseInt(html.match(/"edge_followed_by":{"count":(\d+)}/)?.[1] || '0', 10);
+  profile.following = parseInt(html.match(/"edge_follow":{"count":(\d+)}/)?.[1] || '0', 10);
+  profile.posts_count = parseInt(html.match(/"edge_owner_to_timeline_media":{"count":(\d+)}/)?.[1] || '0', 10);
+  profile.is_verified = html.includes('"is_verified":true');
+  profile.is_business = html.includes('"is_business_account":true');
+
+  // Placeholder values for engagement metrics
+  profile.engagement_rate = 3.2;
+  profile.avg_likes = 4000;
+  profile.avg_comments = 120;
+  profile.posting_frequency = '4.2 posts/week';
 
   return profile;
 }
 
-function extractAIAnalysisData(html: string): InstagramAIAnalysis {
-  // Placeholder for AI analysis extraction logic
+function performAIAnalysis(html: string): InstagramAIAnalysis {
+  // Placeholder AI analysis
   return {
     account_type: {
       primary: 'influencer',
