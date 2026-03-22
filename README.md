@@ -1,6 +1,6 @@
 # Marketplace Service Template - Enhanced with Mobile SERP Tracker, Google Maps Lead Generator, and Google Reviews & Business Data API
-**Turn AI agent traffic into passive USDC income.**
 
+**Turn AI agent traffic into passive USDC income.**
 
 Fork this repo → edit one file → deploy → start earning.
 
@@ -14,11 +14,10 @@ You're arbitraging infrastructure. Buy proxy bandwidth wholesale, sell API calls
 
 > **Reference implementation included:** This repo ships with a working **Google Maps Lead Generator** (`src/service.ts` + `src/scrapers/`) built by [@aliraza556](https://github.com/aliraza556). Use it as-is or replace with your own service logic.
 
-> **Additional Services:**
+> **New Implementations:**
 > - **Mobile SERP Tracker** (`src/service.ts` + `src/scrapers/`)
 > - **Google Maps Lead Generator** (`src/service.ts` + `src/scrapers/`)
 > - **Google Reviews & Business Data API** (`src/service.ts` + `src/scrapers/`)
-
 
 ## The Economics
 
@@ -110,17 +109,24 @@ Supports **Solana** (~400ms, ~$0.0001 gas) and **Base** (~2s, ~$0.01 gas).
   // ... payment check + verification (already wired) ...
 
   // YOUR LOGIC HERE:
-  if (c.req.url.pathname === '/api/serp-tracker') {
-    const result = await proxyFetch('https://serp-tracker-api.com');
+  if (c.req.url.includes('/api/serp-tracker')) {
+    const result = await proxyFetch('https://api.serp-tracker.com');
     return c.json({ data: await result.text() });
   }
-  if (c.req.url.pathname === '/api/google-maps-lead-generator') {
-    const result = await proxyFetch('https://google-maps-lead-generator-api.com');
+
+  if (c.req.url.includes('/api/google-maps-lead-generator')) {
+    const result = await proxyFetch('https://api.google-maps-lead-generator.com');
     return c.json({ data: await result.text() });
   }
-  if (c.req.url.pathname === '/api/google-reviews') {
-    const result = await proxyFetch('https://google-reviews-api.com');
+
+  if (c.req.url.includes('/api/google-reviews-business-data')) {
+    const result = await proxyFetch('https://api.google-reviews-business-data.com');
     return c.json({ data: await result.text() });
+  }
+
+  const result = await proxyFetch('https://target.com');
+  return c.json({ data: await result.text() });
+});
 | `src/scrapers/maps-scraper.ts` | Google Maps scraping logic (reference impl) | Replace with yours |
 | `src/types/index.ts` | TypeScript interfaces | Replace with yours |
 | `src/utils/helpers.ts` | Extraction helper functions | Replace with yours |
