@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
-  "updatedAt": "2026-02-15",
-  "count": 6,
+  "updatedAt": "2026-02-20",
+  "count": 7,
   "services": [
     {
       "id": "proxies-sx-mobile",
@@ -147,6 +147,34 @@
       "status": "active",
       "featured": false,
       "detailsFile": "job-market-intelligence.json"
+    },
+    {
+      "id": "google-reviews-business-data",
+      "name": "Google Reviews & Business Data API",
+      "description": "Extract Google Business reviews, ratings, photos, and business details. Rating distribution, owner response tracking, and business search. $0.02/fetch.",
+      "endpoint": "https://marketplace-service-template-production.up.railway.app",
+      "docsUrl": "https://agents.proxies.sx/marketplace/skill.md",
+      "pricing": {
+        "model": "per-request",
+        "amount": "0.02",
+        "minimum": "0.005",
+        "currency": "USDC"
+      },
+      "category": "data",
+      "tags": [
+        "google",
+        "reviews",
+        "business-data",
+        "ratings",
+        "google-maps"
+      ],
+      "owner": {
+        "name": "aliraza556",
+        "github": "aliraza556"
+      },
+      "status": "active",
+      "featured": true,
+      "detailsFile": "google-reviews-business-data.json"
     },
     {
       "id": "prediction-market-aggregator",
