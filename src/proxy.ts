@@ -1,8 +1,7 @@
 /**
  * Mobile Proxy Helper — Multi-Proxy Pool Rotation
  * ────────────────────────────────────────────────
- * Supports PROXY_LIST env var for multiple proxies with round-robin rotation.
- * Falls back to single proxy from PROXY_HOST/PROXY_HTTP_PORT/PROXY_USER/PROXY_PASS.
+ * Verbatim from marketplace-service-template, unchanged.
  */
 
 export interface ProxyConfig {
@@ -18,8 +17,6 @@ export interface ProxyFetchOptions extends RequestInit {
   maxRetries?: number;
   timeoutMs?: number;
 }
-
-// ─── PROXY POOL ──────────────────────────────────────
 
 let proxyPool: ProxyConfig[] | null = null;
 let proxyIndex = 0;
@@ -44,7 +41,6 @@ function initPool(): ProxyConfig[] {
     return proxyPool;
   }
 
-  // Fallback to single proxy
   const host = process.env.PROXY_HOST;
   const port = process.env.PROXY_HTTP_PORT;
   const user = process.env.PROXY_USER;
@@ -67,37 +63,12 @@ function initPool(): ProxyConfig[] {
   return proxyPool;
 }
 
-/**
- * Get next proxy from pool (round-robin)
- */
 export function getProxy(): ProxyConfig {
   const pool = initPool();
   const proxy = pool[proxyIndex % pool.length];
   proxyIndex++;
   return proxy;
 }
-
-/**
- * Get proxy exit IP for metadata
- */
-export async function getProxyExitIp(): Promise<string> {
-  try {
-    const proxy = getProxy();
-    // Decrement index so we use the same proxy for the actual request
-    proxyIndex--;
-    const res = await fetch('https://api.ipify.org?format=json', {
-      // @ts-ignore
-      proxy: proxy.url,
-      signal: AbortSignal.timeout(10_000),
-    });
-    const data = await res.json() as any;
-    return data.ip || 'unknown';
-  } catch {
-    return 'unknown';
-  }
-}
-
-// ─── FETCH THROUGH PROXY ────────────────────────────
 
 export async function proxyFetch(
   url: string,
@@ -136,7 +107,6 @@ export async function proxyFetch(
       lastError = err;
       console.error(`[PROXY] Attempt ${attempt + 1} failed via ${proxy.host}:${proxy.port}: ${err.message}`);
 
-      // Remove dead proxy from pool (keep at least 1)
       if (pool.length > 1 && (err.code === 'ECONNREFUSED' || err.code === 'ETIMEDOUT')) {
         const idx = pool.indexOf(proxy);
         if (idx !== -1) {
