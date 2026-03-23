@@ -10,6 +10,11 @@
  *   GET /api/reddit/*  (Reddit Intelligence)
  *   GET /api/instagram/* (Instagram Intelligence + AI Vision)
  *   GET /api/linkedin/* (LinkedIn Enrichment)
+ *   GET /api/x/search  (X/Twitter Search)
+ *   GET /api/x/trending (X/Twitter Trending)
+ *   GET /api/x/user/:handle (X/Twitter User Profile)
+ *   GET /api/x/user/:handle/tweets (User Tweets)
+ *   GET /api/x/thread/:tweet_id (Thread Extraction)
  */
 
 import { Hono } from 'hono';
@@ -29,6 +34,13 @@ import {
 } from './scrapers/linkedin-enrichment';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
+import {
+  searchTwitterX,
+  getTwitterXTrending,
+  getTwitterXUserProfile,
+  getTwitterXUserTweets,
+  getTwitterXThread,
+} from './scrapers/twitter-x';
 
 export const serviceRouter = new Hono();
 
@@ -1471,7 +1483,7 @@ serviceRouter.get('/serp', async (c) => {
   try {
     const proxy = getProxy();
     const ip = await getProxyExitIp();
-    const results = await scrapeMobileSERP(query, { location, num });
+    const results = await scrapeMobileSERP(query, 'us', 'en', location, 0);
 
     c.header('X-Payment-Settled', 'true');
     c.header('X-Payment-TxHash', payment.txHash);
@@ -1484,5 +1496,246 @@ serviceRouter.get('/serp', async (c) => {
     });
   } catch (err: any) {
     return c.json({ error: 'SERP scrape failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── X/TWITTER INTELLIGENCE (Bounty #73) ─────────────────────
+
+const X_SEARCH_PRICE_USDC = parseFloat(process.env.X_SEARCH_PRICE_USDC || '0.01');
+const X_TRENDING_PRICE_USDC = parseFloat(process.env.X_TRENDING_PRICE_USDC || '0.005');
+const X_PROFILE_PRICE_USDC = parseFloat(process.env.X_PROFILE_PRICE_USDC || '0.01');
+const X_THREAD_PRICE_USDC = parseFloat(process.env.X_THREAD_PRICE_USDC || '0.02');
+
+const X_SEARCH_DESCRIPTION = 'X/Twitter Real-Time Search API — Search tweets by keyword/hashtag with engagement metrics and proxy metadata.';
+const X_TRENDING_DESCRIPTION = 'X/Twitter Trending Topics — Get trending topics by country/region.';
+const X_PROFILE_DESCRIPTION = 'X/Twitter User Profile — Extract user profile with followers, bio, verification status.';
+const X_THREAD_DESCRIPTION = 'X/Twitter Thread Extraction — Extract full conversation thread from a tweet ID.';
+
+// GET /api/x/search
+serviceRouter.get('/x/search', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Wallet not configured' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/x/search', X_SEARCH_DESCRIPTION, X_SEARCH_PRICE_USDC, walletAddress, {
+      input: {
+        query: 'string (required) — search keyword or hashtag',
+        sort: 'string (optional) — "latest" or "top", default: latest',
+        limit: 'number (optional) — max results, default: 20, max: 50',
+      },
+      output: {
+        results: 'Array<{id, author:{handle,name,followers,verified}, text, created_at, likes, retweets, replies, views, url, hashtags}>',
+        meta: '{ query, count, proxy: {ip, country, type:"mobile"} }',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, X_SEARCH_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const query = c.req.query('query') || c.req.query('q');
+  if (!query) return c.json({ error: 'Missing required parameter: query' }, 400);
+
+  const sort = (c.req.query('sort') as 'latest' | 'top') || 'latest';
+  const limit = Math.min(Math.max(parseInt(c.req.query('limit') || '20') || 20, 1), 50);
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const results = await searchTwitterX(query, { sort, limit });
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      query,
+      results,
+      meta: { sort, count: results.length, proxy: { ip, country: proxy.country, type: 'mobile' as const } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Twitter search failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// GET /api/x/trending
+serviceRouter.get('/x/trending', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Wallet not configured' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/x/trending', X_TRENDING_DESCRIPTION, X_TRENDING_PRICE_USDC, walletAddress, {
+      input: {
+        country: 'string (optional) — ISO country code, default: US',
+        limit: 'number (optional) — max results, default: 20, max: 50',
+      },
+      output: {
+        trends: 'Array<{name, tweet_count, category, url}>',
+        meta: '{ country, count, proxy: {ip, country, type:"mobile"} }',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, X_TRENDING_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const country = c.req.query('country') || 'US';
+  const limit = Math.min(Math.max(parseInt(c.req.query('limit') || '20') || 20, 1), 50);
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const trends = await getTwitterXTrending(country, limit);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      trends,
+      meta: { country, count: trends.length, proxy: { ip, country: proxy.country, type: 'mobile' as const } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Twitter trending failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// GET /api/x/user/:handle
+serviceRouter.get('/x/user/:handle', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Wallet not configured' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/x/user/:handle', X_PROFILE_DESCRIPTION, X_PROFILE_PRICE_USDC, walletAddress, {
+      input: {
+        handle: 'string (required) — Twitter handle (in URL path)',
+      },
+      output: {
+        profile: '{handle, name, bio, location, website, joined, followers, following, tweets_count, verified, profile_image}',
+        meta: '{ proxy: {ip, country, type:"mobile"} }',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, X_PROFILE_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const handle = c.req.param('handle');
+  if (!handle) return c.json({ error: 'Missing required parameter: handle' }, 400);
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const profile = await getTwitterXUserProfile(handle);
+
+    if (!profile) {
+      return c.json({ error: 'User profile not found' }, 404);
+    }
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      profile,
+      meta: { proxy: { ip, country: proxy.country, type: 'mobile' as const } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Twitter profile fetch failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// GET /api/x/user/:handle/tweets
+serviceRouter.get('/x/user/:handle/tweets', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Wallet not configured' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/x/user/:handle/tweets', 'Get user recent tweets', X_SEARCH_PRICE_USDC, walletAddress, {
+      input: {
+        handle: 'string (required) — Twitter handle (in URL path)',
+        limit: 'number (optional) — max results, default: 20, max: 50',
+      },
+      output: {
+        tweets: 'Array<{id, author, text, created_at, likes, retweets, replies, views, url}>',
+        meta: '{ handle, count, proxy: {ip, country, type:"mobile"} }',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, X_SEARCH_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const handle = c.req.param('handle');
+  if (!handle) return c.json({ error: 'Missing required parameter: handle' }, 400);
+
+  const limit = Math.min(Math.max(parseInt(c.req.query('limit') || '20') || 20, 1), 50);
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const tweets = await getTwitterXUserTweets(handle, limit);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      handle,
+      tweets,
+      meta: { count: tweets.length, proxy: { ip, country: proxy.country, type: 'mobile' as const } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Twitter tweets fetch failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// GET /api/x/thread/:tweet_id
+serviceRouter.get('/x/thread/:tweet_id', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Wallet not configured' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/x/thread/:tweet_id', X_THREAD_DESCRIPTION, X_THREAD_PRICE_USDC, walletAddress, {
+      input: {
+        tweet_id: 'string (required) — Tweet ID (in URL path)',
+      },
+      output: {
+        thread: '{tweet_id, author:{handle,name}, tweets:Array<{id,text,created_at,likes,retweets,replies}>}',
+        meta: '{ proxy: {ip, country, type:"mobile"} }',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, X_THREAD_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const tweetId = c.req.param('tweet_id');
+  if (!tweetId) return c.json({ error: 'Missing required parameter: tweet_id' }, 400);
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const thread = await getTwitterXThread(tweetId);
+
+    if (!thread) {
+      return c.json({ error: 'Thread not found' }, 404);
+    }
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      thread,
+      meta: { proxy: { ip, country: proxy.country, type: 'mobile' as const } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Twitter thread fetch failed', message: err?.message || String(err) }, 502);
   }
 });
