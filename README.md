@@ -59,9 +59,8 @@ curl http://localhost:3000/health
 curl http://localhost:3000/
 # → Service discovery JSON (AI agents read this)
 
-curl "http://localhost:3000/api/run?query=plumbers&location=Austin+TX"
-# → 402 with payment instructions (this is correct!)
-```
+## Edit One File
+**`src/service.ts`** — change three values and the handler:
 
 ## Edit One File
 
