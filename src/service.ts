@@ -1,24 +1,24 @@
 import { Hono } from 'hono';
 import { proxyFetch } from './proxy';
+
 const SERVICE_NAME = 'x-intelligence-search';       // Your service name
 const PRICE_USDC = 0.005;               // Price per request ($)
 const DESCRIPTION = 'Real-Time Search API using X-Intelligence';      // For AI agents
+
 const serviceRouter = new Hono();
- *   GET /api/jobs      (Job Market Intelligence)
- *   GET /api/reviews/* (Google Reviews & Business Data)
- *   GET /api/airbnb/*  (Airbnb Market Intelligence)
+
  *   GET /api/reddit/*  (Reddit Intelligence)
  *   GET /api/instagram/* (Instagram Intelligence + AI Vision)
  *   GET /api/linkedin/* (LinkedIn Enrichment)
  */
-  // ... payment check + verification (already wired) ...
-  // YOUR LOGIC HERE:
+
+    return c.json({ error: 'Payment required', metadata: { price: PRICE_USDC } }, 402);
+  }
+
   const result = await proxyFetch(`https://api.xintelligence.com/search?query=${c.req.query('query')}`);
-  return c.json({ data: await result.text() });
+  return c.json({ data: await result.json() });
 });
-import { fetchReviews, fetchBusinessDetails, fetchReviewSummary, searchBusinesses } from './scrapers/reviews';
-import { scrapeGoogleMaps, extractDetailedBusiness } from './scrapers/maps-scraper';
-import { researchRouter } from './routes/research';
+
 import { trendingRouter } from './routes/trending';
 import { searchAirbnb, getListingDetail, getListingReviews, getMarketStats } from './scrapers/airbnb-scraper';
 import { 
