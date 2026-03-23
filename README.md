@@ -53,14 +53,15 @@ bun run dev
 
 Test it:
 ```bash
-curl http://localhost:3000/health
-# → {"status":"healthy","service":"my-service",...}
-
-curl http://localhost:3000/
-# → Service discovery JSON (AI agents read this)
 
 ## Edit One File
-**`src/service.ts`** — change three values and the handler:
+
+**`src/service.ts`** — change the service name, price, description, and the handler to use the X-Intelligence Real-Time Search API:
+
+
+curl "http://localhost:3000/api/run?query=plumbers&location=Austin+TX"
+# → 402 with payment instructions (this is correct!)
+```
 
 ## Edit One File
 
