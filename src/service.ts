@@ -1,23 +1,25 @@
-/**
- * Service Router — Marketplace API
- *
- * Exposes:
- *   GET /api/run       (Google Maps Lead Generator)
- *   GET /api/details   (Google Maps Place details)
- *   GET /api/jobs      (Job Market Intelligence)
- *   GET /api/reviews/* (Google Reviews & Business Data)
- *   GET /api/airbnb/*  (Airbnb Market Intelligence)
- *   GET /api/reddit/*  (Reddit Intelligence)
+import { Hono } from 'hono';
+import { cors } from 'hono/cors';
+import { prettyJSON } from 'hono/pretty-json';
+import { proxyFetch } from './utils/proxy';
+import { analyzeInstagramProfile } from './scrapers/instagram';
+const app = new Hono();
+const SERVICE_NAME = 'my-scraper';       // Your service name
+const PRICE_USDC = 0.005;               // Price per request ($)
+const DESCRIPTION = 'Instagram Intelligence + AI Vision Analysis API';      // For AI agents
+app.use('*', cors());
+app.use('*', prettyJSON());
  *   GET /api/instagram/* (Instagram Intelligence + AI Vision)
  *   GET /api/linkedin/* (LinkedIn Enrichment)
  */
 
-import { Hono } from 'hono';
-import { proxyFetch, getProxy } from './proxy';
-import { extractPayment, verifyPayment, build402Response } from './payment';
-import { scrapeIndeed, scrapeLinkedIn, type JobListing } from './scrapers/job-scraper';
-import { fetchReviews, fetchBusinessDetails, fetchReviewSummary, searchBusinesses } from './scrapers/reviews';
-import { scrapeGoogleMaps, extractDetailedBusiness } from './scrapers/maps-scraper';
+  // ... payment check + verification (already wired) ...
+  // YOUR LOGIC HERE:
+  const username = c.req.query('username') || 'default_username';
+  const analysis = await analyzeInstagramProfile(username);
+  return c.json(analysis);
+});
+export default app;
 import { researchRouter } from './routes/research';
 import { trendingRouter } from './routes/trending';
 import { searchAirbnb, getListingDetail, getListingReviews, getMarketStats } from './scrapers/airbnb-scraper';
