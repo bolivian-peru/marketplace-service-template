@@ -7,7 +7,8 @@
     "start": "bun run src/index.ts",
     "test": "bun test",
     "typecheck": "tsc --noEmit",
-    "proof:indeed": "bun run scripts/proof-indeed.ts"
+    "proof:indeed": "bun run scripts/proof-indeed.ts",
+    "proof:twitter": "bun run scripts/proof-twitter.ts"
   },
   "dependencies": {
     "hono": "^4.6.0"
