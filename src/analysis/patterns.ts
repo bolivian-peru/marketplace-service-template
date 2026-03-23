@@ -5,6 +5,8 @@
 
 import type { RedditPost } from '../scrapers/reddit';
 import type { WebResult, TrendingTopic } from '../scrapers/web';
+import type { YouTubeResult } from '../scrapers/youtube';
+import type { TwitterResult } from '../scrapers/twitter';
 import type { SignalStrength, TrendPattern, PatternEvidence } from '../types/index';
 
 const STOPWORDS = new Set([
@@ -230,10 +232,80 @@ function classifyStrength(
   return 'emerging';
 }
 
+function extractYouTubeKeywords(
+  videos: YouTubeResult[],
+): Map<string, { weight: number; evidence: PatternEvidence[] }> {
+  const keywords = new Map<string, { weight: number; evidence: PatternEvidence[] }>();
+
+  for (const video of videos.slice(0, MAX_ITEMS_PER_PLATFORM)) {
+    const text = `${video.title} ${video.description}`;
+    const tokens = tokenizeText(text);
+    const bigrams = extractBigrams(tokens);
+    const allTerms = Array.from(new Set([...tokens, ...bigrams])).slice(0, MAX_TERMS_PER_TEXT);
+
+    // Prefer view-count-based weight; fall back to SearXNG position score
+    const viewWeight = video.viewCount != null && video.viewCount > 0
+      ? Math.log1p(video.viewCount) * 10
+      : 0;
+    const engagement = Math.max(video.engagementScore, viewWeight);
+
+    const evidence: PatternEvidence = {
+      platform: 'youtube',
+      title: video.title,
+      url: video.url,
+      engagement: Math.round(engagement),
+    };
+
+    for (const rawTerm of allTerms) {
+      const term = normalizeKeyword(rawTerm);
+      if (!term) continue;
+      addKeyword(keywords, term, engagement, evidence);
+    }
+  }
+
+  return keywords;
+}
+
+function extractTwitterKeywords(
+  tweets: TwitterResult[],
+): Map<string, { weight: number; evidence: PatternEvidence[] }> {
+  const keywords = new Map<string, { weight: number; evidence: PatternEvidence[] }>();
+
+  for (const tweet of tweets.slice(0, MAX_ITEMS_PER_PLATFORM)) {
+    if (!tweet.text) continue;
+    const tokens = tokenizeText(tweet.text);
+    const bigrams = extractBigrams(tokens);
+    const allTerms = Array.from(new Set([...tokens, ...bigrams])).slice(0, MAX_TERMS_PER_TEXT);
+
+    // Retweets carry stronger viral signal than likes
+    const socialBonus =
+      Math.log1p(Math.max(0, tweet.likes ?? 0)) * 3 +
+      Math.log1p(Math.max(0, tweet.retweets ?? 0)) * 5;
+    const engagement = tweet.engagementScore + socialBonus;
+
+    const evidence: PatternEvidence = {
+      platform: 'twitter',
+      title: tweet.text.slice(0, 120),
+      url: tweet.url,
+      engagement: Math.round(engagement),
+    };
+
+    for (const rawTerm of allTerms) {
+      const term = normalizeKeyword(rawTerm);
+      if (!term) continue;
+      addKeyword(keywords, term, engagement, evidence);
+    }
+  }
+
+  return keywords;
+}
+
 export interface PlatformData {
   reddit?: RedditPost[];
   web?: WebResult[];
   webTrending?: TrendingTopic[];
+  youtube?: YouTubeResult[];
+  twitter?: TwitterResult[];
 }
 
 export function detectPatterns(data: PlatformData): TrendPattern[] {
@@ -247,6 +319,12 @@ export function detectPatterns(data: PlatformData): TrendPattern[] {
   }
   if (data.webTrending && data.webTrending.length > 0) {
     platformMaps.push({ platform: 'web_trending', map: extractTrendingKeywords(data.webTrending) });
+  }
+  if (data.youtube && data.youtube.length > 0) {
+    platformMaps.push({ platform: 'youtube', map: extractYouTubeKeywords(data.youtube) });
+  }
+  if (data.twitter && data.twitter.length > 0) {
+    platformMaps.push({ platform: 'twitter', map: extractTwitterKeywords(data.twitter) });
   }
 
   if (platformMaps.length === 0) return [];
@@ -296,9 +374,9 @@ export function detectPatterns(data: PlatformData): TrendPattern[] {
     const strength = classifyStrength(platformCount, signal.totalEngagement);
     const platformList = Array.from(signal.platforms).map((p) =>
       p === 'web_trending' ? 'web' : p,
-    ) as ('reddit' | 'web')[];
+    ) as ('reddit' | 'web' | 'youtube' | 'twitter')[];
 
-    const uniquePlatforms = Array.from(new Set(platformList)) as ('reddit' | 'web')[];
+    const uniquePlatforms = Array.from(new Set(platformList)) as ('reddit' | 'web' | 'youtube' | 'twitter')[];
 
     scored.push({
       pattern: signal.keyword,
