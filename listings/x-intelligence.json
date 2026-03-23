@@ -1,0 +1,121 @@
+{
+  "id": "x-twitter-intelligence",
+  "name": "X/Twitter Real-Time Intelligence API",
+  "description": "Search tweets, get trending topics, fetch user profiles, user timelines, and full conversation threads from X/Twitter via real 4G/5G mobile proxies. Structured JSON with full engagement metrics (likes, retweets, replies, views).",
+  "longDescription": "Complete X/Twitter data access through authenticated mobile carrier IPs — no API key needed. Five endpoints: real-time tweet search with X search operators (from:, filter:, #hashtag), trending topics by country with tweet volume, user profile enrichment (followers, verified status, bio, join date), user timeline scraping, and full conversation thread extraction with all replies. Uses X's guest token authentication + GraphQL API internally, with syndication and Nitter fallbacks for resilience. Mobile proxies are essential because X aggressively blocks datacenter IPs, serves CAPTCHAs to cloud providers, and killed free API access in 2023. Returns structured JSON matching the bounty spec at $0.005-0.02/query via x402 micropayments.",
+  "endpoint": "https://marketplace-api-9kvb.onrender.com/api/x",
+  "docsUrl": "https://github.com/bolivian-peru/marketplace-service-template",
+  "pricing": {
+    "model": "per-request",
+    "endpoints": [
+      { "path": "/api/x/search", "price": "$0.01", "unit": "per request" },
+      { "path": "/api/x/trending", "price": "$0.005", "unit": "per request" },
+      { "path": "/api/x/user/:handle", "price": "$0.01", "unit": "per request" },
+      { "path": "/api/x/user/:handle/tweets", "price": "$0.01", "unit": "per request" },
+      { "path": "/api/x/thread/:tweet_id", "price": "$0.02", "unit": "per request" }
+    ],
+    "comparison": "X/Twitter API v2 Basic: $100/month for 10K tweets/month ($0.01/tweet but requires signup + approval). Apify Twitter Scraper: $0.25-$1.00 per 1000 tweets. Bright Data: $0.001/request but no threading or real-time search. Our approach: zero signup, instant access, $0.005-$0.02/query with mobile proxy bypass of CAPTCHAs and IP blocks.",
+    "currency": "USDC",
+    "networks": [
+      {
+        "network": "solana",
+        "chainId": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "recipient": "6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv",
+        "asset": "USDC",
+        "assetAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+      },
+      {
+        "network": "base",
+        "chainId": "eip155:8453",
+        "recipient": "0xF8cD900794245fc36CBE65be9afc23CDF5103042",
+        "asset": "USDC",
+        "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+      }
+    ]
+  },
+  "whyMobileProxy": "X/Twitter is among the most aggressive platforms at blocking non-human traffic. Since Elon Musk's API changes in 2023, X serves CAPTCHAs and login walls to datacenter IPs, rate-limits cloud provider ranges to near-zero, and requires expensive API access ($100/month minimum for Basic tier, $42K/month for Pro). Mobile carrier IPs (4G/5G) from Proxies.sx appear as real phone users browsing X natively — bypassing IP reputation systems, CAPTCHA challenges, and rate limits entirely. The guest token authentication used here only works reliably from mobile IPs; datacenter IPs get immediately flagged and token-revoked. Without mobile proxies, scraping X at scale is essentially impossible.",
+  "outputSchema": {
+    "search": {
+      "query": "string — Original search query",
+      "sort": "string — Sort mode used (latest, top, people, media)",
+      "results": [{
+        "id": "string — Tweet ID",
+        "author": {
+          "handle": "string — @username (without @)",
+          "name": "string — Display name",
+          "followers": "number | null — Follower count",
+          "verified": "boolean — Blue check / verified status",
+          "avatar": "string | null — Profile image URL"
+        },
+        "text": "string — Full tweet text",
+        "created_at": "string | null — ISO 8601 timestamp",
+        "likes": "number — Like count",
+        "retweets": "number — Retweet count",
+        "replies": "number — Reply count",
+        "views": "number | null — View/impression count",
+        "url": "string — Direct link to tweet",
+        "media": "[{ type: 'photo'|'video'|'gif', url, preview }]",
+        "hashtags": "string[] — Hashtags used",
+        "language": "string | null — Language code",
+        "conversation_id": "string | null — Thread root ID",
+        "in_reply_to": "string | null — Parent tweet ID"
+      }],
+      "meta": {
+        "total_results": "number",
+        "cursor": "string | null — Pagination cursor",
+        "proxy": {
+          "ip": "string — Proves mobile proxy was used",
+          "country": "string — Proxy exit country",
+          "carrier": "string — Mobile carrier identifier"
+        },
+        "scraped_at": "string — ISO timestamp",
+        "response_time_ms": "number — Request duration"
+      }
+    },
+    "trending": {
+      "country": "string — Country code",
+      "topics": [{
+        "name": "string — Trend name/hashtag",
+        "tweet_volume": "number | null — Tweet volume",
+        "url": "string — Search URL for this trend",
+        "category": "string | null — Topic category",
+        "rank": "number — Position in trending list"
+      }]
+    },
+    "profile": {
+      "handle": "string", "name": "string", "bio": "string | null",
+      "followers": "number", "following": "number", "tweet_count": "number",
+      "verified": "boolean", "avatar": "string | null", "banner": "string | null",
+      "joined": "string | null", "location": "string | null", "website": "string | null"
+    },
+    "thread": {
+      "root_tweet": "TweetResult — The original tweet",
+      "replies": "[TweetResult] — All conversation replies",
+      "meta": { "total_replies": "number" }
+    }
+  },
+  "limitations": [
+    "Max 50 results per search request",
+    "Guest token may be rate-limited during high traffic periods",
+    "Some tweets from suspended/protected accounts may not be accessible",
+    "View counts may not be available for older tweets",
+    "Rate limited to 20 proxy requests/minute per client IP"
+  ],
+  "category": "scraper",
+  "tags": [
+    "twitter", "x", "social-media", "scraper", "intelligence",
+    "real-time", "search", "trending", "profile", "thread",
+    "engagement-metrics", "sentiment-analysis", "market-research"
+  ],
+  "owner": {
+    "name": "bolivian-peru",
+    "github": "bolivian-peru"
+  },
+  "status": "pending",
+  "featured": false,
+  "addedAt": "2026-03-23",
+  "x402": {
+    "discoveryUrl": "https://marketplace-api-9kvb.onrender.com/api/x/search",
+    "wellKnown": "https://marketplace-api-9kvb.onrender.com/.well-known/x402.json"
+  }
+}

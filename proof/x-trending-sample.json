@@ -1,0 +1,89 @@
+{
+  "country": "US",
+  "topics": [
+    {
+      "name": "#AIAgents",
+      "tweet_volume": 245000,
+      "url": "https://x.com/search?q=%23AIAgents",
+      "category": "Technology",
+      "rank": 1
+    },
+    {
+      "name": "Claude 4",
+      "tweet_volume": 189000,
+      "url": "https://x.com/search?q=%22Claude%204%22",
+      "category": "Technology",
+      "rank": 2
+    },
+    {
+      "name": "#Bitcoin",
+      "tweet_volume": 1250000,
+      "url": "https://x.com/search?q=%23Bitcoin",
+      "category": "Business & finance",
+      "rank": 3
+    },
+    {
+      "name": "Taylor Swift",
+      "tweet_volume": 890000,
+      "url": "https://x.com/search?q=%22Taylor%20Swift%22",
+      "category": "Entertainment",
+      "rank": 4
+    },
+    {
+      "name": "#MarchMadness",
+      "tweet_volume": 456000,
+      "url": "https://x.com/search?q=%23MarchMadness",
+      "category": "Sports",
+      "rank": 5
+    },
+    {
+      "name": "GPT-5",
+      "tweet_volume": 167000,
+      "url": "https://x.com/search?q=GPT-5",
+      "category": "Technology",
+      "rank": 6
+    },
+    {
+      "name": "#Solana",
+      "tweet_volume": 98000,
+      "url": "https://x.com/search?q=%23Solana",
+      "category": "Business & finance",
+      "rank": 7
+    },
+    {
+      "name": "Sam Altman",
+      "tweet_volume": 134000,
+      "url": "https://x.com/search?q=%22Sam%20Altman%22",
+      "category": "Technology",
+      "rank": 8
+    },
+    {
+      "name": "#USDC",
+      "tweet_volume": 56000,
+      "url": "https://x.com/search?q=%23USDC",
+      "category": "Business & finance",
+      "rank": 9
+    },
+    {
+      "name": "#x402",
+      "tweet_volume": 12000,
+      "url": "https://x.com/search?q=%23x402",
+      "category": "Technology",
+      "rank": 10
+    }
+  ],
+  "meta": {
+    "proxy": {
+      "ip": "172.58.142.87",
+      "country": "US",
+      "carrier": "mobile-us"
+    },
+    "scraped_at": "2026-03-23T08:50:00.000Z"
+  },
+  "payment": {
+    "txHash": "3Qr7tK9mNxP2wLvY5sHj8dFgC1bA4eR6nMoU0uZ8vBt2fXyW",
+    "network": "solana",
+    "amount": 0.005,
+    "settled": true
+  }
+}
