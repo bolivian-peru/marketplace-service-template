@@ -1,0 +1,29 @@
+{
+  "handle": "elonmusk",
+  "name": "Elon Musk",
+  "bio": "Mars & Cars, Chips & Dips",
+  "followers": 205000000,
+  "following": 850,
+  "tweet_count": 48500,
+  "verified": true,
+  "avatar": "https://pbs.twimg.com/profile_images/1683325380441128960/yRsRRjGO_400x400.jpg",
+  "banner": "https://pbs.twimg.com/profile_banners/44196397/1690621312/1500x500",
+  "joined": "2009-06-02T20:12:29.000Z",
+  "location": "Various",
+  "website": "https://x.com",
+  "pinned_tweet": null,
+  "meta": {
+    "proxy": {
+      "ip": "172.58.142.87",
+      "country": "US",
+      "carrier": "mobile-us"
+    },
+    "scraped_at": "2026-03-23T08:55:00.000Z"
+  },
+  "payment": {
+    "txHash": "7Wm2xR5kPvN8tLqY1sHj3dFgC9bA6eK4nMoU0uZ8vBt2fXyW",
+    "network": "solana",
+    "amount": 0.01,
+    "settled": true
+  }
+}

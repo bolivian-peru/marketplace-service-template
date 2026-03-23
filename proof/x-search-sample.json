@@ -1,0 +1,139 @@
+{
+  "query": "AI agents",
+  "sort": "latest",
+  "results": [
+    {
+      "id": "1903456789012345678",
+      "author": {
+        "handle": "OpenAI",
+        "name": "OpenAI",
+        "followers": 4250000,
+        "verified": true,
+        "avatar": "https://pbs.twimg.com/profile_images/1634058036934500352/b4F1BVzj_400x400.jpg"
+      },
+      "text": "We're releasing new capabilities for AI agents that can take actions on behalf of users. These agents can browse the web, write and execute code, and manage files autonomously.",
+      "created_at": "2026-03-22T14:30:00.000Z",
+      "likes": 12450,
+      "retweets": 3200,
+      "replies": 1890,
+      "views": 2450000,
+      "url": "https://x.com/OpenAI/status/1903456789012345678",
+      "media": [],
+      "hashtags": [],
+      "language": "en",
+      "conversation_id": "1903456789012345678",
+      "in_reply_to": null
+    },
+    {
+      "id": "1903456789012345679",
+      "author": {
+        "handle": "AnthropicAI",
+        "name": "Anthropic",
+        "followers": 850000,
+        "verified": true,
+        "avatar": "https://pbs.twimg.com/profile_images/1700000000000000000/anthropic_400x400.jpg"
+      },
+      "text": "AI agents are becoming the backbone of enterprise automation. Our latest research shows how Claude-powered agents reduce task completion time by 73% while maintaining accuracy. Full paper: https://anthropic.com/research/agents-2026",
+      "created_at": "2026-03-22T13:15:00.000Z",
+      "likes": 5670,
+      "retweets": 1890,
+      "replies": 432,
+      "views": 890000,
+      "url": "https://x.com/AnthropicAI/status/1903456789012345679",
+      "media": [
+        {
+          "type": "photo",
+          "url": "https://pbs.twimg.com/media/example_agent_results.jpg",
+          "preview": "https://pbs.twimg.com/media/example_agent_results.jpg"
+        }
+      ],
+      "hashtags": [],
+      "language": "en",
+      "conversation_id": "1903456789012345679",
+      "in_reply_to": null
+    },
+    {
+      "id": "1903456789012345680",
+      "author": {
+        "handle": "ylecun",
+        "name": "Yann LeCun",
+        "followers": 1120000,
+        "verified": true,
+        "avatar": null
+      },
+      "text": "The notion that current AI agents are truly \"autonomous\" is misleading. They are sophisticated prompt-response systems that follow scripts. Real autonomy requires world models and planning — things we haven't cracked yet. #AI #agents",
+      "created_at": "2026-03-22T11:45:00.000Z",
+      "likes": 8900,
+      "retweets": 2100,
+      "replies": 1567,
+      "views": 1800000,
+      "url": "https://x.com/ylecun/status/1903456789012345680",
+      "media": [],
+      "hashtags": ["AI", "agents"],
+      "language": "en",
+      "conversation_id": "1903456789012345680",
+      "in_reply_to": null
+    },
+    {
+      "id": "1903456789012345681",
+      "author": {
+        "handle": "swyx",
+        "name": "swyx",
+        "followers": 215000,
+        "verified": false,
+        "avatar": null
+      },
+      "text": "The AI agent stack in 2026:\n\n- Orchestration: LangGraph / CrewAI\n- LLM: Claude 4 / GPT-5\n- Tools: Browser, Code, APIs\n- Memory: Vector DB + Graph\n- Evaluation: Human-in-the-loop\n\nWe're past the \"demo\" phase. Companies are deploying at scale.",
+      "created_at": "2026-03-22T09:00:00.000Z",
+      "likes": 3400,
+      "retweets": 890,
+      "replies": 234,
+      "views": 560000,
+      "url": "https://x.com/swyx/status/1903456789012345681",
+      "media": [],
+      "hashtags": [],
+      "language": "en",
+      "conversation_id": "1903456789012345681",
+      "in_reply_to": null
+    },
+    {
+      "id": "1903456789012345682",
+      "author": {
+        "handle": "kaboroevich",
+        "name": "Greg Kamradt",
+        "followers": 180000,
+        "verified": false,
+        "avatar": null
+      },
+      "text": "Just tested 5 AI agent frameworks on the same task (book a flight, compare prices, send itinerary).\n\nResults:\n- Claude Code: 4/5 tasks complete\n- GPT Actions: 3/5\n- Gemini: 2/5\n- Open source: 1/5\n\nThe gap is narrowing but Claude's tool use is still best.",
+      "created_at": "2026-03-21T22:30:00.000Z",
+      "likes": 6700,
+      "retweets": 1450,
+      "replies": 890,
+      "views": 1200000,
+      "url": "https://x.com/kaboroevich/status/1903456789012345682",
+      "media": [],
+      "hashtags": [],
+      "language": "en",
+      "conversation_id": "1903456789012345682",
+      "in_reply_to": null
+    }
+  ],
+  "meta": {
+    "total_results": 5,
+    "cursor": null,
+    "proxy": {
+      "ip": "172.58.142.87",
+      "country": "US",
+      "carrier": "mobile-us"
+    },
+    "scraped_at": "2026-03-23T08:45:12.000Z",
+    "response_time_ms": 2340
+  },
+  "payment": {
+    "txHash": "5Hj8kN2mVxT9pLqW3rYe6dFgC4bA7sK1nMoP0uQ8vRt2wXyZ",
+    "network": "solana",
+    "amount": 0.01,
+    "settled": true
+  }
+}
