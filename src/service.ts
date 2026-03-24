@@ -29,6 +29,13 @@ import {
 } from './scrapers/linkedin-enrichment';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
+import {
+  getTrendingVideos,
+  getTrendingHashtags,
+  getTrendingSounds,
+  getHashtagVideos,
+  getSoundVideos,
+} from './scrapers/tiktok-scraper';
 
 export const serviceRouter = new Hono();
 
@@ -1471,7 +1478,7 @@ serviceRouter.get('/serp', async (c) => {
   try {
     const proxy = getProxy();
     const ip = await getProxyExitIp();
-    const results = await scrapeMobileSERP(query, { location, num });
+    const results = await scrapeMobileSERP(query, location || 'us', 'en', location, num);
 
     c.header('X-Payment-Settled', 'true');
     c.header('X-Payment-TxHash', payment.txHash);
@@ -1484,5 +1491,274 @@ serviceRouter.get('/serp', async (c) => {
     });
   } catch (err: any) {
     return c.json({ error: 'SERP scrape failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ═══════════════════════════════════════════════════════
+// ─── TIKTOK TREND INTELLIGENCE API (Bounty #51) ─────
+// ═══════════════════════════════════════════════════════
+
+const TIKTOK_TRENDING_PRICE = 0.02;     // $0.02 per trending feed
+const TIKTOK_HASHTAGS_PRICE = 0.01;     // $0.01 per hashtags list
+const TIKTOK_SOUNDS_PRICE = 0.01;       // $0.01 per sounds list
+const TIKTOK_TAG_VIDEOS_PRICE = 0.02;   // $0.02 per hashtag videos
+const TIKTOK_SOUND_VIDEOS_PRICE = 0.02; // $0.02 per sound videos
+
+// ─── GET /api/tiktok/trending ───────────────────────
+
+serviceRouter.get('/tiktok/trending', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS || '0x742d35Cc6634C0532925a3b844Bc454e4438f44e';
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/tiktok/trending', 'Get trending TikTok videos from For You page via mobile proxy', TIKTOK_TRENDING_PRICE, walletAddress, {
+      input: {
+        count: 'number (optional, default: 20, max: 50)',
+        cursor: 'string (optional) — pagination token for next page',
+        region: 'string (optional, default: "US") — region code (US, GB, JP, etc.)',
+      },
+      output: {
+        videos: 'TikTokVideo[] — id, desc, author, stats (playCount, likeCount, commentCount, shareCount, collectCount), music, hashtags, createTime, videoUrl, coverUrl, duration, isAd',
+        cursor: 'string | null — next page token',
+        hasMore: 'boolean',
+        fetchedAt: 'string',
+        region: 'string',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, TIKTOK_TRENDING_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const clientIp = c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  if (!checkProxyRateLimit(clientIp)) {
+    c.header('Retry-After', '60');
+    return c.json({ error: 'Proxy rate limit exceeded. Max 20 requests/min to protect proxy quota.', retryAfter: 60 }, 429);
+  }
+
+  const count = Math.min(Math.max(parseInt(c.req.query('count') || '20') || 20, 1), 50);
+  const cursor = c.req.query('cursor') || undefined;
+  const region = c.req.query('region') || 'US';
+
+  try {
+    const proxy = getProxy();
+    const result = await getTrendingVideos(count, cursor, region);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      meta: { proxy: { country: proxy.country, type: 'mobile' } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'TikTok trending fetch failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/tiktok/hashtags ───────────────────────
+
+serviceRouter.get('/tiktok/hashtags', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS || '0x742d35Cc6634C0532925a3b844Bc454e4438f44e';
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/tiktok/hashtags', 'Get trending TikTok hashtags via mobile proxy', TIKTOK_HASHTAGS_PRICE, walletAddress, {
+      input: {
+        count: 'number (optional, default: 20, max: 50)',
+        cursor: 'number (optional) — pagination offset',
+      },
+      output: {
+        hashtags: 'TikTokHashtag[] — id, name, title, cover, videoCount, viewCount, trending',
+        cursor: 'number — next page offset',
+        hasMore: 'boolean',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, TIKTOK_HASHTAGS_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const clientIp = c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  if (!checkProxyRateLimit(clientIp)) {
+    c.header('Retry-After', '60');
+    return c.json({ error: 'Proxy rate limit exceeded. Max 20 requests/min to protect proxy quota.', retryAfter: 60 }, 429);
+  }
+
+  const count = Math.min(Math.max(parseInt(c.req.query('count') || '20') || 20, 1), 50);
+  const cursor = parseInt(c.req.query('cursor') || '0') || 0;
+
+  try {
+    const proxy = getProxy();
+    const result = await getTrendingHashtags(count, cursor);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      meta: { proxy: { country: proxy.country, type: 'mobile' } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'TikTok hashtags fetch failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/tiktok/sounds ─────────────────────────
+
+serviceRouter.get('/tiktok/sounds', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS || '0x742d35Cc6634C0532925a3b844Bc454e4438f44e';
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/tiktok/sounds', 'Get trending TikTok sounds/music via mobile proxy', TIKTOK_SOUNDS_PRICE, walletAddress, {
+      input: {
+        count: 'number (optional, default: 20, max: 50)',
+        cursor: 'number (optional) — pagination offset',
+      },
+      output: {
+        sounds: 'TikTokSound[] — id, title, authorName, coverThumb, playUrl, duration, videoCount, isOriginal',
+        cursor: 'number — next page offset',
+        hasMore: 'boolean',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, TIKTOK_SOUNDS_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const clientIp = c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  if (!checkProxyRateLimit(clientIp)) {
+    c.header('Retry-After', '60');
+    return c.json({ error: 'Proxy rate limit exceeded. Max 20 requests/min to protect proxy quota.', retryAfter: 60 }, 429);
+  }
+
+  const count = Math.min(Math.max(parseInt(c.req.query('count') || '20') || 20, 1), 50);
+  const cursor = parseInt(c.req.query('cursor') || '0') || 0;
+
+  try {
+    const proxy = getProxy();
+    const result = await getTrendingSounds(count, cursor);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      meta: { proxy: { country: proxy.country, type: 'mobile' } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'TikTok sounds fetch failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/tiktok/tag/:hashtag ──────────────────
+
+serviceRouter.get('/tiktok/tag/:hashtag', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS || '0x742d35Cc6634C0532925a3b844Bc454e4438f44e';
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/tiktok/tag/:hashtag', 'Get TikTok videos for a specific hashtag via mobile proxy', TIKTOK_TAG_VIDEOS_PRICE, walletAddress, {
+      input: {
+        hashtag: 'string (required, in path) — hashtag name without #',
+        count: 'number (optional, default: 20, max: 50)',
+        cursor: 'string (optional) — pagination token',
+      },
+      output: {
+        videos: 'TikTokVideo[] — videos using this hashtag',
+        cursor: 'string | null — next page token',
+        hasMore: 'boolean',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, TIKTOK_TAG_VIDEOS_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const clientIp = c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  if (!checkProxyRateLimit(clientIp)) {
+    c.header('Retry-After', '60');
+    return c.json({ error: 'Proxy rate limit exceeded. Max 20 requests/min to protect proxy quota.', retryAfter: 60 }, 429);
+  }
+
+  const hashtag = c.req.param('hashtag');
+  if (!hashtag) return c.json({ error: 'Missing hashtag in URL path' }, 400);
+
+  const count = Math.min(Math.max(parseInt(c.req.query('count') || '20') || 20, 1), 50);
+  const cursor = c.req.query('cursor') || undefined;
+
+  try {
+    const proxy = getProxy();
+    const result = await getHashtagVideos(hashtag, count, cursor);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      hashtag,
+      meta: { proxy: { country: proxy.country, type: 'mobile' } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'TikTok hashtag videos fetch failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/tiktok/music/:soundId ────────────────
+
+serviceRouter.get('/tiktok/music/:soundId', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS || '0x742d35Cc6634C0532925a3b844Bc454e4438f44e';
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/tiktok/music/:soundId', 'Get TikTok videos using a specific sound/music via mobile proxy', TIKTOK_SOUND_VIDEOS_PRICE, walletAddress, {
+      input: {
+        soundId: 'string (required, in path) — TikTok sound/music ID',
+        count: 'number (optional, default: 20, max: 50)',
+        cursor: 'string (optional) — pagination token',
+      },
+      output: {
+        videos: 'TikTokVideo[] — videos using this sound',
+        cursor: 'string | null — next page token',
+        hasMore: 'boolean',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, TIKTOK_SOUND_VIDEOS_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const clientIp = c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  if (!checkProxyRateLimit(clientIp)) {
+    c.header('Retry-After', '60');
+    return c.json({ error: 'Proxy rate limit exceeded. Max 20 requests/min to protect proxy quota.', retryAfter: 60 }, 429);
+  }
+
+  const soundId = c.req.param('soundId');
+  if (!soundId) return c.json({ error: 'Missing soundId in URL path' }, 400);
+
+  const count = Math.min(Math.max(parseInt(c.req.query('count') || '20') || 20, 1), 50);
+  const cursor = c.req.query('cursor') || undefined;
+
+  try {
+    const proxy = getProxy();
+    const result = await getSoundVideos(soundId, count, cursor);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      soundId,
+      meta: { proxy: { country: proxy.country, type: 'mobile' } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'TikTok sound videos fetch failed', message: err?.message || String(err) }, 502);
   }
 });
