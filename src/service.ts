@@ -29,6 +29,7 @@ import {
 } from './scrapers/linkedin-enrichment';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
+import { fetchUberEatsMenu, fetchDoorDashMenu, fetchMenu, comparePrices, type RestaurantMenu, type MenuItem } from './scrapers/food-delivery-scraper';
 
 export const serviceRouter = new Hono();
 
@@ -1484,5 +1485,113 @@ serviceRouter.get('/serp', async (c) => {
     });
   } catch (err: any) {
     return c.json({ error: 'SERP scrape failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ═══════════════════════════════════════════════════════
+// ─── FOOD DELIVERY PRICE INTELLIGENCE API (Bounty #76) ─
+// ═══════════════════════════════════════════════════════
+
+const FOOD_PRICE_USDC = 0.005;
+
+// ─── GET /api/food/menu ─────────────────────────────
+
+serviceRouter.get('/food/menu', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/food/menu', 'Food Delivery Menu Scraper — Uber Eats & DoorDash. Returns item name, price, calories, availability, category.', FOOD_PRICE_USDC, walletAddress, {
+      input: {
+        url: 'string (required) — Store URL (ubereats.com/store/... or doordash.com/store/...)',
+        latitude: 'number (optional) — User latitude for location-based pricing',
+        longitude: 'number (optional) — User longitude for location-based pricing',
+      },
+      output: {
+        menu: 'RestaurantMenu — storeId, storeName, platform, items[] (name, price, calories, category, availability)',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, FOOD_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const url = c.req.query('url');
+  if (!url) return c.json({ error: 'Missing required parameter: url', example: '/api/food/menu?url=https://www.ubereats.com/store/some-restaurant/...' }, 400);
+
+  const lat = parseFloat(c.req.query('latitude') || '40.7128');
+  const lng = parseFloat(c.req.query('longitude') || '-74.0060');
+
+  try {
+    const menu = await fetchMenu(url, { latitude: lat, longitude: lng });
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      menu,
+      meta: { itemCount: menu.items.length, platform: menu.platform },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Menu fetch failed', message: err?.message || String(err), hint: 'Verify the store URL is valid and the store is currently open.' }, 502);
+  }
+});
+
+// ─── GET /api/food/compare ──────────────────────────
+
+serviceRouter.get('/food/compare', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/food/compare', 'Cross-platform food price comparison. Compare same items across Uber Eats & DoorDash. Shows price differences.', FOOD_PRICE_USDC * 3, walletAddress, {
+      input: {
+        urls: 'string (required) — Comma-separated store URLs from different platforms',
+        latitude: 'number (optional)',
+        longitude: 'number (optional)',
+      },
+      output: {
+        comparisons: 'PriceComparison[] — itemName, prices[], lowestPrice, highestPrice, avgPrice, priceDiff',
+        menus: 'RestaurantMenu[] — full menus from each platform',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, FOOD_PRICE_USDC * 3);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const urlsParam = c.req.query('urls');
+  if (!urlsParam) return c.json({ error: 'Missing required parameter: urls', example: '/api/food/compare?url=https://ubereats.com/store/abc,https://doordash.com/store/xyz' }, 400);
+
+  const urls = urlsParam.split(',').map(u => u.trim()).filter(Boolean);
+  if (urls.length < 2) return c.json({ error: 'Need at least 2 URLs for comparison' }, 400);
+
+  const lat = parseFloat(c.req.query('latitude') || '40.7128');
+  const lng = parseFloat(c.req.query('longitude') || '-74.0060');
+
+  try {
+    const menus = await Promise.all(urls.map(url => fetchMenu(url, { latitude: lat, longitude: lng }).catch(e => null)));
+    const validMenus = menus.filter((m): m is RestaurantMenu => m !== null);
+
+    if (validMenus.length < 2) {
+      return c.json({ error: 'Could not fetch at least 2 menus for comparison', fetched: validMenus.length }, 502);
+    }
+
+    const comparisons = comparePrices(validMenus);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      comparisons,
+      menus: validMenus,
+      meta: { platforms: validMenus.map(m => m.platform), totalItems: validMenus.reduce((s, m) => s + m.items.length, 0) },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Price comparison failed', message: err?.message || String(err) }, 502);
   }
 });
