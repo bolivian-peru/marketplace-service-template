@@ -1,0 +1,170 @@
+{
+  "id": "tiktok-trend-intelligence",
+  "name": "TikTok Trend Intelligence API",
+  "description": "Scrape trending TikTok videos, hashtags, and sounds via mobile proxy for trend analysis, influencer discovery, and content intelligence.",
+  "longDescription": "Real-time TikTok trend intelligence: fetch trending videos from the For You page, discover trending hashtags and sounds, and get videos for specific tags or music. Powered by Proxies.sx mobile proxies (real 4G/5G IPs) to bypass TikTok's anti-scraping measures. Essential for trend forecasting, influencer marketing, content strategy, and competitive analysis.",
+  "endpoint": "https://marketplace-api-9kvb.onrender.com/api",
+  "docsUrl": "https://github.com/HuiNeng6/marketplace-service-template/tree/tiktok-trend-api",
+  "pricing": {
+    "model": "per-request",
+    "amount": "0.02",
+    "minimum": "0.01",
+    "currency": "USDC",
+    "perEndpoint": {
+      "/api/tiktok/trending": "0.02",
+      "/api/tiktok/hashtags": "0.01",
+      "/api/tiktok/sounds": "0.01",
+      "/api/tiktok/tag/:hashtag": "0.02",
+      "/api/tiktok/music/:soundId": "0.02"
+    },
+    "networks": [
+      {
+        "network": "solana",
+        "chainId": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "recipient": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+        "asset": "USDC",
+        "assetAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+      },
+      {
+        "network": "base",
+        "chainId": "eip155:8453",
+        "recipient": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+        "asset": "USDC",
+        "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+      }
+    ]
+  },
+  "category": "scraper",
+  "tags": ["tiktok", "social-media", "trending", "hashtags", "sounds", "influencer", "content-intelligence", "scraper", "mobile-proxy"],
+  "owner": {
+    "name": "HuiNeng6",
+    "github": "HuiNeng6"
+  },
+  "status": "pending",
+  "featured": false,
+  "addedAt": "2025-03-24",
+  "x402": {
+    "discoveryUrl": "https://marketplace-api-9kvb.onrender.com/api/tiktok/trending",
+    "wellKnown": "https://marketplace-api-9kvb.onrender.com/.well-known/x402.json"
+  },
+  "lastVerified": "2025-03-24T00:00:00Z",
+  "healthEndpoint": "https://marketplace-api-9kvb.onrender.com/health",
+  "whyMobileProxy": "TikTok aggressively blocks datacenter IPs and requires mobile user agents for accessing most content. Mobile carrier IPs (4G/5G) mimic real TikTok app traffic, bypassing rate limits and anti-scraping measures. This is essential for programmatic TikTok data extraction at scale.",
+  "outputSchema": {
+    "trending": {
+      "videos": "TikTokVideo[] — id, desc, author{uniqueId, nickname, avatar, verified, followers}, stats{playCount, likeCount, commentCount, shareCount, collectCount}, music{id, title, authorName, coverThumb, playUrl}, hashtags[], createTime, videoUrl, coverUrl, duration, isAd",
+      "cursor": "string | null — pagination token for next page",
+      "hasMore": "boolean",
+      "fetchedAt": "string (ISO 8601)",
+      "region": "string — region code (US, GB, JP, etc.)"
+    },
+    "hashtags": {
+      "hashtags": "TikTokHashtag[] — id, name, title, cover, videoCount, viewCount, trending",
+      "cursor": "number — next page offset",
+      "hasMore": "boolean"
+    },
+    "sounds": {
+      "sounds": "TikTokSound[] — id, title, authorName, coverThumb, playUrl, duration, videoCount, isOriginal",
+      "cursor": "number — next page offset",
+      "hasMore": "boolean"
+    },
+    "tag": {
+      "videos": "TikTokVideo[] — videos using the specified hashtag",
+      "hashtag": "string — the queried hashtag",
+      "cursor": "string | null",
+      "hasMore": "boolean"
+    },
+    "music": {
+      "videos": "TikTokVideo[] — videos using the specified sound",
+      "soundId": "string — the queried sound ID",
+      "cursor": "string | null",
+      "hasMore": "boolean"
+    }
+  },
+  "competitive": {
+    "vs": [
+      { "name": "TikTok API (Official)", "price": "Enterprise only", "limitation": "Restricted access, requires partnership approval, limited data fields" },
+      { "name": "Apify TikTok Scraper", "price": "$49-499/mo", "limitation": "Rate limited, frequent breakage, no mobile proxy rotation" },
+      { "name": "ScraperAPI TikTok", "price": "$49-249/mo", "limitation": "Datacenter proxies blocked, no trending endpoint" },
+      { "name": "Bright Data TikTok", "price": "$500+/mo", "limitation": "Enterprise pricing, complex setup" }
+    ],
+    "ourAdvantage": "Real-time TikTok trend data via mobile proxies at $0.01-0.02/request. Includes trending videos, hashtags, sounds, and hashtag/sound-specific video feeds. No monthly commitment. Bypasses TikTok anti-scraping with real 4G/5G IPs."
+  },
+  "requiredEnvVars": {
+    "required": [
+      {
+        "name": "PROXY_LIST or PROXY_HOST",
+        "description": "Proxies.sx mobile proxy configuration for TikTok scraping. Format: host:port:user:pass:country (semicolon-separated for pool)",
+        "example": "gate.smartproxy.com:10001:user123:pass456:US"
+      },
+      {
+        "name": "WALLET_ADDRESS",
+        "description": "Your USDC wallet address for receiving payments (Solana or Base)",
+        "example": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
+      }
+    ],
+    "optional": [
+      {
+        "name": "SOLANA_RPC_URL",
+        "description": "Custom Solana RPC endpoint for payment verification (defaults to public endpoint)",
+        "example": "https://api.mainnet-beta.solana.com"
+      },
+      {
+        "name": "BASE_RPC_URL",
+        "description": "Custom Base RPC endpoint for payment verification (defaults to public endpoint)",
+        "example": "https://mainnet.base.org"
+      }
+    ],
+    "note": "Mobile proxy is essential for TikTok scraping — datacenter IPs will be blocked."
+  },
+  "limitations": [
+    "TikTok may serve different content based on proxy region",
+    "Rate limited to 20 proxy requests/minute per client IP",
+    "Some trending content may vary by time of day",
+    "Sound URLs may expire after 24 hours",
+    "Private/age-restricted content is not accessible"
+  ],
+  "endpoints": {
+    "/api/tiktok/trending": {
+      "method": "GET",
+      "price": "$0.02",
+      "description": "Get trending TikTok videos from For You page",
+      "queryParams": ["count (default: 20, max: 50)", "cursor (pagination)", "region (default: US)"]
+    },
+    "/api/tiktok/hashtags": {
+      "method": "GET",
+      "price": "$0.01",
+      "description": "Get trending TikTok hashtags",
+      "queryParams": ["count (default: 20, max: 50)", "cursor (pagination)"]
+    },
+    "/api/tiktok/sounds": {
+      "method": "GET",
+      "price": "$0.01",
+      "description": "Get trending TikTok sounds/music",
+      "queryParams": ["count (default: 20, max: 50)", "cursor (pagination)"]
+    },
+    "/api/tiktok/tag/:hashtag": {
+      "method": "GET",
+      "price": "$0.02",
+      "description": "Get TikTok videos for a specific hashtag",
+      "pathParams": ["hashtag (without #)"],
+      "queryParams": ["count (default: 20, max: 50)", "cursor (pagination)"]
+    },
+    "/api/tiktok/music/:soundId": {
+      "method": "GET",
+      "price": "$0.02",
+      "description": "Get TikTok videos using a specific sound/music",
+      "pathParams": ["soundId"],
+      "queryParams": ["count (default: 20, max: 50)", "cursor (pagination)"]
+    }
+  },
+  "bounty": {
+    "issue": "https://github.com/bolivian-peru/marketplace-service-template/issues/51",
+    "reward": "$75 SX token",
+    "requirements": [
+      "Scrape trending videos, hashtags, sounds",
+      "Use Proxies.sx mobile proxies",
+      "Implement x402 payment flow"
+    ]
+  }
+}

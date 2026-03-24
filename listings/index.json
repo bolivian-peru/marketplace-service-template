@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "updatedAt": "2026-02-15",
-  "count": 6,
+  "count": 7,
   "services": [
     {
       "id": "proxies-sx-mobile",
@@ -174,6 +174,36 @@
       "status": "active",
       "featured": false,
       "detailsFile": "prediction-market-aggregator.json"
+    },
+    {
+      "id": "tiktok-trend-intelligence",
+      "name": "TikTok Trend Intelligence API",
+      "description": "Scrape trending TikTok videos, hashtags, and sounds via mobile proxy. $0.01-0.02/query via x402.",
+      "endpoint": "https://marketplace-api-9kvb.onrender.com/api",
+      "docsUrl": "https://github.com/HuiNeng6/marketplace-service-template/tree/tiktok-trend-api",
+      "pricing": {
+        "model": "per-request",
+        "amount": "0.02",
+        "minimum": "0.01",
+        "currency": "USDC"
+      },
+      "category": "scraper",
+      "tags": [
+        "tiktok",
+        "social-media",
+        "trending",
+        "hashtags",
+        "sounds",
+        "influencer",
+        "content-intelligence"
+      ],
+      "owner": {
+        "name": "HuiNeng6",
+        "github": "HuiNeng6"
+      },
+      "status": "pending",
+      "featured": false,
+      "detailsFile": "tiktok-trend-intelligence.json"
     }
   ],
   "networks": {

@@ -94,6 +94,11 @@ app.get('/health', (c) => c.json({
     '/api/airbnb/market-stats',
     '/api/research',
     '/api/trending',
+    '/api/tiktok/trending',
+    '/api/tiktok/hashtags',
+    '/api/tiktok/sounds',
+    '/api/tiktok/tag/:hashtag',
+    '/api/tiktok/music/:soundId',
   ],
 }));
 
@@ -129,6 +134,11 @@ app.get('/', (c) => c.json({
     { method: 'GET', path: '/api/airbnb/market-stats', description: 'Airbnb market statistics', price: '0.05 USDC' },
     { method: 'GET', path: '/api/research', description: 'Multi-source research aggregation', price: '0.05 USDC' },
     { method: 'GET', path: '/api/trending', description: 'Trending topics intelligence', price: '0.01 USDC' },
+    { method: 'GET', path: '/api/tiktok/trending', description: 'TikTok trending videos from For You page', price: '0.02 USDC' },
+    { method: 'GET', path: '/api/tiktok/hashtags', description: 'Trending TikTok hashtags', price: '0.01 USDC' },
+    { method: 'GET', path: '/api/tiktok/sounds', description: 'Trending TikTok sounds/music', price: '0.01 USDC' },
+    { method: 'GET', path: '/api/tiktok/tag/:hashtag', description: 'TikTok videos for a hashtag', price: '0.02 USDC' },
+    { method: 'GET', path: '/api/tiktok/music/:soundId', description: 'TikTok videos using a sound', price: '0.02 USDC' },
   ],
   pricing: {
     amount: process.env.PRICE_USDC || '0.005',
