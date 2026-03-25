@@ -1,0 +1,77 @@
+{
+  "id": "food-delivery-price-intelligence",
+  "name": "Food Delivery Price Intelligence API",
+  "version": "1.0.0",
+  "description": "Extract restaurant menus, item prices, delivery fees, promotions, ratings, and estimated delivery times from Uber Eats, DoorDash, and Grubhub. Cross-platform price comparison for any address.",
+  "category": "food-delivery",
+  "platforms": ["ubereats", "doordash", "grubhub"],
+  "infrastructure": "Proxies.sx mobile proxies (real 4G/5G IPs)",
+  "bounty": {
+    "issue": 76,
+    "amount": 50,
+    "currency": "SX",
+    "repo": "bolivian-peru/marketplace-service-template"
+  },
+  "endpoints": [
+    {
+      "method": "GET",
+      "path": "/api/food/search",
+      "description": "Search restaurants by cuisine or name on a food delivery platform",
+      "price": 0.01,
+      "currency": "USDC",
+      "params": {
+        "query": "string (required) — restaurant name or cuisine type",
+        "address": "string (required) — ZIP code or city+state",
+        "platform": "ubereats | doordash | grubhub (default: ubereats)"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/food/restaurant/:id",
+      "description": "Get restaurant details: rating, delivery fee, delivery time, minimum order, promotions",
+      "price": 0.01,
+      "currency": "USDC",
+      "params": {
+        "id": "string (required) — restaurant ID",
+        "platform": "ubereats | doordash | grubhub (default: ubereats)"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/food/menu/:restaurant_id",
+      "description": "Full menu extraction with item prices, descriptions, categories, and customizations",
+      "price": 0.02,
+      "currency": "USDC",
+      "params": {
+        "restaurant_id": "string (required) — restaurant ID",
+        "platform": "ubereats | doordash | grubhub (default: ubereats)"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/food/compare",
+      "description": "Cross-platform price comparison: same search across multiple delivery platforms simultaneously",
+      "price": 0.03,
+      "currency": "USDC",
+      "params": {
+        "query": "string (required) — restaurant name or cuisine type",
+        "address": "string (required) — ZIP code or city+state",
+        "platforms": "string (optional) — comma-separated platforms, default: ubereats,doordash"
+      }
+    }
+  ],
+  "useCases": [
+    "Ghost kitchen operators analyzing competitor pricing",
+    "Restaurant chains monitoring delivery platform fees",
+    "Food-tech startups building price comparison tools",
+    "Market research on delivery fee trends by area",
+    "Menu price tracking over time"
+  ],
+  "pricing": {
+    "search": { "amount": 0.01, "currency": "USDC" },
+    "menu": { "amount": 0.02, "currency": "USDC" },
+    "compare": { "amount": 0.03, "currency": "USDC" }
+  },
+  "proxyRequirement": "Mobile proxies required — food delivery apps are mobile-first, use location-based content serving that trusts mobile carrier IPs, and block datacenter/residential ranges",
+  "status": "active"
+}
