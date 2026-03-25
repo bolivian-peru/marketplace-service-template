@@ -326,3 +326,68 @@ export interface ReviewSearchResponse {
   businesses: BusinessInfo[];
   totalFound: number;
 }
+
+// ─── FOOD DELIVERY PRICE INTELLIGENCE (Bounty #76) ──
+
+export interface FoodRestaurant {
+  id: string;
+  name: string;
+  rating: number | null;
+  reviewsCount: number | null;
+  deliveryFee: number | null;
+  deliveryTimeMin: number | null;
+  deliveryTimeMax: number | null;
+  minimumOrder: number | null;
+  priceLevel: string | null;
+  cuisine: string[];
+  address: string | null;
+  promotions: string[];
+  isOpen: boolean;
+  platform: string;
+}
+
+export interface FoodMenuItem {
+  id: string;
+  name: string;
+  description: string | null;
+  price: number | null;
+  originalPrice: number | null;
+  currency: string;
+  popular: boolean;
+  category: string | null;
+  imageUrl: string | null;
+  customizations: FoodCustomization[];
+}
+
+export interface FoodCustomization {
+  name: string;
+  required: boolean;
+  options: {
+    name: string;
+    price: number | null;
+  }[];
+}
+
+export interface FoodMenuResult {
+  restaurant: FoodRestaurant;
+  menuItems: FoodMenuItem[];
+  menuCategories: string[];
+  platform: string;
+}
+
+export interface FoodSearchResult {
+  restaurants: FoodRestaurant[];
+  totalCount: number;
+  query: string;
+  address: string;
+  platform: string;
+}
+
+export interface FoodCompareResult {
+  query: string;
+  address: string;
+  platforms: {
+    platform: string;
+    restaurants: FoodRestaurant[];
+  }[];
+}

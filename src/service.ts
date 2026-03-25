@@ -29,6 +29,7 @@ import {
 } from './scrapers/linkedin-enrichment';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
+import { searchFoodDelivery, getRestaurantDetails, getRestaurantMenu, compareFoodPrices } from './scrapers/food-delivery';
 
 export const serviceRouter = new Hono();
 
@@ -1442,6 +1443,7 @@ serviceRouter.get('/airbnb/market-stats', async (c) => {
 // ─── MOBILE SERP TRACKER ────────────────────────────────
 
 import { scrapeMobileSERP } from './scrapers/serp-tracker';
+// ─── FOOD DELIVERY PRICE INTELLIGENCE (Bounty #76) ──
 
 const SERP_PRICE_USDC = parseFloat(process.env.SERP_PRICE_USDC || '0.003');
 const SERP_DESCRIPTION = 'Mobile SERP Tracker — Google search results with organic, ads, PAA, AI overview, map pack, knowledge panel. Real mobile IP fingerprint.';
@@ -1484,5 +1486,292 @@ serviceRouter.get('/serp', async (c) => {
     });
   } catch (err: any) {
     return c.json({ error: 'SERP scrape failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ═══════════════════════════════════════════════════════
+// ─── FOOD DELIVERY PRICE INTELLIGENCE (Bounty #76) ───
+// ═══════════════════════════════════════════════════════
+
+const FOOD_SEARCH_PRICE = 0.01;     // $0.01 per restaurant search
+const FOOD_MENU_PRICE = 0.02;       // $0.02 per full menu extraction
+const FOOD_COMPARE_PRICE = 0.03;    // $0.03 per cross-platform comparison
+
+// ─── GET /api/food/search ───────────────────────────
+
+serviceRouter.get('/food/search', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response(
+      '/api/food/search',
+      'Search restaurants on food delivery platforms: Uber Eats, DoorDash, Grubhub. Returns ratings, delivery fees, delivery times, promotions.',
+      FOOD_SEARCH_PRICE,
+      walletAddress,
+      {
+        input: {
+          query: 'string (required) — restaurant name or cuisine type (e.g., "pizza", "sushi")',
+          address: 'string (required) — ZIP code or city+state (e.g., "10001" or "New York NY")',
+          platform: '"ubereats" | "doordash" | "grubhub" (optional, default: "ubereats")',
+        },
+        output: {
+          restaurants: 'FoodRestaurant[] — id, name, rating, reviewsCount, deliveryFee, deliveryTimeMin/Max, minimumOrder, cuisine, promotions, isOpen',
+          totalCount: 'number',
+          query: 'string',
+          address: 'string',
+          platform: 'string',
+        },
+      },
+    ), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, FOOD_SEARCH_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const clientIp = c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  if (!checkProxyRateLimit(clientIp)) {
+    c.header('Retry-After', '60');
+    return c.json({ error: 'Proxy rate limit exceeded. Max 20 requests/min to protect proxy quota.', retryAfter: 60 }, 429);
+  }
+
+  const query = c.req.query('query');
+  if (!query) return c.json({ error: 'Missing required parameter: query', example: '/api/food/search?query=pizza&address=10001&platform=ubereats' }, 400);
+
+  const address = c.req.query('address');
+  if (!address) return c.json({ error: 'Missing required parameter: address', example: '/api/food/search?query=pizza&address=10001' }, 400);
+
+  const platform = (c.req.query('platform') || 'ubereats').toLowerCase();
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const result = await searchFoodDelivery(query, address, platform);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      meta: {
+        proxy: { ip, country: proxy.country, carrier: proxy.user, type: 'mobile' },
+      },
+      payment: {
+        txHash: payment.txHash,
+        network: payment.network,
+        amount: verification.amount,
+        settled: true,
+      },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Food delivery search failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/food/restaurant/:id ───────────────────
+
+serviceRouter.get('/food/restaurant/:id', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response(
+      '/api/food/restaurant/:id',
+      'Get restaurant details: rating, delivery fee, delivery time, minimum order, cuisine, promotions.',
+      FOOD_SEARCH_PRICE,
+      walletAddress,
+      {
+        input: {
+          id: 'string (required) — restaurant ID (in URL path)',
+          platform: '"ubereats" | "doordash" | "grubhub" (optional, default: "ubereats")',
+        },
+        output: {
+          restaurant: 'FoodRestaurant — full restaurant details',
+          meta: '{ proxy: { ip, country, carrier, type: "mobile" } }',
+        },
+      },
+    ), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, FOOD_SEARCH_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const clientIp = c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  if (!checkProxyRateLimit(clientIp)) {
+    c.header('Retry-After', '60');
+    return c.json({ error: 'Proxy rate limit exceeded. Max 20 requests/min to protect proxy quota.', retryAfter: 60 }, 429);
+  }
+
+  const restaurantId = c.req.param('id');
+  if (!restaurantId) return c.json({ error: 'Missing restaurant ID in URL path' }, 400);
+
+  const platform = (c.req.query('platform') || 'ubereats').toLowerCase();
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const restaurant = await getRestaurantDetails(restaurantId, platform);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      restaurant,
+      meta: {
+        proxy: { ip, country: proxy.country, carrier: proxy.user, type: 'mobile' },
+      },
+      payment: {
+        txHash: payment.txHash,
+        network: payment.network,
+        amount: verification.amount,
+        settled: true,
+      },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Restaurant details fetch failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/food/menu/:restaurant_id ──────────────
+
+serviceRouter.get('/food/menu/:restaurant_id', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response(
+      '/api/food/menu/:restaurant_id',
+      'Full menu extraction: all items with prices, descriptions, popular flags, customizations, categories.',
+      FOOD_MENU_PRICE,
+      walletAddress,
+      {
+        input: {
+          restaurant_id: 'string (required) — restaurant ID (in URL path)',
+          platform: '"ubereats" | "doordash" | "grubhub" (optional, default: "ubereats")',
+        },
+        output: {
+          restaurant: 'FoodRestaurant — restaurant info',
+          menuItems: 'FoodMenuItem[] — name, price, description, popular, category, customizations',
+          menuCategories: 'string[] — menu section names',
+          platform: 'string',
+        },
+      },
+    ), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, FOOD_MENU_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const clientIp = c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  if (!checkProxyRateLimit(clientIp)) {
+    c.header('Retry-After', '60');
+    return c.json({ error: 'Proxy rate limit exceeded. Max 20 requests/min to protect proxy quota.', retryAfter: 60 }, 429);
+  }
+
+  const restaurantId = c.req.param('restaurant_id');
+  if (!restaurantId) return c.json({ error: 'Missing restaurant_id in URL path' }, 400);
+
+  const platform = (c.req.query('platform') || 'ubereats').toLowerCase();
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const result = await getRestaurantMenu(restaurantId, platform);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      meta: {
+        itemCount: result.menuItems.length,
+        categoryCount: result.menuCategories.length,
+        proxy: { ip, country: proxy.country, carrier: proxy.user, type: 'mobile' },
+      },
+      payment: {
+        txHash: payment.txHash,
+        network: payment.network,
+        amount: verification.amount,
+        settled: true,
+      },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Menu extraction failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/food/compare ──────────────────────────
+
+serviceRouter.get('/food/compare', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response(
+      '/api/food/compare',
+      'Cross-platform price comparison: search same query across Uber Eats, DoorDash, and Grubhub simultaneously. Compare delivery fees, ratings, and availability.',
+      FOOD_COMPARE_PRICE,
+      walletAddress,
+      {
+        input: {
+          query: 'string (required) — restaurant name or cuisine type',
+          address: 'string (required) — ZIP code or city+state',
+          platforms: 'string (optional) — comma-separated, default: "ubereats,doordash"',
+        },
+        output: {
+          query: 'string',
+          address: 'string',
+          platforms: '{ platform: string, restaurants: FoodRestaurant[] }[] — results per platform',
+        },
+      },
+    ), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, FOOD_COMPARE_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const clientIp = c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  if (!checkProxyRateLimit(clientIp)) {
+    c.header('Retry-After', '60');
+    return c.json({ error: 'Proxy rate limit exceeded. Max 20 requests/min to protect proxy quota.', retryAfter: 60 }, 429);
+  }
+
+  const query = c.req.query('query');
+  if (!query) return c.json({ error: 'Missing required parameter: query', example: '/api/food/compare?query=pizza&address=10001' }, 400);
+
+  const address = c.req.query('address');
+  if (!address) return c.json({ error: 'Missing required parameter: address' }, 400);
+
+  const platformsParam = c.req.query('platforms') || 'ubereats,doordash';
+  const platforms = platformsParam.split(',').map(p => p.trim().toLowerCase()).filter(Boolean);
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const result = await compareFoodPrices(query, address, platforms);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      meta: {
+        platformsCompared: platforms.length,
+        totalRestaurants: result.platforms.reduce((sum, p) => sum + p.restaurants.length, 0),
+        proxy: { ip, country: proxy.country, carrier: proxy.user, type: 'mobile' },
+      },
+      payment: {
+        txHash: payment.txHash,
+        network: payment.network,
+        amount: verification.amount,
+        settled: true,
+      },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Price comparison failed', message: err?.message || String(err) }, 502);
   }
 });
