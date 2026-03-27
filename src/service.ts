@@ -29,6 +29,7 @@ import {
 } from './scrapers/linkedin-enrichment';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
+import { scrapeUberEats, searchUberEats } from './scrapers/food-scraper';
 
 export const serviceRouter = new Hono();
 
@@ -803,6 +804,23 @@ serviceRouter.get('/linkedin/company/:id/employees', async (c) => {
 
 const REDDIT_SEARCH_PRICE = 0.005;   // $0.005 per search/subreddit
 const REDDIT_COMMENTS_PRICE = 0.01;  // $0.01 per comment thread
+
+serviceRouter.get('/reddit/comments', getComments);
+
+// Food Delivery - Uber Eats
+serviceRouter.get('/food/search', async (c) => {
+    const query = c.req.query('q') || 'pizza';
+    const lat = parseFloat(c.req.query('lat') || '40.7128');
+    const lng = parseFloat(c.req.query('lng') || '-74.0060');
+    return c.json(await searchUberEats(query, lat, lng));
+});
+
+serviceRouter.get('/food/store', async (c) => {
+    const id = c.req.query('id') || '';
+    const lat = parseFloat(c.req.query('lat') || '40.7128');
+    const lng = parseFloat(c.req.query('lng') || '-74.0060');
+    return c.json(await scrapeUberEats(id, lat, lng));
+});
 
 // ─── GET /api/reddit/search ─────────────────────────
 
