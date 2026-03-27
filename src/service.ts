@@ -29,6 +29,7 @@ import {
 } from './scrapers/linkedin-enrichment';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
+import { aggregateSignal, aggregateTrending } from './scrapers/prediction-scraper';
 
 export const serviceRouter = new Hono();
 
@@ -1486,3 +1487,35 @@ serviceRouter.get('/serp', async (c) => {
     return c.json({ error: 'SERP scrape failed', message: err?.message || String(err) }, 502);
   }
 });
+
+// ─── PREDICTION MARKET ROUTES (Bounty #255) ───────────
+const predictionRouter = new Hono();
+
+predictionRouter.get('/signal', async (c) => {
+  const query = c.req.query('market');
+  if (!query) return c.json({ error: 'Market query required' }, 400);
+
+  const walletAddress = process.env.WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('prediction-signal', 'Prediction Market Signal', 0.05, walletAddress), 402);
+
+  const verification = await verifyPayment(payment, walletAddress, 0.05);
+  if (!verification.valid) return c.json({ error: 'Payment failed' }, 402);
+
+  const signal = await aggregateSignal(query);
+  return c.json(signal);
+});
+
+predictionRouter.get('/trending', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('prediction-trending', 'Trending Prediction Markets', 0.02, walletAddress), 402);
+
+  const verification = await verifyPayment(payment, walletAddress, 0.02);
+  if (!verification.valid) return c.json({ error: 'Payment failed' }, 402);
+
+  const trending = await aggregateTrending();
+  return c.json({ trending, fetchedAt: new Date().toISOString() });
+});
+
+serviceRouter.route('/prediction', predictionRouter);
