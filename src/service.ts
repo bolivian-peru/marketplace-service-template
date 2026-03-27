@@ -29,12 +29,71 @@ import {
 } from './scrapers/linkedin-enrichment';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
+import { XScraper, runResilienceBenchmark } from './scrapers/x-scraper';
 
 export const serviceRouter = new Hono();
 
 // ─── TREND INTELLIGENCE ROUTES (Bounty #70) ─────────
 serviceRouter.route('/research', researchRouter);
 serviceRouter.route('/trending', trendingRouter);
+
+// ─── X INTELLIGENCE ROUTES (Bounty #73) ──────────────
+const X_PRICE_SEARCH = 0.01;
+const X_PRICE_TRENDING = 0.005;
+const X_PRICE_USER = 0.01;
+const X_PRICE_THREAD = 0.02;
+
+const X_OUTPUT_SCHEMA = {
+  output: {
+    results: 'Tweet[]',
+    meta: 'ForensicMeta',
+    integrity: '{ hash: string, algorithm: "SHA-256" }'
+  }
+};
+
+const xRouter = new Hono();
+const xScraper = new XScraper();
+
+xRouter.get('/search', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/x/search', 'X/Twitter Real-Time Search', X_PRICE_SEARCH, walletAddress, X_OUTPUT_SCHEMA), 402);
+  const verification = await verifyPayment(payment, walletAddress, X_PRICE_SEARCH);
+  if (!verification.valid) return c.json({ error: 'Payment failed' }, 402);
+  const q = c.req.query('query') || 'news';
+  const ai = c.req.query('ai') === 'true';
+  return c.json(await xScraper.search(q, { ai }));
+});
+
+xRouter.get('/trending', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/x/trending', 'X Trending Topics by Region', X_PRICE_TRENDING, walletAddress), 402);
+  const verification = await verifyPayment(payment, walletAddress, X_PRICE_TRENDING);
+  if (!verification.valid) return c.json({ error: 'Payment failed' }, 402);
+  const country = c.req.query('country') || 'US';
+  return c.json(await xScraper.trending(country));
+});
+
+xRouter.get('/user/:handle', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/x/user', 'X User Profile Extraction', X_PRICE_USER, walletAddress), 402);
+  const verification = await verifyPayment(payment, walletAddress, X_PRICE_USER);
+  if (!verification.valid) return c.json({ error: 'Payment failed' }, 402);
+  return c.json(await xScraper.getUser(c.req.param('handle')));
+});
+
+xRouter.get('/thread/:id', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/x/thread', 'X Thread/Conversation Extraction', X_PRICE_THREAD, walletAddress), 402);
+  const verification = await verifyPayment(payment, walletAddress, X_PRICE_THREAD);
+  if (!verification.valid) return c.json({ error: 'Payment failed' }, 402);
+  return c.json(await xScraper.getThread(c.req.param('id')));
+});
+
+serviceRouter.route('/x', xRouter);
 
 const SERVICE_NAME = 'job-market-intelligence';
 const PRICE_USDC = 0.005;
