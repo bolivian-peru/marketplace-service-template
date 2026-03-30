@@ -89,7 +89,7 @@
     },
     "category": {
       "type": "string",
-      "enum": ["proxy", "browser", "scraper", "data", "automation", "other"],
+      "enum": ["proxy", "scraper", "data", "automation", "other"],
       "description": "Service category"
     },
     "tags": {

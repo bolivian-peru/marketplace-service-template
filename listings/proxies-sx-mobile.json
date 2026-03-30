@@ -117,7 +117,7 @@
     "Carrier targeting",
     "Sticky sessions (same IP for session duration)",
     "Unlimited concurrent connections",
-    "Real browser fingerprints"
+    "OS fingerprint spoofing (p0f)"
   ],
   "owner": {
     "name": "Proxies.sx",

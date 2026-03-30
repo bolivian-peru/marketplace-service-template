@@ -12,7 +12,6 @@ listings/
 ├── schema.json             # JSON Schema for validation
 ├── _template.json          # Copy this to create your listing
 ├── proxies-sx-mobile.json  # Proxies.sx mobile proxy service
-├── proxies-sx-browser.json # Proxies.sx antidetect browser
 └── your-service.json       # Your service here!
 ```
 
@@ -54,7 +53,7 @@ Required fields:
 - `description` — One-liner for AI agents (max 200 chars)
 - `endpoint` — Base URL
 - `pricing` — Model, amount, currency, networks with wallet addresses
-- `category` — One of: `proxy`, `browser`, `scraper`, `data`, `automation`, `other`
+- `category` — One of: `proxy`, `scraper`, `data`, `automation`, `other`
 - `owner` — Name + at least one contact (github/twitter/telegram)
 - `status` — Set to `pending` for new submissions
 
@@ -71,8 +70,7 @@ See [schema.json](schema.json) for full specification.
 | Category | Description |
 |----------|-------------|
 | `proxy` | Proxy services (HTTP, SOCKS, rotating) |
-| `browser` | Browser automation, antidetect, screenshots |
-| `scraper` | Web scraping, data extraction |
+| `scraper` | Web scraping, data extraction, browser automation |
 | `data` | Data APIs, enrichment, lookup |
 | `automation` | Form filling, account creation, workflows |
 | `other` | Everything else |
