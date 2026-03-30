@@ -135,7 +135,6 @@ These services are live on the marketplace right now:
 | Service | Price | Builder | Status |
 |---------|-------|---------|--------|
 | [Mobile Proxy](https://agents.proxies.sx/marketplace/proxy/) | $4/GB shared, $8/GB private | Proxies.sx | Live |
-| [Antidetect Browser](https://agents.proxies.sx/marketplace/browser/) | $0.005/min | Proxies.sx | Live |
 | [Google Maps Lead Generator](https://agents.proxies.sx/marketplace/google-maps-lead-generator/) | $0.005/record | [@aliraza556](https://github.com/aliraza556) | Live |
 | [Mobile SERP Tracker](https://agents.proxies.sx/marketplace/serp-tracker/) | $0.003/query | [@aliraza556](https://github.com/aliraza556) | Live |
 | [Job Market Intelligence](https://bounty16-job-market-intelligence.onrender.com) | $0.005/query | [@Lutra23](https://github.com/Lutra23) | Live |
