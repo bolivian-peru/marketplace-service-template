@@ -35,37 +35,6 @@
       "detailsFile": "proxies-sx-mobile.json"
     },
     {
-      "id": "proxies-sx-browser",
-      "name": "Proxies.sx Antidetect Browser",
-      "description": "Cloud Chrome stealth browser sessions with auto mobile proxy, unique fingerprints. $0.005/min. x402 payments.",
-      "endpoint": "https://browser.proxies.sx",
-      "docsUrl": "https://browser.proxies.sx/docs",
-      "pricing": {
-        "model": "per-minute",
-        "amount": "0.005",
-        "minimum": "0.075",
-        "currency": "USDC"
-      },
-      "category": "browser",
-      "tags": [
-        "antidetect",
-        "chrome",
-        "nodriver",
-        "fingerprint",
-        "automation",
-        "stealth",
-        "mobile-proxy-included"
-      ],
-      "owner": {
-        "name": "Proxies.sx",
-        "twitter": "sxproxies",
-        "telegram": "proxyforai"
-      },
-      "status": "active",
-      "featured": true,
-      "detailsFile": "proxies-sx-browser.json"
-    },
-    {
       "id": "google-maps-lead-generator",
       "name": "Google Maps Lead Generator",
       "description": "Extract structured business data from Google Maps. $0.005/record. x402 payments.",
@@ -196,7 +165,6 @@
   },
   "categories": [
     "proxy",
-    "browser",
     "scraper",
     "data",
     "automation",
