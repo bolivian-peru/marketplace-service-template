@@ -2,7 +2,7 @@
  * Service Router — Marketplace API
  *
  * Exposes:
- *   GET /api/run       (Google Maps Lead Generator)
+ *   GET /api/run       (Prediction Market Signal Aggregator — Bounty #55)
  *   GET /api/details   (Google Maps Place details)
  *   GET /api/jobs      (Job Market Intelligence)
  *   GET /api/reviews/* (Google Reviews & Business Data)
@@ -10,6 +10,8 @@
  *   GET /api/reddit/*  (Reddit Intelligence)
  *   GET /api/instagram/* (Instagram Intelligence + AI Vision)
  *   GET /api/linkedin/* (LinkedIn Enrichment)
+ *   GET /api/research  (Trend Intelligence — Bounty #70)
+ *   GET /api/trending  (Trend Intelligence — Bounty #70)
  */
 
 import { Hono } from 'hono';
@@ -20,6 +22,8 @@ import { fetchReviews, fetchBusinessDetails, fetchReviewSummary, searchBusinesse
 import { scrapeGoogleMaps, extractDetailedBusiness } from './scrapers/maps-scraper';
 import { researchRouter } from './routes/research';
 import { trendingRouter } from './routes/trending';
+import { signalsRouter } from './routes/signals';
+import { predictionRouter } from './routes/prediction-markets';
 import { searchAirbnb, getListingDetail, getListingReviews, getMarketStats } from './scrapers/airbnb-scraper';
 import { 
   scrapeLinkedInPerson, 
@@ -32,9 +36,13 @@ import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers
 
 export const serviceRouter = new Hono();
 
+// ─── PREDICTION MARKET SIGNAL AGGREGATOR (Bounty #55) ─
+serviceRouter.route('/', signalsRouter);
+
 // ─── TREND INTELLIGENCE ROUTES (Bounty #70) ─────────
 serviceRouter.route('/research', researchRouter);
 serviceRouter.route('/trending', trendingRouter);
+serviceRouter.route('/prediction', predictionRouter);
 
 const SERVICE_NAME = 'job-market-intelligence';
 const PRICE_USDC = 0.005;

@@ -326,3 +326,58 @@ export interface ReviewSearchResponse {
   businesses: BusinessInfo[];
   totalFound: number;
 }
+
+// ─── Prediction Market Aggregator ────────────────────────────────────────────
+
+export type PredictionPlatform = 'polymarket' | 'kalshi' | 'metaculus';
+
+export interface PredictionMarketOdds {
+  platform: PredictionPlatform;
+  marketId: string;
+  question: string;
+  probability: number;
+  volume24h: number | null;
+  totalVolume: number | null;
+  endDate: string | null;
+  url: string;
+  outcomes: Array<{ name: string; probability: number }>;
+  lastUpdated: string;
+}
+
+export interface PredictionArbitrageOpportunity {
+  question: string;
+  markets: Array<{
+    platform: string;
+    probability: number;
+    marketId: string;
+    url: string;
+  }>;
+  spread: number;
+  signal: 'buy_low' | 'sell_high' | 'neutral';
+  confidence: 'high' | 'medium' | 'low';
+}
+
+export interface PredictionSentimentSummary {
+  overall: 'bullish' | 'bearish' | 'neutral';
+  score: number;
+  twitter: {
+    count: number;
+    sentiment: string;
+    score: number;
+  };
+  reddit: {
+    count: number;
+    sentiment: string;
+    score: number;
+  };
+}
+
+export interface PredictionSignalResponse {
+  topic: string;
+  markets: PredictionMarketOdds[];
+  sentiment: PredictionSentimentSummary;
+  marketProbability: number | null;
+  sentimentDivergence: number | null;
+  signals: Array<{ type: string; description: string; confidence: string }>;
+  payment: { verified: boolean; network: string; txHash: string };
+}
