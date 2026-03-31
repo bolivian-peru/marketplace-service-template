@@ -1,79 +1,54 @@
 {
-  "name": "google-reviews-business-data",
-  "title": "Google Reviews & Business Data API",
-  "description": "Extract Google Business reviews, ratings, response rates, photos, and business details for any location. Supports review sorting, rating distribution, owner response tracking, and business search by category + location.",
-  "version": "1.0.0",
+  "id": "google-reviews-business-data",
+  "name": "Google Reviews & Business Data API",
+  "description": "Extract Google Business reviews, ratings, photos, and business details for any location. Supports review sorting, rating distribution, owner response tracking, and business search.",
+  "longDescription": "A comprehensive Google Business data API that extracts reviews, ratings, and business details using real mobile proxies. Fetch up to 50 reviews per request with sorting options (newest, relevant, highest, lowest). Get full business info including address, phone, hours, photos, categories, and coordinates. Search businesses by category + location. Track rating distributions, owner response rates, and sentiment breakdown. Covers all Google-listed businesses globally.",
+  "endpoint": "https://marketplace-service-template-production.up.railway.app",
+  "docsUrl": "https://agents.proxies.sx/marketplace/skill.md",
   "pricing": {
-    "reviews": {
-      "amount": "0.02",
-      "currency": "USDC",
-      "description": "Per reviews fetch (up to 20 reviews)"
-    },
-    "business": {
-      "amount": "0.01",
-      "currency": "USDC",
-      "description": "Per business lookup with full details"
-    },
-    "summary": {
-      "amount": "0.005",
-      "currency": "USDC",
-      "description": "Per review summary (aggregated stats only)"
-    }
-  },
-  "endpoints": [
-    {
-      "method": "GET",
-      "path": "/api/reviews/:place_id",
-      "description": "Fetch Google reviews for a business by Place ID",
-      "params": {
-        "place_id": "Google Place ID (required, in URL path)",
-        "sort": "newest | relevant | highest | lowest (default: newest)",
-        "limit": "1-50 (default: 20)"
+    "model": "per-request",
+    "amount": "0.02",
+    "minimum": "0.005",
+    "currency": "USDC",
+    "networks": [
+      {
+        "network": "solana",
+        "chainId": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "recipient": "6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv",
+        "asset": "USDC",
+        "assetAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+      },
+      {
+        "network": "base",
+        "chainId": "eip155:8453",
+        "recipient": "0xF8cD900794245fc36CBE65be9afc23CDF5103042",
+        "asset": "USDC",
+        "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
       }
-    },
-    {
-      "method": "GET",
-      "path": "/api/reviews/search",
-      "description": "Search businesses by query + location",
-      "params": {
-        "query": "Business type/category (required)",
-        "location": "Location to search (required)",
-        "limit": "1-20 (default: 10)"
-      }
-    },
-    {
-      "method": "GET",
-      "path": "/api/business/:place_id",
-      "description": "Get detailed business info + review summary",
-      "params": {
-        "place_id": "Google Place ID (required, in URL path)"
-      }
-    },
-    {
-      "method": "GET",
-      "path": "/api/reviews/summary/:place_id",
-      "description": "Get review summary stats only (cheaper)",
-      "params": {
-        "place_id": "Google Place ID (required, in URL path)"
-      }
-    }
-  ],
-  "features": [
-    "Individual review extraction (author, rating, text, date, likes, owner response)",
-    "Business details (name, address, phone, hours, category, photos, coordinates)",
-    "Rating distribution (1-5 star breakdown)",
-    "Owner response rate calculation",
-    "Sentiment breakdown (positive/neutral/negative)",
-    "Review sorting (newest, relevant, highest, lowest)",
-    "Business search by query + location",
-    "Mobile proxy for authentic Google data"
-  ],
-  "infrastructure": "Proxies.sx mobile proxies (real 4G/5G IPs)",
-  "networks": ["solana", "base"],
-  "wallets": {
-    "solana": "6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv",
-    "base": "0xF8cD900794245fc36CBE65be9afc23CDF5103042"
+    ]
   },
   "category": "data",
-  "tags": ["google", "reviews", "business", "ratings", "maps", "local"]
+  "tags": [
+    "google",
+    "reviews",
+    "business-data",
+    "ratings",
+    "google-maps",
+    "local-business",
+    "sentiment",
+    "reputation"
+  ],
+  "owner": {
+    "name": "aliraza556",
+    "github": "aliraza556"
+  },
+  "status": "active",
+  "featured": true,
+  "addedAt": "2026-02-17",
+  "x402": {
+    "discoveryUrl": "https://marketplace-service-template-production.up.railway.app/api/reviews/search",
+    "wellKnown": "https://marketplace-service-template-production.up.railway.app"
+  },
+  "lastVerified": "2026-02-20T00:00:00Z",
+  "healthEndpoint": "https://marketplace-service-template-production.up.railway.app/health"
 }
