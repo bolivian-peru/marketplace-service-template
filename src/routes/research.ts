@@ -351,6 +351,8 @@ researchRouter.post('/', async (c) => {
     reddit: redditPosts,
     web: webResults,
     webTrending,
+    youtube: youtubeResults,
+    twitter: [...twitterResults, ...twitterTrending],
   });
 
   const topDiscussions: TopDiscussion[] = [
