@@ -1,0 +1,499 @@
+```typescript
+// src/service.ts
+import axios from 'axios';
+import { proxyFetch } from 'proxies-sx';
+
+interface App {
+  rank: number;
+  appName: string;
+  developer: string;
+  appId: string;
+  rating: number;
+  ratingCount: number;
+  price: string;
+  inAppPurchases: boolean;
+  category: string;
+  lastUpdated: string;
+  size: string;
+  icon: string;
+}
+
+interface RankingsResponse {
+  type: 'rankings';
+  store: 'apple' | 'google';
+  category: string;
+  country: string;
+  timestamp: string;
+  rankings: App[];
+  metadata: {
+    totalRanked: number;
+    scrapedAt: string;
+  };
+  proxy: {
+    country: string;
+    carrier: string;
+    type: 'mobile';
+  };
+  payment: {
+    txHash: string;
+    amount: number;
+    verified: boolean;
+  };
+}
+
+interface AppDetailsResponse {
+  type: 'app';
+  store: 'apple' | 'google';
+  appId: string;
+  country: string;
+  timestamp: string;
+  app: App;
+  reviews: {
+    rating: number;
+    text: string;
+    date: string;
+    reviewer: string;
+  }[];
+  metadata: {
+    totalReviews: number;
+    scrapedAt: string;
+  };
+  proxy: {
+    country: string;
+    carrier: string;
+    type: 'mobile';
+  };
+  payment: {
+    txHash: string;
+    amount: number;
+    verified: boolean;
+  };
+}
+
+interface SearchResponse {
+  type: 'search';
+  store: 'apple' | 'google';
+  query: string;
+  country: string;
+  timestamp: string;
+  results: App[];
+  metadata: {
+    totalResults: number;
+    scrapedAt: string;
+  };
+  proxy: {
+    country: string;
+    carrier: string;
+    type: 'mobile';
+  };
+  payment: {
+    txHash: string;
+    amount: number;
+    verified: boolean;
+  };
+}
+
+interface TrendingResponse {
+  type: 'trending';
+  store: 'apple' | 'google';
+  country: string;
+  timestamp: string;
+  apps: App[];
+  metadata: {
+    totalApps: number;
+    scrapedAt: string;
+  };
+  proxy: {
+    country: string;
+    carrier: string;
+    type: 'mobile';
+  };
+  payment: {
+    txHash: string;
+    amount: number;
+    verified: boolean;
+  };
+}
+
+const appleAppStoreUrl = 'https://itunes.apple.com';
+const googlePlayStoreUrl = 'https://play.google.com';
+
+const getAppleAppStoreRankings = async (category: string, country: string) => {
+  const url = `${appleAppStoreUrl}/${country}/rss/${category}/limit=50/json`;
+  const response = await proxyFetch(url, {
+    country,
+    carrier: 'T-Mobile',
+    type: 'mobile',
+  });
+  const data = await response.json();
+  const rankings: App[] = data.feed.entry.map((entry: any) => ({
+    rank: entry['im:rank']['label'],
+    appName: entry['im:name']['label'],
+    developer: entry['im:artist']['label'],
+    appId: entry['id']['label'],
+    rating: entry['im:rating']['label'],
+    ratingCount: entry['im:ratingCount']['label'],
+    price: entry['im:price']['label'],
+    inAppPurchases: entry['im:inAppPurchases']['label'] === 'true',
+    category: entry['category']['attributes']['label'],
+    lastUpdated: entry['updated']['label'],
+    size: entry['im:content']['attributes']['height'],
+    icon: entry['im:image'][0]['label'],
+  }));
+  return rankings;
+};
+
+const getGooglePlayStoreRankings = async (category: string, country: string) => {
+  const url = `${googlePlayStoreUrl}/store/apps/collection/${category}_${country}`;
+  const response = await proxyFetch(url, {
+    country,
+    carrier: 'T-Mobile',
+    type: 'mobile',
+  });
+  const data = await response.text();
+  const rankings: App[] = [];
+  // Parse HTML to extract rankings
+  // ...
+  return rankings;
+};
+
+const getAppleAppStoreAppDetails = async (appId: string, country: string) => {
+  const url = `${appleAppStoreUrl}/${country}/app/${appId}`;
+  const response = await proxyFetch(url, {
+    country,
+    carrier: 'T-Mobile',
+    type: 'mobile',
+  });
+  const data = await response.json();
+  const app: App = {
+    rank: data['im:rank']['label'],
+    appName: data['im:name']['label'],
+    developer: data['im:artist']['label'],
+    appId: data['id']['label'],
+    rating: data['im:rating']['label'],
+    ratingCount: data['im:ratingCount']['label'],
+    price: data['im:price']['label'],
+    inAppPurchases: data['im:inAppPurchases']['label'] === 'true',
+    category: data['category']['attributes']['label'],
+    lastUpdated: data['updated']['label'],
+    size: data['im:content']['attributes']['height'],
+    icon: data['im:image'][0]['label'],
+  };
+  return app;
+};
+
+const getGooglePlayStoreAppDetails = async (appId: string, country: string) => {
+  const url = `${googlePlayStoreUrl}/store/apps/details?id=${appId}`;
+  const response = await proxyFetch(url, {
+    country,
+    carrier: 'T-Mobile',
+    type: 'mobile',
+  });
+  const data = await response.text();
+  const app: App = {
+    // Parse HTML to extract app details
+    // ...
+  };
+  return app;
+};
+
+const getAppleAppStoreSearchResults = async (query: string, country: string) => {
+  const url = `${appleAppStoreUrl}/${country}/search?term=${query}`;
+  const response = await proxyFetch(url, {
+    country,
+    carrier: 'T-Mobile',
+    type: 'mobile',
+  });
+  const data = await response.json();
+  const results: App[] = data.results.map((result: any) => ({
+    rank: result['im:rank']['label'],
+    appName: result['im:name']['label'],
+    developer: result['im:artist']['label'],
+    appId: result['id']['label'],
+    rating: result['im:rating']['label'],
+    ratingCount: result['im:ratingCount']['label'],
+    price: result['im:price']['label'],
+    inAppPurchases: result['im:inAppPurchases']['label'] === 'true',
+    category: result['category']['attributes']['label'],
+    lastUpdated: result['updated']['label'],
+    size: result['im:content']['attributes']['height'],
+    icon: result['im:image'][0]['label'],
+  }));
+  return results;
+};
+
+const getGooglePlayStoreSearchResults = async (query: string, country: string) => {
+  const url = `${googlePlayStoreUrl}/store/search?q=${query}`;
+  const response = await proxyFetch(url, {
+    country,
+    carrier: 'T-Mobile',
+    type: 'mobile',
+  });
+  const data = await response.text();
+  const results: App[] = [];
+  // Parse HTML to extract search results
+  // ...
+  return results;
+};
+
+const getAppleAppStoreTrendingApps = async (country: string) => {
+  const url = `${appleAppStoreUrl}/${country}/rss/topfreeapplications/limit=50/json`;
+  const response = await proxyFetch(url, {
+    country,
+    carrier: 'T-Mobile',
+    type: 'mobile',
+  });
+  const data = await response.json();
+  const apps: App[] = data.feed.entry.map((entry: any) => ({
+    rank: entry['im:rank']['label'],
+    appName: entry['im:name']['label'],
+    developer: entry['im:artist']['label'],
+    appId: entry['id']['label'],
+    rating: entry['im:rating']['label'],
+    ratingCount: entry['im:ratingCount']['label'],
+    price: entry['im:price']['label'],
+    inAppPurchases: entry['im:inAppPurchases']['label'] === 'true',
+    category: entry['category']['attributes']['label'],
+    lastUpdated: entry['updated']['label'],
+    size: entry['im:content']['attributes']['height'],
+    icon: entry['im:image'][0]['label'],
+  }));
+  return apps;
+};
+
+const getGooglePlayStoreTrendingApps = async (country: string) => {
+  const url = `${googlePlayStoreUrl}/store/apps/collection/trending_${country}`;
+  const response = await proxyFetch(url, {
+    country,
+    carrier: 'T-Mobile',
+    type: 'mobile',
+  });
+  const data = await response.text();
+  const apps: App[] = [];
+  // Parse HTML to extract trending apps
+  // ...
+  return apps;
+};
+
+const api = async (req: any, res: any) => {
+  const { type, store, category, country, appId, query } = req.query;
+  switch (type) {
+    case 'rankings':
+      if (store === 'apple') {
+        const rankings = await getAppleAppStoreRankings(category, country);
+        const response: RankingsResponse = {
+          type: 'rankings',
+          store: 'apple',
+          category,
+          country,
+          timestamp: new Date().toISOString(),
+          rankings,
+          metadata: {
+            totalRanked: rankings.length,
+            scrapedAt: new Date().toISOString(),
+          },
+          proxy: {
+            country,
+            carrier: 'T-Mobile',
+            type: 'mobile',
+          },
+          payment: {
+            txHash: '...',
+            amount: 0.01,
+            verified: true,
+          },
+        };
+        return res.json(response);
+      } else if (store === 'google') {
+        const rankings = await getGooglePlayStoreRankings(category, country);
+        const response: RankingsResponse = {
+          type: 'rankings',
+          store: 'google',
+          category,
+          country,
+          timestamp: new Date().toISOString(),
+          rankings,
+          metadata: {
+            totalRanked: rankings.length,
+            scrapedAt: new Date().toISOString(),
+          },
+          proxy: {
+            country,
+            carrier: 'T-Mobile',
+            type: 'mobile',
+          },
+          payment: {
+            txHash: '...',
+            amount: 0.01,
+            verified: true,
+          },
+        };
+        return res.json(response);
+      }
+      break;
+    case 'app':
+      if (store === 'apple') {
+        const app = await getAppleAppStoreAppDetails(appId, country);
+        const response: AppDetailsResponse = {
+          type: 'app',
+          store: 'apple',
+          appId,
+          country,
+          timestamp: new Date().toISOString(),
+          app,
+          reviews: [],
+          metadata: {
+            totalReviews: 0,
+            scrapedAt: new Date().toISOString(),
+          },
+          proxy: {
+            country,
+            carrier: 'T-Mobile',
+            type: 'mobile',
+          },
+          payment: {
+            txHash: '...',
+            amount: 0.01,
+            verified: true,
+          },
+        };
+        return res.json(response);
+      } else if (store === 'google') {
+        const app = await getGooglePlayStoreAppDetails(appId, country);
+        const response: AppDetailsResponse = {
+          type: 'app',
+          store: 'google',
+          appId,
+          country,
+          timestamp: new Date().toISOString(),
+          app,
+          reviews: [],
+          metadata: {
+            totalReviews: 0,
+            scrapedAt: new Date().toISOString(),
+          },
+          proxy: {
+            country,
+            carrier: 'T-Mobile',
+            type: 'mobile',
+          },
+          payment: {
+            txHash: '...',
+            amount: 0.01,
+            verified: true,
+          },
+        };
+        return res.json(response);
+      }
+      break;
+    case 'search':
+      if (store === 'apple') {
+        const results = await getAppleAppStoreSearchResults(query, country);
+        const response: SearchResponse = {
+          type: 'search',
+          store: 'apple',
+          query,
+          country,
+          timestamp: new Date().toISOString(),
+          results,
+          metadata: {
+            totalResults: results.length,
+            scrapedAt: new Date().toISOString(),
+          },
+          proxy: {
+            country,
+            carrier: 'T-Mobile',
+            type: 'mobile',
+          },
+          payment: {
+            txHash: '...',
+            amount: 0.01,
+            verified: true,
+          },
+        };
+        return res.json(response);
+      } else if (store === 'google') {
+        const results = await getGooglePlayStoreSearchResults(query, country);
+        const response: SearchResponse = {
+          type: 'search',
+          store: 'google',
+          query,
+          country,
+          timestamp: new Date().toISOString(),
+          results,
+          metadata: {
+            totalResults: results.length,
+            scrapedAt: new Date().toISOString(),
+          },
+          proxy: {
+            country,
+            carrier: 'T-Mobile',
+            type: 'mobile',
+          },
+          payment: {
+            txHash: '...',
+            amount: 0.01,
+            verified: true,
+          },
+        };
+        return res.json(response);
+      }
+      break;
+    case 'trending':
+      if (store === 'apple') {
+        const apps = await getAppleAppStoreTrendingApps(country);
+        const response: TrendingResponse = {
+          type: 'trending',
+          store: 'apple',
+          country,
+          timestamp: new Date().toISOString(),
+          apps,
+          metadata: {
+            totalApps: apps.length,
+            scrapedAt: new Date().toISOString(),
+          },
+          proxy: {
+            country,
+            carrier: 'T-Mobile',
+            type: 'mobile',
+          },
+          payment: {
+            txHash: '...',
+            amount: 0.01,
+            verified: true,
+          },
+        };
+        return res.json(response);
+      } else if (store === 'google') {
+        const apps = await getGooglePlayStoreTrendingApps(country);
+        const response: TrendingResponse = {
+          type: 'trending',
+          store: 'google',
+          country,
+          timestamp: new Date().toISOString(),
+          apps,
+          metadata: {
+            totalApps: apps.length,
+            scrapedAt: new Date().toISOString(),
+          },
+          proxy: {
+            country,
+            carrier: 'T-Mobile',
+            type: 'mobile',
+          },
+          payment: {
+            txHash: '...',
+            amount: 0.01,
+            verified: true,
+          },
+        };
+        return res.json(response);
+      }
+      break;
+    default:
+      return res.status(400).json({ error: 'Invalid type' });
+  }
+};
+
+export default api;
+```
