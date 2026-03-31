@@ -23,6 +23,16 @@ export interface TwitterResult {
   platform: 'twitter';
 }
 
+export interface TwitterUserProfile {
+  handle: string;
+  displayName: string | null;
+  bio: string | null;
+  followersEstimate: number | null;
+  tweetsFound: number;
+  profileUrl: string;
+  platform: 'twitter';
+}
+
 // OpenSERP response shape
 interface OpenSERPResult {
   rank?: unknown;
@@ -377,4 +387,302 @@ export async function getTwitterTrending(
   }
 
   return deduplicateByUrl(results).slice(0, safeLimit);
+}
+
+/**
+ * Fetch a user profile for a given Twitter/X handle.
+ *
+ * Strategy: search SearXNG for "from:handle site:x.com" to gather tweet results
+ * and infer the profile metadata from the result set.
+ *
+ * @param handle - Twitter/X username (without @)
+ */
+export async function getUserProfile(handle: string): Promise<TwitterUserProfile> {
+  const safeHandle = sanitizeText(handle, MAX_AUTHOR_LENGTH).replace(/^@/, '');
+  const profileUrl = `https://x.com/${safeHandle}`;
+
+  if (!safeHandle) {
+    return {
+      handle: '',
+      displayName: null,
+      bio: null,
+      followersEstimate: null,
+      tweetsFound: 0,
+      profileUrl,
+      platform: 'twitter',
+    };
+  }
+
+  const queries = [
+    `from:${safeHandle} site:x.com`,
+    `site:x.com/${safeHandle}`,
+    `"@${safeHandle}" x.com`,
+  ];
+
+  const collected: TwitterResult[] = [];
+  let displayName: string | null = null;
+  let bio: string | null = null;
+
+  for (const q of queries) {
+    if (collected.length >= 20) break;
+
+    const url = `${SEARXNG_BASE}/search?q=${encodeURIComponent(q)}&format=json&engines=google,bing,duckduckgo`;
+
+    try {
+      const res = await fetch(url, {
+        signal: AbortSignal.timeout(TIMEOUT_MS),
+        headers: { 'User-Agent': BOT_UA, Accept: 'application/json' },
+      });
+
+      if (!res.ok) continue;
+
+      const payload = await res.json() as SearXNGResponse;
+      if (!Array.isArray(payload?.results)) continue;
+
+      for (const item of payload.results) {
+        if (!item || typeof item !== 'object') continue;
+        const raw = item as SearXNGWebResult;
+        const itemUrl = normalizeHttpUrl(raw.url);
+        if (!itemUrl) continue;
+
+        // Extract display name from titles like "Username (@handle) / X"
+        if (!displayName && typeof raw.title === 'string') {
+          const titleStr = sanitizeText(raw.title, MAX_TITLE_LENGTH);
+          // e.g. "Elon Musk (@elonmusk) / X" or "@elonmusk on X: ..."
+          const nameMatch = titleStr.match(/^([^(@]+)\s*\(@?[\w]+\)/);
+          if (nameMatch) {
+            const candidate = nameMatch[1].trim();
+            if (candidate.length > 0 && candidate.length <= 100) {
+              displayName = candidate;
+            }
+          }
+        }
+
+        // Use the first content snippet as bio if it's from the profile page
+        if (!bio && typeof raw.content === 'string') {
+          const contentStr = sanitizeText(raw.content, MAX_TEXT_LENGTH);
+          if (contentStr.length > 20) {
+            bio = contentStr;
+          }
+        }
+
+        const mapped = mapSearXNGResult(raw);
+        if (mapped && !collected.find((r) => r.url === mapped.url)) {
+          collected.push(mapped);
+        }
+      }
+    } catch {
+      continue;
+    }
+  }
+
+  // Also try OpenSERP for additional signals
+  if (collected.length < 10) {
+    const openSerpQuery = `site:x.com/${safeHandle}`;
+    const openSerpUrl = `${OPENSERP_BASE}/mega/search?text=${encodeURIComponent(openSerpQuery)}`;
+
+    try {
+      const res = await fetch(openSerpUrl, {
+        signal: AbortSignal.timeout(TIMEOUT_MS),
+        headers: { 'User-Agent': BOT_UA, Accept: 'application/json' },
+      });
+
+      if (res.ok) {
+        const rawResults = await res.json();
+        if (Array.isArray(rawResults)) {
+          for (const item of rawResults) {
+            if (!item || typeof item !== 'object') continue;
+            const mapped = mapOpenSERPResult(item as OpenSERPResult);
+            if (mapped && !collected.find((r) => r.url === mapped.url)) {
+              collected.push(mapped);
+            }
+          }
+        }
+      }
+    } catch {
+      // ignore OpenSERP fallback errors
+    }
+  }
+
+  const deduped = deduplicateByUrl(collected);
+
+  return {
+    handle: safeHandle,
+    displayName,
+    bio,
+    followersEstimate: null,
+    tweetsFound: deduped.length,
+    profileUrl,
+    platform: 'twitter',
+  };
+}
+
+/**
+ * Fetch recent tweets for a given Twitter/X handle.
+ *
+ * Strategy: search SearXNG/OpenSERP for "from:handle site:x.com" tweet results.
+ *
+ * @param handle - Twitter/X username (without @)
+ * @param limit  - max results (capped at 50)
+ * @param days   - recency hint for time_range filter
+ */
+export async function getUserTimeline(
+  handle: string,
+  limit: number = 20,
+  days: number = 30,
+): Promise<TwitterResult[]> {
+  const safeHandle = sanitizeText(handle, MAX_AUTHOR_LENGTH).replace(/^@/, '');
+  if (!safeHandle) return [];
+
+  const safeLimit = clamp(limit, 1, MAX_LIMIT);
+  const timeRange = days > 30 ? 'year' : days > 7 ? 'month' : 'week';
+
+  const queries = [
+    `from:${safeHandle} site:x.com`,
+    `site:x.com/${safeHandle}/status`,
+    `"@${safeHandle}" x.com tweet`,
+  ];
+
+  const engines = ['google,bing,duckduckgo', 'google,bing', 'google'];
+  const collected: TwitterResult[] = [];
+
+  for (const q of queries) {
+    for (const engineSet of engines) {
+      if (collected.length >= safeLimit) break;
+
+      const url = `${SEARXNG_BASE}/search?q=${encodeURIComponent(q)}&format=json&engines=${engineSet}&time_range=${timeRange}`;
+
+      try {
+        const res = await fetch(url, {
+          signal: AbortSignal.timeout(TIMEOUT_MS),
+          headers: { 'User-Agent': BOT_UA, Accept: 'application/json' },
+        });
+
+        if (!res.ok) continue;
+
+        const payload = await res.json() as SearXNGResponse;
+        if (!Array.isArray(payload?.results)) continue;
+
+        for (const item of payload.results) {
+          if (collected.length >= safeLimit) break;
+          if (!item || typeof item !== 'object') continue;
+          const mapped = mapSearXNGResult(item as SearXNGWebResult);
+          if (mapped) collected.push(mapped);
+        }
+      } catch {
+        continue;
+      }
+    }
+    if (collected.length >= safeLimit) break;
+  }
+
+  // OpenSERP fallback
+  if (collected.length < safeLimit) {
+    const openSerpQuery = `from:${safeHandle} site:x.com`;
+    const openSerpUrl = `${OPENSERP_BASE}/mega/search?text=${encodeURIComponent(openSerpQuery)}`;
+
+    try {
+      const res = await fetch(openSerpUrl, {
+        signal: AbortSignal.timeout(TIMEOUT_MS),
+        headers: { 'User-Agent': BOT_UA, Accept: 'application/json' },
+      });
+
+      if (res.ok) {
+        const rawResults = await res.json();
+        if (Array.isArray(rawResults)) {
+          for (const item of rawResults) {
+            if (collected.length >= safeLimit) break;
+            if (!item || typeof item !== 'object') continue;
+            const mapped = mapOpenSERPResult(item as OpenSERPResult);
+            if (mapped) collected.push(mapped);
+          }
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  return deduplicateByUrl(collected).slice(0, safeLimit);
+}
+
+/**
+ * Fetch tweets in a thread/conversation anchored at a tweet ID.
+ *
+ * Strategy: search for URLs containing the tweet's status ID and related
+ * reply/conversation signals across SearXNG and OpenSERP.
+ *
+ * @param tweetId - numeric tweet/status ID string
+ */
+export async function getThread(tweetId: string): Promise<TwitterResult[]> {
+  // Validate: tweet IDs are numeric strings
+  const safeTweetId = typeof tweetId === 'string'
+    ? tweetId.trim().replace(/\D/g, '').slice(0, 20)
+    : '';
+
+  if (!safeTweetId) return [];
+
+  const queries = [
+    `site:x.com/*/status/${safeTweetId}`,
+    `twitter.com/*/status/${safeTweetId}`,
+    `x.com status ${safeTweetId}`,
+  ];
+
+  const collected: TwitterResult[] = [];
+
+  for (const q of queries) {
+    if (collected.length >= MAX_LIMIT) break;
+
+    const url = `${SEARXNG_BASE}/search?q=${encodeURIComponent(q)}&format=json&engines=google,bing,duckduckgo`;
+
+    try {
+      const res = await fetch(url, {
+        signal: AbortSignal.timeout(TIMEOUT_MS),
+        headers: { 'User-Agent': BOT_UA, Accept: 'application/json' },
+      });
+
+      if (!res.ok) continue;
+
+      const payload = await res.json() as SearXNGResponse;
+      if (!Array.isArray(payload?.results)) continue;
+
+      for (const item of payload.results) {
+        if (collected.length >= MAX_LIMIT) break;
+        if (!item || typeof item !== 'object') continue;
+        const mapped = mapSearXNGResult(item as SearXNGWebResult);
+        if (mapped) collected.push(mapped);
+      }
+    } catch {
+      continue;
+    }
+  }
+
+  // OpenSERP fallback for thread expansion
+  if (collected.length < 5) {
+    const openSerpQuery = `site:x.com status ${safeTweetId}`;
+    const openSerpUrl = `${OPENSERP_BASE}/mega/search?text=${encodeURIComponent(openSerpQuery)}`;
+
+    try {
+      const res = await fetch(openSerpUrl, {
+        signal: AbortSignal.timeout(TIMEOUT_MS),
+        headers: { 'User-Agent': BOT_UA, Accept: 'application/json' },
+      });
+
+      if (res.ok) {
+        const rawResults = await res.json();
+        if (Array.isArray(rawResults)) {
+          for (const item of rawResults) {
+            if (collected.length >= MAX_LIMIT) break;
+            if (!item || typeof item !== 'object') continue;
+            const mapped = mapOpenSERPResult(item as OpenSERPResult);
+            if (mapped) collected.push(mapped);
+          }
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  return deduplicateByUrl(collected);
 }
