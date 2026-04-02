@@ -1,0 +1,135 @@
+```typescript
+// src/service.ts
+import axios from 'axios';
+import { initX402 } from './x402';
+
+const PROXIES_SX_API_KEY = 'YOUR_PROXIES_SX_API_KEY';
+const PROXIES_SX_API_SECRET = 'YOUR_PROXIES_SX_API_SECRET';
+const ZILLOW_URL = 'https://www.zillow.com';
+
+const x402 = initX402();
+
+const getProperty = async (zpid: string) => {
+  const proxy = await getProxy();
+  const url = `${ZILLOW_URL}/homedetails/${zpid}_zpid/`;
+  const response = await axios.get(url, {
+    proxy: {
+      host: proxy.ip,
+      port: proxy.port,
+    },
+  });
+
+  const property = extractPropertyDetails(response.data);
+  return property;
+};
+
+const searchProperties = async (address: string, zip: string, type: string, minPrice: number) => {
+  const proxy = await getProxy();
+  const url = `${ZILLOW_URL}/search/`;
+  const params = {
+    address,
+    zip,
+    type,
+    minPrice,
+  };
+  const response = await axios.get(url, {
+    params,
+    proxy: {
+      host: proxy.ip,
+      port: proxy.port,
+    },
+  });
+
+  const properties = extractSearchResults(response.data);
+  return properties;
+};
+
+const getMarketStats = async (zip: string) => {
+  const proxy = await getProxy();
+  const url = `${ZILLOW_URL}/market/${zip}/`;
+  const response = await axios.get(url, {
+    proxy: {
+      host: proxy.ip,
+      port: proxy.port,
+    },
+  });
+
+  const marketStats = extractMarketStats(response.data);
+  return marketStats;
+};
+
+const getComps = async (zpid: string, radius: number) => {
+  const proxy = await getProxy();
+  const url = `${ZILLOW_URL}/comps/${zpid}_zpid/${radius}/`;
+  const response = await axios.get(url, {
+    proxy: {
+      host: proxy.ip,
+      port: proxy.port,
+    },
+  });
+
+  const comps = extractComps(response.data);
+  return comps;
+};
+
+const getProxy = async () => {
+  const response = await axios.post(`https://api.proxies.sx/v1/proxy`, {
+    api_key: PROXIES_SX_API_KEY,
+    api_secret: PROXIES_SX_API_SECRET,
+  });
+
+  return response.data;
+};
+
+const extractPropertyDetails = (html: string) => {
+  // implement property details extraction
+};
+
+const extractSearchResults = (html: string) => {
+  // implement search results extraction
+};
+
+const extractMarketStats = (html: string) => {
+  // implement market stats extraction
+};
+
+const extractComps = (html: string) => {
+  // implement comps extraction
+};
+
+// API Endpoints
+const express = require('express');
+const app = express();
+
+app.get('/api/realestate/property/:zpid', async (req, res) => {
+  const zpid = req.params.zpid;
+  const property = await getProperty(zpid);
+  res.json(property);
+});
+
+app.get('/api/realestate/search', async (req, res) => {
+  const address = req.query.address;
+  const zip = req.query.zip;
+  const type = req.query.type;
+  const minPrice = req.query.minPrice;
+  const properties = await searchProperties(address, zip, type, minPrice);
+  res.json(properties);
+});
+
+app.get('/api/realestate/market', async (req, res) => {
+  const zip = req.query.zip;
+  const marketStats = await getMarketStats(zip);
+  res.json(marketStats);
+});
+
+app.get('/api/realestate/comps/:zpid', async (req, res) => {
+  const zpid = req.params.zpid;
+  const radius = req.query.radius;
+  const comps = await getComps(zpid, radius);
+  res.json(comps);
+});
+
+app.listen(3000, () => {
+  console.log('Server listening on port 3000');
+});
+```
