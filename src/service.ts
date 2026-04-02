@@ -29,6 +29,7 @@ import {
 } from './scrapers/linkedin-enrichment';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
+import { getSearchAds, getDisplayAds, getAdvertiserInfo, AdVerificationError } from './scrapers/ad-verification-scraper';
 
 export const serviceRouter = new Hono();
 
@@ -1484,5 +1485,108 @@ serviceRouter.get('/serp', async (c) => {
     });
   } catch (err: any) {
     return c.json({ error: 'SERP scrape failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ═══════════════════════════════════════════════════════
+// Mobile Ad Verification & Creative Intelligence (Bounty #53)
+// ═══════════════════════════════════════════════════════
+
+serviceRouter.get('/ads/search', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/ads/search', 'Google search ads verification — see what ads show for a query from a mobile carrier IP', 0.02, walletAddress, {
+      input: { query: 'string (required)', country: 'string (US, DE, GB, FR, ES)' },
+      output: 'SearchAdResult — topAds, bottomAds, organicResults count',
+    }), 402);
+  }
+  const verification = await verifyPayment(payment, walletAddress, 0.02);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const query = c.req.query('query');
+  if (!query) return c.json({ error: 'Missing: query', example: '/api/ads/search?query=best+vpn&country=US' }, 400);
+
+  const startTime = Date.now();
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const result = await getSearchAds(query, c.req.query('country') || 'US');
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+    return c.json({
+      ...result,
+      meta: { proxyIp: ip, proxyCountry: proxy.country, proxyType: 'mobile', responseTimeMs: Date.now() - startTime },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    if (err instanceof AdVerificationError) return c.json({ error: err.code, message: err.message }, err.httpStatus as any);
+    return c.json({ error: 'Search ads failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+serviceRouter.get('/ads/display', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/ads/display', 'Display ad detection on any webpage — ad networks, sizes, types', 0.03, walletAddress, {
+      input: { url: 'string (required) — webpage URL', country: 'string (default: US)' },
+      output: 'DisplayAdResult — detected ad networks, types, sizes',
+    }), 402);
+  }
+  const verification = await verifyPayment(payment, walletAddress, 0.03);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const url = c.req.query('url');
+  if (!url) return c.json({ error: 'Missing: url', example: '/api/ads/display?url=https://techcrunch.com' }, 400);
+
+  const startTime = Date.now();
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const result = await getDisplayAds(url, c.req.query('country') || 'US');
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+    return c.json({
+      ...result,
+      meta: { proxyIp: ip, proxyCountry: proxy.country, proxyType: 'mobile', responseTimeMs: Date.now() - startTime },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    if (err instanceof AdVerificationError) return c.json({ error: err.code, message: err.message }, err.httpStatus as any);
+    return c.json({ error: 'Display ads failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+serviceRouter.get('/ads/advertiser', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/ads/advertiser', 'Advertiser intelligence — what ads a domain runs via Google Ads Transparency', 0.02, walletAddress, {
+      input: { domain: 'string (required)', country: 'string (default: US)' },
+      output: 'AdvertiserInfo — adsFound, adFormats, lastSeen',
+    }), 402);
+  }
+  const verification = await verifyPayment(payment, walletAddress, 0.02);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const domain = c.req.query('domain');
+  if (!domain) return c.json({ error: 'Missing: domain', example: '/api/ads/advertiser?domain=nordvpn.com' }, 400);
+
+  const startTime = Date.now();
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const result = await getAdvertiserInfo(domain, c.req.query('country') || 'US');
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+    return c.json({
+      ...result,
+      meta: { proxyIp: ip, proxyCountry: proxy.country, proxyType: 'mobile', responseTimeMs: Date.now() - startTime },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    if (err instanceof AdVerificationError) return c.json({ error: err.code, message: err.message }, err.httpStatus as any);
+    return c.json({ error: 'Advertiser lookup failed', message: err?.message || String(err) }, 502);
   }
 });

@@ -1,0 +1,31 @@
+{
+  "type": "search_ads_verification",
+  "timestamp": "2026-04-02T14:00:23.285416Z",
+  "query": "GET /api/ads/search?query=best+vpn&country=US",
+  "data": [
+    {
+      "query": "best vpn 2026",
+      "sponsoredCount": 0,
+      "adMarkers": 0,
+      "pageSize": 88675
+    },
+    {
+      "query": "web hosting",
+      "sponsoredCount": 0,
+      "adMarkers": 0,
+      "pageSize": 88825
+    },
+    {
+      "query": "car insurance",
+      "sponsoredCount": 0,
+      "adMarkers": 0,
+      "pageSize": 0
+    }
+  ],
+  "proxy": {
+    "country": "US",
+    "carrier": "T-Mobile",
+    "type": "mobile",
+    "ip": "172.56.170.242"
+  }
+}
