@@ -1,0 +1,84 @@
+{
+  "id": "tiktok-trend-intelligence",
+  "name": "TikTok Trend Intelligence API",
+  "description": "Real-time TikTok trending videos, hashtag analytics, creator profiles, and sound trends — routed through real 4G/5G mobile carrier IPs that bypass TikTok's aggressive anti-bot.",
+  "longDescription": "TikTok is the hardest platform to scrape. It uses encrypted headers, behavioral fingerprinting, and real-time fraud scoring. Datacenter IPs are blocked instantly. Even residential IPs get flagged at scale. This service routes through real mobile carrier IPs (T-Mobile, Vodafone, Orange) — the only reliable path for TikTok data. Extract trending For You page content, hashtag analytics with view counts, creator profiles with engagement metrics, and sound/audio trend data across 6 countries.",
+  "endpoint": "https://marketplace-service-template.onrender.com/api/tiktok",
+  "docsUrl": "https://github.com/Alfaxad/marketplace-service-template/blob/bounty-51-tiktok/README.md",
+  "pricing": {
+    "model": "per-request",
+    "endpoints": [
+      {
+        "path": "/api/tiktok/trending",
+        "price": "0.02",
+        "description": "Trending videos, hashtags, and sounds by country"
+      },
+      {
+        "path": "/api/tiktok/hashtag",
+        "price": "0.02",
+        "description": "Hashtag analytics — views, growth velocity, top videos"
+      },
+      {
+        "path": "/api/tiktok/creator",
+        "price": "0.02",
+        "description": "Creator profile — followers, engagement, recent posts"
+      },
+      {
+        "path": "/api/tiktok/sound",
+        "price": "0.02",
+        "description": "Sound/audio trend data — usage count, trending status"
+      }
+    ],
+    "currency": "USDC",
+    "networks": [
+      {
+        "network": "solana",
+        "chainId": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "recipient": "6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv",
+        "asset": "USDC",
+        "assetAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+      },
+      {
+        "network": "base",
+        "chainId": "eip155:8453",
+        "recipient": "0xF8cD900794245fc36CBE65be9afc23CDF5103042",
+        "asset": "USDC",
+        "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+      }
+    ]
+  },
+  "category": "scraper",
+  "tags": [
+    "tiktok",
+    "trending",
+    "social-media",
+    "hashtags",
+    "creators",
+    "sounds",
+    "intelligence",
+    "analytics"
+  ],
+  "whyMobileProxy": "TikTok employs the most advanced anti-scraping in social media: device fingerprinting (TLS fingerprint, canvas hash, WebGL renderer), behavioral analysis (datacenter IPs flagged within minutes), encrypted headers (X-Bogus, _signature, msToken validated against IP reputation), and geo-fencing. Mobile carrier IPs have high trust scores and pass all device trust checks that datacenter/residential IPs fail.",
+  "competitors": [
+    {
+      "name": "EnsembleData",
+      "price": "$0.01-0.03/request",
+      "limitation": "Struggles with reliability, frequent blocks"
+    },
+    {
+      "name": "ScrapeCreators",
+      "price": "$0.02-0.05/request",
+      "limitation": "Limited country support, datacenter proxies"
+    }
+  ],
+  "owner": {
+    "name": "Alfaxad",
+    "github": "Alfaxad"
+  },
+  "status": "pending",
+  "featured": false,
+  "addedAt": "2026-04-02",
+  "x402": {
+    "discoveryUrl": "https://marketplace-service-template.onrender.com/api/tiktok/trending"
+  }
+}

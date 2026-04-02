@@ -1,0 +1,90 @@
+{
+  "type": "creator",
+  "country": "GB",
+  "timestamp": "2026-04-02T10:40:00Z",
+  "query": "GET /api/tiktok/creator?username=khaby.lame&country=GB",
+  "note": "Sample output — real data will be generated with mobile proxy credentials",
+  "data": {
+    "username": "khaby.lame",
+    "nickname": "Khabane lame",
+    "bio": "If you wanna laugh you are in the right place😂",
+    "verified": true,
+    "followers": 162400000,
+    "following": 78,
+    "likes": 2400000000,
+    "videoCount": 1243,
+    "avatarUrl": null,
+    "recentPosts": [
+      {
+        "id": "7483432109876",
+        "description": "Why do people complicate things? 😂 #khaby #comedy #simple #fyp",
+        "author": {
+          "username": "khaby.lame",
+          "nickname": "Khabane lame",
+          "followers": 162400000,
+          "verified": true
+        },
+        "stats": {
+          "views": 45000000,
+          "likes": 4200000,
+          "comments": 89000,
+          "shares": 230000,
+          "bookmarks": 560000
+        },
+        "sound": {
+          "id": "7483000000001",
+          "name": "Oh No - Kreepa",
+          "author": "Kreepa"
+        },
+        "hashtags": ["khaby", "comedy", "simple", "fyp"],
+        "createdAt": "2026-04-01T12:00:00Z",
+        "url": "https://www.tiktok.com/@khaby.lame/video/7483432109876",
+        "duration": 18,
+        "coverUrl": null
+      },
+      {
+        "id": "7483321098765",
+        "description": "Life hack gone wrong 🤦‍♂️ #lifehack #comedy #khaby",
+        "author": {
+          "username": "khaby.lame",
+          "nickname": "Khabane lame",
+          "followers": 162400000,
+          "verified": true
+        },
+        "stats": {
+          "views": 38000000,
+          "likes": 3800000,
+          "comments": 67000,
+          "shares": 190000,
+          "bookmarks": 420000
+        },
+        "sound": {
+          "id": "7483000000002",
+          "name": "Original Sound",
+          "author": "khaby.lame"
+        },
+        "hashtags": ["lifehack", "comedy", "khaby"],
+        "createdAt": "2026-03-30T16:00:00Z",
+        "url": "https://www.tiktok.com/@khaby.lame/video/7483321098765",
+        "duration": 24,
+        "coverUrl": null
+      }
+    ]
+  },
+  "proxy": {
+    "country": "GB",
+    "carrier": "EE",
+    "type": "mobile"
+  },
+  "meta": {
+    "proxyIp": "sample — real IP from mobile proxy",
+    "scrapedAt": "2026-04-02T10:40:00Z",
+    "postCount": 2
+  },
+  "payment": {
+    "txHash": "sample_tx_hash",
+    "network": "solana",
+    "amount": 0.02,
+    "verified": true
+  }
+}

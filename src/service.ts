@@ -29,6 +29,13 @@ import {
 } from './scrapers/linkedin-enrichment';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
+import {
+  scrapeTrending as scrapeTikTokTrending,
+  scrapeHashtag as scrapeTikTokHashtag,
+  scrapeCreator as scrapeTikTokCreator,
+  scrapeSound as scrapeTikTokSound,
+  TikTokError,
+} from './scrapers/tiktok-scraper';
 
 export const serviceRouter = new Hono();
 
@@ -1484,5 +1491,346 @@ serviceRouter.get('/serp', async (c) => {
     });
   } catch (err: any) {
     return c.json({ error: 'SERP scrape failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ═══════════════════════════════════════════════════════
+// TikTok Trend Intelligence API (Bounty #51)
+// ═══════════════════════════════════════════════════════
+
+const TIKTOK_PRICE_USDC = 0.02; // $0.02 per request
+const TIKTOK_SUPPORTED_COUNTRIES = ['US', 'DE', 'GB', 'FR', 'ES', 'PL'];
+
+const TIKTOK_OUTPUT_SCHEMA = {
+  trending: {
+    input: {
+      country: 'string (default: "US") — ISO country code (US, DE, GB, FR, ES, PL)',
+    },
+    output: {
+      type: '"trending"',
+      country: 'string',
+      timestamp: 'ISO8601 string',
+      data: {
+        videos: 'TikTokVideo[] — id, description, author, stats (views/likes/comments/shares), sound, hashtags, createdAt, url',
+        trending_hashtags: 'TikTokHashtag[] — name, views, videoCount',
+        trending_sounds: 'TikTokSound[] — id, name, author, uses',
+      },
+      proxy: '{ country, carrier, type: "mobile" }',
+      meta: '{ proxyIp, scrapedAt, responseTimeMs }',
+    },
+  },
+  hashtag: {
+    input: {
+      tag: 'string (required) — hashtag name (without #)',
+      country: 'string (default: "US")',
+    },
+    output: {
+      type: '"hashtag"',
+      data: {
+        hashtag: '{ name, id, views, videoCount, description }',
+        videos: 'TikTokVideo[]',
+      },
+    },
+  },
+  creator: {
+    input: {
+      username: 'string (required) — TikTok username (without @)',
+      country: 'string (default: "US")',
+    },
+    output: {
+      type: '"creator"',
+      data: '{ username, nickname, bio, verified, followers, following, likes, videoCount, avatarUrl, recentPosts: TikTokVideo[] }',
+    },
+  },
+  sound: {
+    input: {
+      id: 'string (required) — TikTok sound/music ID',
+      country: 'string (default: "US")',
+    },
+    output: {
+      type: '"sound"',
+      data: {
+        sound: '{ id, name, author, uses, duration, isOriginal }',
+        videos: 'TikTokVideo[]',
+      },
+    },
+  },
+};
+
+// ─── GET /api/tiktok/trending ──────────────────────
+
+serviceRouter.get('/tiktok/trending', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response(
+      '/api/tiktok/trending',
+      'Real-time TikTok trending videos, hashtags, and sounds by country — routed through 4G/5G mobile carrier IPs',
+      TIKTOK_PRICE_USDC,
+      walletAddress,
+      TIKTOK_OUTPUT_SCHEMA.trending,
+    ), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, TIKTOK_PRICE_USDC);
+  if (!verification.valid) {
+    return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+  }
+
+  const country = (c.req.query('country') || 'US').toUpperCase();
+  if (!TIKTOK_SUPPORTED_COUNTRIES.includes(country)) {
+    return c.json({
+      error: `Unsupported country: ${country}`,
+      supported: TIKTOK_SUPPORTED_COUNTRIES,
+      example: '/api/tiktok/trending?country=US',
+    }, 400);
+  }
+
+  const startTime = Date.now();
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const result = await scrapeTikTokTrending(country);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      type: 'trending',
+      country,
+      timestamp: new Date().toISOString(),
+      data: result,
+      proxy: { country: proxy.country, carrier: proxy.host, type: 'mobile' },
+      meta: {
+        proxyIp: ip,
+        scrapedAt: new Date().toISOString(),
+        responseTimeMs: Date.now() - startTime,
+        resultCount: result.videos.length,
+      },
+      payment: {
+        txHash: payment.txHash,
+        network: payment.network,
+        amount: verification.amount,
+        verified: true,
+      },
+    });
+  } catch (err: any) {
+    if (err instanceof TikTokError) {
+      return c.json({
+        error: err.code,
+        message: err.message,
+        shouldRetry: err.code === 'rate_limited' || err.code === 'captcha_detected',
+      }, err.httpStatus as any);
+    }
+    return c.json({ error: 'TikTok trending fetch failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/tiktok/hashtag ───────────────────────
+
+serviceRouter.get('/tiktok/hashtag', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response(
+      '/api/tiktok/hashtag',
+      'TikTok hashtag analytics — view counts, growth velocity, and top videos for any hashtag',
+      TIKTOK_PRICE_USDC,
+      walletAddress,
+      TIKTOK_OUTPUT_SCHEMA.hashtag,
+    ), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, TIKTOK_PRICE_USDC);
+  if (!verification.valid) {
+    return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+  }
+
+  const tag = c.req.query('tag');
+  if (!tag) {
+    return c.json({
+      error: 'Missing required parameter: tag',
+      example: '/api/tiktok/hashtag?tag=ai&country=US',
+    }, 400);
+  }
+
+  const country = (c.req.query('country') || 'US').toUpperCase();
+  if (!TIKTOK_SUPPORTED_COUNTRIES.includes(country)) {
+    return c.json({ error: `Unsupported country: ${country}`, supported: TIKTOK_SUPPORTED_COUNTRIES }, 400);
+  }
+
+  const startTime = Date.now();
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const result = await scrapeTikTokHashtag(tag, country);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      type: 'hashtag',
+      country,
+      timestamp: new Date().toISOString(),
+      data: result,
+      proxy: { country: proxy.country, carrier: proxy.host, type: 'mobile' },
+      meta: {
+        proxyIp: ip,
+        scrapedAt: new Date().toISOString(),
+        responseTimeMs: Date.now() - startTime,
+        resultCount: result.videos.length,
+      },
+      payment: {
+        txHash: payment.txHash,
+        network: payment.network,
+        amount: verification.amount,
+        verified: true,
+      },
+    });
+  } catch (err: any) {
+    if (err instanceof TikTokError) {
+      return c.json({ error: err.code, message: err.message, shouldRetry: err.code === 'rate_limited' || err.code === 'captcha_detected' }, err.httpStatus as any);
+    }
+    return c.json({ error: 'TikTok hashtag fetch failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/tiktok/creator ───────────────────────
+
+serviceRouter.get('/tiktok/creator', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response(
+      '/api/tiktok/creator',
+      'TikTok creator profile — followers, engagement rate, recent posts, bio, and verification status',
+      TIKTOK_PRICE_USDC,
+      walletAddress,
+      TIKTOK_OUTPUT_SCHEMA.creator,
+    ), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, TIKTOK_PRICE_USDC);
+  if (!verification.valid) {
+    return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+  }
+
+  const username = c.req.query('username');
+  if (!username) {
+    return c.json({
+      error: 'Missing required parameter: username',
+      example: '/api/tiktok/creator?username=charlidamelio',
+    }, 400);
+  }
+
+  const country = (c.req.query('country') || 'US').toUpperCase();
+
+  const startTime = Date.now();
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const result = await scrapeTikTokCreator(username, country);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      type: 'creator',
+      country,
+      timestamp: new Date().toISOString(),
+      data: result,
+      proxy: { country: proxy.country, carrier: proxy.host, type: 'mobile' },
+      meta: {
+        proxyIp: ip,
+        scrapedAt: new Date().toISOString(),
+        responseTimeMs: Date.now() - startTime,
+        postCount: result.recentPosts.length,
+      },
+      payment: {
+        txHash: payment.txHash,
+        network: payment.network,
+        amount: verification.amount,
+        verified: true,
+      },
+    });
+  } catch (err: any) {
+    if (err instanceof TikTokError) {
+      return c.json({ error: err.code, message: err.message, shouldRetry: err.code === 'rate_limited' || err.code === 'captcha_detected' }, err.httpStatus as any);
+    }
+    return c.json({ error: 'TikTok creator fetch failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/tiktok/sound ─────────────────────────
+
+serviceRouter.get('/tiktok/sound', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response(
+      '/api/tiktok/sound',
+      'TikTok sound/audio intelligence — usage stats, trending status, and top videos using the sound',
+      TIKTOK_PRICE_USDC,
+      walletAddress,
+      TIKTOK_OUTPUT_SCHEMA.sound,
+    ), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, TIKTOK_PRICE_USDC);
+  if (!verification.valid) {
+    return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+  }
+
+  const soundId = c.req.query('id');
+  if (!soundId) {
+    return c.json({
+      error: 'Missing required parameter: id',
+      example: '/api/tiktok/sound?id=7341234567890',
+    }, 400);
+  }
+
+  const country = (c.req.query('country') || 'US').toUpperCase();
+
+  const startTime = Date.now();
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const result = await scrapeTikTokSound(soundId, country);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      type: 'sound',
+      country,
+      timestamp: new Date().toISOString(),
+      data: result,
+      proxy: { country: proxy.country, carrier: proxy.host, type: 'mobile' },
+      meta: {
+        proxyIp: ip,
+        scrapedAt: new Date().toISOString(),
+        responseTimeMs: Date.now() - startTime,
+        resultCount: result.videos.length,
+      },
+      payment: {
+        txHash: payment.txHash,
+        network: payment.network,
+        amount: verification.amount,
+        verified: true,
+      },
+    });
+  } catch (err: any) {
+    if (err instanceof TikTokError) {
+      return c.json({ error: err.code, message: err.message, shouldRetry: err.code === 'rate_limited' || err.code === 'captcha_detected' }, err.httpStatus as any);
+    }
+    return c.json({ error: 'TikTok sound fetch failed', message: err?.message || String(err) }, 502);
   }
 });
