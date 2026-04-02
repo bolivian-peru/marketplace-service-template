@@ -1472,7 +1472,6 @@ serviceRouter.get('/serp', async (c) => {
 
   try {
     const proxy = getProxy();
-    const ip = await getProxyExitIp();
     const results = await scrapeMobileSERP(query, 'us', 'en', location);
 
     c.header('X-Payment-Settled', 'true');
@@ -1481,7 +1480,7 @@ serviceRouter.get('/serp', async (c) => {
     return c.json({
       query,
       results,
-      meta: { location, num, proxy: { ip, country: proxy.country, type: 'mobile' } },
+      meta: { location, num, proxy: { country: proxy.country, type: 'mobile' } },
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
   } catch (err: any) {
