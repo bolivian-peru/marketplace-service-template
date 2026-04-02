@@ -1,0 +1,121 @@
+{
+  "type": "trend_intelligence",
+  "timestamp": "2026-04-02T14:06:25.810140Z",
+  "data": {
+    "platform": "reddit",
+    "trending_posts": [
+      {
+        "title": "What’s a discontinued snack or drink you’d pay $20 to have one last taste of?",
+        "subreddit": "AskReddit",
+        "score": 2129,
+        "comments": 7560,
+        "url": "https://reddit.com/r/AskReddit/comments/1sa3jwv/whats_a_discontinued_snack_or_drink_youd_pay_20/"
+      },
+      {
+        "title": "my local Panera removed almost all the outlets and replaced them with blanking plates so you can't c",
+        "subreddit": "mildlyinfuriating",
+        "score": 31840,
+        "comments": 4222,
+        "url": "https://reddit.com/r/mildlyinfuriating/comments/1s9xrxt/my_local_panera_removed_almost_all_the_outlets/"
+      },
+      {
+        "title": "NASA launches first crewed lunar mission in half a century",
+        "subreddit": "worldnews",
+        "score": 32788,
+        "comments": 3800,
+        "url": "https://reddit.com/r/worldnews/comments/1sa035h/nasa_launches_first_crewed_lunar_mission_in_half/"
+      },
+      {
+        "title": "Looks like it came out of the wall during a bad rain",
+        "subreddit": "whatisit",
+        "score": 15349,
+        "comments": 3193,
+        "url": "https://reddit.com/r/whatisit/comments/1sa4qti/looks_like_it_came_out_of_the_wall_during_a_bad/"
+      },
+      {
+        "title": "Humiliated Trump Storms Out of Catastrophic SCOTUS Hearing",
+        "subreddit": "politics",
+        "score": 33713,
+        "comments": 3127,
+        "url": "https://reddit.com/r/politics/comments/1s9olfa/humiliated_trump_storms_out_of_catastrophic/"
+      },
+      {
+        "title": "meirl",
+        "subreddit": "meirl",
+        "score": 21787,
+        "comments": 104,
+        "url": "https://reddit.com/r/meirl/comments/1sae5og/meirl/"
+      },
+      {
+        "title": "NASA is sending Humans to the moon today.",
+        "subreddit": "interestingasfuck",
+        "score": 40901,
+        "comments": 2922,
+        "url": "https://reddit.com/r/interestingasfuck/comments/1s9syhv/nasa_is_sending_humans_to_the_moon_today/"
+      },
+      {
+        "title": "Artemis ll launch from Kennedy Space Center seen from an United Airlines flight",
+        "subreddit": "aviation",
+        "score": 6652,
+        "comments": 215,
+        "url": "https://reddit.com/r/aviation/comments/1sagcc1/artemis_ll_launch_from_kennedy_space_center_seen/"
+      },
+      {
+        "title": "Trump on Iran War : “We are going to hit them extremely hard over the next 2 to 3 weeks. We're going",
+        "subreddit": "Fauxmoi",
+        "score": 12566,
+        "comments": 2417,
+        "url": "https://reddit.com/r/Fauxmoi/comments/1sa3m1o/trump_on_iran_war_we_are_going_to_hit_them/"
+      },
+      {
+        "title": "The Newest Economist Cover titled \"Never Interrupt your enemy when he's making a mistake\"",
+        "subreddit": "Fauxmoi",
+        "score": 6787,
+        "comments": 153,
+        "url": "https://reddit.com/r/Fauxmoi/comments/1safnhd/the_newest_economist_cover_titled_never_interrupt/"
+      },
+      {
+        "title": "peakDevMentality",
+        "subreddit": "ProgrammerHumor",
+        "score": 10733,
+        "comments": 55,
+        "url": "https://reddit.com/r/ProgrammerHumor/comments/1sadb9f/peakdevmentality/"
+      },
+      {
+        "title": "Contestant steals the spotlight at the Miss Grand Thailand 2026 pageant",
+        "subreddit": "SipsTea",
+        "score": 48404,
+        "comments": 2380,
+        "url": "https://reddit.com/r/SipsTea/comments/1s9y05d/contestant_steals_the_spotlight_at_the_miss_grand/"
+      },
+      {
+        "title": "Iranian President Pezeshkian’s letter addresses American people, not Trump",
+        "subreddit": "videos",
+        "score": 11388,
+        "comments": 2375,
+        "url": "https://reddit.com/r/videos/comments/1s9z2z5/iranian_president_pezeshkians_letter_addresses/"
+      },
+      {
+        "title": "peetahh, what does she mean",
+        "subreddit": "PeterExplainsTheJoke",
+        "score": 7536,
+        "comments": 2189,
+        "url": "https://reddit.com/r/PeterExplainsTheJoke/comments/1saex30/peetahh_what_does_she_mean/"
+      },
+      {
+        "title": "What would you do with this space?",
+        "subreddit": "malelivingspace",
+        "score": 9215,
+        "comments": 2315,
+        "url": "https://reddit.com/r/malelivingspace/comments/1s9zbnw/what_would_you_do_with_this_space/"
+      }
+    ],
+    "count": 15
+  },
+  "proxy": {
+    "country": "US",
+    "carrier": "T-Mobile",
+    "type": "mobile",
+    "ip": "172.56.170.242"
+  }
+}

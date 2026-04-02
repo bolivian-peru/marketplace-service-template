@@ -1,0 +1,48 @@
+{
+  "id": "trend-intelligence-api",
+  "name": "Trend Intelligence API (Cross-Platform Research)",
+  "description": "Real-time trending topics across Reddit, web, YouTube, and Twitter/X. Cross-platform research with sentiment analysis and pattern detection.",
+  "longDescription": "Aggregates trending content across 4 platforms via mobile proxies. Returns engagement-ranked topics with source URLs, sentiment analysis, and cross-platform correlation. Identify emerging trends before they peak.",
+  "endpoint": "https://marketplace-service-template.onrender.com/api",
+  "pricing": {
+    "model": "per-request",
+    "endpoints": [
+      {
+        "path": "/api/trending",
+        "price": "0.10",
+        "description": "Trending topics across Reddit, web, YouTube, Twitter/X"
+      },
+      {
+        "path": "/api/research",
+        "price": "0.10-1.00",
+        "description": "Cross-platform research synthesis (price scales with platforms)"
+      }
+    ],
+    "currency": "USDC",
+    "networks": [
+      {
+        "network": "solana",
+        "chainId": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "recipient": "6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv",
+        "asset": "USDC",
+        "assetAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+      },
+      {
+        "network": "base",
+        "chainId": "eip155:8453",
+        "recipient": "0xF8cD900794245fc36CBE65be9afc23CDF5103042",
+        "asset": "USDC",
+        "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+      }
+    ]
+  },
+  "category": "intelligence",
+  "tags": ["trending", "research", "reddit", "youtube", "twitter", "cross-platform", "sentiment"],
+  "whyMobileProxy": "Reddit killed free API access in 2023. Twitter/X API starts at $100/mo. YouTube trends are geo-fenced. Mobile carrier IPs bypass all these restrictions — Reddit sees you as a real phone user, Twitter as a mobile app, YouTube serves country-specific content by carrier geo.",
+  "owner": {
+    "name": "Alfaxad",
+    "github": "Alfaxad"
+  },
+  "status": "pending",
+  "addedAt": "2026-04-02"
+}
