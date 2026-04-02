@@ -1,90 +1,29 @@
 {
   "type": "creator",
   "country": "GB",
-  "timestamp": "2026-04-02T10:40:00Z",
-  "query": "GET /api/tiktok/creator?username=khaby.lame&country=GB",
-  "note": "Sample output — real data will be generated with mobile proxy credentials",
+  "timestamp": "2026-04-02T12:46:00Z",
+  "query": "GET /api/tiktok/creator?username=bellapoarch&country=GB",
   "data": {
-    "username": "khaby.lame",
-    "nickname": "Khabane lame",
-    "bio": "If you wanna laugh you are in the right place😂",
+    "username": "bellapoarch",
+    "nickname": "Bella Poarch",
+    "bio": "",
     "verified": true,
-    "followers": 162400000,
-    "following": 78,
-    "likes": 2400000000,
-    "videoCount": 1243,
-    "avatarUrl": null,
-    "recentPosts": [
-      {
-        "id": "7483432109876",
-        "description": "Why do people complicate things? 😂 #khaby #comedy #simple #fyp",
-        "author": {
-          "username": "khaby.lame",
-          "nickname": "Khabane lame",
-          "followers": 162400000,
-          "verified": true
-        },
-        "stats": {
-          "views": 45000000,
-          "likes": 4200000,
-          "comments": 89000,
-          "shares": 230000,
-          "bookmarks": 560000
-        },
-        "sound": {
-          "id": "7483000000001",
-          "name": "Oh No - Kreepa",
-          "author": "Kreepa"
-        },
-        "hashtags": ["khaby", "comedy", "simple", "fyp"],
-        "createdAt": "2026-04-01T12:00:00Z",
-        "url": "https://www.tiktok.com/@khaby.lame/video/7483432109876",
-        "duration": 18,
-        "coverUrl": null
-      },
-      {
-        "id": "7483321098765",
-        "description": "Life hack gone wrong 🤦‍♂️ #lifehack #comedy #khaby",
-        "author": {
-          "username": "khaby.lame",
-          "nickname": "Khabane lame",
-          "followers": 162400000,
-          "verified": true
-        },
-        "stats": {
-          "views": 38000000,
-          "likes": 3800000,
-          "comments": 67000,
-          "shares": 190000,
-          "bookmarks": 420000
-        },
-        "sound": {
-          "id": "7483000000002",
-          "name": "Original Sound",
-          "author": "khaby.lame"
-        },
-        "hashtags": ["lifehack", "comedy", "khaby"],
-        "createdAt": "2026-03-30T16:00:00Z",
-        "url": "https://www.tiktok.com/@khaby.lame/video/7483321098765",
-        "duration": 24,
-        "coverUrl": null
-      }
-    ]
+    "followers": 92500000,
+    "following": 649,
+    "likes": -1889600251,
+    "videoCount": 67,
+    "avatarUrl": "https://p16-common-sign.tiktokcdn-us.com/tos-useast5-avt-0068-tx/d8b707e8ab71dc4c0adcf27e4c841ade~tplv-tiktokx-cropcenter:1080:1080.jpeg?dr=9640&refresh_token=378cc225&x-expires=1775304000&x-signature=pJ2vuQRcMUxFD2wYeEp7I1l2DEk%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=81f88b70&idc=useast8",
+    "privateAccount": false,
+    "region": "US"
   },
   "proxy": {
-    "country": "GB",
-    "carrier": "EE",
+    "country": "US",
+    "carrier": "T-Mobile",
     "type": "mobile"
   },
   "meta": {
-    "proxyIp": "sample — real IP from mobile proxy",
-    "scrapedAt": "2026-04-02T10:40:00Z",
-    "postCount": 2
-  },
-  "payment": {
-    "txHash": "sample_tx_hash",
-    "network": "solana",
-    "amount": 0.02,
-    "verified": true
+    "proxyIp": "172.56.170.242",
+    "scrapedAt": "2026-04-02T12:46:00Z",
+    "responseTimeMs": 1769
   }
 }

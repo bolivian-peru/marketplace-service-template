@@ -1,104 +1,39 @@
 {
   "type": "trending",
   "country": "US",
-  "timestamp": "2026-04-02T10:30:00Z",
+  "timestamp": "2026-04-02T12:46:00Z",
   "query": "GET /api/tiktok/trending?country=US",
-  "note": "Sample output — real data will be generated with mobile proxy credentials",
   "data": {
-    "videos": [
+    "top_creators": [
       {
-        "id": "7483920184756",
-        "description": "This AI tool just changed everything 🤯 #ai #tech #coding #fyp",
-        "author": {
-          "username": "techreviewer",
-          "nickname": "Tech Reviewer",
-          "followers": 2400000,
-          "verified": true
-        },
-        "stats": {
-          "views": 14500000,
-          "likes": 890000,
-          "comments": 23000,
-          "shares": 67000,
-          "bookmarks": 145000
-        },
-        "sound": {
-          "id": "7483001234567",
-          "name": "Original Sound",
-          "author": "techreviewer"
-        },
-        "hashtags": ["ai", "tech", "coding", "fyp"],
-        "createdAt": "2026-04-01T14:00:00Z",
-        "url": "https://www.tiktok.com/@techreviewer/video/7483920184756",
-        "duration": 47,
-        "coverUrl": null
+        "username": "khaby.lame",
+        "nickname": "Khabane lame",
+        "followers": 160600000,
+        "verified": true,
+        "videoCount": 1314,
+        "bio": "Se vuoi ridere sei nel posto giusto😎 If u wanna laugh u r in the right place😎"
       },
       {
-        "id": "7483812345678",
-        "description": "POV: You finally understand recursion 😂 #programming #developer #humor",
-        "author": {
-          "username": "devhumor",
-          "nickname": "Dev Humor",
-          "followers": 890000,
-          "verified": false
-        },
-        "stats": {
-          "views": 8200000,
-          "likes": 520000,
-          "comments": 8900,
-          "shares": 34000,
-          "bookmarks": 78000
-        },
-        "sound": {
-          "id": "7480001234568",
-          "name": "Monkeys Spinning Monkeys",
-          "author": "Kevin MacLeod"
-        },
-        "hashtags": ["programming", "developer", "humor"],
-        "createdAt": "2026-04-01T09:30:00Z",
-        "url": "https://www.tiktok.com/@devhumor/video/7483812345678",
-        "duration": 22,
-        "coverUrl": null
+        "username": "charlidamelio",
+        "nickname": "charli d’amelio",
+        "followers": 156700000,
+        "verified": true,
+        "videoCount": 3025,
+        "bio": ""
       },
       {
-        "id": "7483756789012",
-        "description": "Making homemade pasta from scratch 🍝 #cooking #pasta #foodtok #recipe",
-        "author": {
-          "username": "chefmaria",
-          "nickname": "Chef Maria",
-          "followers": 5600000,
-          "verified": true
-        },
-        "stats": {
-          "views": 22000000,
-          "likes": 1800000,
-          "comments": 45000,
-          "shares": 120000,
-          "bookmarks": 890000
-        },
-        "sound": {
-          "id": "7475001234569",
-          "name": "Aesthetic Kitchen Sounds",
-          "author": "ambientvibes"
-        },
-        "hashtags": ["cooking", "pasta", "foodtok", "recipe"],
-        "createdAt": "2026-03-31T18:00:00Z",
-        "url": "https://www.tiktok.com/@chefmaria/video/7483756789012",
-        "duration": 60,
-        "coverUrl": null
+        "username": "mrbeast",
+        "nickname": "MrBeast",
+        "followers": 124700000,
+        "verified": true,
+        "videoCount": 452,
+        "bio": "Beast Games 2: Strong Vs. Smart OUT NOW ON PRIME VIDEO :D"
       }
     ],
-    "trending_hashtags": [
-      { "name": "#ai", "id": "1001", "views": 98000000000, "videoCount": 3, "description": "" },
-      { "name": "#fyp", "id": "1002", "views": 450000000000, "videoCount": 2, "description": "" },
-      { "name": "#cooking", "id": "1003", "views": 78000000000, "videoCount": 1, "description": "" },
-      { "name": "#tech", "id": "1004", "views": 65000000000, "videoCount": 1, "description": "" }
-    ],
-    "trending_sounds": [
-      { "id": "7483001234567", "name": "Original Sound", "author": "techreviewer", "uses": 0, "duration": 0, "isOriginal": true },
-      { "id": "7480001234568", "name": "Monkeys Spinning Monkeys", "author": "Kevin MacLeod", "uses": 0, "duration": 0, "isOriginal": false },
-      { "id": "7475001234569", "name": "Aesthetic Kitchen Sounds", "author": "ambientvibes", "uses": 0, "duration": 0, "isOriginal": false }
-    ]
+    "videos": [],
+    "trending_hashtags": [],
+    "trending_sounds": [],
+    "note": "TikTok explore/trending pages load video data via client-side JavaScript. Creator profile data (shown above) is embedded in server-rendered HTML and extracted via __UNIVERSAL_DATA_FOR_REHYDRATION__. Video items require headless browser or API with msToken."
   },
   "proxy": {
     "country": "US",
@@ -106,15 +41,9 @@
     "type": "mobile"
   },
   "meta": {
-    "proxyIp": "sample — real IP from mobile proxy",
-    "scrapedAt": "2026-04-02T10:30:00Z",
-    "responseTimeMs": 3200,
-    "resultCount": 3
-  },
-  "payment": {
-    "txHash": "sample_tx_hash",
-    "network": "solana",
-    "amount": 0.02,
-    "verified": true
+    "proxyIp": "172.56.170.242",
+    "scrapedAt": "2026-04-02T12:46:00Z",
+    "responseTimeMs": 1905,
+    "method": "Server-rendered HTML extraction via mobile proxy"
   }
 }

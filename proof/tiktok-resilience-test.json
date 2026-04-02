@@ -1,0 +1,91 @@
+{
+  "test": "Consecutive TikTok Scrapes via Mobile Proxy",
+  "timestamp": "2026-04-02T12:46:00Z",
+  "proxy": {
+    "ip": "172.56.170.242",
+    "carrier": "T-Mobile",
+    "type": "mobile",
+    "country": "US"
+  },
+  "summary": {
+    "totalRequests": 12,
+    "successes": 12,
+    "failures": 0,
+    "successRate": "12/12 (100%)",
+    "averageResponseMs": 1977
+  },
+  "results": [
+    {
+      "user": "khaby.lame",
+      "success": true,
+      "elapsed": 1905,
+      "followers": "160,600,000"
+    },
+    {
+      "user": "charlidamelio",
+      "success": true,
+      "elapsed": 1985,
+      "followers": "156,700,000"
+    },
+    {
+      "user": "mrbeast",
+      "success": true,
+      "elapsed": 1778,
+      "followers": "124,700,000"
+    },
+    {
+      "user": "bellapoarch",
+      "success": true,
+      "elapsed": 1756,
+      "followers": "92,500,000"
+    },
+    {
+      "user": "addisonre",
+      "success": true,
+      "elapsed": 2387,
+      "followers": "88,200,000"
+    },
+    {
+      "user": "zachking",
+      "success": true,
+      "elapsed": 1916,
+      "followers": "84,400,000"
+    },
+    {
+      "user": "brentrivera",
+      "success": true,
+      "elapsed": 1985,
+      "followers": "50,600,000"
+    },
+    {
+      "user": "dixiedamelio",
+      "success": true,
+      "elapsed": 2238,
+      "followers": "54,100,000"
+    },
+    {
+      "user": "spencerx",
+      "success": true,
+      "elapsed": 2062,
+      "followers": "53,900,000"
+    },
+    {
+      "user": "jasonderulo",
+      "success": true,
+      "elapsed": 1825,
+      "followers": "65,700,000"
+    },
+    {
+      "user": "willsmith",
+      "success": true,
+      "elapsed": 1925,
+      "followers": "78,600,000"
+    },
+    {
+      "user": "therock",
+      "success": true,
+      "elapsed": 1971,
+      "followers": "79,600,000"
+    }
+  ]
+}
