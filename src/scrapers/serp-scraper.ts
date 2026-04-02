@@ -6,7 +6,7 @@
 import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import type { Browser, Page } from 'puppeteer';
-import { getProxy } from './proxy';
+import { getProxy } from '../proxy';
 
 puppeteer.use(StealthPlugin());
 

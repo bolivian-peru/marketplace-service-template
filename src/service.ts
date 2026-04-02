@@ -29,7 +29,8 @@ import {
 } from './scrapers/linkedin-enrichment';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
-import { scrapeGoogleSerp } from './scraper';
+import { scrapeGoogleSerp } from './scrapers/serp-scraper';
+import { scrapeZillow } from './scrapers/zillow-scraper';
 
 
 export const serviceRouter = new Hono();
@@ -1547,5 +1548,84 @@ serviceRouter.get('/scrape', async (c) => {
       { error: 'SERP scrape failed', message: err?.message || String(err) },
       502,
     );
+  }
+});
+
+// ─── ZILLOW REAL ESTATE INTELLIGENCE SCRAPER ───────────
+
+const ZILLOW_PRICE_USDC = 0.02;
+const ZILLOW_DESCRIPTION = 'Zillow Real Estate Intelligence — Extract property details, price, Zestimate, price history, neighborhood data, and photos. Routed through Proxies.sx mobile carrier IPs to bypass PerimeterX.';
+const ZILLOW_OUTPUT_SCHEMA = {
+  input: { url: 'string (required) — Full Zillow property URL (e.g., https://www.zillow.com/homedetails/...)' },
+  output: {
+    zpid: 'string — Zillow Property ID',
+    address: 'string',
+    price: 'number | null — Current listing price',
+    zestimate: 'number | null — Zillow estimated value',
+    price_history: '[{ date, event, price }]',
+    details: '{ bedrooms, bathrooms, sqft, lot_sqft?, year_built?, type, status }',
+    neighborhood: '{ walk_score?, transit_score?, median_home_value?, median_rent? }',
+    photos: 'string[] — Photo URLs',
+    proxyCountry: 'string — Proxy exit IP country',
+    timestamp: 'ISO 8601 timestamp',
+  },
+};
+
+serviceRouter.get('/zillow', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Wallet not configured' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(
+      build402Response('/api/zillow', ZILLOW_DESCRIPTION, ZILLOW_PRICE_USDC, walletAddress, ZILLOW_OUTPUT_SCHEMA),
+      402,
+    );
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, ZILLOW_PRICE_USDC);
+  if (!verification.valid) {
+    return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+  }
+
+  const url = c.req.query('url');
+  if (!url) return c.json({ error: 'Missing required parameter: url' }, 400);
+
+  if (!url.includes('zillow.com')) {
+    return c.json({ error: 'Invalid URL: must be a Zillow property URL' }, 400);
+  }
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const results = await scrapeZillow(url);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...results,
+      meta: {
+        proxy: { ip, country: proxy.country, type: 'mobile-carrier' },
+      },
+      payment: {
+        txHash: payment.txHash,
+        network: payment.network,
+        amount: verification?.amount || ZILLOW_PRICE_USDC,
+        settled: true,
+      },
+    });
+  } catch (err: any) {
+    console.error('[ZILLOW]', err.message);
+    
+    // Determine appropriate HTTP status code
+    if (err.message.includes('blocked') || err.message.includes('PerimeterX')) {
+      return c.json(
+        { error: 'Zillow blocked the request', message: 'Mobile proxy may be flagged or IP rate-limited', reason: err.message },
+        502,
+      );
+    }
+
+    return c.json({ error: 'Zillow scrape failed', message: err?.message || String(err) }, 502);
   }
 });
