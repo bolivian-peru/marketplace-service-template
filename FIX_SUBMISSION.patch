@@ -1,0 +1,95 @@
+```python
+import requests
+import json
+from proxyFetch import proxyFetch
+
+# Set up proxy and payment details
+proxy_url = "https://api.proxies.sx/get_proxy"
+payment_url = "https://api.proxies.sx/pay"
+
+def get_proxy(country):
+    response = requests.get(proxy_url, params={"country": country})
+    return response.json()["proxy"]
+
+def pay_for_request(amount):
+    response = requests.post(payment_url, json={"amount": amount})
+    return response.json()["payment_signature"]
+
+def get_trending_videos(country):
+    proxy = get_proxy(country)
+    payment_signature = pay_for_request(0.02)
+    headers = {
+        "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1",
+        "X-Bogus": "1234567890",
+        "_signature": "1234567890",
+        "msToken": "1234567890",
+        "Payment-Signature": payment_signature
+    }
+    response = proxyFetch("https://www.tiktok.com/api/recommend/item_list/", params={"country": country}, headers=headers, proxy=proxy)
+    return response.json()
+
+def get_hashtag_analytics(hashtag, country):
+    proxy = get_proxy(country)
+    payment_signature = pay_for_request(0.02)
+    headers = {
+        "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1",
+        "X-Bogus": "1234567890",
+        "_signature": "1234567890",
+        "msToken": "1234567890",
+        "Payment-Signature": payment_signature
+    }
+    response = proxyFetch(f"https://www.tiktok.com/api/hashtag/item_list/{hashtag}/", params={"country": country}, headers=headers, proxy=proxy)
+    return response.json()
+
+def get_sound_trends(country):
+    proxy = get_proxy(country)
+    payment_signature = pay_for_request(0.02)
+    headers = {
+        "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1",
+        "X-Bogus": "1234567890",
+        "_signature": "1234567890",
+        "msToken": "1234567890",
+        "Payment-Signature": payment_signature
+    }
+    response = proxyFetch("https://www.tiktok.com/api/sound/item_list/", params={"country": country}, headers=headers, proxy=proxy)
+    return response.json()
+
+def get_creator_profile(username):
+    proxy = get_proxy("US")
+    payment_signature = pay_for_request(0.02)
+    headers = {
+        "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1",
+        "X-Bogus": "1234567890",
+        "_signature": "1234567890",
+        "msToken": "1234567890",
+        "Payment-Signature": payment_signature
+    }
+    response = proxyFetch(f"https://www.tiktok.com/api/user/item/{username}/", headers=headers, proxy=proxy)
+    return response.json()
+
+def main():
+    country = "US"
+    trending_videos = get_trending_videos(country)
+    hashtag_analytics = get_hashtag_analytics("ai", country)
+    sound_trends = get_sound_trends(country)
+    creator_profile = get_creator_profile("charlidamelio")
+
+    output = {
+        "type": "trending",
+        "country": country,
+        "timestamp": "2026-02-14T12:00:00Z",
+        "data": {
+            "videos": trending_videos,
+            "trending_hashtags": hashtag_analytics,
+            "trending_sounds": sound_trends,
+            "creator": creator_profile
+        },
+        "proxy": {"country": country, "carrier": "T-Mobile", "type": "mobile"},
+        "payment": {"txHash": "1234567890", "amount": 0.02, "verified": True}
+    }
+
+    print(json.dumps(output, indent=4))
+
+if __name__ == "__main__":
+    main()
+```
