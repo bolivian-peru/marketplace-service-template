@@ -101,29 +101,25 @@ export async function verifyPayment(
  * Build a standard 402 response for AI agents.
  */
 export function build402Response(
-  resource: string,
-  description: string,
-  priceUSDC: number,
-  walletAddress: string,
-  outputSchema?: Record<string, any>,
-) {
-  return {
-    status: 402,
-    message: 'Payment required',
-    resource,
-    description,
-    price: {
-      amount: String(priceUSDC),
-      currency: 'USDC',
-      minimumAmount: String(priceUSDC),
-    },
-    networks: [
-      {
-        network: 'solana',
-        chainId: 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
-        recipient: walletAddress,
-        asset: 'USDC',
-        assetAddress: USDC_SOLANA,
+if (payment.amount < expectedAmountUSDC) {
+    return { valid: false, error: 'Insufficient payment amount' };
+}
+if (payment.recipient !== expectedRecipient) {
+    return { valid: false, error: 'Invalid recipient' };
+}
+const result = payment.network === 'solana'
+    ? await verifySolana(payment.txHash, expectedRecipient, expectedAmountUSDC, tolerancePercent)
+    : await verifyBase(payment.txHash, expectedRecipient, expectedAmountUSDC, tolerancePercent);
+if (result.valid) {
+    if (result.amount < expectedAmountUSDC * (1 - tolerancePercent / 100)) {
+      return { valid: false, error: 'Payment amount is less than expected amount' };
+    }
+    if (result.recipient !== expectedRecipient) {
+      return { valid: false, error: 'Payment recipient does not match expected recipient' };
+    }
+    verifiedTxHashes.add(payment.txHash);
+}
+return result;
       },
       {
         network: 'base',
