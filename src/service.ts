@@ -29,6 +29,8 @@ import {
 } from './scrapers/linkedin-enrichment';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
+import { scrapeGoogleSerp } from './scraper';
+
 
 export const serviceRouter = new Hono();
 
@@ -1471,7 +1473,7 @@ serviceRouter.get('/serp', async (c) => {
   try {
     const proxy = getProxy();
     const ip = await getProxyExitIp();
-    const results = await scrapeMobileSERP(query, { location, num });
+    const results = await scrapeMobileSERP(query, 'us', 'en', location);
 
     c.header('X-Payment-Settled', 'true');
     c.header('X-Payment-TxHash', payment.txHash);
@@ -1484,5 +1486,66 @@ serviceRouter.get('/serp', async (c) => {
     });
   } catch (err: any) {
     return c.json({ error: 'SERP scrape failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GOOGLE SERP + AI OVERVIEW SCRAPER ──────────────
+
+const SCRAPER_PRICE_USDC = parseFloat(process.env.SERP_PRICE_USDC || '0.003');
+const SCRAPER_DESCRIPTION = 'Google SERP + AI Overview Scraper — Extract organic results, featured snippets, People Also Ask, and AI Overviews from Google Search. Rendered with Puppeteer for dynamic content.';
+const SCRAPER_OUTPUT_SCHEMA = {
+  input: { query: 'string (required) — search query' },
+  output: {
+    query: 'string',
+    timestamp: 'ISO 8601 timestamp',
+    organicResults: '[{ position, title, url, description }]',
+    featuredSnippet: '{ title, answer, source, sourceUrl }',
+    peopleAlsoAsk: '[{ question, answer, source, sourceUrl }]',
+    aiOverview: '{ title, content, sources: [{ title, url }] }',
+    proxyCountry: 'string',
+    totalResults: 'string',
+  },
+};
+
+serviceRouter.get('/scrape', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Wallet not configured' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(
+      build402Response('/api/scrape', SCRAPER_DESCRIPTION, SCRAPER_PRICE_USDC, walletAddress, SCRAPER_OUTPUT_SCHEMA),
+      402,
+    );
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, SCRAPER_PRICE_USDC);
+  if (!verification.valid) {
+    return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+  }
+
+  const query = c.req.query('query') || c.req.query('q');
+  if (!query) return c.json({ error: 'Missing required parameter: query' }, 400);
+
+  try {
+    const results = await scrapeGoogleSerp(query);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...results,
+      payment: {
+        txHash: payment.txHash,
+        network: payment.network,
+        amount: verification?.amount || SCRAPER_PRICE_USDC,
+        settled: true,
+      },
+    });
+  } catch (err: any) {
+    return c.json(
+      { error: 'SERP scrape failed', message: err?.message || String(err) },
+      502,
+    );
   }
 });
