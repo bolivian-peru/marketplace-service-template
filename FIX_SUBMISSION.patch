@@ -1,0 +1,304 @@
+```typescript
+// src/service.ts
+import axios from 'axios';
+import { x402 } from './x402';
+
+const PROXIES_SX_API_KEY = 'YOUR_PROXIES_SX_API_KEY';
+const PROXIES_SX_API_SECRET = 'YOUR_PROXIES_SX_API_SECRET';
+const AMAZON_MARKETPLACES = ['US', 'UK', 'DE'];
+
+const proxiesSx = axios.create({
+  baseURL: 'https://api.proxies.sx',
+  headers: {
+    'Authorization': `Bearer ${PROXIES_SX_API_KEY}`,
+    'Content-Type': 'application/json',
+  },
+});
+
+const amazon = axios.create({
+  baseURL: 'https://www.amazon.com',
+  headers: {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.3',
+  },
+});
+
+const getProductData = async (asin: string, marketplace: string) => {
+  const proxy = await getProxy(marketplace);
+  const url = `https://www.amazon.${getMarketplaceDomain(marketplace)}/dp/${asin}`;
+  const response = await amazon.get(url, {
+    proxy: {
+      host: proxy.ip,
+      port: proxy.port,
+    },
+  });
+
+  const $ = cheerio.load(response.data);
+  const title = $('title').text();
+  const price = getPrice($);
+  const bsr = getBSR($);
+  const rating = getRating($);
+  const reviewsCount = getReviewsCount($);
+  const buyBox = getBuyBox($);
+  const availability = getAvailability($);
+  const brand = getBrand($);
+  const images = getImages($);
+
+  return {
+    asin,
+    title,
+    price,
+    bsr,
+    rating,
+    reviewsCount,
+    buyBox,
+    availability,
+    brand,
+    images,
+    meta: {
+      marketplace,
+      proxy: {
+        ip: proxy.ip,
+        country: proxy.country,
+        carrier: proxy.carrier,
+      },
+    },
+  };
+};
+
+const getProxy = async (marketplace: string) => {
+  const response = await proxiesSx.post('/v1/proxies', {
+    marketplace,
+  });
+  return response.data;
+};
+
+const getMarketplaceDomain = (marketplace: string) => {
+  switch (marketplace) {
+    case 'US':
+      return 'com';
+    case 'UK':
+      return 'co.uk';
+    case 'DE':
+      return 'de';
+    default:
+      throw new Error(`Unsupported marketplace: ${marketplace}`);
+  }
+};
+
+const getPrice = ($) => {
+  const priceElement = $('span.a-price-whole');
+  if (priceElement.length === 0) {
+    return null;
+  }
+  const price = priceElement.text().trim();
+  const currency = $('span.a-price-symbol').text().trim();
+  return {
+    current: parseFloat(price),
+    currency,
+  };
+};
+
+const getBSR = ($) => {
+  const bsrElement = $('th.a-size-base.a-color-base.a-align-center.a-text-normal');
+  if (bsrElement.length === 0) {
+    return null;
+  }
+  const bsr = bsrElement.text().trim();
+  const category = $('span.a-size-base.a-color-base.a-text-normal').text().trim();
+  return {
+    rank: parseInt(bsr),
+    category,
+  };
+};
+
+const getRating = ($) => {
+  const ratingElement = $('span.a-icon-alt');
+  if (ratingElement.length === 0) {
+    return null;
+  }
+  const rating = ratingElement.text().trim();
+  return parseFloat(rating);
+};
+
+const getReviewsCount = ($) => {
+  const reviewsCountElement = $('span.a-size-base.a-color-base.a-text-normal');
+  if (reviewsCountElement.length === 0) {
+    return null;
+  }
+  const reviewsCount = reviewsCountElement.text().trim();
+  return parseInt(reviewsCount);
+};
+
+const getBuyBox = ($) => {
+  const buyBoxElement = $('div.a-box.a-color-offset-background');
+  if (buyBoxElement.length === 0) {
+    return null;
+  }
+  const seller = buyBoxElement.find('span.a-size-base.a-color-base.a-text-normal').text().trim();
+  const isAmazon = seller === 'Amazon.com';
+  const fulfilledBy = buyBoxElement.find('span.a-size-base.a-color-base.a-text-normal').text().trim();
+  return {
+    seller,
+    isAmazon,
+    fulfilledBy,
+  };
+};
+
+const getAvailability = ($) => {
+  const availabilityElement = $('span.a-size-base.a-color-base.a-text-normal');
+  if (availabilityElement.length === 0) {
+    return null;
+  }
+  const availability = availabilityElement.text().trim();
+  return availability;
+};
+
+const getBrand = ($) => {
+  const brandElement = $('span.a-size-base.a-color-base.a-text-normal');
+  if (brandElement.length === 0) {
+    return null;
+  }
+  const brand = brandElement.text().trim();
+  return brand;
+};
+
+const getImages = ($) => {
+  const images = [];
+  const imageElements = $('img.s-image');
+  imageElements.each((index, element) => {
+    images.push($(element).attr('src'));
+  });
+  return images;
+};
+
+const searchProducts = async (query: string, category: string, marketplace: string) => {
+  const proxy = await getProxy(marketplace);
+  const url = `https://www.amazon.${getMarketplaceDomain(marketplace)}/s?k=${query}&i=${category}`;
+  const response = await amazon.get(url, {
+    proxy: {
+      host: proxy.ip,
+      port: proxy.port,
+    },
+  });
+
+  const $ = cheerio.load(response.data);
+  const products = [];
+  const productElements = $('div.s-result-item');
+  productElements.each((index, element) => {
+    const asin = $(element).attr('data-asin');
+    const title = $(element).find('h2.a-size-medium.a-color-base.a-text-normal').text().trim();
+    const price = $(element).find('span.a-price-whole').text().trim();
+    const rating = $(element).find('span.a-icon-alt').text().trim();
+    products.push({
+      asin,
+      title,
+      price,
+      rating,
+    });
+  });
+  return products;
+};
+
+const getBestSellers = async (category: string, marketplace: string) => {
+  const proxy = await getProxy(marketplace);
+  const url = `https://www.amazon.${getMarketplaceDomain(marketplace)}/best-sellers/zgbs/${category}`;
+  const response = await amazon.get(url, {
+    proxy: {
+      host: proxy.ip,
+      port: proxy.port,
+    },
+  });
+
+  const $ = cheerio.load(response.data);
+  const bestSellers = [];
+  const bestSellerElements = $('div.zg-item');
+  bestSellerElements.each((index, element) => {
+    const asin = $(element).attr('data-asin');
+    const title = $(element).find('div.p13n-sc-truncate').text().trim();
+    const price = $(element).find('span.p13n-sc-price').text().trim();
+    const rating = $(element).find('span.a-icon-alt').text().trim();
+    bestSellers.push({
+      asin,
+      title,
+      price,
+      rating,
+    });
+  });
+  return bestSellers;
+};
+
+const getReviews = async (asin: string, sort: string, limit: number, marketplace: string) => {
+  const proxy = await getProxy(marketplace);
+  const url = `https://www.amazon.${getMarketplaceDomain(marketplace)}/product-reviews/${asin}`;
+  const response = await amazon.get(url, {
+    proxy: {
+      host: proxy.ip,
+      port: proxy.port,
+    },
+  });
+
+  const $ = cheerio.load(response.data);
+  const reviews = [];
+  const reviewElements = $('div.review');
+  reviewElements.each((index, element) => {
+    const review = $(element).find('span.review-text').text().trim();
+    const rating = $(element).find('span.a-icon-alt').text().trim();
+    const date = $(element).find('span.review-date').text().trim();
+    reviews.push({
+      review,
+      rating,
+      date,
+    });
+  });
+  return reviews.slice(0, limit);
+};
+
+const app = express();
+
+app.get('/api/amazon/product/:asin', async (req, res) => {
+  const asin = req.params.asin;
+  const marketplace = req.query.marketplace;
+  const productData = await getProductData(asin, marketplace);
+  res.json(productData);
+});
+
+app.get('/api/amazon/search', async (req, res) => {
+  const query = req.query.query;
+  const category = req.query.category;
+  const marketplace = req.query.marketplace;
+  const products = await searchProducts(query, category, marketplace);
+  res.json(products);
+});
+
+app.get('/api/amazon/bestsellers', async (req, res) => {
+  const category = req.query.category;
+  const marketplace = req.query.marketplace;
+  const bestSellers = await getBestSellers(category, marketplace);
+  res.json(bestSellers);
+});
+
+app.get('/api/amazon/reviews/:asin', async (req, res) => {
+  const asin = req.params.asin;
+  const sort = req.query.sort;
+  const limit = req.query.limit;
+  const marketplace = req.query.marketplace;
+  const reviews = await getReviews(asin, sort, limit, marketplace);
+  res.json(reviews);
+});
+
+app.listen(3000, () => {
+  console.log('Server started on port 3000');
+});
+
+// x402 payment flow
+app.post('/api/payment', async (req, res) => {
+  const { asin, marketplace } = req.body;
+  const productData = await getProductData(asin, marketplace);
+  const price = productData.price.current;
+  const payment = await x402.createPayment({
+    amount: price,
+    currency: 'USDC',
+  });
+  res.json(payment);
+});
+```
