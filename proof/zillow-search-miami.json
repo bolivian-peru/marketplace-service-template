@@ -1,0 +1,140 @@
+{
+  "type": "realestate_search",
+  "query": "GET /api/realestate/search?zip=33101&type=for_sale",
+  "timestamp": "2026-04-02T13:17:07.062441Z",
+  "data": {
+    "totalResults": 41,
+    "listings": [
+      {
+        "zpid": "82410261",
+        "address": "41 SE 5th St APT 1901, Miami, FL 33131",
+        "price": 665000,
+        "zestimate": null,
+        "beds": 2,
+        "baths": 2,
+        "sqft": 1267,
+        "type": "CONDO",
+        "status": "Condo for sale",
+        "url": "https://www.zillow.comhttps://www.zillow.com/homedetails/41-SE-5th-St-APT-1901-Miami-FL-33131/82410261_zpid/"
+      },
+      {
+        "zpid": "2126599532",
+        "address": "200 Biscayne Blvd Way APT 3707, Miami, FL 33131",
+        "price": 1299000,
+        "zestimate": 1215400,
+        "beds": 2,
+        "baths": 3,
+        "sqft": 1500,
+        "type": "CONDO",
+        "status": "Condo for sale",
+        "url": "https://www.zillow.comhttps://www.zillow.com/homedetails/200-Biscayne-Blvd-Way-APT-3707-Miami-FL-33131/2126599532_zpid/"
+      },
+      {
+        "zpid": "450011467",
+        "address": "1300 S Miami Ave Unit 1601, Miami, FL 33130",
+        "price": 899000,
+        "zestimate": 862000,
+        "beds": 2,
+        "baths": 2,
+        "sqft": 1279,
+        "type": "CONDO",
+        "status": "Condo for sale",
+        "url": "https://www.zillow.comhttps://www.zillow.com/homedetails/1300-S-Miami-Ave-UNIT-1601-Miami-FL-33130/450011467_zpid/"
+      },
+      {
+        "zpid": "43874193",
+        "address": "825 Brickell Bay Dr APT 1448, Miami, FL 33131",
+        "price": 429000,
+        "zestimate": 414600,
+        "beds": 2,
+        "baths": 2,
+        "sqft": 990,
+        "type": "CONDO",
+        "status": "Condo for sale",
+        "url": "https://www.zillow.comhttps://www.zillow.com/homedetails/825-Brickell-Bay-Dr-APT-1448-Miami-FL-33131/43874193_zpid/"
+      },
+      {
+        "zpid": "43806249",
+        "address": "127 SW 7th Ave, Miami, FL 33130",
+        "price": 700000,
+        "zestimate": null,
+        "beds": 2,
+        "baths": 1,
+        "sqft": 2426,
+        "type": "SINGLE_FAMILY",
+        "status": "House for sale",
+        "url": "https://www.zillow.comhttps://www.zillow.com/homedetails/127-SW-7th-Ave-Miami-FL-33130/43806249_zpid/"
+      },
+      {
+        "zpid": "92448178",
+        "address": "1050 Brickell Ave APT 1006, Miami, FL 33131",
+        "price": 395000,
+        "zestimate": 383800,
+        "beds": 1,
+        "baths": 2,
+        "sqft": 1040,
+        "type": "CONDO",
+        "status": "Condo for sale",
+        "url": "https://www.zillow.comhttps://www.zillow.com/homedetails/1050-Brickell-Ave-APT-1006-Miami-FL-33131/92448178_zpid/"
+      },
+      {
+        "zpid": "119406109",
+        "address": "2020 N Bayshore Dr APT 2502, Miami, FL 33137",
+        "price": 2600000,
+        "zestimate": null,
+        "beds": 3,
+        "baths": 4,
+        "sqft": 2201,
+        "type": "CONDO",
+        "status": "Condo for sale",
+        "url": "https://www.zillow.comhttps://www.zillow.com/homedetails/2020-N-Bayshore-Dr-APT-2502-Miami-FL-33137/119406109_zpid/"
+      },
+      {
+        "zpid": "92446835",
+        "address": "90 SW 3rd St APT 4301, Miami, FL 33130",
+        "price": 690000,
+        "zestimate": 659900,
+        "beds": 2,
+        "baths": 2,
+        "sqft": 1093,
+        "type": "CONDO",
+        "status": "Condo for sale",
+        "url": "https://www.zillow.comhttps://www.zillow.com/homedetails/90-SW-3rd-St-APT-4301-Miami-FL-33130/92446835_zpid/"
+      },
+      {
+        "zpid": "82411321",
+        "address": "1750 N Bayshore Dr APT 2015, Miami, FL 33132",
+        "price": 450000,
+        "zestimate": null,
+        "beds": 2,
+        "baths": 2,
+        "sqft": 1048,
+        "type": "CONDO",
+        "status": "Condo for sale",
+        "url": "https://www.zillow.comhttps://www.zillow.com/homedetails/1750-N-Bayshore-Dr-APT-2015-Miami-FL-33132/82411321_zpid/"
+      },
+      {
+        "zpid": "162032943",
+        "address": "999 SW 1st Avenue #1914, Miami, FL 33130",
+        "price": 629000,
+        "zestimate": 605600,
+        "beds": 2,
+        "baths": 2,
+        "sqft": 1064,
+        "type": "CONDO",
+        "status": "Condo for sale",
+        "url": "https://www.zillow.comhttps://www.zillow.com/homedetails/999-SW-1st-Ave-APT-1914-Miami-FL-33130/162032943_zpid/"
+      }
+    ]
+  },
+  "proxy": {
+    "country": "US",
+    "carrier": "T-Mobile",
+    "type": "mobile"
+  },
+  "meta": {
+    "proxyIp": "172.56.170.242",
+    "scrapedAt": "2026-04-02T13:17:07.062441Z",
+    "responseTimeMs": 3178
+  }
+}

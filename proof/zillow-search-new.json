@@ -1,0 +1,140 @@
+{
+  "type": "realestate_search",
+  "query": "GET /api/realestate/search?zip=10001&type=for_sale",
+  "timestamp": "2026-04-02T13:17:07.062441Z",
+  "data": {
+    "totalResults": 41,
+    "listings": [
+      {
+        "zpid": "90133841",
+        "address": "433 W 34th St APT 5M, New York, NY 10001",
+        "price": 399000,
+        "zestimate": 401200,
+        "beds": 0,
+        "baths": 1,
+        "sqft": 0,
+        "type": "CONDO",
+        "status": "Active",
+        "url": "https://www.zillow.comhttps://www.zillow.com/homedetails/433-W-34th-St-APT-5M-New-York-NY-10001/90133841_zpid/"
+      },
+      {
+        "zpid": "72538097",
+        "address": "410 W 25th St APT 2B, New York, NY 10001",
+        "price": 700000,
+        "zestimate": null,
+        "beds": 1,
+        "baths": 2,
+        "sqft": 0,
+        "type": "CONDO",
+        "status": "Active",
+        "url": "https://www.zillow.comhttps://www.zillow.com/homedetails/410-W-25th-St-APT-2B-New-York-NY-10001/72538097_zpid/"
+      },
+      {
+        "zpid": "2055546006",
+        "address": "15 Hudson Yards Unit Ph88c, New York, NY 10001",
+        "price": 21950000,
+        "zestimate": null,
+        "beds": 4,
+        "baths": 7,
+        "sqft": 5139,
+        "type": "CONDO",
+        "status": "Active",
+        "url": "https://www.zillow.comhttps://www.zillow.com/homedetails/15-Hudson-Yards-UNIT-PH88C-New-York-NY-10001/2055546006_zpid/"
+      },
+      {
+        "zpid": "72515336",
+        "address": "357 W 29th St, New York, NY 10001",
+        "price": 1595000,
+        "zestimate": 1604400,
+        "beds": 2,
+        "baths": 2,
+        "sqft": 0,
+        "type": "CONDO",
+        "status": "Active",
+        "url": "https://www.zillow.comhttps://www.zillow.com/homedetails/357-W-29th-St-New-York-NY-10001/72515336_zpid/"
+      },
+      {
+        "zpid": "31503328",
+        "address": "262 W 25th St, New York, NY 10001",
+        "price": 5495000,
+        "zestimate": 6711200,
+        "beds": 5,
+        "baths": 4,
+        "sqft": 3900,
+        "type": "TOWNHOUSE",
+        "status": "Active",
+        "url": "https://www.zillow.comhttps://www.zillow.com/homedetails/262-W-25th-St-New-York-NY-10001/31503328_zpid/"
+      },
+      {
+        "zpid": "2093540631",
+        "address": "522 W 29th St Penthouse 9C, New York, NY 10001",
+        "price": 4300000,
+        "zestimate": 4149700,
+        "beds": 2,
+        "baths": 3,
+        "sqft": 1638,
+        "type": "CONDO",
+        "status": "Active",
+        "url": "https://www.zillow.comhttps://www.zillow.com/homedetails/522-W-29th-St-PENTHOUSE-9C-New-York-NY-10001/2093540631_zpid/"
+      },
+      {
+        "zpid": "338594391",
+        "address": "35 Hudson Yards #7302, New York, NY 10001",
+        "price": 9995000,
+        "zestimate": 9509000,
+        "beds": 4,
+        "baths": 5,
+        "sqft": 4148,
+        "type": "CONDO",
+        "status": "Active",
+        "url": "https://www.zillow.comhttps://www.zillow.com/homedetails/35-Hudson-Yards-7302-New-York-NY-10001/338594391_zpid/"
+      },
+      {
+        "zpid": "244894454",
+        "address": "143 W 27th St APT 2-R, New York, NY 10001",
+        "price": 1650000,
+        "zestimate": null,
+        "beds": 3,
+        "baths": 2,
+        "sqft": 0,
+        "type": "CONDO",
+        "status": "Active",
+        "url": "https://www.zillow.comhttps://www.zillow.com/homedetails/143-W-27th-St-APT-2-R-New-York-NY-10001/244894454_zpid/"
+      },
+      {
+        "zpid": "300195635",
+        "address": "522 W 29th St #4A, New York, NY 10001",
+        "price": 2450000,
+        "zestimate": 2386800,
+        "beds": 2,
+        "baths": 2,
+        "sqft": 1255,
+        "type": "CONDO",
+        "status": "Active",
+        "url": "https://www.zillow.comhttps://www.zillow.com/homedetails/522-W-29th-St-4A-New-York-NY-10001/300195635_zpid/"
+      },
+      {
+        "zpid": "2086334518",
+        "address": "15 Hudson Yards #Ph87b, New York, NY 10001",
+        "price": 9895000,
+        "zestimate": null,
+        "beds": 4,
+        "baths": 5,
+        "sqft": 3128,
+        "type": "CONDO",
+        "status": "Active",
+        "url": "https://www.zillow.comhttps://www.zillow.com/homedetails/15-Hudson-Yards-PH87B-New-York-NY-10001/2086334518_zpid/"
+      }
+    ]
+  },
+  "proxy": {
+    "country": "US",
+    "carrier": "T-Mobile",
+    "type": "mobile"
+  },
+  "meta": {
+    "proxyIp": "172.56.170.242",
+    "scrapedAt": "2026-04-02T13:17:07.062441Z",
+    "responseTimeMs": 3655
+  }
+}

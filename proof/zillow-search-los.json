@@ -1,0 +1,140 @@
+{
+  "type": "realestate_search",
+  "query": "GET /api/realestate/search?zip=90001&type=for_sale",
+  "timestamp": "2026-04-02T13:17:07.062441Z",
+  "data": {
+    "totalResults": 37,
+    "listings": [
+      {
+        "zpid": "20932064",
+        "address": "1166 E 64th St, Los Angeles, CA 90001",
+        "price": 829000,
+        "zestimate": 822700,
+        "beds": 7,
+        "baths": 4,
+        "sqft": 1952,
+        "type": "MULTI_FAMILY",
+        "status": "Multi-family home for sale",
+        "url": "https://www.zillow.comhttps://www.zillow.com/homedetails/1166-E-64th-St-Los-Angeles-CA-90001/20932064_zpid/"
+      },
+      {
+        "zpid": "20945062",
+        "address": "923 E 85th St, Los Angeles, CA 90001",
+        "price": 477888,
+        "zestimate": 484100,
+        "beds": 2,
+        "baths": 1,
+        "sqft": 980,
+        "type": "SINGLE_FAMILY",
+        "status": "House for sale",
+        "url": "https://www.zillow.comhttps://www.zillow.com/homedetails/923-E-85th-St-Los-Angeles-CA-90001/20945062_zpid/"
+      },
+      {
+        "zpid": "20940941",
+        "address": "640 E 74th St, Los Angeles, CA 90001",
+        "price": 699000,
+        "zestimate": 704700,
+        "beds": 5,
+        "baths": 3,
+        "sqft": 2078,
+        "type": "MULTI_FAMILY",
+        "status": "Multi-family home for sale",
+        "url": "https://www.zillow.comhttps://www.zillow.com/homedetails/640-E-74th-St-Los-Angeles-CA-90001/20940941_zpid/"
+      },
+      {
+        "zpid": "20942956",
+        "address": "8214 Alix Ave, Los Angeles, CA 90001",
+        "price": 775000,
+        "zestimate": 778500,
+        "beds": 4,
+        "baths": 2,
+        "sqft": 1722,
+        "type": "MULTI_FAMILY",
+        "status": "Multi-family home for sale",
+        "url": "https://www.zillow.comhttps://www.zillow.com/homedetails/8214-Alix-Ave-Los-Angeles-CA-90001/20942956_zpid/"
+      },
+      {
+        "zpid": "20941945",
+        "address": "1147 Nadeau St, Los Angeles, CA 90001",
+        "price": 550000,
+        "zestimate": 551400,
+        "beds": 3,
+        "baths": 2,
+        "sqft": 936,
+        "type": "SINGLE_FAMILY",
+        "status": "House for sale",
+        "url": "https://www.zillow.comhttps://www.zillow.com/homedetails/1147-Nadeau-St-Los-Angeles-CA-90001/20941945_zpid/"
+      },
+      {
+        "zpid": "20944054",
+        "address": "1139 E 82nd St, Los Angeles, CA 90001",
+        "price": 685000,
+        "zestimate": 696300,
+        "beds": 4,
+        "baths": 3,
+        "sqft": 1711,
+        "type": "SINGLE_FAMILY",
+        "status": "House for sale",
+        "url": "https://www.zillow.comhttps://www.zillow.com/homedetails/1139-E-82nd-St-Los-Angeles-CA-90001/20944054_zpid/"
+      },
+      {
+        "zpid": "20932253",
+        "address": "1144 E 68th St, Los Angeles, CA 90001",
+        "price": 575000,
+        "zestimate": 575700,
+        "beds": 2,
+        "baths": 1,
+        "sqft": 1019,
+        "type": "SINGLE_FAMILY",
+        "status": "House for sale",
+        "url": "https://www.zillow.comhttps://www.zillow.com/homedetails/1144-E-68th-St-Los-Angeles-CA-90001/20932253_zpid/"
+      },
+      {
+        "zpid": "452943276",
+        "address": "1750 E 63rd St #8, Los Angeles, CA 90001",
+        "price": 645000,
+        "zestimate": 645300,
+        "beds": 2,
+        "baths": 2,
+        "sqft": 1103,
+        "type": "CONDO",
+        "status": "Condo for sale",
+        "url": "https://www.zillow.comhttps://www.zillow.com/homedetails/1750-E-63rd-St-8-Los-Angeles-CA-90001/452943276_zpid/"
+      },
+      {
+        "zpid": "20941908",
+        "address": "1118 E 77th Pl, Los Angeles, CA 90001",
+        "price": 749900,
+        "zestimate": 748800,
+        "beds": 2,
+        "baths": 1,
+        "sqft": 570,
+        "type": "SINGLE_FAMILY",
+        "status": "House for sale",
+        "url": "https://www.zillow.comhttps://www.zillow.com/homedetails/1118-E-77th-Pl-Los-Angeles-CA-90001/20941908_zpid/"
+      },
+      {
+        "zpid": "20932895",
+        "address": "7114 Miramonte Blvd, Los Angeles, CA 90001",
+        "price": 799000,
+        "zestimate": 778800,
+        "beds": 3,
+        "baths": 3,
+        "sqft": 1164,
+        "type": "MULTI_FAMILY",
+        "status": "Multi-family home for sale",
+        "url": "https://www.zillow.comhttps://www.zillow.com/homedetails/7114-Miramonte-Blvd-Los-Angeles-CA-90001/20932895_zpid/"
+      }
+    ]
+  },
+  "proxy": {
+    "country": "US",
+    "carrier": "T-Mobile",
+    "type": "mobile"
+  },
+  "meta": {
+    "proxyIp": "172.56.170.242",
+    "scrapedAt": "2026-04-02T13:17:07.062441Z",
+    "responseTimeMs": 8861
+  }
+}

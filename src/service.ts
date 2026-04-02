@@ -29,6 +29,13 @@ import {
 } from './scrapers/linkedin-enrichment';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
+import {
+  searchListings as searchZillow,
+  getProperty as getZillowProperty,
+  getMarketStats as getZillowMarketStats,
+  getComps as getZillowComps,
+  ZillowError,
+} from './scrapers/zillow-scraper';
 
 export const serviceRouter = new Hono();
 
@@ -1484,5 +1491,171 @@ serviceRouter.get('/serp', async (c) => {
     });
   } catch (err: any) {
     return c.json({ error: 'SERP scrape failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ═══════════════════════════════════════════════════════
+// Real Estate Listing Intelligence API — Zillow (Bounty #79)
+// ═══════════════════════════════════════════════════════
+
+const ZILLOW_SEARCH_PRICE = 0.01;
+const ZILLOW_PROPERTY_PRICE = 0.02;
+const ZILLOW_MARKET_PRICE = 0.05;
+const ZILLOW_COMPS_PRICE = 0.03;
+
+// ─── GET /api/realestate/search ────────────────────
+
+serviceRouter.get('/realestate/search', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/realestate/search', 'Search Zillow listings by location, ZIP, price, beds — via mobile proxy', ZILLOW_SEARCH_PRICE, walletAddress, {
+      input: {
+        address: 'string — street address or location',
+        zip: 'string — 5-digit ZIP code',
+        type: '"for_sale" | "for_rent" | "sold" (default: "for_sale")',
+        min_price: 'number (optional)',
+        max_price: 'number (optional)',
+        beds: 'number (optional)',
+        limit: 'number (default: 20, max: 40)',
+      },
+      output: { totalResults: 'number', listings: 'ZillowListing[] — zpid, address, price, zestimate, beds, baths, sqft, type, status, url' },
+    }), 402);
+  }
+  const verification = await verifyPayment(payment, walletAddress, ZILLOW_SEARCH_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const address = c.req.query('address');
+  const zip = c.req.query('zip');
+  if (!address && !zip) return c.json({ error: 'Missing parameter: address or zip', example: '/api/realestate/search?zip=10001&type=for_sale' }, 400);
+
+  const startTime = Date.now();
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const result = await searchZillow({
+      location: address || undefined,
+      zip: zip || undefined,
+      type: (c.req.query('type') as any) || 'for_sale',
+      minPrice: c.req.query('min_price') ? parseInt(c.req.query('min_price')!) : undefined,
+      maxPrice: c.req.query('max_price') ? parseInt(c.req.query('max_price')!) : undefined,
+      beds: c.req.query('beds') ? parseInt(c.req.query('beds')!) : undefined,
+      limit: Math.min(parseInt(c.req.query('limit') || '20') || 20, 40),
+    });
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+    return c.json({
+      ...result,
+      meta: { proxyIp: ip, proxyCountry: proxy.country, proxyType: 'mobile', responseTimeMs: Date.now() - startTime },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    if (err instanceof ZillowError) return c.json({ error: err.code, message: err.message }, err.httpStatus as any);
+    return c.json({ error: 'Zillow search failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/realestate/property/:zpid ────────────
+
+serviceRouter.get('/realestate/property/:zpid', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/realestate/property/:zpid', 'Property details: price, Zestimate, price history, photos — via mobile proxy', ZILLOW_PROPERTY_PRICE, walletAddress, {
+      input: { zpid: 'string (in URL path) — Zillow property ID' },
+      output: 'ZillowProperty — address, price, zestimate, details (beds/baths/sqft/yearBuilt), priceHistory, photos',
+    }), 402);
+  }
+  const verification = await verifyPayment(payment, walletAddress, ZILLOW_PROPERTY_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const zpid = c.req.param('zpid');
+  if (!zpid) return c.json({ error: 'Missing zpid in URL path' }, 400);
+
+  const startTime = Date.now();
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const property = await getZillowProperty(zpid);
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+    return c.json({
+      property,
+      meta: { proxyIp: ip, proxyCountry: proxy.country, proxyType: 'mobile', responseTimeMs: Date.now() - startTime },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    if (err instanceof ZillowError) return c.json({ error: err.code, message: err.message }, err.httpStatus as any);
+    return c.json({ error: 'Property fetch failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/realestate/market ────────────────────
+
+serviceRouter.get('/realestate/market', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/realestate/market', 'Market stats by ZIP: median prices, inventory, price per sqft — via mobile proxy', ZILLOW_MARKET_PRICE, walletAddress, {
+      input: { zip: 'string (required) — 5-digit ZIP code' },
+      output: 'MarketStats — medianHomeValue, medianListPrice, avgPricePerSqft, inventoryCount',
+    }), 402);
+  }
+  const verification = await verifyPayment(payment, walletAddress, ZILLOW_MARKET_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const zip = c.req.query('zip');
+  if (!zip || !/^\d{5}$/.test(zip)) return c.json({ error: 'Missing or invalid zip (5 digits required)', example: '/api/realestate/market?zip=10001' }, 400);
+
+  const startTime = Date.now();
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const stats = await getZillowMarketStats(zip);
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+    return c.json({
+      ...stats,
+      meta: { proxyIp: ip, proxyCountry: proxy.country, proxyType: 'mobile', responseTimeMs: Date.now() - startTime },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    if (err instanceof ZillowError) return c.json({ error: err.code, message: err.message }, err.httpStatus as any);
+    return c.json({ error: 'Market stats failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/realestate/comps/:zpid ───────────────
+
+serviceRouter.get('/realestate/comps/:zpid', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/realestate/comps/:zpid', 'Comparable sales near a property — via mobile proxy', ZILLOW_COMPS_PRICE, walletAddress, {
+      input: { zpid: 'string (in URL path) — Zillow property ID' },
+      output: 'ZillowListing[] — nearby sold properties for comparison',
+    }), 402);
+  }
+  const verification = await verifyPayment(payment, walletAddress, ZILLOW_COMPS_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const zpid = c.req.param('zpid');
+  if (!zpid) return c.json({ error: 'Missing zpid in URL path' }, 400);
+
+  const startTime = Date.now();
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const comps = await getZillowComps(zpid);
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+    return c.json({
+      zpid, comps, count: comps.length,
+      meta: { proxyIp: ip, proxyCountry: proxy.country, proxyType: 'mobile', responseTimeMs: Date.now() - startTime },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    if (err instanceof ZillowError) return c.json({ error: err.code, message: err.message }, err.httpStatus as any);
+    return c.json({ error: 'Comps fetch failed', message: err?.message || String(err) }, 502);
   }
 });

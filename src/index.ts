@@ -94,6 +94,10 @@ app.get('/health', (c) => c.json({
     '/api/airbnb/market-stats',
     '/api/research',
     '/api/trending',
+    '/api/realestate/search',
+    '/api/realestate/property/:zpid',
+    '/api/realestate/market',
+    '/api/realestate/comps/:zpid',
   ],
 }));
 
@@ -129,6 +133,10 @@ app.get('/', (c) => c.json({
     { method: 'GET', path: '/api/airbnb/market-stats', description: 'Airbnb market statistics', price: '0.05 USDC' },
     { method: 'GET', path: '/api/research', description: 'Multi-source research aggregation', price: '0.05 USDC' },
     { method: 'GET', path: '/api/trending', description: 'Trending topics intelligence', price: '0.01 USDC' },
+    { method: 'GET', path: '/api/realestate/search', description: 'Search Zillow listings by location/ZIP', price: '0.01 USDC' },
+    { method: 'GET', path: '/api/realestate/property/:zpid', description: 'Property details, Zestimate, price history', price: '0.02 USDC' },
+    { method: 'GET', path: '/api/realestate/market', description: 'Market stats by ZIP code', price: '0.05 USDC' },
+    { method: 'GET', path: '/api/realestate/comps/:zpid', description: 'Comparable sales near a property', price: '0.03 USDC' },
   ],
   pricing: {
     amount: process.env.PRICE_USDC || '0.005',
