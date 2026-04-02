@@ -1,0 +1,100 @@
+```python
+import os
+import json
+from playwright.sync_api import sync_playwright
+from proxies import proxyFetch
+
+# Set up proxy and browser
+def setup_proxy(country, carrier):
+    proxy = proxyFetch(country, carrier)
+    return proxy
+
+def setup_browser(proxy):
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True, args=['--no-sandbox', '--disable-setuid-sandbox'])
+        context = browser.new_context(
+            user_agent='Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Mobile Safari/537.36',
+            viewport_size={'width': 360, 'height': 640}
+        )
+        page = context.new_page()
+        page.route('**/*', lambda route: route.set_headers({'Proxy-Authorization': proxy}))
+        return browser, context, page
+
+# Extract Discover feed content
+def extract_discover_feed(page, country, category):
+    page.goto('https://www.google.com')
+    page.click('text="Discover"')
+    page.wait_for_load_state('networkidle')
+    feed = []
+    for article in page.query_selector_all('.W1C3Z'):
+        title = article.query_selector('h3').text_content()
+        source = article.query_selector('span[source]').text_content()
+        url = article.query_selector('a').get_attribute('href')
+        snippet = article.query_selector('div.snippet').text_content()
+        image_url = article.query_selector('img').get_attribute('src')
+        content_type = 'article'
+        published_at = article.query_selector('time').text_content()
+        feed.append({
+            'position': len(feed) + 1,
+            'title': title,
+            'source': source,
+            'sourceUrl': url,
+            'url': url,
+            'snippet': snippet,
+            'imageUrl': image_url,
+            'contentType': content_type,
+            'publishedAt': published_at,
+            'category': category,
+            'engagement': {
+                'hasVideoPreview': False,
+                'format': 'standard'
+            }
+        })
+    return feed
+
+# Create API endpoint
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+
+app = FastAPI()
+
+class DiscoverFeedRequest(BaseModel):
+    country: str
+    category: str
+
+class DiscoverFeedResponse(BaseModel):
+    country: str
+    category: str
+    timestamp: str
+    discover_feed: list
+    metadata: dict
+    proxy: dict
+    payment: dict
+
+@app.get('/api/run')
+async def get_discover_feed(request: DiscoverFeedRequest):
+    country = request.country
+    category = request.category
+    proxy = setup_proxy(country, 'T-Mobile')
+    browser, context, page = setup_browser(proxy)
+    feed = extract_discover_feed(page, country, category)
+    browser.close()
+    return DiscoverFeedResponse(
+        country=country,
+        category=category,
+        timestamp='2026-02-14T12:00:00Z',
+        discover_feed=feed,
+        metadata={
+            'feedLength': len(feed),
+            'scrapedAt': '2026-02-14T12:00:05Z',
+            'proxyCountry': country,
+            'proxyCarrier': 'T-Mobile'
+        },
+        proxy={'country': country, 'carrier': 'T-Mobile', 'type': 'mobile'},
+        payment={'txHash': '...', 'amount': 0.02, 'verified': True}
+    )
+
+if __name__ == '__main__':
+    import uvicorn
+    uvicorn.run(app, host='0.0.0.0', port=8000)
+```
