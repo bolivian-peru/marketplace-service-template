@@ -1,0 +1,234 @@
+```typescript
+// src/service.ts
+import axios from 'axios';
+import { createClient } from '@x402/client';
+import { ProxiesSXClient } from './proxies-sx-client';
+
+const airbnbApi = 'https://www.airbnb.com/api/v3/';
+const proxiesSXClient = new ProxiesSXClient();
+const x402Client = createClient('YOUR_X402_API_KEY');
+
+interface SearchParams {
+  location: string;
+  checkin: string;
+  checkout: string;
+  guests: number;
+}
+
+interface Listing {
+  id: string;
+  title: string;
+  type: string;
+  pricePerNight: number;
+  totalPrice: number;
+  rating: number;
+  reviewsCount: number;
+  superhost: boolean;
+  bedrooms: number;
+  bathrooms: number;
+  maxGuests: number;
+  amenities: string[];
+  images: string[];
+  url: string;
+}
+
+interface MarketOverview {
+  avgDailyRate: number;
+  medianDailyRate: number;
+  totalListings: number;
+  avgOccupancyEstimate: number;
+}
+
+interface SearchResponse {
+  location: string;
+  results: Listing[];
+  marketOverview: MarketOverview;
+  meta: {
+    proxy: {
+      ip: string;
+      country: string;
+      carrier: string;
+    };
+  };
+}
+
+const searchListings = async (params: SearchParams) => {
+  const proxy = await proxiesSXClient.getProxy();
+  const response = await axios.get(`${airbnbApi}search`, {
+    params,
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone 13_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.3 Mobile/15E148 Safari/604.1',
+    },
+    proxy: {
+      host: proxy.ip,
+      port: proxy.port,
+    },
+  });
+
+  const listings: Listing[] = response.data.results.map((listing: any) => ({
+    id: listing.id,
+    title: listing.title,
+    type: listing.type,
+    pricePerNight: listing.pricePerNight,
+    totalPrice: listing.totalPrice,
+    rating: listing.rating,
+    reviewsCount: listing.reviewsCount,
+    superhost: listing.superhost,
+    bedrooms: listing.bedrooms,
+    bathrooms: listing.bathrooms,
+    maxGuests: listing.maxGuests,
+    amenities: listing.amenities,
+    images: listing.images,
+    url: listing.url,
+  }));
+
+  const marketOverview: MarketOverview = {
+    avgDailyRate: response.data.marketOverview.avgDailyRate,
+    medianDailyRate: response.data.marketOverview.medianDailyRate,
+    totalListings: response.data.marketOverview.totalListings,
+    avgOccupancyEstimate: response.data.marketOverview.avgOccupancyEstimate,
+  };
+
+  const searchResponse: SearchResponse = {
+    location: params.location,
+    results: listings,
+    marketOverview,
+    meta: {
+      proxy: {
+        ip: proxy.ip,
+        country: proxy.country,
+        carrier: proxy.carrier,
+      },
+    },
+  };
+
+  return searchResponse;
+};
+
+const getListing = async (id: string) => {
+  const proxy = await proxiesSXClient.getProxy();
+  const response = await axios.get(`${airbnbApi}listings/${id}`, {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone 13_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.3 Mobile/15E148 Safari/604.1',
+    },
+    proxy: {
+      host: proxy.ip,
+      port: proxy.port,
+    },
+  });
+
+  const listing: Listing = {
+    id: response.data.id,
+    title: response.data.title,
+    type: response.data.type,
+    pricePerNight: response.data.pricePerNight,
+    totalPrice: response.data.totalPrice,
+    rating: response.data.rating,
+    reviewsCount: response.data.reviewsCount,
+    superhost: response.data.superhost,
+    bedrooms: response.data.bedrooms,
+    bathrooms: response.data.bathrooms,
+    maxGuests: response.data.maxGuests,
+    amenities: response.data.amenities,
+    images: response.data.images,
+    url: response.data.url,
+  };
+
+  return listing;
+};
+
+const getMarketStats = async (location: string) => {
+  const proxy = await proxiesSXClient.getProxy();
+  const response = await axios.get(`${airbnbApi}market-stats`, {
+    params: { location },
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone 13_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.3 Mobile/15E148 Safari/604.1',
+    },
+    proxy: {
+      host: proxy.ip,
+      port: proxy.port,
+    },
+  });
+
+  const marketOverview: MarketOverview = {
+    avgDailyRate: response.data.avgDailyRate,
+    medianDailyRate: response.data.medianDailyRate,
+    totalListings: response.data.totalListings,
+    avgOccupancyEstimate: response.data.avgOccupancyEstimate,
+  };
+
+  return marketOverview;
+};
+
+const getReviews = async (listingId: string, limit: number) => {
+  const proxy = await proxiesSXClient.getProxy();
+  const response = await axios.get(`${airbnbApi}listings/${listingId}/reviews`, {
+    params: { limit },
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone 13_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.3 Mobile/15E148 Safari/604.1',
+    },
+    proxy: {
+      host: proxy.ip,
+      port: proxy.port,
+    },
+  });
+
+  const reviews = response.data.reviews;
+
+  return reviews;
+};
+
+// API Endpoints
+const app = express();
+
+app.get('/api/airbnb/search', async (req, res) => {
+  const params: SearchParams = {
+    location: req.query.location,
+    checkin: req.query.checkin,
+    checkout: req.query.checkout,
+    guests: req.query.guests,
+  };
+
+  const searchResponse = await searchListings(params);
+
+  res.json(searchResponse);
+});
+
+app.get('/api/airbnb/listing/:id', async (req, res) => {
+  const id = req.params.id;
+
+  const listing = await getListing(id);
+
+  res.json(listing);
+});
+
+app.get('/api/airbnb/market-stats', async (req, res) => {
+  const location = req.query.location;
+
+  const marketOverview = await getMarketStats(location);
+
+  res.json(marketOverview);
+});
+
+app.get('/api/airbnb/reviews/:listingId', async (req, res) => {
+  const listingId = req.params.listingId;
+  const limit = req.query.limit;
+
+  const reviews = await getReviews(listingId, limit);
+
+  res.json(reviews);
+});
+
+// x402 Payment Flow
+app.post('/api/airbnb/payment', async (req, res) => {
+  const payment = req.body;
+
+  const paymentResponse = await x402Client.createPayment(payment);
+
+  res.json(paymentResponse);
+});
+
+app.listen(3000, () => {
+  console.log('Server listening on port 3000');
+});
+```
