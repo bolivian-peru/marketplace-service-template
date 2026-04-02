@@ -7,17 +7,19 @@
 
 import type { BusinessHours } from '../types';
 
-// ─── HTML DECODING ──────────────────────────────────
-
 export function decodeHtmlEntities(text: string): string {
+  if (typeof text !== 'string') {
+    throw new Error('Input must be a string');
+  }
   return text
     .replace(/&amp;/g, '&')
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
+    .replace(/&quot;/g, '\"')
     .replace(/&#39;/g, "'")
     .replace(/&nbsp;/g, ' ')
     .trim();
+}
 }
 
 export function decodeUnicodeEscapes(str: string): string {
