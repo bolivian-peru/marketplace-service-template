@@ -31,7 +31,7 @@ const MOBILE_USER_AGENTS = [
   'Mozilla/5.0 (iPhone; CPU iPhone OS 17_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Mobile/15E148 Safari/604.1',
 ];
 
-function getRandomUserAgent(): string {
+export function getRandomUserAgent(): string {
   return MOBILE_USER_AGENTS[Math.floor(Math.random() * MOBILE_USER_AGENTS.length)];
 }
 

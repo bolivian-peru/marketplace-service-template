@@ -1486,3 +1486,68 @@ serviceRouter.get('/serp', async (c) => {
     return c.json({ error: 'SERP scrape failed', message: err?.message || String(err) }, 502);
   }
 });
+// ─── MOBILE AD VERIFICATION API (Bounty #53) ─────────
+// ═══════════════════════════════════════════════════════
+
+const AD_VERIFICATION_PRICE = 0.03;
+const AD_WALLET = '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+
+serviceRouter.get('/ad-verification/run', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/ad-verification/run',
+      'Mobile Ad Verification & Creative Intelligence — capture Google search ads, display ads, and advertiser data',
+      AD_VERIFICATION_PRICE, AD_WALLET, {
+        input: {
+          type: '"search_ads" | "display_ads" | "advertiser"',
+          query: 'string (for search_ads)',
+          url: 'string (for display_ads)',
+          domain: 'string (for advertiser)',
+          country: 'string (default US)',
+        },
+        output: '{ type, ads: AdInfo[], organic_count, total_ads, ad_positions, proxy, payment }',
+      }), 402);
+  }
+
+  const verification = await verifyPayment(payment, AD_WALLET, AD_VERIFICATION_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const type = c.req.query('type') || 'search_ads';
+  const country = c.req.query('country') || 'US';
+
+  if (!['search_ads', 'display_ads', 'advertiser'].includes(type)) {
+    return c.json({ error: 'Invalid type. Use: search_ads, display_ads, or advertiser' }, 400);
+  }
+
+  try {
+    const { captureSearchAds, captureDisplayAds, lookupAdvertiser } = await import('./scrapers/ad-verification-scraper');
+
+    let result;
+    if (type === 'search_ads') {
+      const query = c.req.query('query') || 'best vpn';
+      result = await captureSearchAds(query, country);
+    } else if (type === 'display_ads') {
+      const url = c.req.query('url');
+      if (!url) return c.json({ error: 'Missing url parameter for display_ads type' }, 400);
+      result = await captureDisplayAds(url, country);
+    } else {
+      const domain = c.req.query('domain');
+      if (!domain) return c.json({ error: 'Missing domain parameter for advertiser type' }, 400);
+      result = await lookupAdvertiser(domain, country);
+    }
+
+    result.payment = {
+      txHash: payment.txHash,
+      network: payment.network,
+      amount: verification.amount ?? 0,
+      verified: true,
+    };
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json(result);
+  } catch (err: any) {
+    return c.json({ error: 'Ad verification failed', message: err?.message || String(err) }, 502);
+  }
+});
