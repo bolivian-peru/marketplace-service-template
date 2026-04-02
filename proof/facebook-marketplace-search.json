@@ -1,0 +1,37 @@
+{
+  "type": "facebook_marketplace",
+  "timestamp": "2026-04-02T13:50:27.678641Z",
+  "proxy": {
+    "country": "US",
+    "carrier": "T-Mobile",
+    "type": "mobile",
+    "ip": "172.56.170.242"
+  },
+  "data": [
+    {
+      "query": "iphone",
+      "location": "nyc",
+      "pageTitle": "New and used Iphone for sale | Facebook Marketplace",
+      "hasMarketplaceContent": true,
+      "pageSize": 43780,
+      "note": "Facebook requires authentication for full listing data. Page title confirms marketplace content is accessible via mobile proxy."
+    },
+    {
+      "query": "laptop",
+      "location": "los-angeles",
+      "pageTitle": "New and used Laptop for sale | Facebook Marketplace",
+      "hasMarketplaceContent": true,
+      "pageSize": 43705,
+      "note": "Facebook requires authentication for full listing data. Page title confirms marketplace content is accessible via mobile proxy."
+    },
+    {
+      "query": "furniture",
+      "location": "chicago",
+      "pageTitle": "New and used Furniture for sale | Facebook Marketplace",
+      "hasMarketplaceContent": true,
+      "pageSize": 44172,
+      "note": "Facebook requires authentication for full listing data. Page title confirms marketplace content is accessible via mobile proxy."
+    }
+  ],
+  "note": "Facebook Marketplace requires session cookies for full listing data extraction. The scraper supports authenticated mode via FB_COOKIES env var. Without auth, page metadata confirms marketplace content is reachable through mobile proxy."
+}
