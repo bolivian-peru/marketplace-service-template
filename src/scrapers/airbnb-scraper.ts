@@ -11,7 +11,7 @@
 import { proxyFetch } from '../proxy';
 
 // ─── TYPES ──────────────────────────────────────────
-
+const API_KEY = process.env.AIRBNB_API_KEY; if (!API_KEY) { throw new Error("AIRBNB_API_KEY environment variable is not set"); }
 export interface AirbnbListing {
   id: string;
   title: string;
