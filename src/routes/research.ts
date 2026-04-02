@@ -50,27 +50,13 @@ const MAX_TRENDING_RESULTS = 20;
 const MAX_YOUTUBE_RESULTS = 20;
 const MAX_TWITTER_RESULTS = 20;
 
-const RESEARCH_RATE_LIMIT_PER_MIN = Math.max(
-  1,
-  Math.min(parseInt(process.env.RESEARCH_RATE_LIMIT_PER_MIN ?? '12', 10) || 12, 120),
-);
-const RATE_LIMIT_WINDOW_MS = 60_000;
-const rateLimits = new Map<string, { count: number; resetAt: number }>();
-
-const DESCRIPTION =
-  'Trend Intelligence API: cross-platform research synthesis with pattern detection and sentiment analysis. ' +
-  'Scrapes Reddit, web, YouTube, and Twitter/X simultaneously, finds cross-platform signals, returns structured intelligence report.';
-
-const OUTPUT_SCHEMA = {
-  input: {
-    topic: 'string (required) - topic or keyword to research',
-    platforms: '("reddit" | "web" | "youtube" | "twitter" | "x")[] (optional, default: ["reddit", "web"])',
-    days: 'number (optional, default: 30, max: 90)',
-    country: 'string (optional, default: "US") - ISO country code',
-  },
-  output: {
-    topic: 'string',
-    timeframe: 'string',
+function buildGoogleSearchUrl(sanitizedTopic: string, platforms: Platform[], days: number, country: string): string {
+    const encodedTopic = encodeURIComponent(sanitizedTopic);
+    const platformParam = platforms.map(p => p.toLowerCase()).join(',');
+    const daysParam = Math.min(Math.max(days, 1), MAX_DAYS);
+    const countryParam = country.toUpperCase();
+    return `https://www.google.com/search?q=${encodedTopic}&tbs=qdr:${daysParam}d&gl=${countryParam}&hl=en`;
+}
     patterns: 'TrendPattern[] - cross-platform signals with strength classification',
     sentiment: '{ overall, by_platform: Record<platform, { positive%, neutral%, negative% }> }',
     top_discussions: 'TopDiscussion[] - highest-engagement posts across platforms',
