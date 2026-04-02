@@ -1486,3 +1486,130 @@ serviceRouter.get('/serp', async (c) => {
     return c.json({ error: 'SERP scrape failed', message: err?.message || String(err) }, 502);
   }
 });
+
+// ═══════════════════════════════════════════════════════
+// ─── APP STORE INTELLIGENCE API (Bounty #54) ─────────
+// ═══════════════════════════════════════════════════════
+
+const APPSTORE_PRICE_USDC = 0.005;  // $0.005 per rankings/search
+const APPSTORE_APP_PRICE_USDC = 0.01; // $0.01 per app detail
+
+import { getAppRankings, searchApps, getTrendingApps } from './scrapers/app-store-scraper';
+
+// ─── GET /api/appstore/run ─────────────────────────────
+
+serviceRouter.get('/appstore/run', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) {
+    return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+  }
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/appstore/run', 'App Store Intelligence API — rankings, search, trending for Apple App Store + Google Play', APPSTORE_PRICE_USDC, walletAddress, {
+      input: {
+        type: '"rankings" | "search" | "trending" (required)',
+        store: '"apple" | "google" (required)',
+        category: 'string — for rankings (e.g., "games", "social")',
+        query: 'string — for search',
+        country: 'string — 2-letter country code (default: "US", options: US, DE, FR, ES, GB, PL)',
+        limit: 'number — max results (default: 50, max: 100)',
+      },
+      output: {
+        type: '"rankings" | "search" | "trending"',
+        store: '"apple" | "google"',
+        rankings: 'AppStoreApp[] (for rankings type)',
+        results: 'AppStoreApp[] (for search type)',
+        apps: 'AppStoreApp[] (for trending type)',
+        metadata: '{ totalRanked: number, scrapedAt: string }',
+        proxy: '{ country: string, carrier: string, type: "mobile" }',
+        payment: '{ txHash, network, amount, settled: true }',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, APPSTORE_PRICE_USDC);
+  if (!verification.valid) {
+    return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+  }
+
+  const clientIp = c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  if (!checkProxyRateLimit(clientIp)) {
+    c.header('Retry-After', '60');
+    return c.json({ error: 'Proxy rate limit exceeded. Max 20 requests/min to protect proxy quota.', retryAfter: 60 }, 429);
+  }
+
+  const type = c.req.query('type');
+  const store = (c.req.query('store') || 'apple').toLowerCase();
+  const country = (c.req.query('country') || 'US').toUpperCase();
+  const limit = Math.min(Math.max(parseInt(c.req.query('limit') || '50') || 50, 1), 100);
+
+  if (!type || !['rankings', 'search', 'trending'].includes(type)) {
+    return c.json({
+      error: 'Invalid or missing type parameter',
+      hint: 'Use ?type=rankings, ?type=search, or ?type=trending',
+      example: '/api/appstore/run?type=rankings&store=apple&category=games&country=US',
+    }, 400);
+  }
+
+  if (!['apple', 'google'].includes(store)) {
+    return c.json({ error: 'Invalid store parameter. Use "apple" or "google".' }, 400);
+  }
+
+  const validCountries = ['US', 'DE', 'FR', 'ES', 'GB', 'PL'];
+  if (!validCountries.includes(country)) {
+    return c.json({ error: `Invalid country. Valid: ${validCountries.join(', ')}` }, 400);
+  }
+
+  try {
+    const proxy = getProxy();
+    const timestamp = new Date().toISOString();
+
+    let rankings: any[] = [];
+    let results: any[] = [];
+    let apps: any[] = [];
+    let totalRanked = 0;
+
+    if (type === 'rankings') {
+      const category = c.req.query('category') || 'games';
+      rankings = await getAppRankings(store as 'apple' | 'google', category, country, limit);
+      totalRanked = rankings.length;
+    } else if (type === 'search') {
+      const query = c.req.query('query');
+      if (!query) {
+        return c.json({ error: 'Missing required parameter: query for type=search' }, 400);
+      }
+      results = await searchApps(store as 'apple' | 'google', query, country, limit);
+      totalRanked = results.length;
+    } else if (type === 'trending') {
+      apps = await getTrendingApps(store as 'apple' | 'google', country, limit);
+      totalRanked = apps.length;
+    }
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      type,
+      store,
+      country,
+      timestamp,
+      rankings,
+      results,
+      apps,
+      metadata: {
+        totalRanked,
+        scrapedAt: timestamp,
+      },
+      proxy: { country: proxy.country, carrier: proxy.host || 'Proxies.sx', type: 'mobile' },
+      payment: {
+        txHash: payment.txHash,
+        network: payment.network,
+        amount: verification.amount,
+        settled: true,
+      },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'App Store scrape failed', message: err?.message || String(err) }, 502);
+  }
+});

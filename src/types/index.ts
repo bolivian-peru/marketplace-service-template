@@ -326,3 +326,64 @@ export interface ReviewSearchResponse {
   businesses: BusinessInfo[];
   totalFound: number;
 }
+
+// ─── APP STORE INTELLIGENCE TYPES ────────────────────
+
+export interface AppStoreApp {
+  appName: string;
+  developer: string;
+  appId: string;
+  rating: number | null;
+  ratingCount: number | null;
+  price: string;
+  inAppPurchases: boolean;
+  category: string | null;
+  lastUpdated: string | null;
+  size: string | null;
+  icon: string | null;
+  store: 'apple' | 'google';
+  country: string;
+}
+
+export interface AppStoreRankingsResponse {
+  type: 'rankings';
+  store: 'apple' | 'google';
+  category: string;
+  country: string;
+  timestamp: string;
+  rankings: AppStoreApp[];
+  metadata: {
+    totalRanked: number;
+    scrapedAt: string;
+  };
+}
+
+export interface AppStoreSearchResponse {
+  type: 'search';
+  store: 'apple' | 'google';
+  query: string;
+  country: string;
+  timestamp: string;
+  results: AppStoreApp[];
+  metadata: {
+    totalFound: number;
+    scrapedAt: string;
+  };
+}
+
+export interface AppStoreTrendingResponse {
+  type: 'trending';
+  store: 'apple' | 'google';
+  country: string;
+  timestamp: string;
+  apps: AppStoreApp[];
+  metadata: {
+    totalFound: number;
+    scrapedAt: string;
+  };
+}
+
+export interface AppStoreReviewsResponse {
+  // Placeholder - type imported but never used in scraper
+  dummy?: string;
+}
