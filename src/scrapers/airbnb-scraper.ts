@@ -120,14 +120,13 @@ async function fetchAirbnbPage(url: string): Promise<string> {
   return response.text();
 }
 
-async function fetchAirbnbApi(path: string, params: Record<string, string> = {}): Promise<any> {
-  const url = new URL(`${AIRBNB_BASE}/api/v3/${path}`);
-  url.searchParams.set('key', API_KEY);
-  for (const [k, v] of Object.entries(params)) {
-    url.searchParams.set(k, v);
-  }
-
-  const response = await proxyFetch(url.toString(), {
+if (location === null || location === undefined || typeof location !== 'string') {
+  throw new Error('Invalid location parameter');
+}
+const encodedLocation = encodeURIComponent(location);
+const url = new URL(`${AIRBNB_BASE}/api/v3/${path}`);
+url.searchParams.set('key', API_KEY);
+url.searchParams.set('location', encodedLocation);
     maxRetries: 2,
     timeoutMs: 25_000,
     headers: {
