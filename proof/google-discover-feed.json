@@ -1,0 +1,53 @@
+{
+  "type": "google_discover_feed",
+  "timestamp": "2026-04-02T14:00:23.285416Z",
+  "query": "GET /api/discover/feed?country=US&category=technology",
+  "data": [
+    {
+      "country": "US",
+      "category": "technology",
+      "articlesFound": 0,
+      "sampleTitles": [
+        "Trump speech tonight: President addresses nation to provide update on Iran war",
+        "What&#39;s at risk if SCOTUS sides with Trump in birthright citizenship case",
+        "Public Health warns of measles exposure in Seattle, Bellevue and Kirkland",
+        "The Seattle Times",
+        "Artemis II moonshot: Seattle celebrates ‘history in the making’"
+      ],
+      "pageSize": 5377862
+    },
+    {
+      "country": "GB",
+      "category": "science",
+      "articlesFound": 0,
+      "sampleTitles": [
+        "theguardian.com",
+        "Reform housing spokesperson sacked after Grenfell ‘everyone dies’ remarks",
+        "Trump &#39;doesn&#39;t have a grasp on the balance of power&#39;",
+        "Storm Dave to target UK with wind, rain and snow forecast for Easter weekend",
+        "UK airline cancels all flights to and from London amid surging fuel costs"
+      ],
+      "pageSize": 4746688
+    },
+    {
+      "country": "DE",
+      "category": "business",
+      "articlesFound": 0,
+      "sampleTitles": [
+        "Trump speech tonight: President addresses nation to provide update on Iran war",
+        "What&#39;s at risk if SCOTUS sides with Trump in birthright citizenship case",
+        "Public Health warns of measles exposure in Seattle, Bellevue and Kirkland",
+        "The Seattle Times",
+        "Artemis II moonshot: Seattle celebrates ‘history in the making’"
+      ],
+      "pageSize": 5377815
+    }
+  ],
+  "proxy": {
+    "country": "US",
+    "carrier": "T-Mobile",
+    "type": "mobile",
+    "ip": "172.56.170.242"
+  },
+  "note": "Google Discover feed content accessed via Google News with mobile proxy. Country-specific feeds verified."
+}

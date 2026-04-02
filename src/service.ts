@@ -29,6 +29,7 @@ import {
 } from './scrapers/linkedin-enrichment';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
+import { getDiscoverFeed, DiscoverError } from './scrapers/google-discover-scraper';
 
 export const serviceRouter = new Hono();
 
@@ -1484,5 +1485,41 @@ serviceRouter.get('/serp', async (c) => {
     });
   } catch (err: any) {
     return c.json({ error: 'SERP scrape failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ═══════════════════════════════════════════════════════
+// Google Discover Feed Intelligence API (Bounty #52)
+// ═══════════════════════════════════════════════════════
+
+serviceRouter.get('/discover/feed', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/discover/feed', 'Google Discover feed content by country and category — mobile-only, real carrier IPs', 0.02, walletAddress, {
+      input: { country: 'string (US, DE, GB, FR, ES, PL)', category: 'string (general, technology, science, business, sports, entertainment, health)' },
+      output: 'DiscoverFeedResult — cards with title, source, url, snippet, publishedAt',
+    }), 402);
+  }
+  const verification = await verifyPayment(payment, walletAddress, 0.02);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const country = c.req.query('country') || 'US';
+  const category = c.req.query('category') || 'general';
+  const startTime = Date.now();
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const result = await getDiscoverFeed(country, category);
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+    return c.json({
+      ...result,
+      meta: { proxyIp: ip, proxyCountry: proxy.country, proxyType: 'mobile', responseTimeMs: Date.now() - startTime },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    if (err instanceof DiscoverError) return c.json({ error: err.code, message: err.message }, err.httpStatus as any);
+    return c.json({ error: 'Discover feed failed', message: err?.message || String(err) }, 502);
   }
 });
