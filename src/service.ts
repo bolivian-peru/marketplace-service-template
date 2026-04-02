@@ -1486,3 +1486,137 @@ serviceRouter.get('/serp', async (c) => {
     return c.json({ error: 'SERP scrape failed', message: err?.message || String(err) }, 502);
   }
 });
+// ─── FACEBOOK MARKETPLACE API (Bounty #75) ───────────
+// ═══════════════════════════════════════════════════════
+
+const MARKETPLACE_SEARCH_PRICE = 0.01;
+const MARKETPLACE_DETAIL_PRICE = 0.005;
+const MARKETPLACE_WALLET = '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+
+serviceRouter.get('/marketplace/search', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/marketplace/search',
+      'Facebook Marketplace Search — listings by keyword, location, price range',
+      MARKETPLACE_SEARCH_PRICE, MARKETPLACE_WALLET, {
+        input: { query: 'string (required)', location: 'string (default New York)', radius: 'number (default 25)', min_price: 'number (optional)', max_price: 'number (optional)' },
+        output: '{ results: MarketplaceListing[], meta }',
+      }), 402);
+  }
+
+  const verification = await verifyPayment(payment, MARKETPLACE_WALLET, MARKETPLACE_SEARCH_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const query = c.req.query('query');
+  if (!query) return c.json({ error: 'Missing required parameter: query' }, 400);
+
+  const location = c.req.query('location') || 'New York';
+  const radius = Math.min(Math.max(parseInt(c.req.query('radius') || '25') || 25, 1), 100);
+  const minPrice = c.req.query('min_price') ? parseInt(c.req.query('min_price')!) : undefined;
+  const maxPrice = c.req.query('max_price') ? parseInt(c.req.query('max_price')!) : undefined;
+
+  try {
+    const { searchMarketplace } = await import('./scrapers/facebook-marketplace-scraper');
+    const result = await searchMarketplace(query, location, radius, minPrice, maxPrice);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Marketplace search failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+serviceRouter.get('/marketplace/listing/:id', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/marketplace/listing/:id',
+      'Get Facebook Marketplace listing details by ID', MARKETPLACE_DETAIL_PRICE, MARKETPLACE_WALLET, {
+        input: { id: 'string (URL path)' },
+        output: '{ listing: MarketplaceListing, description }',
+      }), 402);
+  }
+
+  const verification = await verifyPayment(payment, MARKETPLACE_WALLET, MARKETPLACE_DETAIL_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const listingId = c.req.param('id');
+
+  try {
+    const { getMarketplaceListing } = await import('./scrapers/facebook-marketplace-scraper');
+    const result = await getMarketplaceListing(listingId);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      listing: result,
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Listing fetch failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+serviceRouter.get('/marketplace/categories', async (c) => {
+  const location = c.req.query('location') || 'New York';
+  try {
+    const { getMarketplaceCategories } = await import('./scrapers/facebook-marketplace-scraper');
+    return c.json(await getMarketplaceCategories(location));
+  } catch (err: any) {
+    return c.json({ error: 'Failed to fetch categories', message: err?.message || String(err) }, 502);
+  }
+});
+
+serviceRouter.get('/marketplace/new', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/marketplace/new',
+      'Facebook Marketplace New Listings Monitor — listings posted within time window',
+      MARKETPLACE_SEARCH_PRICE, MARKETPLACE_WALLET, {
+        input: { query: 'string (required)', location: 'string (default New York)', since: 'string (default 1h, e.g. 1h, 24h, 7d)' },
+        output: '{ results: MarketplaceListing[], meta }',
+      }), 402);
+  }
+
+  const verification = await verifyPayment(payment, MARKETPLACE_WALLET, MARKETPLACE_SEARCH_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const query = c.req.query('query');
+  if (!query) return c.json({ error: 'Missing required parameter: query' }, 400);
+
+  const location = c.req.query('location') || 'New York';
+  const since = c.req.query('since') || '1h';
+
+  // Parse since into hours
+  const sinceMatch = since.match(/(\d+)(h|d)/i);
+  const sinceHours = sinceMatch ? parseInt(sinceMatch[1]) * (sinceMatch[2].toLowerCase() === 'd' ? 24 : 1) : 1;
+
+  try {
+    const { monitorNewListings } = await import('./scrapers/facebook-marketplace-scraper');
+    const result = await monitorNewListings(query, location, sinceHours);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      meta: { ...result.meta, since_hours: sinceHours },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'New listings monitor failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ═══════════════════════════════════════════════════════
+// ─── MOBILE AD VERIFICATION API (Bounty #53) ─────────
+// ═══════════════════════════════════════════════════════
+
+const AD_VERIFICATION_PRICE = 0.03;
+const AD_WALLET = '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+
