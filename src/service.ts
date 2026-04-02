@@ -1486,3 +1486,50 @@ serviceRouter.get('/serp', async (c) => {
     return c.json({ error: 'SERP scrape failed', message: err?.message || String(err) }, 502);
   }
 });
+// ─── GOOGLE DISCOVER FEED API (Bounty #52) ─────────
+// ═══════════════════════════════════════════════════════
+
+const DISCOVER_PRICE_USDC = 0.01;
+const DISCOVER_WALLET = '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+
+serviceRouter.get('/discover/run', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/discover/run',
+      'Google Discover Feed Intelligence — captures mobile Discover feed content from real carrier IPs',
+      DISCOVER_PRICE_USDC, DISCOVER_WALLET, {
+        input: { country: 'string (default US)', category: 'string (default news)' },
+        output: '{ country, category, timestamp, discover_feed: Article[], metadata }',
+      }), 402);
+  }
+
+  const verification = await verifyPayment(payment, DISCOVER_WALLET, DISCOVER_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const country = c.req.query('country') || 'US';
+  const category = c.req.query('category') || 'news';
+
+  try {
+    const { scrapeDiscoverFeed } = await import('./scrapers/discover-scraper');
+    const result = await scrapeDiscoverFeed(country, category);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Discover feed scrape failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ═══════════════════════════════════════════════════════
+// ─── AMAZON PRODUCT API (Bounty #72) ─────────────────
+// ═══════════════════════════════════════════════════════
+
+const AMAZON_PRODUCT_PRICE = 0.005;
+const AMAZON_SEARCH_PRICE = 0.01;
+const AMAZON_REVIEWS_PRICE = 0.02;
+const AMAZON_WALLET = '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
