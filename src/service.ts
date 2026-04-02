@@ -29,6 +29,7 @@ import {
 } from './scrapers/linkedin-enrichment';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
+import { getProduct as getAmazonProduct, searchProducts as searchAmazon, getReviews as getAmazonReviews, getBestsellers, AmazonError } from './scrapers/amazon-scraper';
 
 export const serviceRouter = new Hono();
 
@@ -1484,5 +1485,139 @@ serviceRouter.get('/serp', async (c) => {
     });
   } catch (err: any) {
     return c.json({ error: 'SERP scrape failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ═══════════════════════════════════════════════════════
+// Amazon Product & BSR Tracker API (Bounty #72)
+// ═══════════════════════════════════════════════════════
+
+const AMAZON_PRODUCT_PRICE = 0.02;
+const AMAZON_SEARCH_PRICE = 0.01;
+const AMAZON_REVIEWS_PRICE = 0.01;
+
+serviceRouter.get('/amazon/product/:asin', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/amazon/product/:asin', 'Amazon product data: price, BSR, rating, reviews, features — via mobile proxy', AMAZON_PRODUCT_PRICE, walletAddress, {
+      input: { asin: 'string (in path) — Amazon ASIN', marketplace: 'string (default: US) — US, UK, DE, FR, ES, IT, CA, JP' },
+      output: 'AmazonProduct — title, price, rating, ratingsCount, bsr, availability, seller, brand, features, images',
+    }), 402);
+  }
+  const verification = await verifyPayment(payment, walletAddress, AMAZON_PRODUCT_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const asin = c.req.param('asin');
+  const marketplace = c.req.query('marketplace') || 'US';
+  const startTime = Date.now();
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const product = await getAmazonProduct(asin, marketplace);
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+    return c.json({
+      product,
+      meta: { proxyIp: ip, proxyCountry: proxy.country, proxyType: 'mobile', responseTimeMs: Date.now() - startTime },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    if (err instanceof AmazonError) return c.json({ error: err.code, message: err.message, shouldRetry: err.code === 'rate_limited' || err.code === 'captcha_detected' }, err.httpStatus as any);
+    return c.json({ error: 'Amazon product fetch failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+serviceRouter.get('/amazon/search', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/amazon/search', 'Search Amazon products by keyword — via mobile proxy', AMAZON_SEARCH_PRICE, walletAddress, {
+      input: { query: 'string (required)', category: 'string (optional)', marketplace: 'string (default: US)', limit: 'number (default: 20)' },
+      output: 'AmazonSearchResult — products with title, price, rating, ASIN, isPrime',
+    }), 402);
+  }
+  const verification = await verifyPayment(payment, walletAddress, AMAZON_SEARCH_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const query = c.req.query('query');
+  if (!query) return c.json({ error: 'Missing: query', example: '/api/amazon/search?query=wireless+earbuds' }, 400);
+
+  const startTime = Date.now();
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const result = await searchAmazon(query, c.req.query('marketplace') || 'US', c.req.query('category') || undefined, Math.min(parseInt(c.req.query('limit') || '20') || 20, 40));
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+    return c.json({
+      ...result,
+      meta: { proxyIp: ip, proxyCountry: proxy.country, proxyType: 'mobile', responseTimeMs: Date.now() - startTime },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    if (err instanceof AmazonError) return c.json({ error: err.code, message: err.message, shouldRetry: err.code === 'captcha_detected' }, err.httpStatus as any);
+    return c.json({ error: 'Amazon search failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+serviceRouter.get('/amazon/reviews/:asin', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/amazon/reviews/:asin', 'Amazon product reviews — via mobile proxy', AMAZON_REVIEWS_PRICE, walletAddress, {
+      input: { asin: 'string (in path)', sort: '"recent" | "helpful"', limit: 'number (default: 10)' },
+      output: 'AmazonReview[] — title, rating, author, date, text, verified, helpful',
+    }), 402);
+  }
+  const verification = await verifyPayment(payment, walletAddress, AMAZON_REVIEWS_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const asin = c.req.param('asin');
+  const startTime = Date.now();
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const reviews = await getAmazonReviews(asin, c.req.query('marketplace') || 'US', c.req.query('sort') || 'recent', Math.min(parseInt(c.req.query('limit') || '10') || 10, 50));
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+    return c.json({
+      asin, reviews, count: reviews.length,
+      meta: { proxyIp: ip, proxyCountry: proxy.country, proxyType: 'mobile', responseTimeMs: Date.now() - startTime },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    if (err instanceof AmazonError) return c.json({ error: err.code, message: err.message }, err.httpStatus as any);
+    return c.json({ error: 'Amazon reviews failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+serviceRouter.get('/amazon/bestsellers', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/amazon/bestsellers', 'Amazon bestsellers by category — via mobile proxy', AMAZON_SEARCH_PRICE, walletAddress, {
+      input: { category: 'string (default: electronics)', marketplace: 'string (default: US)' },
+      output: 'AmazonProductSummary[] — top 20 bestselling products',
+    }), 402);
+  }
+  const verification = await verifyPayment(payment, walletAddress, AMAZON_SEARCH_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const startTime = Date.now();
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const products = await getBestsellers(c.req.query('category') || 'electronics', c.req.query('marketplace') || 'US');
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+    return c.json({
+      category: c.req.query('category') || 'electronics', products, count: products.length,
+      meta: { proxyIp: ip, proxyCountry: proxy.country, proxyType: 'mobile', responseTimeMs: Date.now() - startTime },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    if (err instanceof AmazonError) return c.json({ error: err.code, message: err.message }, err.httpStatus as any);
+    return c.json({ error: 'Amazon bestsellers failed', message: err?.message || String(err) }, 502);
   }
 });

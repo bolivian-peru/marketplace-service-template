@@ -1,0 +1,61 @@
+{
+  "type": "amazon_products",
+  "timestamp": "2026-04-02T13:56:07.812432Z",
+  "query": "GET /api/amazon/product/:asin",
+  "data": {
+    "products": [
+      {
+        "asin": "B0BSHF7WHW",
+        "title": "MacBook Pro M2",
+        "price": 2046.75,
+        "rating": 4.7,
+        "ratingsCount": 605,
+        "bsr": [],
+        "responseTimeMs": 3512
+      },
+      {
+        "asin": "B09V3KXJPB",
+        "title": "AirPods Pro",
+        "price": 8.89,
+        "rating": 4.8,
+        "ratingsCount": 31404,
+        "bsr": [],
+        "responseTimeMs": 3352
+      },
+      {
+        "asin": "B0BT2KFJ8V",
+        "title": "Kindle Paperwhite",
+        "price": null,
+        "rating": null,
+        "ratingsCount": null,
+        "bsr": [],
+        "responseTimeMs": 1283
+      },
+      {
+        "asin": "B0CHX3QBCH",
+        "title": "Echo Dot",
+        "price": 29.95,
+        "rating": 3.8,
+        "ratingsCount": 2345,
+        "bsr": [],
+        "responseTimeMs": 3240
+      },
+      {
+        "asin": "B0C8S1RR11",
+        "title": "Fire TV Stick",
+        "price": null,
+        "rating": null,
+        "ratingsCount": null,
+        "bsr": [],
+        "responseTimeMs": 1225
+      }
+    ],
+    "count": 5
+  },
+  "proxy": {
+    "country": "US",
+    "carrier": "T-Mobile",
+    "type": "mobile",
+    "ip": "172.56.170.242"
+  }
+}
