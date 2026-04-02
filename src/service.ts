@@ -1486,3 +1486,127 @@ serviceRouter.get('/serp', async (c) => {
     return c.json({ error: 'SERP scrape failed', message: err?.message || String(err) }, 502);
   }
 });
+// ─── AMAZON PRODUCT API (Bounty #72) ─────────────────
+// ═══════════════════════════════════════════════════════
+
+const AMAZON_PRODUCT_PRICE = 0.005;
+const AMAZON_SEARCH_PRICE = 0.01;
+const AMAZON_REVIEWS_PRICE = 0.02;
+const AMAZON_WALLET = '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+
+serviceRouter.get('/amazon/product/:asin', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/amazon/product/:asin',
+      'Amazon Product Intelligence — price, BSR, reviews, buy box by ASIN',
+      AMAZON_PRODUCT_PRICE, AMAZON_WALLET, {
+        input: { asin: 'string (required)', marketplace: 'string (default US)' },
+        output: '{ asin, title, price, bsr, rating, reviews_count, buy_box, availability }',
+      }), 402);
+  }
+
+  const verification = await verifyPayment(payment, AMAZON_WALLET, AMAZON_PRODUCT_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const asin = c.req.param('asin');
+  const marketplace = c.req.query('marketplace') || 'US';
+
+  if (!asin) return c.json({ error: 'Missing ASIN parameter' }, 400);
+
+  try {
+    const { scrapeAmazonProduct } = await import('./scrapers/amazon-scraper');
+    const result = await scrapeAmazonProduct(asin, marketplace);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Amazon product scrape failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+serviceRouter.get('/amazon/search', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/amazon/search',
+      'Amazon Product Search — search products by keyword with pricing and BSR',
+      AMAZON_SEARCH_PRICE, AMAZON_WALLET, {
+        input: { query: 'string (required)', marketplace: 'string (default US)', limit: 'number (default 20)' },
+        output: '{ results: AmazonSearchResult[], meta }',
+      }), 402);
+  }
+
+  const verification = await verifyPayment(payment, AMAZON_WALLET, AMAZON_SEARCH_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const query = c.req.query('query');
+  if (!query) return c.json({ error: 'Missing required parameter: query' }, 400);
+
+  const marketplace = c.req.query('marketplace') || 'US';
+  const limit = Math.min(Math.max(parseInt(c.req.query('limit') || '20') || 20, 1), 50);
+
+  try {
+    const { searchAmazonProducts } = await import('./scrapers/amazon-scraper');
+    const results = await searchAmazonProducts(query, marketplace, limit);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      results,
+      meta: { query, marketplace, limit, total: results.length },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Amazon search failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+serviceRouter.get('/amazon/reviews/:asin', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/amazon/reviews/:asin',
+      'Amazon Product Reviews — top/recent reviews with ratings and verified purchase badges',
+      AMAZON_REVIEWS_PRICE, AMAZON_WALLET, {
+        input: { asin: 'string (URL path)', sort: '"recent"|"helpful"|"top" (default recent)', limit: 'number (default 10)' },
+        output: '{ asin, reviews: AmazonReviewsResult[] }',
+      }), 402);
+  }
+
+  const verification = await verifyPayment(payment, AMAZON_WALLET, AMAZON_REVIEWS_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const asin = c.req.param('asin');
+  const sort = c.req.query('sort') || 'recent';
+  const limit = Math.min(Math.max(parseInt(c.req.query('limit') || '10') || 10, 1), 50);
+
+  try {
+    const { scrapeAmazonReviews } = await import('./scrapers/amazon-scraper');
+    const reviews = await scrapeAmazonReviews(asin, sort, limit);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      asin,
+      reviews,
+      meta: { sort, limit, total: reviews.length },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Amazon reviews fetch failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ═══════════════════════════════════════════════════════
+// ─── FACEBOOK MARKETPLACE API (Bounty #75) ───────────
+// ═══════════════════════════════════════════════════════
+
+const MARKETPLACE_SEARCH_PRICE = 0.01;
+const MARKETPLACE_DETAIL_PRICE = 0.005;
+const MARKETPLACE_WALLET = '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+
