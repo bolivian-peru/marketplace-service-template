@@ -1,0 +1,153 @@
+{
+  "type": "airbnb_search",
+  "query": "GET /api/airbnb/search?location=New+York,+NY",
+  "timestamp": "2026-04-02T13:28:59.947496Z",
+  "data": {
+    "location": "New York, NY",
+    "listings": [
+      {
+        "id": "1728488302",
+        "title": "Alfred",
+        "priceString": "$801.60",
+        "url": "https://www.airbnb.com/rooms/1728488302"
+      },
+      {
+        "id": "2210830457",
+        "title": "The Chelsean New York Hotel",
+        "priceString": "$433.96",
+        "url": "https://www.airbnb.com/rooms/2210830457"
+      },
+      {
+        "id": "2395712831",
+        "title": "Alex & Zinaida",
+        "priceString": "$982.57",
+        "url": "https://www.airbnb.com/rooms/2395712831"
+      },
+      {
+        "id": "2228445816",
+        "title": "Candlewood Suites Times Square",
+        "priceString": "$1,192.53",
+        "url": "https://www.airbnb.com/rooms/2228445816"
+      },
+      {
+        "id": "2544050579",
+        "title": "Angella",
+        "priceString": "$1,019.98",
+        "url": "https://www.airbnb.com/rooms/2544050579"
+      },
+      {
+        "id": "2497408841",
+        "title": "Hotel Henri",
+        "priceString": "$883.00",
+        "url": "https://www.airbnb.com/rooms/2497408841"
+      },
+      {
+        "id": "2396433658",
+        "title": "Aloft New York Chelsea",
+        "priceString": "$1,386.53",
+        "url": "https://www.airbnb.com/rooms/2396433658"
+      },
+      {
+        "id": "2429920645",
+        "title": "New Yorker By Lotte Hotels",
+        "priceString": "$935.77",
+        "url": "https://www.airbnb.com/rooms/2429920645"
+      },
+      {
+        "id": "2557431260",
+        "title": "Times Square South New York City",
+        "priceString": "$697.26",
+        "url": "https://www.airbnb.com/rooms/2557431260"
+      },
+      {
+        "id": "2439952219",
+        "title": "New York",
+        "priceString": "$445.00",
+        "url": "https://www.airbnb.com/rooms/2439952219"
+      },
+      {
+        "id": "1728488302",
+        "title": "Alfred",
+        "priceString": "$801.60",
+        "url": "https://www.airbnb.com/rooms/1728488302"
+      },
+      {
+        "id": "2210830457",
+        "title": "The Chelsean New York Hotel",
+        "priceString": "$433.96",
+        "url": "https://www.airbnb.com/rooms/2210830457"
+      },
+      {
+        "id": "2395712831",
+        "title": "Alex & Zinaida",
+        "priceString": "$982.57",
+        "url": "https://www.airbnb.com/rooms/2395712831"
+      },
+      {
+        "id": "2228445816",
+        "title": "Candlewood Suites Times Square",
+        "priceString": "$502.12",
+        "url": "https://www.airbnb.com/rooms/2228445816"
+      },
+      {
+        "id": "1737312289",
+        "title": "Angella",
+        "priceString": "$1,019.98",
+        "url": "https://www.airbnb.com/rooms/1737312289"
+      },
+      {
+        "id": "2497408841",
+        "title": "Hotel Henri",
+        "priceString": "$883.00",
+        "url": "https://www.airbnb.com/rooms/2497408841"
+      },
+      {
+        "id": "2396433658",
+        "title": "Aloft New York Chelsea",
+        "priceString": "$1,012.01",
+        "url": "https://www.airbnb.com/rooms/2396433658"
+      },
+      {
+        "id": "2150297787",
+        "title": "New Yorker By Lotte Hotels",
+        "priceString": "$935.77",
+        "url": "https://www.airbnb.com/rooms/2150297787"
+      },
+      {
+        "id": "2557431260",
+        "title": "Times Square South New York City",
+        "priceString": "$1,569.12",
+        "url": "https://www.airbnb.com/rooms/2557431260"
+      },
+      {
+        "id": "2026706415",
+        "title": "Hilton Brooklyn New York City",
+        "priceString": "$629.00",
+        "url": "https://www.airbnb.com/rooms/2026706415"
+      },
+      {
+        "id": "1317215524",
+        "title": "Yotel New York",
+        "priceString": "$1,198.40",
+        "url": "https://www.airbnb.com/rooms/1317215524"
+      },
+      {
+        "id": "2263565007",
+        "title": "Lee",
+        "priceString": "$1,882.94",
+        "url": "https://www.airbnb.com/rooms/2263565007"
+      }
+    ],
+    "count": 22
+  },
+  "proxy": {
+    "country": "US",
+    "carrier": "T-Mobile",
+    "type": "mobile"
+  },
+  "meta": {
+    "proxyIp": "172.56.170.242",
+    "scrapedAt": "2026-04-02T13:28:59.947496Z",
+    "responseTimeMs": 4097
+  }
+}

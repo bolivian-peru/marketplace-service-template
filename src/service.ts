@@ -20,7 +20,7 @@ import { fetchReviews, fetchBusinessDetails, fetchReviewSummary, searchBusinesse
 import { scrapeGoogleMaps, extractDetailedBusiness } from './scrapers/maps-scraper';
 import { researchRouter } from './routes/research';
 import { trendingRouter } from './routes/trending';
-import { searchAirbnb, getListingDetail, getListingReviews, getMarketStats } from './scrapers/airbnb-scraper';
+import { searchAirbnb, getListingDetail, getListingReviews, getMarketStats, AirbnbError } from './scrapers/airbnb-scraper';
 import { 
   scrapeLinkedInPerson, 
   scrapeLinkedInCompany, 
@@ -1306,6 +1306,7 @@ serviceRouter.get('/airbnb/search', async (c) => {
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
   } catch (err: any) {
+    if (err instanceof AirbnbError) return c.json({ error: err.code, message: err.message, shouldRetry: err.code === 'rate_limited' || err.code === 'captcha_detected' }, err.httpStatus as any);
     return c.json({ error: 'Airbnb search failed', message: err?.message || String(err) }, 502);
   }
 });
@@ -1345,6 +1346,7 @@ serviceRouter.get('/airbnb/listing/:id', async (c) => {
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
   } catch (err: any) {
+    if (err instanceof AirbnbError) return c.json({ error: err.code, message: err.message, shouldRetry: err.code === 'rate_limited' || err.code === 'captcha_detected' }, err.httpStatus as any);
     return c.json({ error: 'Airbnb listing fetch failed', message: err?.message || String(err) }, 502);
   }
 });
@@ -1389,6 +1391,7 @@ serviceRouter.get('/airbnb/reviews/:listing_id', async (c) => {
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
   } catch (err: any) {
+    if (err instanceof AirbnbError) return c.json({ error: err.code, message: err.message, shouldRetry: err.code === 'rate_limited' || err.code === 'captcha_detected' }, err.httpStatus as any);
     return c.json({ error: 'Airbnb reviews fetch failed', message: err?.message || String(err) }, 502);
   }
 });
@@ -1435,6 +1438,7 @@ serviceRouter.get('/airbnb/market-stats', async (c) => {
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
   } catch (err: any) {
+    if (err instanceof AirbnbError) return c.json({ error: err.code, message: err.message, shouldRetry: err.code === 'rate_limited' || err.code === 'captcha_detected' }, err.httpStatus as any);
     return c.json({ error: 'Airbnb market stats failed', message: err?.message || String(err) }, 502);
   }
 });

@@ -62,6 +62,8 @@ export interface MarketStats {
   total_listings: number;
   avg_rating: number | null;
   superhost_pct: number | null;
+  estimated_occupancy_pct: number;
+  estimated_annual_revenue: number | null;
   price_distribution: {
     under_100: number;
     range_100_200: number;
@@ -70,6 +72,34 @@ export interface MarketStats {
     over_500: number;
   };
   property_types: Record<string, number>;
+}
+
+// ─── ERROR CLASS ───────────────────────────────────
+
+export class AirbnbError extends Error {
+  constructor(
+    public readonly code: string,
+    message: string,
+  ) {
+    super(message);
+    this.name = 'AirbnbError';
+  }
+
+  get httpStatus(): number {
+    switch (this.code) {
+      case 'captcha_detected': return 503;
+      case 'rate_limited': return 503;
+      case 'blocked': return 403;
+      case 'not_found': return 404;
+      case 'invalid_input': return 400;
+      default: return 500;
+    }
+  }
+
+  /** If true, the x402 payment should NOT be charged */
+  get shouldNotCharge(): boolean {
+    return ['captcha_detected', 'rate_limited', 'blocked', 'scrape_failed'].includes(this.code);
+  }
 }
 
 // ─── HELPERS ────────────────────────────────────────
@@ -113,11 +143,16 @@ async function fetchAirbnbPage(url: string): Promise<string> {
   });
 
   if (!response.ok) {
-    if (response.status === 403) throw new Error('Airbnb blocked the request (403). Proxy IP may be flagged.');
-    throw new Error(`Airbnb returned ${response.status}`);
+    if (response.status === 403) throw new AirbnbError('blocked', 'Airbnb blocked the request (403). Proxy IP may be flagged.');
+    if (response.status === 429) throw new AirbnbError('rate_limited', 'Airbnb rate limited this IP');
+    throw new AirbnbError('scrape_failed', `Airbnb returned ${response.status}`);
   }
 
-  return response.text();
+  const html = await response.text();
+  if (html.includes('captcha') && html.length < 10000) {
+    throw new AirbnbError('captcha_detected', 'Airbnb CAPTCHA triggered — try different IP');
+  }
+  return html;
 }
 
 async function fetchAirbnbApi(path: string, params: Record<string, string> = {}): Promise<any> {
@@ -169,7 +204,24 @@ function parseListingFromHtml(html: string): AirbnbListing[] {
     } catch { /* fall through to HTML parsing */ }
   }
 
-  // Fallback: parse from HTML structure
+  // Fallback 2: regex-based extraction from embedded JSON patterns
+  // Airbnb embeds listing data as "id":"xxx","name":"xxx","priceString":"xxx"
+  const regexListings = html.matchAll(/"id"\s*:\s*"(\d{6,})".*?"name"\s*:\s*"([^"]*)".*?"priceString"\s*:\s*"([^"]*)"/g);
+  for (const match of regexListings) {
+    const [, id, name, priceString] = match;
+    if (id && name && !listings.some(l => l.id === id)) {
+      const priceNum = parseFloat(priceString.replace(/[^0-9.]/g, '')) || null;
+      listings.push({
+        id, title: name, type: '', price_per_night: null, total_price: priceNum,
+        currency: 'USD', rating: null, reviews_count: null, superhost: false,
+        bedrooms: 0, bathrooms: 0, max_guests: 0, amenities: [], images: [],
+        url: `${AIRBNB_BASE}/rooms/${id}`, lat: null, lng: null,
+      });
+    }
+  }
+  if (listings.length > 0) return listings;
+
+  // Fallback 3: parse from HTML structure
   // Find listing cards by their data patterns
   const cards = html.split('data-testid="card-container"');
   for (let i = 1; i < cards.length; i++) {
@@ -564,6 +616,12 @@ export async function getMarketStats(
     propertyTypes[t] = (propertyTypes[t] || 0) + 1;
   }
 
+  // Revenue estimates (industry standard: 65-75% occupancy for popular markets)
+  const estimatedOccupancy = superhostPct && superhostPct > 30 ? 72 : 65;
+  const estimatedAnnualRevenue = avg
+    ? Math.round(avg * (estimatedOccupancy / 100) * 365)
+    : null;
+
   return {
     location,
     avg_daily_rate: avg,
@@ -571,6 +629,8 @@ export async function getMarketStats(
     total_listings: listings.length,
     avg_rating: avgRating,
     superhost_pct: superhostPct,
+    estimated_occupancy_pct: estimatedOccupancy,
+    estimated_annual_revenue: estimatedAnnualRevenue,
     price_distribution: priceDistribution,
     property_types: propertyTypes,
   };

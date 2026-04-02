@@ -1,0 +1,63 @@
+{
+  "type": "airbnb_search",
+  "query": "GET /api/airbnb/search?location=Los+Angeles,+CA",
+  "timestamp": "2026-04-02T13:28:59.947496Z",
+  "data": {
+    "location": "Los Angeles, CA",
+    "listings": [
+      {
+        "id": "2553784606",
+        "title": "Kasa",
+        "priceString": "$6,584.59",
+        "url": "https://www.airbnb.com/rooms/2553784606"
+      },
+      {
+        "id": "2487877428",
+        "title": "Hongyu",
+        "priceString": "$830.78",
+        "url": "https://www.airbnb.com/rooms/2487877428"
+      },
+      {
+        "id": "1924494842",
+        "title": "Hotel Pepper Tree",
+        "priceString": "$1,024.78",
+        "url": "https://www.airbnb.com/rooms/1924494842"
+      },
+      {
+        "id": "2556352700",
+        "title": "Los Angeles",
+        "priceString": "$1,097.81",
+        "url": "https://www.airbnb.com/rooms/2556352700"
+      },
+      {
+        "id": "2553784606",
+        "title": "Kasa",
+        "priceString": "$6,584.59",
+        "url": "https://www.airbnb.com/rooms/2553784606"
+      },
+      {
+        "id": "2487877428",
+        "title": "Hongyu",
+        "priceString": "$830.78",
+        "url": "https://www.airbnb.com/rooms/2487877428"
+      },
+      {
+        "id": "1924494842",
+        "title": "Hotel Pepper Tree",
+        "priceString": "$1,024.78",
+        "url": "https://www.airbnb.com/rooms/1924494842"
+      }
+    ],
+    "count": 7
+  },
+  "proxy": {
+    "country": "US",
+    "carrier": "T-Mobile",
+    "type": "mobile"
+  },
+  "meta": {
+    "proxyIp": "172.56.170.242",
+    "scrapedAt": "2026-04-02T13:28:59.947496Z",
+    "responseTimeMs": 3409
+  }
+}
