@@ -1,0 +1,93 @@
+{
+  "type": "instagram_intelligence",
+  "query": "GET /api/instagram/analyze/foodnetwork",
+  "timestamp": "2026-04-02T13:03:44.833Z",
+  "data": {
+    "profile": {
+      "username": "foodnetwork",
+      "full_name": "Food Network",
+      "bio": "",
+      "profile_pic_url": "https://scontent-sjc3-1.cdninstagram.com/v/t51.82787-19/640883031_18581088082014084_2254449863715240129_n.jpg?stp=dst-jpg_s100x100_tt6&amp;_nc_cat=1&amp;ccb=7-5&amp;_nc_sid=bf7eb4&amp;efg=eyJ2ZW5jb2RlX3RhZyI6InByb2ZpbGVfcGljLnd3dy4xMDAwLkMzIn0%3D&amp;_nc_ohc=mIalVE6KacgQ7kNvwFAMUZf&amp;_nc_oc=Adr3xGqGAlZttj-sgWnNAaRvKv-338iSCTDk26fy0mDsfSgfMvF1DhGxNfJ17b1zEKM&amp;_nc_zt=24&amp;_nc_ht=scontent-sjc3-1.cdninstagram.com&amp;_nc_gid=u3CJkJsS0PQVywuKsFQl6g&amp;_nc_ss=7a389&amp;oh=00_Af3_-sod7GPwGRSPUdd8QK3xHGFmom_B3mQi1K2oJpUN3w&amp;oe=69D43F89",
+      "followers": 13000000,
+      "following": 1494,
+      "posts_count": 35000,
+      "is_verified": false,
+      "is_business": false,
+      "is_private": false,
+      "category": null,
+      "external_url": null,
+      "engagement_rate": 0,
+      "avg_likes": 0,
+      "avg_comments": 0,
+      "posting_frequency": "unknown"
+    },
+    "posts_available": 0,
+    "ai_analysis": {
+      "account_type": {
+        "primary": "influencer",
+        "niche": "food",
+        "confidence": 0.85,
+        "sub_niches": [],
+        "signals": [
+          "follower_count_mega",
+          "follow_ratio_celebrity",
+          "personal_account"
+        ]
+      },
+      "content_themes": {
+        "top_themes": [
+          "food"
+        ],
+        "style": "unknown_without_image_access",
+        "aesthetic_consistency": "unknown",
+        "brand_safety_score": 85
+      },
+      "sentiment": {
+        "overall": "positive",
+        "breakdown": {
+          "positive": 60,
+          "neutral": 30,
+          "negative": 10
+        },
+        "emotional_themes": [
+          "professional"
+        ],
+        "brand_alignment": [
+          "food"
+        ]
+      },
+      "authenticity": {
+        "score": 80,
+        "verdict": "likely_authentic",
+        "face_consistency": "requires_image_analysis",
+        "engagement_pattern": "low_engagement",
+        "follower_quality": "high",
+        "comment_analysis": "requires_post_access",
+        "fake_signals": {
+          "follower_following_ratio": 8701.47,
+          "has_bio": false,
+          "has_posts": true,
+          "profile_method": "meta_tag_extraction"
+        }
+      },
+      "recommendations": {
+        "good_for_brands": [
+          "food",
+          "awareness"
+        ],
+        "estimated_post_value": "$10,000-50,000+",
+        "risk_level": "low"
+      },
+      "images_analyzed": 0,
+      "model_used": "heuristic_profile_analysis",
+      "note": "Full AI vision analysis requires post image access. Instagram login wall prevents image extraction via scraping. Profile-level heuristic analysis performed instead."
+    },
+    "meta": {
+      "proxyIp": "172.56.170.242",
+      "proxyCountry": "US",
+      "proxyType": "mobile",
+      "scrapedAt": "2026-04-02T13:03:42.831Z",
+      "responseTimeMs": 6265
+    }
+  }
+}

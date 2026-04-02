@@ -139,12 +139,56 @@ function extractProfileFromSharedData(html: string): any | null {
       if (user) return user;
     } catch {}
   }
+
   return null;
+}
+
+/**
+ * Fallback: extract profile data from meta tags (works even with login wall).
+ * Instagram always includes follower/following/post counts in og:description.
+ */
+function extractFromMetaTags(html: string, username: string): any | null {
+  const ogDesc = html.match(/<meta\s+(?:property|name)="(?:og:description|description)"\s+content="([^"]*)"/);
+  if (!ogDesc) return null;
+
+  const desc = ogDesc[1];
+  const followersMatch = desc.match(/([\d,.]+[MKB]?)\s*Followers/i);
+  const followingMatch = desc.match(/([\d,.]+[MKB]?)\s*Following/i);
+  const postsMatch = desc.match(/([\d,.]+[MKB]?)\s*Posts/i);
+  const nameMatch = desc.match(/from\s+(.+?)(?:\s*\([@&#]|$)/);
+
+  if (!followersMatch) return null;
+
+  const parseCount = (s: string): number => {
+    s = s.replace(/,/g, '');
+    if (s.endsWith('B')) return parseFloat(s) * 1_000_000_000;
+    if (s.endsWith('M')) return parseFloat(s) * 1_000_000;
+    if (s.endsWith('K')) return parseFloat(s) * 1_000;
+    return parseInt(s) || 0;
+  };
+
+  const profilePicMatch = html.match(/<meta\s+property="og:image"\s+content="([^"]*)"/);
+
+  return {
+    username,
+    full_name: nameMatch ? cleanText(nameMatch[1]) : '',
+    biography: '',
+    is_verified: false,
+    is_business_account: false,
+    is_private: false,
+    profile_pic_url: profilePicMatch ? profilePicMatch[1] : '',
+    edge_followed_by: { count: parseCount(followersMatch[1]) },
+    edge_follow: { count: followingMatch ? parseCount(followingMatch[1]) : 0 },
+    edge_owner_to_timeline_media: { count: postsMatch ? parseCount(postsMatch[1]) : 0, edges: [] },
+    category_name: null,
+    external_url: null,
+    _meta_extracted: true,
+  };
 }
 
 export async function getProfile(username: string): Promise<InstagramProfile> {
   let userData: any = null;
-  
+
   // Try JSON API first
   try {
     const json = await fetchInstagramJSON(username);
@@ -155,8 +199,12 @@ export async function getProfile(username: string): Promise<InstagramProfile> {
   if (!userData) {
     const html = await fetchInstagramPage(`https://www.instagram.com/${encodeURIComponent(username)}/`);
     userData = extractProfileFromSharedData(html);
+    // Pass username for meta tag extraction fallback
+    if (!userData) {
+      userData = extractFromMetaTags(html, username);
+    }
   }
-  
+
   if (!userData) throw new Error('Could not extract profile data');
   
   const edges = userData.edge_owner_to_timeline_media?.edges || [];
@@ -247,13 +295,13 @@ async function analyzeOpenAI(apiKey: string, imageUrls: string[], captions: stri
   }
   const resp = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-    body: JSON.stringify({ model: 'gpt-4o', messages: [{ role: 'user', content }], max_tokens: 1500, temperature: 0.3 }),
+    body: JSON.stringify({ model: 'gpt-5.4-2026-03-05', messages: [{ role: 'user', content }], max_tokens: 1500, temperature: 0.3 }),
   });
   if (!resp.ok) throw new Error(`OpenAI API error: ${resp.status}`);
   const data = await resp.json();
   const text = data.choices?.[0]?.message?.content || '';
-  try { return { ...JSON.parse(text.replace(/```json?\n?/g, '').replace(/```/g, '').trim()), model_used: 'gpt-4o' }; }
-  catch { return { ...heuristicAnalysis(captions, profileSummary), model_used: 'gpt-4o-fallback' }; }
+  try { return { ...JSON.parse(text.replace(/```json?\n?/g, '').replace(/```/g, '').trim()), model_used: 'gpt-5.4' }; }
+  catch { return { ...heuristicAnalysis(captions, profileSummary), model_used: 'gpt-5.4-fallback' }; }
 }
 
 async function analyzeClaude(apiKey: string, imageUrls: string[], captions: string[], profileSummary: string): Promise<any> {

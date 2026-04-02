@@ -1,0 +1,93 @@
+{
+  "type": "instagram_intelligence",
+  "query": "GET /api/instagram/analyze/nasa",
+  "timestamp": "2026-04-02T13:03:44.833Z",
+  "data": {
+    "profile": {
+      "username": "nasa",
+      "full_name": "NASA",
+      "bio": "",
+      "profile_pic_url": "https://scontent-sjc3-1.cdninstagram.com/v/t51.2885-19/29090066_159271188110124_1152068159029641216_n.jpg?stp=dst-jpg_s100x100_tt6&amp;_nc_cat=1&amp;ccb=7-5&amp;_nc_sid=bf7eb4&amp;efg=eyJ2ZW5jb2RlX3RhZyI6InByb2ZpbGVfcGljLnd3dy4xMDgwLkMzIn0%3D&amp;_nc_ohc=WDcZe3ckD88Q7kNvwGB_UYd&amp;_nc_oc=AdqtdWgolV2269uRaC9QxLZhviNlsIXx5qQGnBiJrSc5zu2dDN67vXMBgt2rHJi91Pk&amp;_nc_zt=24&amp;_nc_ht=scontent-sjc3-1.cdninstagram.com&amp;_nc_ss=7a389&amp;oh=00_Af1ZnReju6YbOAoFpeSxdCA2kRtU7qJyhnnCkOOGYiM6fA&amp;oe=69D448E9",
+      "followers": 100000000,
+      "following": 98,
+      "posts_count": 4658,
+      "is_verified": false,
+      "is_business": false,
+      "is_private": false,
+      "category": null,
+      "external_url": null,
+      "engagement_rate": 0,
+      "avg_likes": 0,
+      "avg_comments": 0,
+      "posting_frequency": "unknown"
+    },
+    "posts_available": 0,
+    "ai_analysis": {
+      "account_type": {
+        "primary": "influencer",
+        "niche": "science",
+        "confidence": 0.85,
+        "sub_niches": [],
+        "signals": [
+          "follower_count_mega",
+          "follow_ratio_celebrity",
+          "personal_account"
+        ]
+      },
+      "content_themes": {
+        "top_themes": [
+          "science"
+        ],
+        "style": "unknown_without_image_access",
+        "aesthetic_consistency": "unknown",
+        "brand_safety_score": 85
+      },
+      "sentiment": {
+        "overall": "positive",
+        "breakdown": {
+          "positive": 60,
+          "neutral": 30,
+          "negative": 10
+        },
+        "emotional_themes": [
+          "professional"
+        ],
+        "brand_alignment": [
+          "science"
+        ]
+      },
+      "authenticity": {
+        "score": 80,
+        "verdict": "likely_authentic",
+        "face_consistency": "requires_image_analysis",
+        "engagement_pattern": "low_engagement",
+        "follower_quality": "high",
+        "comment_analysis": "requires_post_access",
+        "fake_signals": {
+          "follower_following_ratio": 1020408.16,
+          "has_bio": false,
+          "has_posts": true,
+          "profile_method": "meta_tag_extraction"
+        }
+      },
+      "recommendations": {
+        "good_for_brands": [
+          "science",
+          "awareness"
+        ],
+        "estimated_post_value": "$10,000-50,000+",
+        "risk_level": "low"
+      },
+      "images_analyzed": 0,
+      "model_used": "heuristic_profile_analysis",
+      "note": "Full AI vision analysis requires post image access. Instagram login wall prevents image extraction via scraping. Profile-level heuristic analysis performed instead."
+    },
+    "meta": {
+      "proxyIp": "172.56.170.242",
+      "proxyCountry": "US",
+      "proxyType": "mobile",
+      "scrapedAt": "2026-04-02T13:03:34.565Z",
+      "responseTimeMs": 5865
+    }
+  }
+}
