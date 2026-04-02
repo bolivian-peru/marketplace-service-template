@@ -1,0 +1,38 @@
+{
+  "type": "realestate_property_detail",
+  "query": "GET /api/realestate/property/90133841",
+  "timestamp": "2026-04-02T13:22:21.179058Z",
+  "data": {
+    "zpid": "90133841",
+    "address": "433 W 34th St APT 5M, New York, NY 10001",
+    "price": 399000,
+    "zestimate": 401200,
+    "rentZestimate": 5278,
+    "details": {
+      "bedrooms": 0,
+      "bathrooms": 1,
+      "sqft": 0,
+      "lotSqft": null,
+      "yearBuilt": null,
+      "type": "CONDO",
+      "status": "FOR_SALE",
+      "parking": null
+    },
+    "priceHistory": [],
+    "taxHistory": [],
+    "photoCount": 13,
+    "description": "No Appointment Necessary for Open House, just show up!\n\nSituated on the quiet backside of the building, this charming studio offers peaceful north-facing city views, a thoughtfully renovated kitchen, ",
+    "daysOnZillow": 72,
+    "brokerName": "Brown Harris Stevens"
+  },
+  "proxy": {
+    "country": "US",
+    "carrier": "T-Mobile",
+    "type": "mobile"
+  },
+  "meta": {
+    "proxyIp": "172.56.170.242",
+    "scrapedAt": "2026-04-02T13:22:21.179263Z"
+  },
+  "note": "Property detail extracted from Zillow __NEXT_DATA__ via gdpClientCache"
+}
