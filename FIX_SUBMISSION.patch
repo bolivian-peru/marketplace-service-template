@@ -1,0 +1,233 @@
+```typescript
+// src/service.ts
+import axios from 'axios';
+import { Proxy } from 'proxies.sx';
+
+const proxy = new Proxy({
+  token: 'YOUR_PROXIES_SX_TOKEN',
+  country: 'US',
+  carrier: 'Verizon',
+});
+
+const facebookApi = axios.create({
+  baseURL: 'https://graph.facebook.com/v13.0',
+  headers: {
+    'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1',
+  },
+});
+
+const marketplaceApi = {
+  async search(query: string, location: string, radius: string, minPrice: number, maxPrice: number) {
+    const response = await facebookApi.get('/search', {
+      params: {
+        type: 'marketplace',
+        q: query,
+        location,
+        distance: radius,
+        minPrice,
+        maxPrice,
+      },
+      proxy: {
+        host: proxy.ip,
+        port: 8080,
+      },
+    });
+
+    const listings = response.data.data.map((listing: any) => ({
+      id: listing.id,
+      title: listing.title,
+      price: listing.price,
+      currency: listing.currency,
+      location: listing.location,
+      seller: {
+        name: listing.seller.name,
+        joined: listing.seller.joined,
+        rating: listing.seller.rating,
+      },
+      condition: listing.condition,
+      postedAt: listing.posted_at,
+      images: listing.images,
+      url: listing.url,
+    }));
+
+    return {
+      results: listings,
+      meta: {
+        query,
+        totalResults: response.data.paging.cursors.after,
+        proxy: {
+          ip: proxy.ip,
+          country: proxy.country,
+          carrier: proxy.carrier,
+        },
+      },
+    };
+  },
+
+  async getListing(id: string) {
+    const response = await facebookApi.get(`/${id}`, {
+      proxy: {
+        host: proxy.ip,
+        port: 8080,
+      },
+    });
+
+    return {
+      id: response.data.id,
+      title: response.data.title,
+      price: response.data.price,
+      currency: response.data.currency,
+      location: response.data.location,
+      seller: {
+        name: response.data.seller.name,
+        joined: response.data.seller.joined,
+        rating: response.data.seller.rating,
+      },
+      condition: response.data.condition,
+      postedAt: response.data.posted_at,
+      images: response.data.images,
+      url: response.data.url,
+    };
+  },
+
+  async getCategories(location: string) {
+    const response = await facebookApi.get('/marketplace/categories', {
+      params: {
+        location,
+      },
+      proxy: {
+        host: proxy.ip,
+        port: 8080,
+      },
+    });
+
+    return response.data.data;
+  },
+
+  async getNewListings(query: string, since: string) {
+    const response = await facebookApi.get('/marketplace/new', {
+      params: {
+        q: query,
+        since,
+      },
+      proxy: {
+        host: proxy.ip,
+        port: 8080,
+      },
+    });
+
+    const listings = response.data.data.map((listing: any) => ({
+      id: listing.id,
+      title: listing.title,
+      price: listing.price,
+      currency: listing.currency,
+      location: listing.location,
+      seller: {
+        name: listing.seller.name,
+        joined: listing.seller.joined,
+        rating: listing.seller.rating,
+      },
+      condition: listing.condition,
+      postedAt: listing.posted_at,
+      images: listing.images,
+      url: listing.url,
+    }));
+
+    return {
+      results: listings,
+      meta: {
+        query,
+        totalResults: response.data.paging.cursors.after,
+        proxy: {
+          ip: proxy.ip,
+          country: proxy.country,
+          carrier: proxy.carrier,
+        },
+      },
+    };
+  },
+};
+
+export default marketplaceApi;
+```
+
+```typescript
+// src/server.ts
+import express, { Request, Response } from 'express';
+import marketplaceApi from './service';
+
+const app = express();
+
+app.get('/api/marketplace/search', async (req: Request, res: Response) => {
+  const query = req.query.query as string;
+  const location = req.query.location as string;
+  const radius = req.query.radius as string;
+  const minPrice = parseInt(req.query.minPrice as string, 10);
+  const maxPrice = parseInt(req.query.maxPrice as string, 10);
+
+  const response = await marketplaceApi.search(query, location, radius, minPrice, maxPrice);
+  res.json(response);
+});
+
+app.get('/api/marketplace/listing/:id', async (req: Request, res: Response) => {
+  const id = req.params.id;
+
+  const response = await marketplaceApi.getListing(id);
+  res.json(response);
+});
+
+app.get('/api/marketplace/categories', async (req: Request, res: Response) => {
+  const location = req.query.location as string;
+
+  const response = await marketplaceApi.getCategories(location);
+  res.json(response);
+});
+
+app.get('/api/marketplace/new', async (req: Request, res: Response) => {
+  const query = req.query.query as string;
+  const since = req.query.since as string;
+
+  const response = await marketplaceApi.getNewListings(query, since);
+  res.json(response);
+});
+
+app.listen(3000, () => {
+  console.log('Server started on port 3000');
+});
+```
+
+```bash
+# .env
+PROXIES_SX_TOKEN=YOUR_PROXIES_SX_TOKEN
+```
+
+```bash
+# Dockerfile
+FROM node:16
+
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm install
+
+COPY . .
+
+RUN npm run build
+
+EXPOSE 3000
+
+CMD [ "node", "src/server.js" ]
+```
+
+```bash
+# docker-compose.yml
+version: '3'
+services:
+  app:
+    build: .
+    environment:
+      - PROXIES_SX_TOKEN=${PROXIES_SX_TOKEN}
+    ports:
+      - "3000:3000"
+```
