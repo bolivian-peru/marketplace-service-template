@@ -101,11 +101,30 @@ function parseDdgResults(html: string, limit: number): WebResult[] {
 
     const normalizedUrl = normalizeHttpUrl(decodedUrl);
     if (!normalizedUrl) continue;
-
+function parseDdgResults(html: string, limit: number): WebResult[] {
+  const results: WebResult[] = [];
+  const safeLimit = clamp(limit, 1, MAX_LIMIT);
+  const sanitizedHtml = DOMPurify.sanitize(html);
+  const resultPattern = /<a[^>]+class="result__a"[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>[\s\S]*?class="result__snippet"[^>]*>([\s\S]*?)<\/a>/g;
+  let match: RegExpExecArray | null;
+  while ((match = resultPattern.exec(sanitizedHtml)) !== null && results.length < safeLimit) {
+    const rawUrl = match[1];
+    const rawTitle = match[2];
+    const rawSnippet = match[3];
+    let decodedUrl = rawUrl;
+    const wrappedTarget = rawUrl.match(/[?&]uddg=([^&]+)/);
+    if (wrappedTarget) {
+      try {
+        decodedUrl = decodeURIComponent(wrappedTarget[1]);
+      } catch {
+        decodedUrl = rawUrl;
+      }
+    }
+    const normalizedUrl = normalizeHttpUrl(decodedUrl);
+    if (!normalizedUrl) continue;
     const title = sanitizeText(stripHtml(rawTitle), MAX_TITLE_LENGTH);
     const snippet = sanitizeText(stripHtml(rawSnippet), MAX_SNIPPET_LENGTH);
     if (!title) continue;
-
     results.push({
       title,
       url: normalizedUrl,
@@ -114,13 +133,8 @@ function parseDdgResults(html: string, limit: number): WebResult[] {
       platform: 'web',
     });
   }
-
   return results;
 }
-
-function parseTrendsRss(xml: string, limit: number): TrendingTopic[] {
-  const topics: TrendingTopic[] = [];
-  const safeLimit = clamp(limit, 1, MAX_LIMIT);
 
   const itemPattern = /<item>([\s\S]*?)<\/item>/g;
   let itemMatch: RegExpExecArray | null;
