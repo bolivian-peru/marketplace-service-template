@@ -17,37 +17,21 @@ import { getProxy, proxyFetch } from '../proxy';
 import { searchReddit } from '../scrapers/reddit';
 import { searchWeb, getTrendingWeb } from '../scrapers/web';
 import { searchYouTube, getYouTubeTrending } from '../scrapers/youtube';
-import { searchTwitter, getTwitterTrending } from '../scrapers/twitter';
-import { aggregateSentiment } from '../analysis/sentiment';
-import { detectPatterns } from '../analysis/patterns';
-import type {
-  ResearchRequest,
-  ResearchResponse,
-  PlatformSentimentBreakdown,
-  TopDiscussion,
-  Platform,
-} from '../types/index';
-
-// Constants
-
-const WALLET_ADDRESS = process.env.WALLET_ADDRESS ?? '';
-
-const PRICE_SINGLE = 0.10;
-const PRICE_MULTI = 0.50;
-const PRICE_FULL = 1.00;
-
-const SUPPORTED_PLATFORMS: Platform[] = ['reddit', 'web', 'youtube', 'twitter'];
-const PLATFORM_ALIASES: Record<string, Platform> = { x: 'twitter', twitter: 'twitter' };
-const DEFAULT_PLATFORMS: Platform[] = ['reddit', 'web'];
-
-const MAX_TOPIC_LENGTH = 200;
-const MIN_TOPIC_LENGTH = 2;
-const MAX_BODY_BYTES = 8 * 1024;
-const MAX_DAYS = 90;
-const MAX_REDDIT_RESULTS = 50;
-const MAX_WEB_RESULTS = 20;
-const MAX_TRENDING_RESULTS = 20;
-const MAX_YOUTUBE_RESULTS = 20;
+const body = parsedBody as Partial<ResearchRequest>;
+const topic = sanitizeTopic(body.topic);
+if (!topic) {
+  return c.json({ error: 'Invalid topic' }, 400);
+}
+const platformsResult = parsePlatforms(body.platforms);
+if (platformsResult.error) {
+  return c.json({ error: platformsResult.error }, 400);
+}
+const platforms = platformsResult.platforms;
+const country = parseCountry(body.country);
+if (country.length !== 2) {
+  return c.json({ error: 'Invalid country code' }, 400);
+}
+const days = typeof body.days === 'number' && body.days > 0 && body.days <= MAX_DAYS ? body.days : 30;
 const MAX_TWITTER_RESULTS = 20;
 
 const RESEARCH_RATE_LIMIT_PER_MIN = Math.max(
