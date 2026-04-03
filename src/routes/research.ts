@@ -117,37 +117,18 @@ function checkRateLimit(ip: string): { allowed: boolean; retryAfter: number } {
   current.count += 1;
   if (current.count > RESEARCH_RATE_LIMIT_PER_MIN) {
     const retryAfter = Math.max(1, Math.ceil((current.resetAt - now) / 1000));
-    return { allowed: false, retryAfter };
-  }
-
-  return { allowed: true, retryAfter: 0 };
+const body = parsedBody as Partial<ResearchRequest>;
+const topic = sanitizeTopic(body.topic);
+if (!topic) {
+  return c.json({ error: 'Invalid topic' }, 400);
 }
-
-function parseCountry(input: unknown): string {
-  if (typeof input !== 'string') return 'US';
-  const normalized = input.trim().toUpperCase();
-  if (!/^[A-Z]{2}$/.test(normalized)) return 'US';
-  return normalized;
+const platformsResult = parsePlatforms(body.platforms);
+if (platformsResult.error) {
+  return c.json({ error: platformsResult.error }, 400);
 }
-
-function sanitizeTopic(input: unknown): string | null {
-  if (typeof input !== 'string') return null;
-  const normalized = input.trim().replace(/\s+/g, ' ');
-  if (normalized.length < MIN_TOPIC_LENGTH || normalized.length > MAX_TOPIC_LENGTH) {
-    return null;
-  }
-  if (/[\r\n\0]/.test(normalized)) {
-    return null;
-  }
-  return normalized;
-}
-
-function parsePlatforms(input: unknown): { platforms: Platform[]; error?: string } {
-  if (input === undefined) {
-    return { platforms: [...DEFAULT_PLATFORMS] };
-  }
-
-  if (!Array.isArray(input)) {
+const platforms = platformsResult.platforms;
+const country = parseCountry(body.country);
+const days = typeof body.days === 'number' && body.days > 0 && body.days <= MAX_DAYS ? body.days : 30;
     return { platforms: [], error: 'platforms must be an array' };
   }
 
