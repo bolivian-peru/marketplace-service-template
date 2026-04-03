@@ -62,9 +62,41 @@ const DESCRIPTION =
   'Scrapes Reddit, web, YouTube, and Twitter/X simultaneously, finds cross-platform signals, returns structured intelligence report.';
 
 const OUTPUT_SCHEMA = {
-  input: {
-    topic: 'string (required) - topic or keyword to research',
-    platforms: '("reddit" | "web" | "youtube" | "twitter" | "x")[] (optional, default: ["reddit", "web"])',
+const rateLimits = new Map<string, { count: number; resetAt: number }>();
+let rateLimitLock = false;
+function checkRateLimit(ip: string): { allowed: boolean; retryAfter: number } {
+  if (rateLimitLock) {
+    throw new Error('Rate limit check is currently locked.');
+  }
+  rateLimitLock = true;
+  try {
+    const now = Date.now();
+    if (rateLimits.size > 10_000) {
+      for (const [key, value] of rateLimits) {
+        if (now > value.resetAt) {
+          rateLimits.delete(key);
+        }
+      }
+    }
+    const current = rateLimits.get(ip);
+    if (!current || now > current.resetAt) {
+      rateLimits.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+      rateLimitLock = false;
+      return { allowed: true, retryAfter: 0 };
+    }
+    current.count += 1;
+    if (current.count > RESEARCH_RATE_LIMIT_PER_MIN) {
+      const retryAfter = Math.max(1, Math.ceil((current.resetAt - now) / 1000));
+      rateLimitLock = false;
+      return { allowed: false, retryAfter };
+    }
+    rateLimitLock = false;
+    return { allowed: true, retryAfter: 0 };
+  } catch (error) {
+    rateLimitLock = false;
+    throw error;
+  }
+}
     days: 'number (optional, default: 30, max: 90)',
     country: 'string (optional, default: "US") - ISO country code',
   },
