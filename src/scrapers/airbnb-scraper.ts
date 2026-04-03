@@ -61,18 +61,33 @@ export interface MarketStats {
   median_daily_rate: number | null;
   total_listings: number;
   avg_rating: number | null;
-  superhost_pct: number | null;
-  price_distribution: {
-    under_100: number;
-    range_100_200: number;
-    range_200_300: number;
-    range_300_500: number;
-    over_500: number;
-  };
-  property_types: Record<string, number>;
+function cleanText(html: string): string {
+  if (typeof html !== 'string') {
+    throw new Error('Input must be a string');
+  }
+  return html
+    .replace(/<script>.*?<\/script>/g, '')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&nbsp;/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
-// ─── HELPERS ────────────────────────────────────────
+function extractBetween(html: string, start: string, end: string): string | null {
+  if (typeof html !== 'string' || typeof start !== 'string' || typeof end !== 'string') {
+    throw new Error('All inputs must be strings');
+  }
+  const i = html.indexOf(start);
+  if (i === -1) return null;
+  const j = html.indexOf(end, i + start.length);
+  if (j === -1) return null;
+  return html.slice(i + start.length, j).trim();
+}
 
 const AIRBNB_BASE = 'https://www.airbnb.com';
 
