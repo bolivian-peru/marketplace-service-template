@@ -120,10 +120,23 @@ export function build402Response(
     networks: [
       {
         network: 'solana',
-        chainId: 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
-        recipient: walletAddress,
-        asset: 'USDC',
-        assetAddress: USDC_SOLANA,
+if (!verifiedTxHashes.has(payment.txHash)) {
+  try {
+    const result = payment.network === 'solana'
+      ? await verifySolana(payment.txHash, expectedRecipient, expectedAmountUSDC, tolerancePercent)
+      : await verifyBase(payment.txHash, expectedRecipient, expectedAmountUSDC, tolerancePercent);
+
+    if (result.valid) {
+      verifiedTxHashes.add(payment.txHash);
+    }
+
+    return result;
+  } catch (err: any) {
+    return { valid: false, error: "Verification failed: " + err.message };
+  }
+} else {
+  return { valid: false, error: 'Transaction already used (replay)' };
+}
       },
       {
         network: 'base',
