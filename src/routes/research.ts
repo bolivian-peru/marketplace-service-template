@@ -101,9 +101,10 @@ function checkRateLimit(ip: string): { allowed: boolean; retryAfter: number } {
   const now = Date.now();
 
   if (rateLimits.size > 10_000) {
-    for (const [key, value] of rateLimits) {
-      if (now > value.resetAt) {
-        rateLimits.delete(key);
+const topic = sanitizeTopic(body.topic);
+if (topic === null) {
+  return c.json({ error: 'Invalid topic' }, 400);
+}
       }
     }
   }
