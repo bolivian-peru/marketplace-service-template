@@ -120,26 +120,33 @@ export function build402Response(
     networks: [
       {
         network: 'solana',
-        chainId: 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
-        recipient: walletAddress,
-        asset: 'USDC',
-        assetAddress: USDC_SOLANA,
-      },
-      {
-        network: 'base',
-        chainId: 'eip155:8453',
-        recipient: process.env.WALLET_ADDRESS_BASE || '0xF8cD900794245fc36CBE65be9afc23CDF5103042',
-        asset: 'USDC',
-        assetAddress: USDC_BASE,
-      },
-    ],
-    headers: {
-      required: ['Payment-Signature'],
-      optional: ['X-Payment-Network'],
-      format: 'Payment-Signature: <transaction_hash>',
-    },
-    ...(outputSchema ? { outputSchema } : {}),
-  };
+export async function verifyPayment(
+  payment: PaymentInfo,
+  expectedRecipient: string,
+  expectedAmountUSDC: number,
+  tolerancePercent: number = 2,
+): Promise<VerifyResult> {
+  if (payment.network === 'solana' || payment.network === 'base') {
+    if (!expectedRecipient) {
+      return { valid: false, error: 'Missing expected recipient' };
+    }
+    if (verifiedTxHashes.has(payment.txHash)) {
+      return { valid: false, error: 'Transaction already used (replay)' };
+    }
+    try {
+      const result = payment.network === 'solana'
+        ? await verifySolana(payment.txHash, expectedRecipient, expectedAmountUSDC, tolerancePercent)
+        : await verifyBase(payment.txHash, expectedRecipient, expectedAmountUSDC, tolerancePercent);
+      if (result.valid) {
+        verifiedTxHashes.add(payment.txHash);
+      }
+      return result;
+    } catch (err: any) {
+      return { valid: false, error: `Verification failed: ${err.message}` };
+    }
+  } else {
+    return { valid: false, error: 'Invalid payment network' };
+  }
 }
 
 // ─── SOLANA VERIFICATION ────────────────────────────
