@@ -120,19 +120,43 @@ function parseDdgResults(html: string, limit: number): WebResult[] {
 
 function parseTrendsRss(xml: string, limit: number): TrendingTopic[] {
   const topics: TrendingTopic[] = [];
-  const safeLimit = clamp(limit, 1, MAX_LIMIT);
-
-  const itemPattern = /<item>([\s\S]*?)<\/item>/g;
-  let itemMatch: RegExpExecArray | null;
-
-  while ((itemMatch = itemPattern.exec(xml)) !== null && topics.length < safeLimit) {
-    const block = itemMatch[1];
-
-    const rawTitle = block.match(/<title><!\[CDATA\[([\s\S]*?)\]\]><\/title>/)?.[1]
-      ?? block.match(/<title>([\s\S]*?)<\/title>/)?.[1]
-      ?? '';
-
-    const title = sanitizeText(rawTitle, MAX_TITLE_LENGTH);
+function parseDdgResults(html: string, limit: number): WebResult[] {
+    if (typeof html !== 'string') {
+        throw new Error('Invalid input: html must be a string');
+    }
+    const sanitizedHtml = html.replace(/<script>.*?<\/script>/g, '').replace(/<style>.*?<\/style>/g, '');
+    const results: WebResult[] = [];
+    const safeLimit = clamp(limit, 1, MAX_LIMIT);
+    const resultPattern = /<a[^>]+class="result__a"[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>[\s\S]*?class="result__snippet"[^>]*>([\s\S]*?)<\/a>/g;
+    let match: RegExpExecArray | null;
+    while ((match = resultPattern.exec(sanitizedHtml)) !== null && results.length < safeLimit) {
+        const rawUrl = match[1];
+        const rawTitle = match[2];
+        const rawSnippet = match[3];
+        let decodedUrl = rawUrl;
+        const wrappedTarget = rawUrl.match(/[?&]uddg=([^&]+)/);
+        if (wrappedTarget) {
+            try {
+                decodedUrl = decodeURIComponent(wrappedTarget[1]);
+            } catch {
+                decodedUrl = rawUrl;
+            }
+        }
+        const normalizedUrl = normalizeHttpUrl(decodedUrl);
+        if (!normalizedUrl) continue;
+        const title = sanitizeText(stripHtml(rawTitle), MAX_TITLE_LENGTH);
+        const snippet = sanitizeText(stripHtml(rawSnippet), MAX_SNIPPET_LENGTH);
+        if (!title) continue;
+        results.push({
+            title,
+            url: normalizedUrl,
+            snippet,
+            source: extractDomain(normalizedUrl),
+            platform: 'web',
+        });
+    }
+    return results;
+}
     const trafficRaw = block.match(/<ht:approx_traffic>([\s\S]*?)<\/ht:approx_traffic>/)?.[1] ?? null;
     const traffic = trafficRaw ? sanitizeText(trafficRaw, 32) : null;
 
