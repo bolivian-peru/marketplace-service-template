@@ -101,17 +101,22 @@ function extractBetween(html: string, start: string, end: string): string | null
 }
 
 async function fetchAirbnbPage(url: string): Promise<string> {
-  const response = await proxyFetch(url, {
-    maxRetries: 2,
-    timeoutMs: 25_000,
-    headers: {
-      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-      'Accept-Language': 'en-US,en;q=0.9',
-      'Accept-Encoding': 'gzip, deflate',
-      'Cache-Control': 'no-cache',
-    },
-  });
-
+function cleanText(html: string): string {
+  if (typeof html !== 'string') {
+    throw new Error('Input must be a string');
+  }
+  return html
+    .replace(/<script>.*?</script>/g, '')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&nbsp;/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
   if (!response.ok) {
     if (response.status === 403) throw new Error('Airbnb blocked the request (403). Proxy IP may be flagged.');
     throw new Error(`Airbnb returned ${response.status}`);
