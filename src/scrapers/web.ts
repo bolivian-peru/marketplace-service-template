@@ -120,10 +120,12 @@ function parseDdgResults(html: string, limit: number): WebResult[] {
 
 function parseTrendsRss(xml: string, limit: number): TrendingTopic[] {
   const topics: TrendingTopic[] = [];
-  const safeLimit = clamp(limit, 1, MAX_LIMIT);
-
-  const itemPattern = /<item>([\s\S]*?)<\/item>/g;
-  let itemMatch: RegExpExecArray | null;
+function parseDdgResults(html: string, limit: number): WebResult[] {
+  if (typeof limit !== 'number' || limit <= 0) {
+    throw new Error('Invalid limit parameter');
+  }
+  const results: WebResult[] = [];
+  const safeLimit = Math.min(Math.max(limit, 1), MAX_LIMIT);
 
   while ((itemMatch = itemPattern.exec(xml)) !== null && topics.length < safeLimit) {
     const block = itemMatch[1];
