@@ -47,27 +47,19 @@ const MAX_DAYS = 90;
 const MAX_REDDIT_RESULTS = 50;
 const MAX_WEB_RESULTS = 20;
 const MAX_TRENDING_RESULTS = 20;
-const MAX_YOUTUBE_RESULTS = 20;
-const MAX_TWITTER_RESULTS = 20;
-
-const RESEARCH_RATE_LIMIT_PER_MIN = Math.max(
-  1,
-  Math.min(parseInt(process.env.RESEARCH_RATE_LIMIT_PER_MIN ?? '12', 10) || 12, 120),
-);
-const RATE_LIMIT_WINDOW_MS = 60_000;
-const rateLimits = new Map<string, { count: number; resetAt: number }>();
-
-const DESCRIPTION =
-  'Trend Intelligence API: cross-platform research synthesis with pattern detection and sentiment analysis. ' +
-  'Scrapes Reddit, web, YouTube, and Twitter/X simultaneously, finds cross-platform signals, returns structured intelligence report.';
-
-const OUTPUT_SCHEMA = {
-  input: {
-    topic: 'string (required) - topic or keyword to research',
-    platforms: '("reddit" | "web" | "youtube" | "twitter" | "x")[] (optional, default: ["reddit", "web"])',
-    days: 'number (optional, default: 30, max: 90)',
-    country: 'string (optional, default: "US") - ISO country code',
-  },
+const body = parsedBody as Partial<ResearchRequest>;
+const topic = sanitizeTopic(body.topic);
+if (!topic) {
+  return c.json({ error: 'Invalid topic' }, 400);
+}
+const platformsResult = parsePlatforms(body.platforms);
+if (platformsResult.error) {
+  return c.json({ error: platformsResult.error }, 400);
+}
+const platforms = platformsResult.platforms;
+if (platforms.length === 0) {
+  return c.json({ error: 'No supported platforms selected' }, 400);
+}
   output: {
     topic: 'string',
     timeframe: 'string',
