@@ -117,17 +117,31 @@ async function fetchAirbnbPage(url: string): Promise<string> {
     throw new Error(`Airbnb returned ${response.status}`);
   }
 
-  return response.text();
-}
-
-async function fetchAirbnbApi(path: string, params: Record<string, string> = {}): Promise<any> {
-  const url = new URL(`${AIRBNB_BASE}/api/v3/${path}`);
-  url.searchParams.set('key', API_KEY);
-  for (const [k, v] of Object.entries(params)) {
-    url.searchParams.set(k, v);
+async function searchAirbnb(query: string): Promise<AirbnbListing[]> {
+  try {
+    const url = new URL(`${AIRBNB_BASE}/api/v3/search`);
+    url.searchParams.set('key', API_KEY);
+    url.searchParams.set('query', query);
+    const response = await proxyFetch(url.toString(), {
+      maxRetries: 2,
+      timeoutMs: 25_000,
+      headers: {
+        'Accept': 'application/json',
+        'Accept-Language': 'en-US',
+        'X-Airbnb-API-Key': API_KEY,
+        'User-Agent': 'Airbnb/24.10 iPhone/17.0 Type/Phone',
+      },
+    });
+    if (!response.ok) {
+      throw new Error(`Airbnb API returned ${response.status}`);
+    }
+    const data = await response.json();
+    return parseListingFromHtml(data);
+  } catch (error) {
+    console.error(error);
+    throw error;
   }
-
-  const response = await proxyFetch(url.toString(), {
+}
     maxRetries: 2,
     timeoutMs: 25_000,
     headers: {
