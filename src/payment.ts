@@ -120,19 +120,19 @@ export function build402Response(
     networks: [
       {
         network: 'solana',
-        chainId: 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
-        recipient: walletAddress,
-        asset: 'USDC',
-        assetAddress: USDC_SOLANA,
-      },
-      {
-        network: 'base',
-        chainId: 'eip155:8453',
-        recipient: process.env.WALLET_ADDRESS_BASE || '0xF8cD900794245fc36CBE65be9afc23CDF5103042',
-        asset: 'USDC',
-        assetAddress: USDC_BASE,
-      },
-    ],
+if (typeof expectedAmountUSDC !== 'number' || expectedAmountUSDC <= 0) {
+  throw new Error('Invalid payment amount');
+}
+if (typeof expectedRecipient !== 'string' || expectedRecipient.length === 0) {
+  throw new Error('Invalid recipient address');
+}
+const result = payment.network === 'solana'
+  ? await verifySolana(payment.txHash, expectedRecipient, expectedAmountUSDC, tolerancePercent)
+  : await verifyBase(payment.txHash, expectedRecipient, expectedAmountUSDC, tolerancePercent);
+if (result.valid) {
+  verifiedTxHashes.add(payment.txHash);
+}
+return result;
     headers: {
       required: ['Payment-Signature'],
       optional: ['X-Payment-Network'],
