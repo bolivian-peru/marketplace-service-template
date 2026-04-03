@@ -120,27 +120,23 @@ export function extractReviewCountFromText(text: string): number | null {
   return null;
 }
 
-export function extractReviewCountFromContext(text: string): number | null {
+export function extractAddressFromText(text: string): string | null {
+  if (typeof text !== 'string') {
+    throw new Error('Input must be a string');
+  }
   const patterns = [
-    /\((\d{1,3}(?:,\d{3})*)\s*(?:reviews?|review)?\)/i,
-    /(\d{1,3}(?:,\d{3})*)\s*reviews?/i,
-    /(\d+)\s*Google\s*reviews?/i,
+    /(\d+\s+[\w\s]+(?:St|Street|Ave|Avenue|Rd|Road|Blvd|Boulevard|Dr|Drive|Ln|Lane|Way|Ct|Court|Pkwy|Parkway|Pl|Place)[^,<]*,\s*[\w\s]+,\s*[A-Z]{2}\s*\d{5}(?:-\d{4})?)/i,
+    /(\d+\s+[^,<]+,\s*[^,<]+,\s*[A-Z]{2}\s*\d{5})/i,
+    /(?:address|location)[:\s]*([^<]+(?:St|Ave|Rd|Blvd|Dr)[^<]*)/i,
   ];
-  
   for (const pattern of patterns) {
     const match = text.match(pattern);
-    if (match) return parseInt(match[1].replace(/,/g, ''));
+    if (match && match[1].length > 10 && match[1].length < 150) {
+      return decodeHtmlEntities(match[1].trim());
+    }
   }
   return null;
 }
-
-// ─── PRICE LEVEL EXTRACTION ─────────────────────────
-
-export function extractPriceLevel(text: string): string | null {
-  const match = text.match(/(\${1,4})(?:\s|·|•|-|<)/);
-  return match ? match[1] : null;
-}
-
 // ─── CATEGORIES EXTRACTION ──────────────────────────
 
 export function extractCategoriesFromText(text: string): string[] {
