@@ -40,7 +40,6 @@ function getRandomUserAgent(): string {
 /**
  * Build Google search URL with mobile-specific parameters
  * Uses &gbv=1 to force basic HTML version (no JS required)
- */
 export function buildGoogleSearchUrl(
   query: string,
   country: string = 'us',
@@ -48,8 +47,10 @@ export function buildGoogleSearchUrl(
   location?: string,
   start: number = 0,
 ): string {
+  const encodedQuery = encodeURIComponent(query);
+  const encodedLocation = location ? encodeURIComponent(location) : '';
   const params = new URLSearchParams({
-    q: location ? `${query} ${location}` : query,
+    q: location ? `${encodedQuery} ${encodedLocation}` : encodedQuery,
     hl: language,
     gl: country,
     num: '10',
@@ -61,6 +62,12 @@ export function buildGoogleSearchUrl(
     complete: '0', // No autocomplete
   });
 
+  if (start > 0) {
+    params.set('start', String(start));
+  }
+
+  return `https://www.google.com/search?${params.toString()}`;
+}
   if (start > 0) {
     params.set('start', String(start));
   }
