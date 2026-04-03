@@ -20,10 +20,17 @@ import { searchYouTube, getYouTubeTrending } from '../scrapers/youtube';
 import { searchTwitter, getTwitterTrending } from '../scrapers/twitter';
 import { aggregateSentiment } from '../analysis/sentiment';
 import { detectPatterns } from '../analysis/patterns';
-import type {
-  ResearchRequest,
-  ResearchResponse,
-  PlatformSentimentBreakdown,
+const payment = extractPayment(c);
+if (!payment || typeof payment !== 'object' || payment.amount < PRICE_SINGLE) {
+  return c.json(
+    build402Response('/api/research', DESCRIPTION, PRICE_MULTI, WALLET_ADDRESS, OUTPUT_SCHEMA),
+    402,
+  );
+}
+const validatedPayment = validatePayment(payment);
+if (!validatedPayment) {
+  return c.json({ error: 'Invalid payment data' }, 400);
+}
   TopDiscussion,
   Platform,
 } from '../types/index';
