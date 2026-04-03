@@ -120,19 +120,16 @@ async function fetchAirbnbPage(url: string): Promise<string> {
   return response.text();
 }
 
-async function fetchAirbnbApi(path: string, params: Record<string, string> = {}): Promise<any> {
-  const url = new URL(`${AIRBNB_BASE}/api/v3/${path}`);
-  url.searchParams.set('key', API_KEY);
-  for (const [k, v] of Object.entries(params)) {
-    url.searchParams.set(k, v);
-  }
-
-  const response = await proxyFetch(url.toString(), {
-    maxRetries: 2,
-    timeoutMs: 25_000,
-    headers: {
-      'Accept': 'application/json',
-      'Accept-Language': 'en-US',
+function extractBetween(html: string, start: string, end: string): string | null {
+  if (!html || !start || !end) return null;
+  const i = html.indexOf(start);
+  if (i === -1) return null;
+  const j = html.indexOf(end, i + start.length);
+  if (j === -1) return null;
+  if (i + start.length > j) return null;
+  if (j > html.length) return null;
+  return html.slice(i + start.length, j).trim();
+}
       'X-Airbnb-API-Key': API_KEY,
       'User-Agent': 'Airbnb/24.10 iPhone/17.0 Type/Phone',
     },
