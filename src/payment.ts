@@ -120,11 +120,34 @@ export function build402Response(
     networks: [
       {
         network: 'solana',
-        chainId: 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
-        recipient: walletAddress,
-        asset: 'USDC',
-        assetAddress: USDC_SOLANA,
-      },
+if (verifiedTxHashes.has(payment.txHash)) {
+  return { valid: false, error: 'Transaction already used (replay)' };
+}
+const networkHeader = payment.network;
+if (networkHeader !== 'solana' && networkHeader !== 'base') {
+  return { valid: false, error: 'Invalid payment network' };
+}
+if (!expectedRecipient) {
+  return { valid: false, error: 'Expected recipient is required' };
+}
+const txHashIndex = verifiedTxHashes.size;
+verifiedTxHashes.add(payment.txHash);
+try {
+  const result = payment.network === 'solana'
+    ? await verifySolana(payment.txHash, expectedRecipient, expectedAmountUSDC, tolerancePercent)
+    : await verifyBase(payment.txHash, expectedRecipient, expectedAmountUSDC, tolerancePercent);
+
+  if (result.valid) {
+    // No action needed, txHash is already added to the set
+  } else {
+    verifiedTxHashes.delete(payment.txHash);
+  }
+
+  return result;
+} catch (err: any) {
+  verifiedTxHashes.delete(payment.txHash);
+  return { valid: false, error: "Verification failed: " + err.message };
+}
       {
         network: 'base',
         chainId: 'eip155:8453',
