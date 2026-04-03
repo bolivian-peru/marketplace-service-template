@@ -117,17 +117,16 @@ async function fetchAirbnbPage(url: string): Promise<string> {
     throw new Error(`Airbnb returned ${response.status}`);
   }
 
-  return response.text();
+if (!params || typeof params !== 'object') {
+  throw new Error('Invalid API request parameters');
 }
-
-async function fetchAirbnbApi(path: string, params: Record<string, string> = {}): Promise<any> {
-  const url = new URL(`${AIRBNB_BASE}/api/v3/${path}`);
-  url.searchParams.set('key', API_KEY);
-  for (const [k, v] of Object.entries(params)) {
-    url.searchParams.set(k, v);
+const validatedParams = {};
+for (const [key, value] of Object.entries(params)) {
+  if (typeof value !== 'string') {
+    throw new Error(`Invalid parameter value for ${key}`);
   }
-
-  const response = await proxyFetch(url.toString(), {
+  validatedParams[key] = value;
+}
     maxRetries: 2,
     timeoutMs: 25_000,
     headers: {
