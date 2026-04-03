@@ -17,17 +17,19 @@ import { getProxy, proxyFetch } from '../proxy';
 import { searchReddit } from '../scrapers/reddit';
 import { searchWeb, getTrendingWeb } from '../scrapers/web';
 import { searchYouTube, getYouTubeTrending } from '../scrapers/youtube';
-import { searchTwitter, getTwitterTrending } from '../scrapers/twitter';
-import { aggregateSentiment } from '../analysis/sentiment';
-import { detectPatterns } from '../analysis/patterns';
-import type {
-  ResearchRequest,
-  ResearchResponse,
-  PlatformSentimentBreakdown,
-  TopDiscussion,
-  Platform,
-} from '../types/index';
-
+const payment = extractPayment(c);
+if (!payment || !verifyPayment(payment)) {
+  return c.json(
+    build402Response('/api/research', DESCRIPTION, PRICE_MULTI, WALLET_ADDRESS, OUTPUT_SCHEMA),
+    402,
+  );
+}
+if (payment.amount < PRICE_MULTI) {
+  return c.json(
+    build402Response('/api/research', DESCRIPTION, PRICE_MULTI, WALLET_ADDRESS, OUTPUT_SCHEMA),
+    402,
+  );
+}
 // Constants
 
 const WALLET_ADDRESS = process.env.WALLET_ADDRESS ?? '';
