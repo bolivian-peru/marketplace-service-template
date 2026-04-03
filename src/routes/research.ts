@@ -117,17 +117,21 @@ function checkRateLimit(ip: string): { allowed: boolean; retryAfter: number } {
   current.count += 1;
   if (current.count > RESEARCH_RATE_LIMIT_PER_MIN) {
     const retryAfter = Math.max(1, Math.ceil((current.resetAt - now) / 1000));
+function checkRateLimit(ip: string): { allowed: boolean; retryAfter: number } {
+  const now = Date.now();
+  const current = rateLimits.get(ip);
+  if (!current || now > current.resetAt) {
+    const resetAt = now + RATE_LIMIT_WINDOW_MS;
+    rateLimits.set(ip, { count: 1, resetAt });
+    return { allowed: true, retryAfter: 0 };
+  }
+  current.count += 1;
+  if (current.count > RESEARCH_RATE_LIMIT_PER_MIN) {
+    const retryAfter = Math.max(1, Math.ceil((current.resetAt - now) / 1000));
     return { allowed: false, retryAfter };
   }
-
   return { allowed: true, retryAfter: 0 };
 }
-
-function parseCountry(input: unknown): string {
-  if (typeof input !== 'string') return 'US';
-  const normalized = input.trim().toUpperCase();
-  if (!/^[A-Z]{2}$/.test(normalized)) return 'US';
-  return normalized;
 }
 
 function sanitizeTopic(input: unknown): string | null {
