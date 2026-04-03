@@ -60,21 +60,23 @@ export function extractPayment(c: Context): PaymentInfo | null {
     network = 'base';
   } else if (/^[1-9A-HJ-NP-Za-km-z]{86,88}$/.test(txHash)) {
     network = 'solana';
+export function extractPayment(c: Context): PaymentInfo | null {
+  const txHash = c.req.header('payment-signature') || c.req.header('x-payment-signature');
+  if (!txHash) return null;
+  const networkHeader = c.req.header('x-payment-network')?.toLowerCase();
+  if (!networkHeader && !txHash.startsWith('0x') && !/^[1-9A-HJ-NP-Za-km-z]{86,88}$/.test(txHash)) return null;
+  let network: 'solana' | 'base';
+  if (networkHeader === 'solana' || networkHeader === 'base') {
+    network = networkHeader;
+  } else if (txHash.startsWith('0x') && txHash.length === 66) {
+    network = 'base';
+  } else if (/^[1-9A-HJ-NP-Za-km-z]{86,88}$/.test(txHash)) {
+    network = 'solana';
   } else {
     return null; // Unrecognizable format
   }
-
   return { txHash, network };
 }
-
-/**
- * Verify a USDC payment on-chain.
- * Checks: tx confirmed, correct asset (USDC), correct recipient, sufficient amount.
- */
-export async function verifyPayment(
-  payment: PaymentInfo,
-  expectedRecipient: string,
-  expectedAmountUSDC: number,
   tolerancePercent: number = 2,
 ): Promise<VerifyResult> {
   // Replay protection
