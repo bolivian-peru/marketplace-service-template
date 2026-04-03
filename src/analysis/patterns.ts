@@ -40,17 +40,27 @@ function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(Math.floor(value), min), max);
 }
 
-interface KeywordSignal {
-  keyword: string;
-  platforms: Set<string>;
-  totalEngagement: number;
-  evidence: PatternEvidence[];
-}
-
 function normalizeKeyword(term: string): string | null {
-  const normalized = term.trim().toLowerCase();
-  if (normalized.length < MIN_KEYWORD_LENGTH || normalized.length > MAX_KEYWORD_LENGTH) {
+  try {
+    if (typeof term !== 'string') {
+      throw new Error('Input term must be a string');
+    }
+    const normalized = term.trim().toLowerCase();
+    if (normalized.length < MIN_KEYWORD_LENGTH || normalized.length > MAX_KEYWORD_LENGTH) {
+      return null;
+    }
+    if (!/^[a-z0-9 ]+$/.test(normalized)) {
+      return null;
+    }
+    if (STOPWORDS.has(normalized)) {
+      return null;
+    }
+    return normalized;
+  } catch (error) {
+    console.error('Error normalizing keyword:', error);
     return null;
+  }
+}
   }
   if (!/^[a-z0-9 ]+$/.test(normalized)) {
     return null;
