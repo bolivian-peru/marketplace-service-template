@@ -55,6 +55,31 @@ export interface AIAnalysis {
 
 export interface FullAnalysis { profile: InstagramProfile; posts: InstagramPost[]; ai_analysis: AIAnalysis; }
 
+export interface DiscoverFilters {
+  niche?: string;
+  min_followers?: number;
+  account_type?: string;
+  sentiment?: string;
+  brand_safe?: boolean;
+  limit?: number;
+}
+
+export interface DiscoverMatch {
+  username: string;
+  match_score: number;
+  match_reasons: string[];
+  profile: InstagramProfile;
+  ai_analysis: AIAnalysis;
+}
+
+export interface DiscoverResult {
+  accounts: DiscoverMatch[];
+  total_processed: number;
+  total_matched: number;
+  skipped: Array<{ username: string; reason: string }>;
+  filters: DiscoverFilters;
+}
+
 // ─── Helpers ────────────────────────────────────────
 
 function cleanText(s: string): string {
@@ -359,4 +384,125 @@ export async function analyzeImages(username: string): Promise<{ images_analyzed
 export async function auditProfile(username: string): Promise<{ profile: InstagramProfile; authenticity: AuthenticityAnalysis }> {
   const full = await analyzeProfile(username);
   return { profile: full.profile, authenticity: full.ai_analysis.authenticity };
+}
+
+function includesCaseInsensitive(values: string[], expected: string): boolean {
+  const target = expected.trim().toLowerCase();
+  return values.some(value => value.toLowerCase().includes(target));
+}
+
+function buildDiscoverMatch(
+  analysis: FullAnalysis,
+  filters: DiscoverFilters,
+): { isMatch: boolean; score: number; reasons: string[] } {
+  const reasons: string[] = [];
+  let criteriaCount = 0;
+  let passedCount = 0;
+
+  if (filters.niche) {
+    criteriaCount++;
+    const niche = filters.niche.toLowerCase();
+    const matchesNiche =
+      analysis.ai_analysis.account_type.niche.toLowerCase().includes(niche) ||
+      includesCaseInsensitive(analysis.ai_analysis.content_themes.top_themes, niche);
+    if (matchesNiche) {
+      passedCount++;
+      reasons.push(`niche:${filters.niche}`);
+    }
+  }
+
+  if (typeof filters.min_followers === 'number') {
+    criteriaCount++;
+    if (analysis.profile.followers >= filters.min_followers) {
+      passedCount++;
+      reasons.push(`followers>=${filters.min_followers}`);
+    }
+  }
+
+  if (filters.account_type) {
+    criteriaCount++;
+    if (analysis.ai_analysis.account_type.primary.toLowerCase() === filters.account_type.toLowerCase()) {
+      passedCount++;
+      reasons.push(`account_type:${filters.account_type}`);
+    }
+  }
+
+  if (filters.sentiment) {
+    criteriaCount++;
+    if (analysis.ai_analysis.sentiment.overall.toLowerCase() === filters.sentiment.toLowerCase()) {
+      passedCount++;
+      reasons.push(`sentiment:${filters.sentiment}`);
+    }
+  }
+
+  if (filters.brand_safe) {
+    criteriaCount++;
+    if (analysis.ai_analysis.content_themes.brand_safety_score >= 70) {
+      passedCount++;
+      reasons.push('brand_safe:true');
+    }
+  }
+
+  if (criteriaCount === 0) {
+    return { isMatch: true, score: 100, reasons: ['no_filters_applied'] };
+  }
+
+  const isMatch = passedCount === criteriaCount;
+  const score = Math.round((passedCount / criteriaCount) * 100);
+  return { isMatch, score, reasons };
+}
+
+export async function discoverAccounts(
+  usernames: string[],
+  filters: DiscoverFilters = {},
+): Promise<DiscoverResult> {
+  const uniqueUsernames = [...new Set(usernames.map(u => u.trim().toLowerCase()).filter(Boolean))];
+  const checks = await Promise.all(uniqueUsernames.map(async username => {
+    try {
+      const analysis = await analyzeProfile(username);
+      return { ok: true as const, username, analysis };
+    } catch (error: any) {
+      return {
+        ok: false as const,
+        username,
+        reason: error?.message || String(error || 'Unknown error'),
+      };
+    }
+  }));
+
+  const accounts: DiscoverMatch[] = [];
+  const skipped: Array<{ username: string; reason: string }> = [];
+
+  for (const result of checks) {
+    if (!result.ok) {
+      skipped.push({ username: result.username, reason: result.reason });
+      continue;
+    }
+
+    const { username, analysis } = result;
+    const { isMatch, score, reasons } = buildDiscoverMatch(analysis, filters);
+    if (!isMatch) continue;
+
+    accounts.push({
+      username,
+      match_score: score,
+      match_reasons: reasons,
+      profile: analysis.profile,
+      ai_analysis: analysis.ai_analysis,
+    });
+  }
+
+  accounts.sort((a, b) => {
+    if (b.match_score !== a.match_score) return b.match_score - a.match_score;
+    return b.profile.followers - a.profile.followers;
+  });
+
+  const limit = Math.max(1, Math.min(filters.limit || 20, 50));
+  return {
+    accounts: accounts.slice(0, limit),
+    total_processed: uniqueUsernames.length,
+    total_matched: accounts.length,
+    skipped,
+    filters: { ...filters, limit },
+  };
 }

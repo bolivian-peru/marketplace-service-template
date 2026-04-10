@@ -27,7 +27,7 @@ import {
   searchLinkedInPeople, 
   findCompanyEmployees 
 } from './scrapers/linkedin-enrichment';
-import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
+import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile, discoverAccounts } from './scrapers/instagram-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
 
 export const serviceRouter = new Hono();
@@ -1016,6 +1016,7 @@ const IG_POSTS_PRICE    = 0.02;   // $0.02 per posts fetch
 const IG_ANALYZE_PRICE  = 0.15;   // $0.15 per full analysis (includes AI vision)
 const IG_IMAGES_PRICE   = 0.08;   // $0.08 per image-only analysis
 const IG_AUDIT_PRICE    = 0.05;   // $0.05 per authenticity audit
+const IG_DISCOVER_PRICE = 0.03;   // $0.03 per filtered discovery batch
 
 // ─── GET /api/instagram/profile/:username ───────────
 
@@ -1248,6 +1249,89 @@ serviceRouter.get('/instagram/audit/:username', async (c) => {
     });
   } catch (err: any) {
     return c.json({ error: 'Instagram audit failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/instagram/discover ─────────────────────
+
+serviceRouter.get('/instagram/discover', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/instagram/discover', 'Discover accounts with AI filters: niche, follower floor, account type, sentiment, brand safety', IG_DISCOVER_PRICE, walletAddress, {
+      input: {
+        usernames: 'string (required) — comma-separated usernames to evaluate (max 20)',
+        niche: 'string (optional)',
+        min_followers: 'number (optional)',
+        account_type: 'string (optional) — influencer|business|personal|bot_fake|meme_page|news_media',
+        sentiment: 'string (optional) — positive|neutral|negative|mixed',
+        brand_safe: 'boolean (optional)',
+        limit: 'number (optional, default: 20, max: 50)',
+      },
+      output: {
+        accounts: 'DiscoverMatch[] — username, match_score, match_reasons, profile, ai_analysis',
+        total_processed: 'number',
+        total_matched: 'number',
+        skipped: '{ username, reason }[]',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, IG_DISCOVER_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const clientIp = c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  if (!checkProxyRateLimit(clientIp)) {
+    c.header('Retry-After', '60');
+    return c.json({ error: 'Proxy rate limit exceeded. Max 20 requests/min to protect proxy quota.', retryAfter: 60 }, 429);
+  }
+
+  const usernamesRaw = c.req.query('usernames');
+  if (!usernamesRaw) return c.json({ error: 'Missing required query parameter: usernames' }, 400);
+
+  const usernames = usernamesRaw
+    .split(',')
+    .map(s => s.trim().replace(/^@/, ''))
+    .filter(Boolean)
+    .slice(0, 20);
+
+  if (!usernames.length) return c.json({ error: 'No valid usernames found in usernames query parameter' }, 400);
+
+  const minFollowersRaw = c.req.query('min_followers');
+  const brandSafeRaw = c.req.query('brand_safe');
+  const limitRaw = c.req.query('limit');
+
+  const min_followers = minFollowersRaw ? Math.max(0, parseInt(minFollowersRaw) || 0) : undefined;
+  const limit = Math.max(1, Math.min(limitRaw ? parseInt(limitRaw) || 20 : 20, 50));
+
+  const filters = {
+    niche: c.req.query('niche') || undefined,
+    min_followers,
+    account_type: c.req.query('account_type') || undefined,
+    sentiment: c.req.query('sentiment') || undefined,
+    brand_safe: brandSafeRaw === 'true' ? true : undefined,
+    limit,
+  };
+
+  try {
+    const proxy = getProxy();
+    const result = await discoverAccounts(usernames, filters);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      meta: {
+        usernames_submitted: usernames.length,
+        proxy: { country: proxy.country, type: 'mobile' },
+      },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Instagram discover failed', message: err?.message || String(err) }, 502);
   }
 });
 
