@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
-  "updatedAt": "2026-02-15",
-  "count": 6,
+  "updatedAt": "2026-04-12",
+  "count": 7,
   "services": [
     {
       "id": "proxies-sx-mobile",
@@ -143,6 +143,35 @@
       "status": "active",
       "featured": false,
       "detailsFile": "prediction-market-aggregator.json"
+    },
+    {
+      "id": "econbot-earn-api",
+      "name": "EconBot Earn API",
+      "description": "Crypto intelligence API - prices, gas, airdrops, and social trending data for AI agents",
+      "endpoint": "https://econbot-earn-api.onrender.com",
+      "docsUrl": "https://github.com/BelialTheRuler/econbot-earn-api",
+      "pricing": {
+        "model": "per-request",
+        "amount": "0.005",
+        "minimum": "0.005",
+        "currency": "USDC"
+      },
+      "category": "crypto-data",
+      "tags": [
+        "crypto",
+        "prices",
+        "gas",
+        "airdrops",
+        "intelligence",
+        "scraper"
+      ],
+      "owner": {
+        "name": "BelialTheRuler",
+        "github": "BelialTheRuler"
+      },
+      "status": "pending",
+      "featured": false,
+      "detailsFile": "econbot-earn-api.json"
     }
   ],
   "networks": {

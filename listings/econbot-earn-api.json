@@ -1,0 +1,36 @@
+{
+  "id": "econbot-earn-api",
+  "name": "EconBot Earn API",
+  "description": "Crypto intelligence API - prices, gas, airdrops, and social trending data for AI agents",
+  "longDescription": "A self-hostable scraping API that provides real-time crypto prices, ETH gas prices, airdrop opportunities, and social trending data. Built for AI agents that need crypto intelligence without expensive subscriptions. x402 payment gating allows pay-per-request with no API keys.",
+  "endpoint": "https://econbot-earn-api.onrender.com",
+  "docsUrl": "https://github.com/BelialTheRuler/econbot-earn-api",
+  "pricing": {
+    "model": "per-request",
+    "amount": "0.005",
+    "minimum": "0.005",
+    "currency": "USDC",
+    "networks": [
+      {
+        "network": "base",
+        "chainId": "eip155:8453",
+        "recipient": "0x2eD1BE33f2c3F671f7B1C4661766383a226B6466",
+        "asset": "USDC",
+        "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+      }
+    ]
+  },
+  "category": "crypto-data",
+  "tags": ["crypto", "prices", "gas", "airdrops", "intelligence", "scraper"],
+  "owner": {
+    "name": "BelialTheRuler",
+    "github": "BelialTheRuler"
+  },
+  "status": "pending",
+  "featured": false,
+  "addedAt": "2026-04-12",
+  "x402": {
+    "discoveryUrl": "https://econbot-earn-api.onrender.com/api/crypto/price",
+    "wellKnown": "https://econbot-earn-api.onrender.com/.well-known/x402"
+  }
+}
