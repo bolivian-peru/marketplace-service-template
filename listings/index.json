@@ -148,7 +148,7 @@
       "id": "econbot-earn-api",
       "name": "EconBot Earn API",
       "description": "Crypto intelligence API - prices, gas, airdrops, and social trending data for AI agents",
-      "endpoint": "https://econbot-earn-api.onrender.com",
+      "endpoint": "https://econbot-earn-api-production.up.railway.app",
       "docsUrl": "https://github.com/BelialTheRuler/econbot-earn-api",
       "pricing": {
         "model": "per-request",
