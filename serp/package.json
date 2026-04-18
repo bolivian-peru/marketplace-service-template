@@ -1,0 +1,13 @@
+{
+  "name": "google-serp-scraper",
+  "version": "1.0.0",
+  "description": "Google SERP Scraper for Proxies.sx bounty - Mobile proxy friendly",
+  "main": "google-serp-scraper.js",
+  "scripts": {
+    "start": "node google-serp-scraper.js",
+    "test": "node google-serp-scraper.js \"test query\" \"http://test-proxy\""
+  },
+  "dependencies": {
+    "playwright": "^1.48.0"
+  }
+}
