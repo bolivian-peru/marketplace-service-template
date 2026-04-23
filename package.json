@@ -10,6 +10,7 @@
     "proof:indeed": "bun run scripts/proof-indeed.ts"
   },
   "dependencies": {
+    "dotenv": "^17.4.2",
     "hono": "^4.6.0"
   },
   "devDependencies": {

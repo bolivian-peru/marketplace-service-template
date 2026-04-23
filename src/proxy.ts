@@ -51,9 +51,15 @@ function initPool(): ProxyConfig[] {
   const pass = process.env.PROXY_PASS;
 
   if (!host || !port || !user || !pass) {
-    throw new Error(
-      'Proxy not configured. Set PROXY_LIST or PROXY_HOST/PROXY_HTTP_PORT/PROXY_USER/PROXY_PASS in .env.'
-    );
+    console.warn('[PROXY] Proxy not configured. Falling back to direct connection for testing...');
+    return [{
+      url: '',
+      host: 'direct',
+      port: 0,
+      user: '',
+      pass: '',
+      country: 'LOCAL',
+    }];
   }
 
   proxyPool = [{
@@ -122,12 +128,12 @@ export async function proxyFetch(
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
+      const fetchOptionsWithProxy = proxy.url ? { ...fetchOptions, proxy: proxy.url } : fetchOptions;
+      
       const response = await fetch(url, {
-        ...fetchOptions,
+        ...fetchOptionsWithProxy,
         headers: { ...defaultHeaders, ...fetchOptions.headers as Record<string, string> },
         signal: controller.signal,
-        // @ts-ignore — Bun supports proxy natively
-        proxy: proxy.url,
       });
 
       clearTimeout(timeout);

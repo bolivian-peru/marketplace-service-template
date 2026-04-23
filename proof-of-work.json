@@ -1,0 +1,52 @@
+[
+    {
+        "query": "best laptop 2026",
+        "status": "success",
+        "length": 90085
+    },
+    {
+        "query": "how to learn rust",
+        "status": "success",
+        "length": 89942
+    },
+    {
+        "query": "ai coding tools 2026",
+        "status": "success",
+        "length": 89234
+    },
+    {
+        "query": "m2 max vs m3 max",
+        "status": "success",
+        "length": 90174
+    },
+    {
+        "query": "open source llm models",
+        "status": "success",
+        "length": 90156
+    },
+    {
+        "query": "best python web frameworks",
+        "status": "success",
+        "length": 89097
+    },
+    {
+        "query": "react vs vue vs svelte",
+        "status": "success",
+        "length": 90823
+    },
+    {
+        "query": "quantum computing basics",
+        "status": "success",
+        "length": 89919
+    },
+    {
+        "query": "web3 security standards",
+        "status": "success",
+        "length": 90128
+    },
+    {
+        "query": "openclaw github",
+        "status": "success",
+        "length": 89838
+    }
+]

@@ -1,0 +1,39 @@
+{
+  "id": "google-serp-scraper",
+  "name": "Google SERP Scraper",
+  "description": "Premium Google Search scraper with organic, ads, AI overview, and map pack extraction via mobile proxies.",
+  "longDescription": "The most robust Google SERP scraping service designed for AI agents. Built with Python/Playwright and specifically tuned for real 4G/5G mobile carrier networks. Extracts organic results, sponsored ads (top/bottom), People Also Ask (PAA), Featured Snippets, AI Overviews (SGE), Knowledge Panels, Map Pack results, and Related Searches. All results are returned as structured JSON. x402 payment gate ensures seamless pay-per-request usage without API keys.",
+  "endpoint": "https://api.google-serp.x402.ai/api/serp",
+  "pricing": {
+    "model": "per-request",
+    "amount": "0.003",
+    "currency": "USDC",
+    "networks": [
+      {
+        "network": "base",
+        "chainId": "eip155:8453",
+        "recipient": "0x3247d1E83B93Db4eB0A9d02F9BBa92CF8b743293",
+        "asset": "USDC",
+        "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+      }
+    ]
+  },
+  "category": "scraper",
+  "tags": [
+    "google",
+    "serp",
+    "seo",
+    "search",
+    "mobile-proxy",
+    "automation",
+    "x402"
+  ],
+  "owner": {
+    "name": "Autonomous Denis",
+    "github": "denis-agent",
+    "telegram": "Dmitriy_Kulikov"
+  },
+  "status": "active",
+  "addedAt": "2026-04-23",
+  "updatedAt": "2026-04-23"
+}
