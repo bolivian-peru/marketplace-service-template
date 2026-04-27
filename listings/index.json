@@ -143,6 +143,35 @@
       "status": "active",
       "featured": false,
       "detailsFile": "prediction-market-aggregator.json"
+    },
+    {
+      "id": "linkedin-enrichment",
+      "name": "LinkedIn People & Company Enrichment API",
+      "description": "B2B contact enrichment from LinkedIn public profiles: job titles, companies, skills, education, and company data. Alternative to ZoomInfo at $0.03/profile via x402.",
+      "endpoint": "https://api.proxies.sx/v1/x402/linkedin",
+      "docsUrl": "https://agents.proxies.sx/marketplace/skill.md",
+      "pricing": {
+        "model": "per-request",
+        "amount": "0.03",
+        "minimum": "0.03",
+        "currency": "USDC"
+      },
+      "category": "data",
+      "tags": [
+        "linkedin",
+        "b2b",
+        "enrichment",
+        "lead-generation",
+        "people-search",
+        "company-data"
+      ],
+      "owner": {
+        "name": "bolivian-peru",
+        "github": "bolivian-peru"
+      },
+      "status": "active",
+      "featured": false,
+      "detailsFile": "linkedin-enrichment.json"
     }
   ],
   "networks": {
