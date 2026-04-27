@@ -94,6 +94,11 @@ app.get('/health', (c) => c.json({
     '/api/airbnb/market-stats',
     '/api/research',
     '/api/trending',
+    '/api/x/search',
+    '/api/x/trending',
+    '/api/x/user/:handle',
+    '/api/x/user/:handle/tweets',
+    '/api/x/thread/:tweet_id',
   ],
 }));
 
@@ -129,6 +134,11 @@ app.get('/', (c) => c.json({
     { method: 'GET', path: '/api/airbnb/market-stats', description: 'Airbnb market statistics', price: '0.05 USDC' },
     { method: 'GET', path: '/api/research', description: 'Multi-source research aggregation', price: '0.05 USDC' },
     { method: 'GET', path: '/api/trending', description: 'Trending topics intelligence', price: '0.01 USDC' },
+    { method: 'GET', path: '/api/x/search', description: 'X (Twitter) real-time tweet search by keyword/hashtag', price: '0.01 USDC' },
+    { method: 'GET', path: '/api/x/trending', description: 'X (Twitter) trending topics by country', price: '0.005 USDC' },
+    { method: 'GET', path: '/api/x/user/:handle', description: 'X (Twitter) user profile + engagement metrics', price: '0.01 USDC' },
+    { method: 'GET', path: '/api/x/user/:handle/tweets', description: 'X (Twitter) recent tweets for a user', price: '0.01 USDC' },
+    { method: 'GET', path: '/api/x/thread/:tweet_id', description: 'X (Twitter) conversation thread extraction', price: '0.02 USDC' },
   ],
   pricing: {
     amount: process.env.PRICE_USDC || '0.005',
