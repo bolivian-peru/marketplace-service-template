@@ -30,9 +30,89 @@ import {
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
 
+
+import { scrapeWebPage, type GeneralScraperResult } from './scrapers/general-scraper';
+
 export const serviceRouter = new Hono();
 
 // ─── TREND INTELLIGENCE ROUTES (Bounty #70) ─────────
+
+serviceRouter.get('/scrape', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) {
+    return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+  }
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(
+      build402Response(
+        '/api/scrape',
+        'General purpose web scraper by URL and CSS selector',
+        0.005, // Price for this service
+        walletAddress,
+        {
+          input: {
+            url: 'string (required) — The URL to scrape',
+            selector: 'string (required) — CSS selector for content extraction',
+          },
+          output: {
+            title: 'string | null — The title of the page',
+            description: 'string | null — The meta description of the page',
+            content: 'string | null — The extracted text content based on the CSS selector',
+            url: 'string — The URL that was scraped',
+            proxy: '{ country: string, type: "mobile" }',
+            payment: '{ txHash, network, amount, settled }',
+          },
+        },
+      ),
+      402,
+    );
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, 0.005);
+  if (!verification.valid) {
+    return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+  }
+
+  const clientIp = c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  if (!checkProxyRateLimit(clientIp)) {
+    c.header('Retry-After', '60');
+    return c.json({ error: 'Proxy rate limit exceeded. Max 20 requests/min to protect proxy quota.', retryAfter: 60 }, 429);
+  }
+
+  const url = c.req.query('url');
+  const selector = c.req.query('selector');
+
+  if (!url) {
+    return c.json({ error: 'Missing required parameter: url' }, 400);
+  }
+  if (!selector) {
+    return c.json({ error: 'Missing required parameter: selector' }, 400);
+  }
+
+  try {
+    const proxy = getProxy();
+    const result = await scrapeWebPage(url, selector);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      proxy: { country: proxy.country, type: 'mobile' },
+      payment: {
+        txHash: payment.txHash,
+        network: payment.network,
+        amount: verification.amount,
+        settled: true,
+      },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Scraping failed', message: err?.message || String(err) }, 502);
+  }
+});
+
 serviceRouter.route('/research', researchRouter);
 serviceRouter.route('/trending', trendingRouter);
 
