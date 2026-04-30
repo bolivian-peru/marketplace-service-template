@@ -30,6 +30,9 @@ import {
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
 
+import { AmazonTrackerService } from './scrapers/amazon-tracker';
+
+
 export const serviceRouter = new Hono();
 
 // ─── TREND INTELLIGENCE ROUTES (Bounty #70) ─────────
@@ -1449,6 +1452,67 @@ const SERP_OUTPUT_SCHEMA = {
   input: { query: 'string (required) — search query', location: 'string (optional) — geo location', num: 'number (optional) — results count, default 10' },
   output: { organic: '[{ position, title, url, snippet, sitelinks? }]', ads: '[{ position, title, url, description }]', peopleAlsoAsk: '[{ question, snippet }]', aiOverview: '{ text, sources }', mapPack: '[{ name, rating, reviews, address }]', knowledgePanel: '{ title, description, attributes }' },
 };
+
+
+
+serviceRouter.get('/amazon/bsr-tracker/:asin', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) {
+    return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+  }
+
+  const payment = extractPayment(c);
+  const PRICE_USDC = 0.01; // Example price
+  if (!payment) {
+    return c.json(
+      build402Response(
+        '/amazon/bsr-tracker/:asin',
+        'Fetch Amazon Price, Rating, and BSR for an ASIN',
+        PRICE_USDC,
+        walletAddress,
+        {
+          input: { asin: 'string (required) — Amazon Standard Identification Number (in URL path)' },
+          output: { price: 'string | null', rating: 'string | null', bsr: 'string | null' },
+        },
+      ),
+      402,
+    );
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, PRICE_USDC);
+  if (!verification.valid) {
+    return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+  }
+
+  const clientIp = c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  if (!checkProxyRateLimit(clientIp)) {
+    c.header('Retry-After', '60');
+    return c.json({ error: 'Proxy rate limit exceeded. Max 20 requests/min to protect proxy quota.', retryAfter: 60 }, 429);
+  }
+
+  const asin = c.req.param('asin');
+  if (!asin) {
+    return c.json({ error: 'Missing ASIN in URL path' }, 400);
+  }
+
+  try {
+    // We will need to inject the browser here, but for now, we will instantiate it directly.
+    // This will be resolved when we set up the dependency injection for the Scrapers.
+    const browser = null; // Placeholder for browser injection
+    const amazonTrackerService = new AmazonTrackerService(browser as any); // Instantiate the service
+    const result = await amazonTrackerService.scrape(asin);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Amazon BSR tracker failed', message: err?.message || String(err) }, 502);
+  }
+});
 
 serviceRouter.get('/serp', async (c) => {
   const walletAddress = process.env.WALLET_ADDRESS;
