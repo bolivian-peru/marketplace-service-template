@@ -168,6 +168,27 @@ export interface SearchResult {
 // ─── MOBILE SERP TRACKER TYPES ──────────────────────
 
 export interface OrganicResult {
+
+
+// ─── LEAD FORMAT (Bounty #78) ───────────────────────
+
+export interface Lead {
+  id: string;
+  source: string;
+  url: string;
+  data: {
+    nightlyPrice: number;
+    rating: number;
+    amenities: string[];
+    cleaningFee: number;
+    totalPrice: number;
+    [key: string]: any; // Allow for other properties
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+
   position: number;
   title: string;
   url: string;
