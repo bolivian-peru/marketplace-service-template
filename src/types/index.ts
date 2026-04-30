@@ -132,6 +132,15 @@ export interface TrendingResponse {
   };
 }
 
+// ─── AD SPY & CREATIVE INTELLIGENCE TYPES ───────────
+
+export interface Creative {
+  text: string;
+  imageUrl: string;
+  platform: string;
+}
+
+
 // ─── GOOGLE MAPS TYPES ──────────────────────────────
 
 export interface BusinessData {
