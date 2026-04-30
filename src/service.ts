@@ -10,6 +10,7 @@
  *   GET /api/reddit/*  (Reddit Intelligence)
  *   GET /api/instagram/* (Instagram Intelligence + AI Vision)
  *   GET /api/linkedin/* (LinkedIn Enrichment)
+ *   GET /api/facebook/* (Facebook Marketplace Monitor)
  */
 
 import { Hono } from 'hono';
@@ -25,10 +26,27 @@ import {
   scrapeLinkedInPerson, 
   scrapeLinkedInCompany, 
   searchLinkedInPeople, 
-  findCompanyEmployees 
+  findCompanyEmployees,
+  enrichLinkedInCompany
 } from './scrapers/linkedin-enrichment';
+import { scrapeFacebookMarketplace } from './scrapers/facebook-monitor';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
+
+
+export interface Lead {
+  title: string;
+  url: string;
+  source: string;
+  description?: string;
+  price?: string;
+  location?: string;
+  imageUrl?: string;
+  companyName?: string;
+  employeeCount?: string;
+  industry?: string;
+  // Add any other common fields you want to standardize
+}
 
 export const serviceRouter = new Hono();
 
@@ -353,12 +371,57 @@ function checkProxyRateLimit(ip: string): boolean {
   return entry.count <= PROXY_RATE_LIMIT;
 }
 
+
+
 setInterval(() => {
   const now = Date.now();
   for (const [ip, entry] of proxyUsage) {
     if (now > entry.resetAt) proxyUsage.delete(ip);
   }
 }, 300_000);
+
+// ─── FACEBOOK MARKETPLACE MONITOR ──────────────────────
+serviceRouter.get('/facebook/marketplace', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/facebook/marketplace', 'Scrape Facebook Marketplace listings', BUSINESS_PRICE_USDC, walletAddress, {
+      input: { query: 'string (required)' },
+      output: { query: 'string', listings: 'Lead[]' },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, BUSINESS_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const clientIp = c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  if (!checkProxyRateLimit(clientIp)) {
+    c.header('Retry-After', '60');
+    return c.json({ error: 'Proxy rate limit exceeded. Max 20 requests/min to protect proxy quota.', retryAfter: 60 }, 429);
+  }
+
+  const query = c.req.query('query');
+  if (!query) return c.json({ error: 'Missing required parameter: query', example: '/api/facebook/marketplace?query=vintage+furniture' }, 400);
+
+  try {
+    const proxy = getProxy();
+    const listings = await scrapeFacebookMarketplace(query);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      query,
+      listings,
+      meta: { proxy: { country: proxy.country, type: 'mobile' } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Scrape failed', message: err?.message || String(err) }, 502);
+  }
+});
 
 // ─── GET /api/reviews/search ────────────────────────
 
@@ -794,8 +857,54 @@ serviceRouter.get('/linkedin/company/:id/employees', async (c) => {
     });
   } catch (err: any) {
     return c.json({ error: 'Employee search failed', message: err?.message || String(err) }, 502);
+
   }
 });
+
+// ─── GET /api/linkedin/enrich ────────────────────────
+serviceRouter.get('/linkedin/enrich', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/linkedin/enrich', 'Enrich company data from LinkedIn: employee count, industry, etc.', BUSINESS_PRICE_USDC, walletAddress, {
+      input: { companyName: 'string (required)' },
+      output: { companyName: 'string', enrichedData: 'Partial<Lead>' },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, BUSINESS_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const clientIp = c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  if (!checkProxyRateLimit(clientIp)) {
+    c.header('Retry-After', '60');
+    return c.json({ error: 'Proxy rate limit exceeded. Max 20 requests/min to protect proxy quota.', retryAfter: 60 }, 429);
+  }
+
+  const companyName = c.req.query('companyName');
+  if (!companyName) return c.json({ error: 'Missing required parameter: companyName', example: '/api/linkedin/enrich?companyName=Google' }, 400);
+
+  try {
+    const proxy = getProxy();
+    const enrichedData = await enrichLinkedInCompany(companyName);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      companyName,
+      enrichedData,
+      meta: { proxy: { country: proxy.country, type: 'mobile' } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Enrichment failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+
 
 // ═══════════════════════════════════════════════════════
 // ─── REDDIT INTELLIGENCE API (Bounty #68) ──────────
