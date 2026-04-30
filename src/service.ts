@@ -1,3 +1,4 @@
+import { ReputationService } from './scrapers/reputation';
 /**
  * Service Router — Marketplace API
  *
@@ -1486,3 +1487,10 @@ serviceRouter.get('/serp', async (c) => {
     return c.json({ error: 'SERP scrape failed', message: err?.message || String(err) }, 502);
   }
 });
+
+export const registerReputation = (app: any) => {
+  const repService = new ReputationService();
+  app.get('/api/reputation/:id', async (req: any, res: any) => {
+    res.json(await repService.getReputation(req.params.id));
+  });
+};
