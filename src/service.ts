@@ -1,3 +1,4 @@
+import { GoogleReviewsService } from './scrapers/google-reviews';
 /**
  * Service Router — Marketplace API
  *
@@ -1486,3 +1487,12 @@ serviceRouter.get('/serp', async (c) => {
     return c.json({ error: 'SERP scrape failed', message: err?.message || String(err) }, 502);
   }
 });
+
+// Google Reviews Endpoint
+export const registerGoogleReviews = (app: any) => {
+  const reviewService = new GoogleReviewsService();
+  app.get('/api/reviews/:businessId', async (req: any, res: any) => {
+    const data = await reviewService.getReviews(req.params.businessId);
+    res.json(data);
+  });
+};
