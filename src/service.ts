@@ -29,12 +29,100 @@ import {
 } from './scrapers/linkedin-enrichment';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
+import { getFoodDeliveryPriceComparison } from './scrapers/food-delivery-scraper'; // Import the new scraper
 
 export const serviceRouter = new Hono();
+
+// ─── FOOD DELIVERY PRICE INTELLIGENCE (Bounty #76) ─────────
+const FOOD_DELIVERY_PRICE_USDC = 0.01;
+const FOOD_DELIVERY_DESCRIPTION = 'Compare food delivery prices (DoorDash, UberEats) for a given address and items.';
+const FOOD_DELIVERY_OUTPUT_SCHEMA = {
+  input: {
+    address: 'string (required) — Delivery address',
+    items: 'array (required) — Array of items, e.g., [{ name: "pizza", quantity: 1 }]',
+  },
+  output: {
+    id: 'string',
+    source: 'string',
+    price: 'number',
+    address: 'string',
+    items: 'array',
+    status: 'string',
+    createdAt: 'Date',
+    updatedAt: 'Date',
+    proxy: '{ country: string, type: "mobile" }',
+    payment: '{ txHash, network, amount, settled }',
+  },
+};
 
 // ─── TREND INTELLIGENCE ROUTES (Bounty #70) ─────────
 serviceRouter.route('/research', researchRouter);
 serviceRouter.route('/trending', trendingRouter);
+
+serviceRouter.post('/food-delivery-intelligence', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) {
+    return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+  }
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(
+      build402Response(
+        '/api/food-delivery-intelligence',
+        FOOD_DELIVERY_DESCRIPTION,
+        FOOD_DELIVERY_PRICE_USDC,
+        walletAddress,
+        FOOD_DELIVERY_OUTPUT_SCHEMA,
+      ),
+      402,
+    );
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, FOOD_DELIVERY_PRICE_USDC);
+  if (!verification.valid) {
+    return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+  }
+
+  const clientIp = c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  if (!checkProxyRateLimit(clientIp)) {
+    c.header('Retry-After', '60');
+    return c.json({ error: 'Proxy rate limit exceeded. Max 20 requests/min to protect proxy quota.', retryAfter: 60 }, 429);
+  }
+
+  const { address, items } = await c.req.json();
+  if (!address || !items || !Array.isArray(items) || items.length === 0) {
+    return c.json({
+      error: 'Missing required parameters: address and items (array of { name: string, quantity: number })',
+      hint: 'Provide a JSON body with address and items, e.g., { "address": "123 Main St", "items": [{ "name": "pizza", "quantity": 1 }] }',
+    }, 400);
+  }
+
+  try {
+    const proxy = getProxy();
+    const result = await getFoodDeliveryPriceComparison(address, items);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      proxy: { country: proxy.country, type: 'mobile' },
+      payment: {
+        txHash: payment.txHash,
+        network: payment.network,
+        amount: verification.amount,
+        settled: true,
+      },
+    });
+  } catch (err: any) {
+    return c.json({
+      error: 'Food Delivery Price Intelligence failed',
+      message: err.message,
+      hint: 'The scraping for food delivery platforms might be temporarily blocked or the input is invalid.',
+    }, 502);
+  }
+});
 
 const SERVICE_NAME = 'job-market-intelligence';
 const PRICE_USDC = 0.005;
@@ -1471,7 +1559,7 @@ serviceRouter.get('/serp', async (c) => {
   try {
     const proxy = getProxy();
     const ip = await getProxyExitIp();
-    const results = await scrapeMobileSERP(query, { location, num });
+    const results = await scrapeMobileSERP(query, 'us', 'en', location, num);
 
     c.header('X-Payment-Settled', 'true');
     c.header('X-Payment-TxHash', payment.txHash);
