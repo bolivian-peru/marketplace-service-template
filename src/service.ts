@@ -1,3 +1,4 @@
+import { EcommerceMonitorService } from './scrapers/ecommerce-monitor';
 /**
  * Service Router — Marketplace API
  *
@@ -1486,3 +1487,12 @@ serviceRouter.get('/serp', async (c) => {
     return c.json({ error: 'SERP scrape failed', message: err?.message || String(err) }, 502);
   }
 });
+
+// Ecommerce Monitor Endpoint
+export const registerEcommerceMonitor = (app: any) => {
+  const monitor = new EcommerceMonitorService();
+  app.get('/api/ecommerce/monitor/:sku', async (req: any, res: any) => {
+    const data = await monitor.getStockData(req.params.sku);
+    res.json(data);
+  });
+};
