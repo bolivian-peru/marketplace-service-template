@@ -1,3 +1,4 @@
+import { TrendIntelligenceService } from './scrapers/trend-intelligence';
 /**
  * Service Router — Marketplace API
  *
@@ -1486,3 +1487,12 @@ serviceRouter.get('/serp', async (c) => {
     return c.json({ error: 'SERP scrape failed', message: err?.message || String(err) }, 502);
   }
 });
+
+// Trend Intelligence Endpoint
+export const registerTrendIntel = (app: any) => {
+  const trendService = new TrendIntelligenceService();
+  app.get('/api/trends/:keyword', async (req: any, res: any) => {
+    const data = await trendService.getTrendData(req.params.keyword);
+    res.json(data);
+  });
+};
