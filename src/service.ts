@@ -1,3 +1,4 @@
+import { JobMarketService } from './scrapers/job-market';
 /**
  * Service Router — Marketplace API
  *
@@ -1486,3 +1487,11 @@ serviceRouter.get('/serp', async (c) => {
     return c.json({ error: 'SERP scrape failed', message: err?.message || String(err) }, 502);
   }
 });
+
+// Job Market Endpoint
+export const registerJobMarket = (app: any) => {
+  const jobService = new JobMarketService();
+  app.get('/api/jobs/:id', async (req: any, res: any) => {
+    res.json(await jobService.getListingData(req.params.id));
+  });
+};
