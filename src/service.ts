@@ -1,3 +1,4 @@
+import { TravelTrackerService } from './scrapers/travel-tracker';
 /**
  * Service Router — Marketplace API
  *
@@ -1486,3 +1487,12 @@ serviceRouter.get('/serp', async (c) => {
     return c.json({ error: 'SERP scrape failed', message: err?.message || String(err) }, 502);
   }
 });
+
+// Travel Tracker Endpoint
+export const registerTravelTracker = (app: any) => {
+  const travelService = new TravelTrackerService();
+  app.get('/api/travel/deals/:dest', async (req: any, res: any) => {
+    const data = await travelService.getTravelDeals(req.params.dest);
+    res.json(data);
+  });
+};
