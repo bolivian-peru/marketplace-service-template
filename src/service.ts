@@ -1,3 +1,4 @@
+import { SocialProfileService } from './scrapers/social-profile';
 /**
  * Service Router — Marketplace API
  *
@@ -1486,3 +1487,12 @@ serviceRouter.get('/serp', async (c) => {
     return c.json({ error: 'SERP scrape failed', message: err?.message || String(err) }, 502);
   }
 });
+
+// Social Profile Intelligence Endpoint
+export const registerSocialProfile = (app: any) => {
+  const profileService = new SocialProfileService();
+  app.get('/api/social/profile/:username', async (req: any, res: any) => {
+    const data = await profileService.getProfileData(req.params.username);
+    res.json(data);
+  });
+};
