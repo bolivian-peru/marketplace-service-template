@@ -1,3 +1,4 @@
+import { RealEstateService } from './scrapers/real-estate';
 /**
  * Service Router — Marketplace API
  *
@@ -1486,3 +1487,10 @@ serviceRouter.get('/serp', async (c) => {
     return c.json({ error: 'SERP scrape failed', message: err?.message || String(err) }, 502);
   }
 });
+
+export const registerRealEstate = (app: any) => {
+  const reService = new RealEstateService();
+  app.get('/api/real-estate/:id', async (req: any, res: any) => {
+    res.json(await reService.getProperty(req.params.id));
+  });
+};
