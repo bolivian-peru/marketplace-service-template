@@ -1,3 +1,4 @@
+import { AmazonTrackerService } from './scrapers/amazon-tracker';
 /**
  * Service Router — Marketplace API
  *
@@ -1550,3 +1551,12 @@ serviceRouter.get('/serp', async (c) => {
     return c.json({ error: 'SERP scrape failed', message: err?.message || String(err) }, 502);
   }
 });
+
+// Amazon Tracker Endpoint
+export const registerAmazonTracker = (app: any) => {
+  const tracker = new AmazonTrackerService();
+  app.get('/api/amazon/tracker/:asin', async (req: any, res: any) => {
+    const data = await tracker.getProductData(req.params.asin);
+    res.json(data);
+  });
+};
