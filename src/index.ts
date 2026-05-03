@@ -1,3 +1,4 @@
+import visionRouter from './routes/vision';
 /**
  * Marketplace Service — Server Entry Point
  * ─────────────────────────────────────────
@@ -174,3 +175,5 @@ export default {
   hostname: '0.0.0.0',
   fetch: app.fetch,
 };
+
+app.use('/api/v1/vision', visionRouter);
