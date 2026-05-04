@@ -20,7 +20,7 @@ import { fetchReviews, fetchBusinessDetails, fetchReviewSummary, searchBusinesse
 import { scrapeGoogleMaps, extractDetailedBusiness } from './scrapers/maps-scraper';
 import { researchRouter } from './routes/research';
 import { trendingRouter } from './routes/trending';
-import { searchAirbnb, getListingDetail, getListingReviews, getMarketStats } from './scrapers/airbnb-scraper';
+import { airbnbRouter } from './routes/airbnb';
 import { 
   scrapeLinkedInPerson, 
   scrapeLinkedInCompany, 
@@ -330,8 +330,11 @@ serviceRouter.get('/jobs', async (c) => {
   }
 });
 
+// Register Airbnb routes
+serviceRouter.route('/airbnb', airbnbRouter);
+
 // ═══════════════════════════════════════════════════════
-// ─── GOOGLE REVIEWS & BUSINESS DATA API ─────────────
+// ─── AIRBNB & SHORT-TERM RENTAL INTELLIGENCE API ──
 // ═══════════════════════════════════════════════════════
 
 const REVIEWS_PRICE_USDC = 0.02;   // $0.02 per reviews fetch

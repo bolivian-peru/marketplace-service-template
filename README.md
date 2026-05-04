@@ -83,6 +83,50 @@ serviceRouter.get('/run', async (c) => {
 
 Everything else (server, CORS, rate limiting, payment verification, proxy helper) works out of the box.
 
+## Airbnb & Short-Term Rental Intelligence API
+
+This repository includes a complete Airbnb & Short-Term Rental Intelligence API implementation that you can use as-is or extend:
+
+### Endpoints
+
+- **Search Listings**: `GET /api/airbnb/search?location=Miami+Beach&checkin=2026-03-01&checkout=2026-03-07&guests=2`
+- **Listing Details**: `GET /api/airbnb/listing/:id`
+- **Market Statistics**: `GET /api/airbnb/market-stats?location=Miami+Beach&checkin=2026-03-01&checkout=2026-03-07&guests=2`
+- **Listing Reviews**: `GET /api/airbnb/reviews/:listing_id?limit=10`
+
+### Pricing
+
+- **$0.02 USDC** per search query
+- **$0.01 USDC** per listing detail
+- **$0.05 USDC** per market stats report
+- **$0.01 USDC** per reviews fetch
+
+### Features
+
+- Mobile proxy support to bypass Airbnb's bot detection
+- JavaScript rendering with Selenium for dynamic content
+- Comprehensive data extraction (listings, prices, reviews, host info)
+- Market statistics calculation (average rates, occupancy estimates)
+- x402 payment flow integration
+
+### Example Usage
+
+```bash
+# Search for listings
+curl "http://localhost:3000/api/airbnb/search?location=Miami+Beach&checkin=2026-03-01&checkout=2026-03-07&guests=2"
+
+# Get listing details
+curl "http://localhost:3000/api/airbnb/listing/12345678"
+
+# Get market statistics
+curl "http://localhost:3000/api/airbnb/market-stats?location=Miami+Beach&checkin=2026-03-01&checkout=2026-03-07&guests=2"
+
+# Get reviews
+curl "http://localhost:3000/api/airbnb/reviews/12345678?limit=10"
+```
+
+The API is fully integrated with the x402 payment system, so AI agents can automatically pay for access using USDC on Solana or Base networks.
+
 ## How x402 Payment Works
 
 ```
