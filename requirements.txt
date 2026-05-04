@@ -1,0 +1,21 @@
+
+# Facebook Marketplace Monitor API dependencies
+# This file lists Python dependencies for the Facebook Marketplace Monitor API
+
+# For HTML parsing (if needed for more advanced scraping)
+beautifulsoup4==4.12.2
+lxml==4.9.3
+
+# For HTTP requests with proxy support
+requests==2.31.0
+requests[socks]==2.31.0
+
+# For async operations
+aiohttp==3.8.5
+
+# For data processing
+pandas==2.0.3
+
+# For testing
+pytest==7.4.0
+pytest-asyncio==0.21.1

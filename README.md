@@ -59,8 +59,19 @@ curl http://localhost:3000/health
 curl http://localhost:3000/
 # → Service discovery JSON (AI agents read this)
 
+# Google Maps example
 curl "http://localhost:3000/api/run?query=plumbers&location=Austin+TX"
 # → 402 with payment instructions (this is correct!)
+
+# Facebook Marketplace examples
+curl "http://localhost:3000/api/marketplace/search?query=iphone+15&location=New+York&min_price=500&max_price=1000"
+# → 402 with payment instructions
+
+curl "http://localhost:3000/api/marketplace/categories?location=New+York"
+# → 402 with payment instructions
+
+curl "http://localhost:3000/api/marketplace/new?query=iphone+15&since=1h"
+# → 402 with payment instructions
 ```
 
 ## Edit One File
@@ -130,7 +141,7 @@ See [SECURITY.md](SECURITY.md) for production hardening.
 
 ## Live Services
 
-**9 services / 23 endpoints** verified live in production (last audit 2026-04-28).
+**10 services / 27 endpoints** verified live in production (last audit 2026-05-04).
 Browse the full catalog: [agents.proxies.sx/marketplace](https://agents.proxies.sx/marketplace/) or [skill.md](https://agents.proxies.sx/marketplace/skill.md).
 
 | Service | Endpoints | Price | Builder |
@@ -144,6 +155,7 @@ Browse the full catalog: [agents.proxies.sx/marketplace](https://agents.proxies.
 | Instagram Intelligence + AI Vision | `/instagram/*` (5 endpoints) | $0.01–$0.15 | [@TheAuroraAI](https://github.com/TheAuroraAI) |
 | LinkedIn Enrichment | `/linkedin/*` (4 endpoints) | $0.01/query | [@TheAuroraAI](https://github.com/TheAuroraAI) |
 | Airbnb Market Intelligence | `/airbnb/*` (4 endpoints) | $0.01–$0.05 | [@TheAuroraAI](https://github.com/TheAuroraAI) |
+| [Facebook Marketplace Monitor](https://github.com/bolivian-peru/marketplace-service-template/issues/75) | `/marketplace/search`, `/marketplace/listing/:id`, `/marketplace/categories`, `/marketplace/new` | $0.01/search, $0.005/listing, $0.02/monitor | This implementation |
 
 All endpoints under `https://api.proxies.sx/v1/x402/`. Each returns HTTP 402 → pay USDC → retry with `Payment-Signature` header → get JSON.
 

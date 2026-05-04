@@ -29,8 +29,12 @@ import {
 } from './scrapers/linkedin-enrichment';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
+import { facebookRouter } from './facebook/marketplace';
 
 export const serviceRouter = new Hono();
+
+// ─── FACEBOOK MARKETPLACE ROUTES (Bounty #75) ────────
+serviceRouter.route('/marketplace', facebookRouter());
 
 // ─── TREND INTELLIGENCE ROUTES (Bounty #70) ─────────
 serviceRouter.route('/research', researchRouter);
