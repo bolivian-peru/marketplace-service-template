@@ -15,6 +15,7 @@
 import { Hono } from 'hono';
 import { proxyFetch, getProxy } from './proxy';
 import { extractPayment, verifyPayment, build402Response } from './payment';
+import { amazonRouter } from './routes/amazon';
 import { scrapeIndeed, scrapeLinkedIn, type JobListing } from './scrapers/job-scraper';
 import { fetchReviews, fetchBusinessDetails, fetchReviewSummary, searchBusinesses } from './scrapers/reviews';
 import { scrapeGoogleMaps, extractDetailedBusiness } from './scrapers/maps-scraper';
@@ -35,6 +36,9 @@ export const serviceRouter = new Hono();
 // ─── TREND INTELLIGENCE ROUTES (Bounty #70) ─────────
 serviceRouter.route('/research', researchRouter);
 serviceRouter.route('/trending', trendingRouter);
+
+// ─── AMAZON PRODUCT & BSR TRACKER API ───────────────
+serviceRouter.route('/amazon', amazonRouter);
 
 const SERVICE_NAME = 'job-market-intelligence';
 const PRICE_USDC = 0.005;

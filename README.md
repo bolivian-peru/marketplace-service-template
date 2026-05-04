@@ -140,6 +140,7 @@ Browse the full catalog: [agents.proxies.sx/marketplace](https://agents.proxies.
 | [Mobile SERP Tracker](https://agents.proxies.sx/marketplace/serp-tracker/) | `/serp/run` | $0.003/query | [@aliraza556](https://github.com/aliraza556) |
 | Reviews & Business Data | `/reviews/*`, `/business/:id` | $0.005–$0.02 | [@aliraza556](https://github.com/aliraza556) |
 | Job Market Intelligence | `/jobs` | $0.005/query | [@Lutra23](https://github.com/Lutra23) |
+| Amazon Product & BSR Tracker | `/amazon/product/:asin`, `/amazon/bsr`, `/amazon/search`, `/amazon/reviews/:asin` | $0.005–$0.02 | [@openhands](https://github.com/openhands) |
 | Reddit Intelligence | `/reddit/*` (4 endpoints) | $0.005–$0.01 | [@TheAuroraAI](https://github.com/TheAuroraAI) |
 | Instagram Intelligence + AI Vision | `/instagram/*` (5 endpoints) | $0.01–$0.15 | [@TheAuroraAI](https://github.com/TheAuroraAI) |
 | LinkedIn Enrichment | `/linkedin/*` (4 endpoints) | $0.01/query | [@TheAuroraAI](https://github.com/TheAuroraAI) |

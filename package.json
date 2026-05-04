@@ -10,7 +10,9 @@
     "proof:indeed": "bun run scripts/proof-indeed.ts"
   },
   "dependencies": {
-    "hono": "^4.6.0"
+    "hono": "^4.6.0",
+    "node-html-parser": "^6.1.13",
+    "axios": "^1.7.2"
   },
   "devDependencies": {
     "@types/bun": "latest",
