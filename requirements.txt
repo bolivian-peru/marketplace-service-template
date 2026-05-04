@@ -1,0 +1,9 @@
+
+# Python dependencies for Google Discover API
+# Note: This project primarily uses TypeScript/Bun, but including for completeness
+
+# For potential Python implementations or testing
+playwright==1.44.0
+requests==2.31.0
+beautifulsoup4==4.12.2
+lxml==4.9.3

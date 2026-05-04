@@ -10,7 +10,9 @@
     "proof:indeed": "bun run scripts/proof-indeed.ts"
   },
   "dependencies": {
-    "hono": "^4.6.0"
+    "hono": "^4.6.0",
+    "playwright": "^1.44.0",
+    "cheerio": "^1.0.0-rc.12"
   },
   "devDependencies": {
     "@types/bun": "latest",

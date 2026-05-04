@@ -138,6 +138,7 @@ Browse the full catalog: [agents.proxies.sx/marketplace](https://agents.proxies.
 | [Mobile Proxy](https://agents.proxies.sx/marketplace/proxy/) | `/v1/x402/proxy` | $4/GB shared, $8/GB private | Proxies.sx |
 | [Google Maps Lead Generator](https://agents.proxies.sx/marketplace/google-maps-lead-generator/) | `/maps/run`, `/maps/details` | $0.005/record | [@aliraza556](https://github.com/aliraza556) |
 | [Mobile SERP Tracker](https://agents.proxies.sx/marketplace/serp-tracker/) | `/serp/run` | $0.003/query | [@aliraza556](https://github.com/aliraza556) |
+| [Google Discover Feed Intelligence](https://github.com/bolivian-peru/marketplace-service-template/issues/52) | `/google/discover` | $0.02/query | [@openhands](https://github.com/openhands) |
 | Reviews & Business Data | `/reviews/*`, `/business/:id` | $0.005–$0.02 | [@aliraza556](https://github.com/aliraza556) |
 | Job Market Intelligence | `/jobs` | $0.005/query | [@Lutra23](https://github.com/Lutra23) |
 | Reddit Intelligence | `/reddit/*` (4 endpoints) | $0.005–$0.01 | [@TheAuroraAI](https://github.com/TheAuroraAI) |
