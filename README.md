@@ -144,6 +144,7 @@ Browse the full catalog: [agents.proxies.sx/marketplace](https://agents.proxies.
 | Instagram Intelligence + AI Vision | `/instagram/*` (5 endpoints) | $0.01–$0.15 | [@TheAuroraAI](https://github.com/TheAuroraAI) |
 | LinkedIn Enrichment | `/linkedin/*` (4 endpoints) | $0.01/query | [@TheAuroraAI](https://github.com/TheAuroraAI) |
 | Airbnb Market Intelligence | `/airbnb/*` (4 endpoints) | $0.01–$0.05 | [@TheAuroraAI](https://github.com/TheAuroraAI) |
+| E-Commerce Monitor | `/ecommerce/product/:platform/:product_id`, `/ecommerce/search`, `/ecommerce/price-history/:platform/:product_id`, `/ecommerce/market-trends`, `/ecommerce/competitors/:platform/:product_id` | $0.005–$0.025 | [@TheAuroraAI](https://github.com/TheAuroraAI) |
 
 All endpoints under `https://api.proxies.sx/v1/x402/`. Each returns HTTP 402 → pay USDC → retry with `Payment-Signature` header → get JSON.
 

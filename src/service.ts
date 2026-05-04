@@ -10,6 +10,7 @@
  *   GET /api/reddit/*  (Reddit Intelligence)
  *   GET /api/instagram/* (Instagram Intelligence + AI Vision)
  *   GET /api/linkedin/* (LinkedIn Enrichment)
+ *   GET /api/ecommerce/* (E-Commerce Monitor)
  */
 
 import { Hono } from 'hono';
@@ -29,6 +30,13 @@ import {
 } from './scrapers/linkedin-enrichment';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
+import {
+  getProductDetails,
+  searchProducts,
+  getPriceHistory,
+  getMarketTrends,
+  analyzeCompetitors
+} from './scrapers/ecommerce-monitor';
 
 export const serviceRouter = new Hono();
 
@@ -1436,6 +1444,299 @@ serviceRouter.get('/airbnb/market-stats', async (c) => {
     });
   } catch (err: any) {
     return c.json({ error: 'Airbnb market stats failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── E-COMMERCE MONITOR API ────────────────────────────────
+// Prices in USDC per request
+const ECOMMERCE_PRODUCT_PRICE = 0.01;
+const ECOMMERCE_SEARCH_PRICE = 0.005;
+const ECOMMERCE_PRICE_HISTORY_PRICE = 0.02;
+const ECOMMERCE_MARKET_TRENDS_PRICE = 0.015;
+const ECOMMERCE_COMPETITOR_ANALYSIS_PRICE = 0.025;
+
+// ─── GET /api/ecommerce/product/:platform/:product_id ────────────────────
+serviceRouter.get('/ecommerce/product/:platform/:product_id', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(
+      build402Response('/api/ecommerce/product/:platform/:product_id', 'Get detailed product information from e-commerce platforms', ECOMMERCE_PRODUCT_PRICE, walletAddress, {
+        input: { platform: 'amazon|ebay|etsy', product_id: 'string (required)' },
+        output: { product: 'ECommerceProduct - detailed product information' },
+      }),
+      402,
+    );
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, ECOMMERCE_PRODUCT_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const platform = c.req.param('platform');
+  const productId = c.req.param('product_id');
+
+  if (!['amazon', 'ebay', 'etsy'].includes(platform.toLowerCase())) {
+    return c.json({ error: 'Invalid platform. Must be one of: amazon, ebay, etsy' }, 400);
+  }
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const product = await getProductDetails(platform, productId);
+
+    if (!product) {
+      return c.json({ error: 'Product not found or could not be scraped' }, 404);
+    }
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      product,
+      meta: {
+        platform,
+        product_id: productId,
+        proxy: { ip, country: proxy.country, type: 'mobile' },
+      },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Product details fetch failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/ecommerce/search ────────────────────────────
+serviceRouter.get('/ecommerce/search', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(
+      build402Response('/api/ecommerce/search', 'Search for products across e-commerce platforms', ECOMMERCE_SEARCH_PRICE, walletAddress, {
+        input: {
+          platform: 'amazon|ebay|etsy',
+          query: 'string (required)',
+          category: 'string (optional)',
+          min_price: 'number (optional)',
+          max_price: 'number (optional)',
+          limit: 'number (optional, default: 10)'
+        },
+        output: { products: 'ECommerceProduct[] - array of product information' },
+      }),
+      402,
+    );
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, ECOMMERCE_SEARCH_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const platform = c.req.query('platform');
+  const query = c.req.query('query');
+  const category = c.req.query('category');
+  const minPrice = c.req.query('min_price') ? parseFloat(c.req.query('min_price')!) : undefined;
+  const maxPrice = c.req.query('max_price') ? parseFloat(c.req.query('max_price')!) : undefined;
+  const limit = c.req.query('limit') ? Math.min(parseInt(c.req.query('limit')!), 50) : 10;
+
+  if (!platform || !['amazon', 'ebay', 'etsy'].includes(platform.toLowerCase())) {
+    return c.json({ error: 'Invalid platform. Must be one of: amazon, ebay, etsy' }, 400);
+  }
+
+  if (!query) {
+    return c.json({ error: 'Missing required parameter: query' }, 400);
+  }
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const products = await searchProducts(platform, query, category, minPrice, maxPrice, limit);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      products,
+      meta: {
+        platform,
+        query,
+        category,
+        price_range: { min: minPrice, max: maxPrice },
+        limit,
+        proxy: { ip, country: proxy.country, type: 'mobile' },
+      },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Product search failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/ecommerce/price-history/:platform/:product_id ────────────────
+serviceRouter.get('/ecommerce/price-history/:platform/:product_id', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(
+      build402Response('/api/ecommerce/price-history/:platform/:product_id', 'Get price history for a product', ECOMMERCE_PRICE_HISTORY_PRICE, walletAddress, {
+        input: { platform: 'amazon|ebay|etsy', product_id: 'string (required)' },
+        output: { price_history: 'PriceHistory - price trends and history' },
+      }),
+      402,
+    );
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, ECOMMERCE_PRICE_HISTORY_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const platform = c.req.param('platform');
+  const productId = c.req.param('product_id');
+
+  if (!['amazon', 'ebay', 'etsy'].includes(platform.toLowerCase())) {
+    return c.json({ error: 'Invalid platform. Must be one of: amazon, ebay, etsy' }, 400);
+  }
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const priceHistory = await getPriceHistory(productId, platform);
+
+    if (!priceHistory) {
+      return c.json({ error: 'Price history not available' }, 404);
+    }
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      price_history: priceHistory,
+      meta: {
+        platform,
+        product_id: productId,
+        proxy: { ip, country: proxy.country, type: 'mobile' },
+      },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Price history fetch failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/ecommerce/market-trends ────────────────────
+serviceRouter.get('/ecommerce/market-trends', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(
+      build402Response('/api/ecommerce/market-trends', 'Get market trends for a product category', ECOMMERCE_MARKET_TRENDS_PRICE, walletAddress, {
+        input: {
+          category: 'string (required)',
+          platform: 'amazon|ebay|etsy',
+          location: 'string (optional)',
+          limit: 'number (optional, default: 10)'
+        },
+        output: { market_trends: 'MarketTrends - market analysis and trends' },
+      }),
+      402,
+    );
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, ECOMMERCE_MARKET_TRENDS_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const category = c.req.query('category');
+  const platform = c.req.query('platform');
+  const location = c.req.query('location');
+  const limit = c.req.query('limit') ? Math.min(parseInt(c.req.query('limit')!), 50) : 10;
+
+  if (!category || !platform || !['amazon', 'ebay', 'etsy'].includes(platform.toLowerCase())) {
+    return c.json({ error: 'Missing required parameters: category and platform (amazon|ebay|etsy)' }, 400);
+  }
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const trends = await getMarketTrends(category, platform, location, limit);
+
+    if (!trends) {
+      return c.json({ error: 'Market trends not available' }, 404);
+    }
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      market_trends: trends,
+      meta: {
+        category,
+        platform,
+        location,
+        limit,
+        proxy: { ip, country: proxy.country, type: 'mobile' },
+      },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Market trends fetch failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── GET /api/ecommerce/competitors/:platform/:product_id ────────────────
+serviceRouter.get('/ecommerce/competitors/:platform/:product_id', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(
+      build402Response('/api/ecommerce/competitors/:platform/:product_id', 'Analyze competitors for a product', ECOMMERCE_COMPETITOR_ANALYSIS_PRICE, walletAddress, {
+        input: { platform: 'amazon|ebay|etsy', product_id: 'string (required)' },
+        output: { competitor_analysis: 'CompetitorAnalysis - competitor comparison and best deal' },
+      }),
+      402,
+    );
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, ECOMMERCE_COMPETITOR_ANALYSIS_PRICE);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const platform = c.req.param('platform');
+  const productId = c.req.param('product_id');
+  const location = c.req.query('location');
+
+  if (!['amazon', 'ebay', 'etsy'].includes(platform.toLowerCase())) {
+    return c.json({ error: 'Invalid platform. Must be one of: amazon, ebay, etsy' }, 400);
+  }
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const analysis = await analyzeCompetitors(productId, platform, location);
+
+    if (!analysis) {
+      return c.json({ error: 'Competitor analysis not available' }, 404);
+    }
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      competitor_analysis: analysis,
+      meta: {
+        platform,
+        product_id: productId,
+        location,
+        proxy: { ip, country: proxy.country, type: 'mobile' },
+      },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Competitor analysis failed', message: err?.message || String(err) }, 502);
   }
 });
 
