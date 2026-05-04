@@ -4,6 +4,86 @@
  * All interfaces used across the service.
  */
 
+// ─── TIKTOK TYPES ───────────────────────────────────
+export interface TikTokTrendingResponse {
+  id: string;
+  title: string;
+  description: string;
+  url: string;
+  views: number;
+  likes: number;
+  comments: number;
+  shares: number;
+  hashtags: string[];
+  platform: 'tiktok';
+  country: string;
+  timestamp: string;
+}
+
+export interface TikTokHashtagVideo {
+  id: string;
+  title: string;
+  url: string;
+  views: number;
+  likes: number;
+  comments: number;
+  shares: number;
+  creator: string;
+  timestamp: string;
+}
+
+export interface TikTokHashtagResponse {
+  tag: string;
+  name: string;
+  videos: number;
+  views: number;
+  followers: number;
+  topVideos: TikTokHashtagVideo[];
+  trending: boolean;
+  country: string;
+  timestamp: string;
+  error?: string;
+}
+
+export interface TikTokCreatorVideo {
+  id: string;
+  title: string;
+  url: string;
+  views: number;
+  likes: number;
+  comments: number;
+  shares: number;
+  timestamp: string;
+}
+
+export interface TikTokCreatorResponse {
+  username: string;
+  name: string;
+  bio: string;
+  followers: number;
+  following: number;
+  likes: number;
+  videos: number;
+  verified: boolean;
+  topVideos: TikTokCreatorVideo[];
+  country: string;
+  timestamp: string;
+  error?: string;
+}
+
+export interface TikTokSoundResponse {
+  id: string;
+  title: string;
+  author: string;
+  duration: number;
+  plays: number;
+  videos: number;
+  trending: boolean;
+  country: string;
+  timestamp: string;
+  error?: string;
+}
+
 // ─── TREND INTELLIGENCE TYPES (Bounty #70) ──────────
 
 export type Platform = 'reddit' | 'web' | 'x' | 'youtube' | 'twitter';
