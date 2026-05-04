@@ -1,0 +1,33 @@
+
+# Python dependencies for marketplace service template
+# Note: This is a TypeScript project, but keeping this file for any Python scripts
+
+# For web scraping and data processing
+requests==2.31.0
+beautifulsoup4==4.12.2
+lxml==4.9.3
+pandas==2.0.3
+numpy==1.24.3
+
+# For testing
+pytest==7.4.0
+pytest-cov==4.1.0
+
+# For API development
+flask==2.3.2
+fastapi==0.95.2
+uvicorn==0.22.0
+
+# For data validation
+pydantic==1.10.7
+
+# For proxy handling
+selenium==4.10.0
+webdriver-manager==3.8.6
+
+# For async operations
+aiohttp==3.8.4
+asyncio==3.4.3
+
+# For environment variables
+python-dotenv==1.0.0

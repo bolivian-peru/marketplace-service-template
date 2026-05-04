@@ -144,6 +144,7 @@ Browse the full catalog: [agents.proxies.sx/marketplace](https://agents.proxies.
 | Instagram Intelligence + AI Vision | `/instagram/*` (5 endpoints) | $0.01–$0.15 | [@TheAuroraAI](https://github.com/TheAuroraAI) |
 | LinkedIn Enrichment | `/linkedin/*` (4 endpoints) | $0.01/query | [@TheAuroraAI](https://github.com/TheAuroraAI) |
 | Airbnb Market Intelligence | `/airbnb/*` (4 endpoints) | $0.01–$0.05 | [@TheAuroraAI](https://github.com/TheAuroraAI) |
+| [Zillow Real Estate Intelligence](https://github.com/bolivian-peru/marketplace-service-template/issues/79) | `/zillow/api/realestate/search`, `/zillow/api/realestate/property/:zpid`, `/zillow/api/realestate/market`, `/zillow/api/realestate/comps/:zpid` | $0.01–$0.05/query | [Bounty Submission](https://github.com/bolivian-peru/marketplace-service-template/issues/79) |
 
 All endpoints under `https://api.proxies.sx/v1/x402/`. Each returns HTTP 402 → pay USDC → retry with `Payment-Signature` header → get JSON.
 

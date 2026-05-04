@@ -36,6 +36,16 @@ export const serviceRouter = new Hono();
 serviceRouter.route('/research', researchRouter);
 serviceRouter.route('/trending', trendingRouter);
 
+// ─── ZILLOW REAL ESTATE INTELLIGENCE API (Bounty #79) ─────────
+import { zillowRouter } from './zillow/listings';
+
+const ZILLOW_PRICE_USDC = 0.02; // $0.02 per property lookup
+const ZILLOW_SEARCH_PRICE_USDC = 0.01; // $0.01 per search query
+const ZILLOW_MARKET_PRICE_USDC = 0.05; // $0.05 per market report
+const ZILLOW_COMPS_PRICE_USDC = 0.03; // $0.03 per comparable sales lookup
+
+serviceRouter.route('/zillow', zillowRouter);
+
 const SERVICE_NAME = 'job-market-intelligence';
 const PRICE_USDC = 0.005;
 const DESCRIPTION = 'Job Market Intelligence API (Indeed/LinkedIn): title, company, location, salary, date, link, remote + proxy exit metadata.';
