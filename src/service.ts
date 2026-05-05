@@ -29,6 +29,7 @@ import {
 } from './scrapers/linkedin-enrichment';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
+import { fetchActiveMarkets, searchMarkets, getTrendingMarkets } from './scrapers/prediction-market';
 
 export const serviceRouter = new Hono();
 
@@ -1486,3 +1487,96 @@ serviceRouter.get('/serp', async (c) => {
     return c.json({ error: 'SERP scrape failed', message: err?.message || String(err) }, 502);
   }
 });
+
+// ─── PREDICTION MARKET SIGNAL AGGREGATOR ─────────────
+
+const PREDICTION_PRICE_USDC = 0.005;
+const PREDICTION_DESCRIPTION = 'Real-time Prediction Market Signal Aggregator: Polymarket live events, odds, and volume data. Search markets, get trending, or filter by category.';
+const PREDICTION_OUTPUT_SCHEMA = {
+  input: { query: 'string (optional) — search markets', category: 'string (optional) — filter by category', limit: 'number (optional) — max results' },
+  output: { markets: '[{ id, question, slug, outcomes: [{ name, price, probability }], volume, volume24h, liquidity, endDate, category }]' },
+};
+
+serviceRouter.get('/predictions', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Wallet not configured' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/predictions', PREDICTION_DESCRIPTION, PREDICTION_PRICE_USDC, walletAddress, PREDICTION_OUTPUT_SCHEMA), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, PREDICTION_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const category = c.req.query('category') || undefined;
+  const limit = parseInt(c.req.query('limit') || '10');
+
+  try {
+    const markets = await fetchActiveMarkets(limit, category);
+    c.header('X-Payment-Settled', 'true');
+    return c.json({
+      success: true,
+      category: category || 'All',
+      count: markets.length,
+      markets,
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Failed to fetch prediction markets', message: err?.message || String(err) }, 502);
+  }
+});
+
+serviceRouter.get('/predictions/search', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Wallet not configured' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/predictions/search', 'Search Polymarket markets', PREDICTION_PRICE_USDC, walletAddress, {
+      input: { query: 'string (required) — keyword to search' },
+      output: { markets: 'MarketSignal[]' },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, PREDICTION_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const query = c.req.query('query') || c.req.query('q');
+  if (!query) return c.json({ error: 'Missing required parameter: query' }, 400);
+
+  try {
+    const markets = await searchMarkets(query);
+    c.header('X-Payment-Settled', 'true');
+    return c.json({ query, count: markets.length, markets, payment: { txHash: payment.txHash, settled: true } });
+  } catch (err: any) {
+    return c.json({ error: 'Search failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+serviceRouter.get('/predictions/trending', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Wallet not configured' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/predictions/trending', 'Trending high-volume markets', PREDICTION_PRICE_USDC, walletAddress, {
+      input: { limit: 'number (optional) — default 5' },
+      output: { markets: 'MarketSignal[] — sorted by 24h volume' },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, PREDICTION_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const limit = parseInt(c.req.query('limit') || '5');
+
+  try {
+    const markets = await getTrendingMarkets(limit);
+    c.header('X-Payment-Settled', 'true');
+    return c.json({ count: markets.length, markets, payment: { txHash: payment.txHash, settled: true } });
+  } catch (err: any) {
+    return c.json({ error: 'Failed to fetch trending', message: err?.message || String(err) }, 502);
+  }
+});
+
