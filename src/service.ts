@@ -53,6 +53,11 @@ import { searchIndeedJob, type IndeedJob } from './scrapers/indeed';
 import { searchRemoteOK, type RemoteJob } from './scrapers/remoteok';
 import { searchAirbnb, type AirbnbListing } from './scrapers/airbnb';
 import { searchTripAdvisor, type TripAdvisorResult } from './scrapers/tripadvisor';
+import { searchHuggingFace, type HFModel } from './scrapers/huggingface';
+import { searchCivitAI, type CivitAIModel } from './scrapers/civitai';
+import { searchZillow, type ZillowListing } from './scrapers/zillow';
+import { getESPNNews, type ESPNNews } from './scrapers/espn';
+import { searchTransfermarkt, type TransfermarktPlayer } from './scrapers/transfermarkt';
 import { searchEbay, type eBayItem } from './scrapers/ebay';
 import { searchStockX, type StockXItem } from './scrapers/stockx';
 import { searchBestBuy, type BestBuyProduct } from './scrapers/bestbuy';
@@ -2392,4 +2397,68 @@ serviceRouter.get('/api/tripadvisor', async (c) => {
   const results = await searchTripAdvisor(query);
   c.header('X-Payment-Settled', 'true');
   return c.json({ results, tx: payment.txHash });
+});
+
+// ─── AI & MODELS PACK (Bounty #207) ─────────
+const AI_PRICE_USDC = 0.005;
+
+serviceRouter.get('/api/huggingface', async (c) => {
+  const wallet = process.env.WALLET_ADDRESS || 'unknown';
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/api/huggingface', 'HuggingFace', AI_PRICE_USDC, wallet, { input: { query: 'string' } }), 402);
+  if (!(await verifyPayment(payment, wallet, AI_PRICE_USDC)).valid) return c.json({ error: 'Payment failed' }, 402);
+  const query = c.req.query('q') || 'llama';
+  const models = await searchHuggingFace(query);
+  c.header('X-Payment-Settled', 'true');
+  return c.json({ models, tx: payment.txHash });
+});
+
+serviceRouter.get('/api/civitai', async (c) => {
+  const wallet = process.env.WALLET_ADDRESS || 'unknown';
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/api/civitai', 'CivitAI', AI_PRICE_USDC, wallet, { input: { query: 'string' } }), 402);
+  if (!(await verifyPayment(payment, wallet, AI_PRICE_USDC)).valid) return c.json({ error: 'Payment failed' }, 402);
+  const query = c.req.query('q') || 'realistic';
+  const models = await searchCivitAI(query);
+  c.header('X-Payment-Settled', 'true');
+  return c.json({ models, tx: payment.txHash });
+});
+
+// ─── REAL ESTATE PACK (Bounty #208) ─────────
+const REALTY_PRICE_USDC = 0.005;
+
+serviceRouter.get('/api/zillow', async (c) => {
+  const wallet = process.env.WALLET_ADDRESS || 'unknown';
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/api/zillow', 'Zillow', REALTY_PRICE_USDC, wallet, { input: { location: 'string' } }), 402);
+  if (!(await verifyPayment(payment, wallet, REALTY_PRICE_USDC)).valid) return c.json({ error: 'Payment failed' }, 402);
+  const location = c.req.query('l') || 'New York';
+  const listings = await searchZillow(location);
+  c.header('X-Payment-Settled', 'true');
+  return c.json({ listings, tx: payment.txHash });
+});
+
+// ─── SPORTS PACK (Bounty #209) ─────────
+const SPORTS_PRICE_USDC = 0.005;
+
+serviceRouter.get('/api/espn', async (c) => {
+  const wallet = process.env.WALLET_ADDRESS || 'unknown';
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/api/espn', 'ESPN', SPORTS_PRICE_USDC, wallet, { input: { sport: 'string' } }), 402);
+  if (!(await verifyPayment(payment, wallet, SPORTS_PRICE_USDC)).valid) return c.json({ error: 'Payment failed' }, 402);
+  const sport = c.req.query('s') || 'all';
+  const news = await getESPNNews(sport);
+  c.header('X-Payment-Settled', 'true');
+  return c.json({ news, tx: payment.txHash });
+});
+
+serviceRouter.get('/api/transfermarkt', async (c) => {
+  const wallet = process.env.WALLET_ADDRESS || 'unknown';
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/api/transfermarkt', 'Transfermarkt', SPORTS_PRICE_USDC, wallet, { input: { query: 'string' } }), 402);
+  if (!(await verifyPayment(payment, wallet, SPORTS_PRICE_USDC)).valid) return c.json({ error: 'Payment failed' }, 402);
+  const query = c.req.query('q') || 'Messi';
+  const players = await searchTransfermarkt(query);
+  c.header('X-Payment-Settled', 'true');
+  return c.json({ players, tx: payment.txHash });
 });
