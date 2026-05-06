@@ -45,6 +45,8 @@ import { searchDockerHub, type DockerImage } from './scrapers/docker';
 import { searchNPM, type NPMPackage } from './scrapers/npm';
 import { getCryptoMarket, type CryptoPrice } from './scrapers/crypto';
 import { getWeather, type WeatherData } from './scrapers/weather';
+import { getExchangeRate, type CurrencyRate } from './scrapers/currency';
+import { getDefinition, type DictionaryEntry } from './scrapers/dictionary';
 
 // ─── TREND INTELLIGENCE ROUTES (Bounty #70) ─────────
 serviceRouter.route('/research', researchRouter);
@@ -1983,5 +1985,72 @@ serviceRouter.get('/api/weather', async (c) => {
     return c.json({ weather, payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
   } catch (err: any) {
     return c.json({ error: 'Weather fetch failed', message: err.message }, 502);
+  }
+});
+
+// ─── CURRENCY EXCHANGE (Bounty #103) ─────────
+const CURRENCY_PRICE_USDC = 0.002;
+const CURRENCY_DESCRIPTION = 'Currency Exchange Rates: Real-time conversion for any pair.';
+const CURRENCY_OUTPUT_SCHEMA = {
+  input: { from: 'string — Base currency (required)', to: 'string — Target currency (required)' },
+  output: { rate: 'CurrencyRate', payment: '{ txHash, network, amount, settled }' },
+};
+
+serviceRouter.get('/api/currency', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/currency', CURRENCY_DESCRIPTION, CURRENCY_PRICE_USDC, walletAddress, CURRENCY_OUTPUT_SCHEMA), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, CURRENCY_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const from = c.req.query('from');
+  const to = c.req.query('to');
+  if (!from || !to) return c.json({ error: 'Missing parameters: from, to' }, 400);
+
+  try {
+    const rate = await getExchangeRate(from, to);
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+    return c.json({ rate, payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
+  } catch (err: any) {
+    return c.json({ error: 'Currency fetch failed', message: err.message }, 502);
+  }
+});
+
+// ─── DICTIONARY / DEFINITION (Bounty #104) ─────────
+const DICT_PRICE_USDC = 0.002;
+const DICT_DESCRIPTION = 'Dictionary: Definitions, phonetics, and examples for any word.';
+const DICT_OUTPUT_SCHEMA = {
+  input: { word: 'string — Word to define (required)' },
+  output: { definition: 'DictionaryEntry', payment: '{ txHash, network, amount, settled }' },
+};
+
+serviceRouter.get('/api/dictionary', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/dictionary', DICT_DESCRIPTION, DICT_PRICE_USDC, walletAddress, DICT_OUTPUT_SCHEMA), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, DICT_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const word = c.req.query('word');
+  if (!word) return c.json({ error: 'Missing parameter: word' }, 400);
+
+  try {
+    const definition = await getDefinition(word);
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+    return c.json({ definition, payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
+  } catch (err: any) {
+    return c.json({ error: 'Dictionary fetch failed', message: err.message }, 502);
   }
 });
