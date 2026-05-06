@@ -43,6 +43,8 @@ import { getRedditHot, type RedditPost } from './scrapers/reddit';
 import { getYouTubeTrending, type YouTubeVideo } from './scrapers/youtube';
 import { searchDockerHub, type DockerImage } from './scrapers/docker';
 import { searchNPM, type NPMPackage } from './scrapers/npm';
+import { getCryptoMarket, type CryptoPrice } from './scrapers/crypto';
+import { getWeather, type WeatherData } from './scrapers/weather';
 
 // ─── TREND INTELLIGENCE ROUTES (Bounty #70) ─────────
 serviceRouter.route('/research', researchRouter);
@@ -1918,5 +1920,68 @@ serviceRouter.get('/api/npm', async (c) => {
     return c.json({ packages, total: packages.length, query: q, payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
   } catch (err: any) {
     return c.json({ error: 'NPM fetch failed', message: err.message }, 502);
+  }
+});
+
+// ─── CRYPTO MARKET DATA (Bounty #101) ─────────
+const CRYPTO_PRICE_USDC = 0.005;
+const CRYPTO_DESCRIPTION = 'Crypto Market Data: Top 10 cryptocurrencies prices and changes.';
+const CRYPTO_OUTPUT_SCHEMA = {
+  input: {},
+  output: { coins: 'CryptoPrice[]', total: 'number', payment: '{ txHash, network, amount, settled }' },
+};
+
+serviceRouter.get('/api/crypto', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/crypto', CRYPTO_DESCRIPTION, CRYPTO_PRICE_USDC, walletAddress, CRYPTO_OUTPUT_SCHEMA), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, CRYPTO_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  try {
+    const coins = await getCryptoMarket();
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+    return c.json({ coins, total: coins.length, payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
+  } catch (err: any) {
+    return c.json({ error: 'Crypto fetch failed', message: err.message }, 502);
+  }
+});
+
+// ─── REAL-TIME WEATHER (Bounty #102) ─────────
+const WEATHER_PRICE_USDC = 0.005;
+const WEATHER_DESCRIPTION = 'Real-time Weather Data: Get current weather for any city.';
+const WEATHER_OUTPUT_SCHEMA = {
+  input: { city: 'string — City name (required)' },
+  output: { weather: 'WeatherData', payment: '{ txHash, network, amount, settled }' },
+};
+
+serviceRouter.get('/api/weather', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/weather', WEATHER_DESCRIPTION, WEATHER_PRICE_USDC, walletAddress, WEATHER_OUTPUT_SCHEMA), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, WEATHER_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const city = c.req.query('city');
+  if (!city) return c.json({ error: 'Missing parameter: city' }, 400);
+
+  try {
+    const weather = await getWeather(city);
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+    return c.json({ weather, payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
+  } catch (err: any) {
+    return c.json({ error: 'Weather fetch failed', message: err.message }, 502);
   }
 });
