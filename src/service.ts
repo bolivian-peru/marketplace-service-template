@@ -38,6 +38,11 @@ import { searchBingNews, type BingNewsResult } from './scrapers/bingNews';
 import { searchWikipedia, type WikiResult } from './scrapers/wikipedia';
 import { searchStackOverflow, type SOQuestion } from './scrapers/stackoverflow';
 import { searchIMDB, type IMDBResult } from './scrapers/imdb';
+import { getMetalPrices, type MetalPrice } from './scrapers/metals';
+import { getOilPrices, type OilPrice } from './scrapers/oil';
+import { getStockQuote, type StockQuote } from './scrapers/stocks';
+import { getCryptoMarket, type CryptoPrice } from './scrapers/crypto';
+import { getExchangeRate, type CurrencyRate } from './scrapers/currency';
 import { searchX, type TweetResult } from './scrapers/xTrends';
 import { searchAmazon, type AmazonProduct } from './scrapers/amazon';
 import { getGitHubTrending, type GitHubRepo } from './scrapers/githubTrends';
@@ -2116,4 +2121,45 @@ serviceRouter.get('/api/imdb', async (c) => {
   const results = await searchIMDB(query);
   c.header('X-Payment-Settled', 'true');
   return c.json({ movies: results, tx: payment.txHash });
+});
+
+// ─── FINANCE & MARKETS PACK (Bounty #201) ─────────
+const FINANCE_PRICE_USDC = 0.005;
+
+// 1. Stocks
+serviceRouter.get('/api/stock', async (c) => {
+  const wallet = process.env.WALLET_ADDRESS || 'unknown';
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/api/stock', 'Real-time Stock Quote', FINANCE_PRICE_USDC, wallet, { input: { symbol: 'string' } }), 402);
+  if (!(await verifyPayment(payment, wallet, FINANCE_PRICE_USDC)).valid) return c.json({ error: 'Payment failed' }, 402);
+
+  const symbol = c.req.query('symbol');
+  if (!symbol) return c.json({ error: 'Missing symbol' }, 400);
+  const quote = await getStockQuote(symbol);
+  c.header('X-Payment-Settled', 'true');
+  return c.json({ stock: quote, tx: payment.txHash });
+});
+
+// 2. Metals
+serviceRouter.get('/api/metals', async (c) => {
+  const wallet = process.env.WALLET_ADDRESS || 'unknown';
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/api/metals', 'Gold & Silver Prices', FINANCE_PRICE_USDC, wallet, {}), 402);
+  if (!(await verifyPayment(payment, wallet, FINANCE_PRICE_USDC)).valid) return c.json({ error: 'Payment failed' }, 402);
+  
+  const prices = await getMetalPrices();
+  c.header('X-Payment-Settled', 'true');
+  return c.json({ metals: prices, tx: payment.txHash });
+});
+
+// 3. Oil
+serviceRouter.get('/api/oil', async (c) => {
+  const wallet = process.env.WALLET_ADDRESS || 'unknown';
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/api/oil', 'Crude Oil Prices', FINANCE_PRICE_USDC, wallet, {}), 402);
+  if (!(await verifyPayment(payment, wallet, FINANCE_PRICE_USDC)).valid) return c.json({ error: 'Payment failed' }, 402);
+
+  const prices = await getOilPrices();
+  c.header('X-Payment-Settled', 'true');
+  return c.json({ oil: prices, tx: payment.txHash });
 });
