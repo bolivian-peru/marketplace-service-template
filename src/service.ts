@@ -38,6 +38,7 @@ import { searchX, type TweetResult } from './scrapers/xTrends';
 import { searchAmazon, type AmazonProduct } from './scrapers/amazon';
 import { getGitHubTrending, type GitHubRepo } from './scrapers/githubTrends';
 import { getProductHuntTrending, type PHPost } from './scrapers/productHunt';
+import { getHackerNewsTop, type HNPost } from './scrapers/hackerNews';
 
 // ─── TREND INTELLIGENCE ROUTES (Bounty #70) ─────────
 serviceRouter.route('/research', researchRouter);
@@ -1757,5 +1758,35 @@ serviceRouter.get('/api/product-hunt', async (c) => {
     return c.json({ posts, total: posts.length, payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
   } catch (err: any) {
     return c.json({ error: 'PH fetch failed', message: err.message }, 502);
+  }
+});
+
+// ─── HACKER NEWS TOP STORIES (Bounty #96) ─────────
+const HN_PRICE_USDC = 0.005;
+const HN_DESCRIPTION = 'Hacker News Top Stories: Fetch the current top 10 trending tech stories.';
+const HN_OUTPUT_SCHEMA = {
+  input: {},
+  output: { posts: 'HNPost[]', total: 'number', payment: '{ txHash, network, amount, settled }' },
+};
+
+serviceRouter.get('/api/hacker-news', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/hacker-news', HN_DESCRIPTION, HN_PRICE_USDC, walletAddress, HN_OUTPUT_SCHEMA), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, HN_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  try {
+    const posts = await getHackerNewsTop();
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+    return c.json({ posts, total: posts.length, payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
+  } catch (err: any) {
+    return c.json({ error: 'HN fetch failed', message: err.message }, 502);
   }
 });
