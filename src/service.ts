@@ -35,6 +35,8 @@ export const serviceRouter = new Hono();
 import { searchApps, type AppResult } from './scrapers/appStore';
 import { searchGoogle, type SerpResult } from './scrapers/googleSerp';
 import { searchX, type TweetResult } from './scrapers/xTrends';
+import { searchAmazon, type AmazonProduct } from './scrapers/amazon';
+import { getGitHubTrending, type GitHubRepo } from './scrapers/githubTrends';
 
 // ─── TREND INTELLIGENCE ROUTES (Bounty #70) ─────────
 serviceRouter.route('/research', researchRouter);
@@ -1658,5 +1660,71 @@ serviceRouter.get('/api/x-trends', async (c) => {
     return c.json({ tweets, total: tweets.length, query: q, payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
   } catch (err: any) {
     return c.json({ error: 'X Trends fetch failed', message: err.message }, 502);
+  }
+});
+
+// ─── AMAZON PRODUCT TRACKER (Bounty #93) ─────────
+const AMAZON_PRICE_USDC = 0.005;
+const AMAZON_DESCRIPTION = 'Amazon Product Tracker: Real-time price, rating, and stock data for any search query.';
+const AMAZON_OUTPUT_SCHEMA = {
+  input: { q: 'string — Product search query (required)', limit: 'number — Max results (default: 5)' },
+  output: { products: 'AmazonProduct[]', total: 'number', query: 'string', payment: '{ txHash, network, amount, settled }' },
+};
+
+serviceRouter.get('/api/amazon', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/amazon', AMAZON_DESCRIPTION, AMAZON_PRICE_USDC, walletAddress, AMAZON_OUTPUT_SCHEMA), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, AMAZON_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const q = c.req.query('q');
+  if (!q) return c.json({ error: 'Missing parameter: q' }, 400);
+  const limit = Math.min(parseInt(c.req.query('limit') || '5'), 10);
+
+  try {
+    const products = await searchAmazon(q, limit);
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+    return c.json({ products, total: products.length, query: q, payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
+  } catch (err: any) {
+    return c.json({ error: 'Amazon fetch failed', message: err.message }, 502);
+  }
+});
+
+// ─── GITHUB REPO INTELLIGENCE (Bounty #94) ─────────
+const GITHUB_PRICE_USDC = 0.005;
+const GITHUB_DESCRIPTION = 'GitHub Trending & Repo Intelligence: Discover trending open-source projects and track growth.';
+const GITHUB_OUTPUT_SCHEMA = {
+  input: { since: 'string — daily | weekly | monthly (default: daily)' },
+  output: { repos: 'GitHubRepo[]', total: 'number', query: 'string', payment: '{ txHash, network, amount, settled }' },
+};
+
+serviceRouter.get('/api/github', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/github', GITHUB_DESCRIPTION, GITHUB_PRICE_USDC, walletAddress, GITHUB_OUTPUT_SCHEMA), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, GITHUB_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const since = c.req.query('since') || 'daily';
+
+  try {
+    const repos = await getGitHubTrending(since);
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+    return c.json({ repos, total: repos.length, query: since, payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
+  } catch (err: any) {
+    return c.json({ error: 'GitHub fetch failed', message: err.message }, 502);
   }
 });
