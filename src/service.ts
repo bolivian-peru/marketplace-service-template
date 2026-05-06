@@ -39,6 +39,8 @@ import { searchAmazon, type AmazonProduct } from './scrapers/amazon';
 import { getGitHubTrending, type GitHubRepo } from './scrapers/githubTrends';
 import { getProductHuntTrending, type PHPost } from './scrapers/productHunt';
 import { getHackerNewsTop, type HNPost } from './scrapers/hackerNews';
+import { getRedditHot, type RedditPost } from './scrapers/reddit';
+import { getYouTubeTrending, type YouTubeVideo } from './scrapers/youtube';
 
 // ─── TREND INTELLIGENCE ROUTES (Bounty #70) ─────────
 serviceRouter.route('/research', researchRouter);
@@ -1788,5 +1790,65 @@ serviceRouter.get('/api/hacker-news', async (c) => {
     return c.json({ posts, total: posts.length, payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
   } catch (err: any) {
     return c.json({ error: 'HN fetch failed', message: err.message }, 502);
+  }
+});
+
+// ─── REDDIT HOT TOPICS (Bounty #97) ─────────
+const REDDIT_PRICE_USDC = 0.005;
+const REDDIT_DESCRIPTION = 'Reddit Hot Topics: Fetch currently trending discussions across all subreddits.';
+const REDDIT_OUTPUT_SCHEMA = {
+  input: {},
+  output: { posts: 'RedditPost[]', total: 'number', payment: '{ txHash, network, amount, settled }' },
+};
+
+serviceRouter.get('/api/reddit', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/reddit', REDDIT_DESCRIPTION, REDDIT_PRICE_USDC, walletAddress, REDDIT_OUTPUT_SCHEMA), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, REDDIT_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  try {
+    const posts = await getRedditHot();
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+    return c.json({ posts, total: posts.length, payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
+  } catch (err: any) {
+    return c.json({ error: 'Reddit fetch failed', message: err.message }, 502);
+  }
+});
+
+// ─── YOUTUBE TRENDING (Bounty #98) ─────────
+const YT_PRICE_USDC = 0.005;
+const YT_DESCRIPTION = 'YouTube Trending Videos: Discover the most watched videos right now.';
+const YT_OUTPUT_SCHEMA = {
+  input: {},
+  output: { videos: 'YouTubeVideo[]', total: 'number', payment: '{ txHash, network, amount, settled }' },
+};
+
+serviceRouter.get('/api/youtube', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/youtube', YT_DESCRIPTION, YT_PRICE_USDC, walletAddress, YT_OUTPUT_SCHEMA), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, YT_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  try {
+    const videos = await getYouTubeTrending();
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+    return c.json({ videos, total: videos.length, payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
+  } catch (err: any) {
+    return c.json({ error: 'YouTube fetch failed', message: err.message }, 502);
   }
 });
