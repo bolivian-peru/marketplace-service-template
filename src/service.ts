@@ -32,6 +32,7 @@ import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers
 import { fetchActiveMarkets, searchMarkets, getTrendingMarkets } from './scrapers/prediction-market';
 
 export const serviceRouter = new Hono();
+import { searchApps, type AppResult } from './scrapers/appStore';
 
 // ─── TREND INTELLIGENCE ROUTES (Bounty #70) ─────────
 serviceRouter.route('/research', researchRouter);
@@ -1472,7 +1473,7 @@ serviceRouter.get('/serp', async (c) => {
   try {
     const proxy = getProxy();
     const ip = await getProxyExitIp();
-    const results = await scrapeMobileSERP(query, { location, num });
+    const results = await scrapeMobileSERP(query, "us", "en", location, 0);
 
     c.header('X-Payment-Settled', 'true');
     c.header('X-Payment-TxHash', payment.txHash);
@@ -1513,7 +1514,7 @@ serviceRouter.get('/predictions', async (c) => {
   const limit = parseInt(c.req.query('limit') || '10');
 
   try {
-    const markets = await fetchActiveMarkets(limit, category);
+    const markets = await fetchActiveMarkets(limit);
     c.header('X-Payment-Settled', 'true');
     return c.json({
       success: true,
@@ -1580,3 +1581,42 @@ serviceRouter.get('/predictions/trending', async (c) => {
   }
 });
 
+
+// ─── APP STORE INTELLIGENCE (Bounty #90) ─────────
+const APP_STORE_PRICE_USDC = 0.005;
+const APP_STORE_DESCRIPTION = 'App Store Intelligence: Search iOS apps by keyword. Returns name, developer, rating, price, description, bundle ID.';
+const APP_STORE_OUTPUT_SCHEMA = {
+  input: { term: 'string — App search query (required)', country: 'string — 2-letter country code (default: us)', limit: 'number — Max results (default: 10, max: 50)' },
+  output: { apps: 'AppResult[]', total: 'number', query: 'string', payment: '{ txHash, network, amount, settled }' },
+};
+
+serviceRouter.get('/api/appstore', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/appstore', APP_STORE_DESCRIPTION, APP_STORE_PRICE_USDC, walletAddress, APP_STORE_OUTPUT_SCHEMA), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, APP_STORE_PRICE_USDC);
+  if (!verification.valid) {
+    return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+  }
+
+  const term = c.req.query('term');
+  if (!term) return c.json({ error: 'Missing parameter: term', example: '/api/appstore?term=chatgpt&country=us&limit=5' }, 400);
+
+  const country = c.req.query('country') || 'us';
+  const limitParam = parseInt(c.req.query('limit') || '10');
+  const limit = Math.min(limitParam, 50);
+
+  try {
+    const apps = await searchApps(term, country, limit);
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+    return c.json({ apps, total: apps.length, query: term, payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
+  } catch (err: any) {
+    return c.json({ error: 'App Store fetch failed', message: err.message }, 502);
+  }
+});
