@@ -41,6 +41,11 @@ import { searchIMDB, type IMDBResult } from './scrapers/imdb';
 import { getMetalPrices, type MetalPrice } from './scrapers/metals';
 import { getOilPrices, type OilPrice } from './scrapers/oil';
 import { getStockQuote, type StockQuote } from './scrapers/stocks';
+import { getSteamTopSellers, type SteamGame } from './scrapers/steam';
+import { getSpotifyTop50, type SpotifyTrack } from './scrapers/spotify';
+import { searchLinkedInJobs, type LinkedInJob } from './scrapers/linkedin';
+import { getQuoraTrending, type QuoraQuestion } from './scrapers/quora';
+import { getTikTokTrends, type TikTokTrend } from './scrapers/tiktok';
 import { getCryptoMarket, type CryptoPrice } from './scrapers/crypto';
 import { getExchangeRate, type CurrencyRate } from './scrapers/currency';
 import { searchX, type TweetResult } from './scrapers/xTrends';
@@ -2162,4 +2167,69 @@ serviceRouter.get('/api/oil', async (c) => {
   const prices = await getOilPrices();
   c.header('X-Payment-Settled', 'true');
   return c.json({ oil: prices, tx: payment.txHash });
+});
+
+// ─── SOCIAL & TRENDS PACK (Bounty #202) ─────────
+const SOCIAL_PRICE_USDC = 0.005;
+
+// 1. Steam Top Sellers
+serviceRouter.get('/api/steam', async (c) => {
+  const wallet = process.env.WALLET_ADDRESS || 'unknown';
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/api/steam', 'Steam Top Sellers', SOCIAL_PRICE_USDC, wallet, {}), 402);
+  if (!(await verifyPayment(payment, wallet, SOCIAL_PRICE_USDC)).valid) return c.json({ error: 'Payment failed' }, 402);
+  
+  const games = await getSteamTopSellers();
+  c.header('X-Payment-Settled', 'true');
+  return c.json({ games, tx: payment.txHash });
+});
+
+// 2. Spotify Top 50
+serviceRouter.get('/api/spotify', async (c) => {
+  const wallet = process.env.WALLET_ADDRESS || 'unknown';
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/api/spotify', 'Spotify Top 50', SOCIAL_PRICE_USDC, wallet, {}), 402);
+  if (!(await verifyPayment(payment, wallet, SOCIAL_PRICE_USDC)).valid) return c.json({ error: 'Payment failed' }, 402);
+  
+  const tracks = await getSpotifyTop50();
+  c.header('X-Payment-Settled', 'true');
+  return c.json({ tracks, tx: payment.txHash });
+});
+
+// 3. LinkedIn Jobs
+serviceRouter.get('/api/linkedin', async (c) => {
+  const wallet = process.env.WALLET_ADDRESS || 'unknown';
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/api/linkedin', 'LinkedIn Jobs', SOCIAL_PRICE_USDC, wallet, { input: { keyword: 'string' } }), 402);
+  if (!(await verifyPayment(payment, wallet, SOCIAL_PRICE_USDC)).valid) return c.json({ error: 'Payment failed' }, 402);
+
+  const keyword = c.req.query('keyword');
+  if (!keyword) return c.json({ error: 'Missing keyword' }, 400);
+  const jobs = await searchLinkedInJobs(keyword);
+  c.header('X-Payment-Settled', 'true');
+  return c.json({ jobs, tx: payment.txHash });
+});
+
+// 4. Quora Trending
+serviceRouter.get('/api/quora', async (c) => {
+  const wallet = process.env.WALLET_ADDRESS || 'unknown';
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/api/quora', 'Quora Trending', SOCIAL_PRICE_USDC, wallet, {}), 402);
+  if (!(await verifyPayment(payment, wallet, SOCIAL_PRICE_USDC)).valid) return c.json({ error: 'Payment failed' }, 402);
+  
+  const questions = await getQuoraTrending();
+  c.header('X-Payment-Settled', 'true');
+  return c.json({ questions, tx: payment.txHash });
+});
+
+// 5. TikTok Trends
+serviceRouter.get('/api/tiktok', async (c) => {
+  const wallet = process.env.WALLET_ADDRESS || 'unknown';
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/api/tiktok', 'TikTok Trends', SOCIAL_PRICE_USDC, wallet, {}), 402);
+  if (!(await verifyPayment(payment, wallet, SOCIAL_PRICE_USDC)).valid) return c.json({ error: 'Payment failed' }, 402);
+  
+  const trends = await getTikTokTrends();
+  c.header('X-Payment-Settled', 'true');
+  return c.json({ trends, tx: payment.txHash });
 });
