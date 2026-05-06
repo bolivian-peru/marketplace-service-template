@@ -41,6 +41,8 @@ import { getProductHuntTrending, type PHPost } from './scrapers/productHunt';
 import { getHackerNewsTop, type HNPost } from './scrapers/hackerNews';
 import { getRedditHot, type RedditPost } from './scrapers/reddit';
 import { getYouTubeTrending, type YouTubeVideo } from './scrapers/youtube';
+import { searchDockerHub, type DockerImage } from './scrapers/docker';
+import { searchNPM, type NPMPackage } from './scrapers/npm';
 
 // ─── TREND INTELLIGENCE ROUTES (Bounty #70) ─────────
 serviceRouter.route('/research', researchRouter);
@@ -1850,5 +1852,71 @@ serviceRouter.get('/api/youtube', async (c) => {
     return c.json({ videos, total: videos.length, payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
   } catch (err: any) {
     return c.json({ error: 'YouTube fetch failed', message: err.message }, 502);
+  }
+});
+
+// ─── DOCKER HUB SEARCH (Bounty #99) ─────────
+const DOCKER_PRICE_USDC = 0.005;
+const DOCKER_DESCRIPTION = 'Docker Hub Image Search: Find official and popular Docker containers.';
+const DOCKER_OUTPUT_SCHEMA = {
+  input: { q: 'string — Search query (required)' },
+  output: { images: 'DockerImage[]', total: 'number', payment: '{ txHash, network, amount, settled }' },
+};
+
+serviceRouter.get('/api/docker', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/docker', DOCKER_DESCRIPTION, DOCKER_PRICE_USDC, walletAddress, DOCKER_OUTPUT_SCHEMA), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, DOCKER_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const q = c.req.query('q');
+  if (!q) return c.json({ error: 'Missing parameter: q' }, 400);
+
+  try {
+    const images = await searchDockerHub(q);
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+    return c.json({ images, total: images.length, query: q, payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
+  } catch (err: any) {
+    return c.json({ error: 'Docker fetch failed', message: err.message }, 502);
+  }
+});
+
+// ─── NPM PACKAGE SEARCH (Bounty #100) ─────────
+const NPM_PRICE_USDC = 0.005;
+const NPM_DESCRIPTION = 'NPM Package Search: Discover JavaScript libraries and their stats.';
+const NPM_OUTPUT_SCHEMA = {
+  input: { q: 'string — Search query (required)' },
+  output: { packages: 'NPMPackage[]', total: 'number', payment: '{ txHash, network, amount, settled }' },
+};
+
+serviceRouter.get('/api/npm', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/npm', NPM_DESCRIPTION, NPM_PRICE_USDC, walletAddress, NPM_OUTPUT_SCHEMA), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, NPM_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const q = c.req.query('q');
+  if (!q) return c.json({ error: 'Missing parameter: q' }, 400);
+
+  try {
+    const packages = await searchNPM(q);
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+    return c.json({ packages, total: packages.length, query: q, payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
+  } catch (err: any) {
+    return c.json({ error: 'NPM fetch failed', message: err.message }, 502);
   }
 });
