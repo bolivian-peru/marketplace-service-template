@@ -46,6 +46,13 @@ import { getSpotifyTop50, type SpotifyTrack } from './scrapers/spotify';
 import { searchLinkedInJobs, type LinkedInJob } from './scrapers/linkedin';
 import { getQuoraTrending, type QuoraQuestion } from './scrapers/quora';
 import { getTikTokTrends, type TikTokTrend } from './scrapers/tiktok';
+import { searchGitHubActions, type GitHubAction } from './scrapers/githubActions';
+import { searchPyPI, type PyPIPackage } from './scrapers/pypi';
+import { searchCrates, type CratesCrate } from './scrapers/crates';
+import { searchIndeedJob, type IndeedJob } from './scrapers/indeed';
+import { searchRemoteOK, type RemoteJob } from './scrapers/remoteok';
+import { searchAirbnb, type AirbnbListing } from './scrapers/airbnb';
+import { searchTripAdvisor, type TripAdvisorResult } from './scrapers/tripadvisor';
 import { searchEbay, type eBayItem } from './scrapers/ebay';
 import { searchStockX, type StockXItem } from './scrapers/stockx';
 import { searchBestBuy, type BestBuyProduct } from './scrapers/bestbuy';
@@ -2296,4 +2303,93 @@ serviceRouter.get('/api/aliexpress', async (c) => {
   const items = await searchAliExpress(query);
   c.header('X-Payment-Settled', 'true');
   return c.json({ items, tx: payment.txHash });
+});
+
+// ─── DEV TOOLS PACK (Bounty #204) ─────────
+const DEV_PRICE_USDC = 0.005;
+
+serviceRouter.get('/api/github-actions', async (c) => {
+  const wallet = process.env.WALLET_ADDRESS || 'unknown';
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/api/github-actions', 'GitHub Actions', DEV_PRICE_USDC, wallet, { input: { query: 'string' } }), 402);
+  if (!(await verifyPayment(payment, wallet, DEV_PRICE_USDC)).valid) return c.json({ error: 'Payment failed' }, 402);
+  const query = c.req.query('q');
+  if (!query) return c.json({ error: 'Missing q' }, 400);
+  const actions = await searchGitHubActions(query);
+  c.header('X-Payment-Settled', 'true');
+  return c.json({ actions, tx: payment.txHash });
+});
+
+serviceRouter.get('/api/pypi', async (c) => {
+  const wallet = process.env.WALLET_ADDRESS || 'unknown';
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/api/pypi', 'PyPI', DEV_PRICE_USDC, wallet, { input: { query: 'string' } }), 402);
+  if (!(await verifyPayment(payment, wallet, DEV_PRICE_USDC)).valid) return c.json({ error: 'Payment failed' }, 402);
+  const query = c.req.query('q');
+  if (!query) return c.json({ error: 'Missing q' }, 400);
+  const pkgs = await searchPyPI(query);
+  c.header('X-Payment-Settled', 'true');
+  return c.json({ pkgs, tx: payment.txHash });
+});
+
+serviceRouter.get('/api/crates', async (c) => {
+  const wallet = process.env.WALLET_ADDRESS || 'unknown';
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/api/crates', 'Crates.io', DEV_PRICE_USDC, wallet, { input: { query: 'string' } }), 402);
+  if (!(await verifyPayment(payment, wallet, DEV_PRICE_USDC)).valid) return c.json({ error: 'Payment failed' }, 402);
+  const query = c.req.query('q');
+  if (!query) return c.json({ error: 'Missing q' }, 400);
+  const crates = await searchCrates(query);
+  c.header('X-Payment-Settled', 'true');
+  return c.json({ crates, tx: payment.txHash });
+});
+
+// ─── JOBS PACK (Bounty #205) ─────────
+const JOBS_PRICE_USDC = 0.005;
+
+serviceRouter.get('/api/indeed', async (c) => {
+  const wallet = process.env.WALLET_ADDRESS || 'unknown';
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/api/indeed', 'Indeed Jobs', JOBS_PRICE_USDC, wallet, { input: { query: 'string', location: 'string' } }), 402);
+  if (!(await verifyPayment(payment, wallet, JOBS_PRICE_USDC)).valid) return c.json({ error: 'Payment failed' }, 402);
+  const query = c.req.query('q') || 'Software';
+  const loc = c.req.query('l') || 'Remote';
+  const jobs = await searchIndeedJob(query, loc);
+  c.header('X-Payment-Settled', 'true');
+  return c.json({ jobs, tx: payment.txHash });
+});
+
+serviceRouter.get('/api/remoteok', async (c) => {
+  const wallet = process.env.WALLET_ADDRESS || 'unknown';
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/api/remoteok', 'RemoteOK', JOBS_PRICE_USDC, wallet, {}), 402);
+  if (!(await verifyPayment(payment, wallet, JOBS_PRICE_USDC)).valid) return c.json({ error: 'Payment failed' }, 402);
+  const jobs = await searchRemoteOK();
+  c.header('X-Payment-Settled', 'true');
+  return c.json({ jobs, tx: payment.txHash });
+});
+
+// ─── TRAVEL PACK (Bounty #206) ─────────
+const TRAVEL_PRICE_USDC = 0.005;
+
+serviceRouter.get('/api/airbnb', async (c) => {
+  const wallet = process.env.WALLET_ADDRESS || 'unknown';
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/api/airbnb', 'Airbnb', TRAVEL_PRICE_USDC, wallet, { input: { location: 'string' } }), 402);
+  if (!(await verifyPayment(payment, wallet, TRAVEL_PRICE_USDC)).valid) return c.json({ error: 'Payment failed' }, 402);
+  const location = c.req.query('l') || 'Paris';
+  const listings = await searchAirbnb(location);
+  c.header('X-Payment-Settled', 'true');
+  return c.json({ listings, tx: payment.txHash });
+});
+
+serviceRouter.get('/api/tripadvisor', async (c) => {
+  const wallet = process.env.WALLET_ADDRESS || 'unknown';
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/api/tripadvisor', 'TripAdvisor', TRAVEL_PRICE_USDC, wallet, { input: { query: 'string' } }), 402);
+  if (!(await verifyPayment(payment, wallet, TRAVEL_PRICE_USDC)).valid) return c.json({ error: 'Payment failed' }, 402);
+  const query = c.req.query('q') || 'Hotel';
+  const results = await searchTripAdvisor(query);
+  c.header('X-Payment-Settled', 'true');
+  return c.json({ results, tx: payment.txHash });
 });
