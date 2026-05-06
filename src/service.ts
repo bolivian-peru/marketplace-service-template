@@ -37,6 +37,7 @@ import { searchGoogle, type SerpResult } from './scrapers/googleSerp';
 import { searchX, type TweetResult } from './scrapers/xTrends';
 import { searchAmazon, type AmazonProduct } from './scrapers/amazon';
 import { getGitHubTrending, type GitHubRepo } from './scrapers/githubTrends';
+import { getProductHuntTrending, type PHPost } from './scrapers/productHunt';
 
 // ─── TREND INTELLIGENCE ROUTES (Bounty #70) ─────────
 serviceRouter.route('/research', researchRouter);
@@ -1726,5 +1727,35 @@ serviceRouter.get('/api/github', async (c) => {
     return c.json({ repos, total: repos.length, query: since, payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
   } catch (err: any) {
     return c.json({ error: 'GitHub fetch failed', message: err.message }, 502);
+  }
+});
+
+// ─── PRODUCT HUNT TECH NEWS (Bounty #95) ─────────
+const PH_PRICE_USDC = 0.005;
+const PH_DESCRIPTION = 'Product Hunt Daily Tech Intelligence: Discover the hottest new apps, tools, and startups.';
+const PH_OUTPUT_SCHEMA = {
+  input: {},
+  output: { posts: 'PHPost[]', total: 'number', payment: '{ txHash, network, amount, settled }' },
+};
+
+serviceRouter.get('/api/product-hunt', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/product-hunt', PH_DESCRIPTION, PH_PRICE_USDC, walletAddress, PH_OUTPUT_SCHEMA), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, PH_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  try {
+    const posts = await getProductHuntTrending();
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+    return c.json({ posts, total: posts.length, payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
+  } catch (err: any) {
+    return c.json({ error: 'PH fetch failed', message: err.message }, 502);
   }
 });
