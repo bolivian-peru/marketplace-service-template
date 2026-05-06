@@ -33,6 +33,8 @@ import { fetchActiveMarkets, searchMarkets, getTrendingMarkets } from './scraper
 
 export const serviceRouter = new Hono();
 import { searchApps, type AppResult } from './scrapers/appStore';
+import { searchGoogle, type SerpResult } from './scrapers/googleSerp';
+import { searchX, type TweetResult } from './scrapers/xTrends';
 
 // ─── TREND INTELLIGENCE ROUTES (Bounty #70) ─────────
 serviceRouter.route('/research', researchRouter);
@@ -1618,5 +1620,43 @@ serviceRouter.get('/api/appstore', async (c) => {
     return c.json({ apps, total: apps.length, query: term, payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
   } catch (err: any) {
     return c.json({ error: 'App Store fetch failed', message: err.message }, 502);
+  }
+});
+
+// ─── X (TWITTER) SENTIMENT TRACKER (Bounty #92) ─────────
+const X_PRICE_USDC = 0.005;
+const X_DESCRIPTION = 'X (Twitter) Real-time Sentiment Tracker. Fetches recent tweets, engagement stats, and user data for any topic or hashtag.';
+const X_OUTPUT_SCHEMA = {
+  input: { q: 'string — Search query/hashtag (required)', limit: 'number — Max tweets (default: 10, max: 20)' },
+  output: { tweets: 'TweetResult[]', total: 'number', query: 'string', payment: '{ txHash, network, amount, settled }' },
+};
+
+serviceRouter.get('/api/x-trends', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/x-trends', X_DESCRIPTION, X_PRICE_USDC, walletAddress, X_OUTPUT_SCHEMA), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, X_PRICE_USDC);
+  if (!verification.valid) {
+    return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+  }
+
+  const q = c.req.query('q');
+  if (!q) return c.json({ error: 'Missing parameter: q', example: '/api/x-trends?q=$BTC&limit=5' }, 400);
+
+  const limitParam = parseInt(c.req.query('limit') || '10');
+  const limit = Math.min(limitParam, 20);
+
+  try {
+    const tweets = await searchX(q, limit);
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+    return c.json({ tweets, total: tweets.length, query: q, payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
+  } catch (err: any) {
+    return c.json({ error: 'X Trends fetch failed', message: err.message }, 502);
   }
 });
