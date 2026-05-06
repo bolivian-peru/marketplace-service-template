@@ -46,6 +46,11 @@ import { getSpotifyTop50, type SpotifyTrack } from './scrapers/spotify';
 import { searchLinkedInJobs, type LinkedInJob } from './scrapers/linkedin';
 import { getQuoraTrending, type QuoraQuestion } from './scrapers/quora';
 import { getTikTokTrends, type TikTokTrend } from './scrapers/tiktok';
+import { searchEbay, type eBayItem } from './scrapers/ebay';
+import { searchStockX, type StockXItem } from './scrapers/stockx';
+import { searchBestBuy, type BestBuyProduct } from './scrapers/bestbuy';
+import { searchAliExpress, type AliProduct } from './scrapers/aliexpress';
+import { searchAmazon, type AmazonProduct } from './scrapers/amazon';
 import { getCryptoMarket, type CryptoPrice } from './scrapers/crypto';
 import { getExchangeRate, type CurrencyRate } from './scrapers/currency';
 import { searchX, type TweetResult } from './scrapers/xTrends';
@@ -2232,4 +2237,63 @@ serviceRouter.get('/api/tiktok', async (c) => {
   const trends = await getTikTokTrends();
   c.header('X-Payment-Settled', 'true');
   return c.json({ trends, tx: payment.txHash });
+});
+
+// ─── E-COMMERCE PACK (Bounty #203) ─────────
+const ECOM_PRICE_USDC = 0.005;
+
+// 1. eBay
+serviceRouter.get('/api/ebay', async (c) => {
+  const wallet = process.env.WALLET_ADDRESS || 'unknown';
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/api/ebay', 'eBay Search', ECOM_PRICE_USDC, wallet, { input: { query: 'string' } }), 402);
+  if (!(await verifyPayment(payment, wallet, ECOM_PRICE_USDC)).valid) return c.json({ error: 'Payment failed' }, 402);
+
+  const query = c.req.query('q');
+  if (!query) return c.json({ error: 'Missing q' }, 400);
+  const items = await searchEbay(query);
+  c.header('X-Payment-Settled', 'true');
+  return c.json({ items, tx: payment.txHash });
+});
+
+// 2. StockX
+serviceRouter.get('/api/stockx', async (c) => {
+  const wallet = process.env.WALLET_ADDRESS || 'unknown';
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/api/stockx', 'StockX Resale', ECOM_PRICE_USDC, wallet, { input: { query: 'string' } }), 402);
+  if (!(await verifyPayment(payment, wallet, ECOM_PRICE_USDC)).valid) return c.json({ error: 'Payment failed' }, 402);
+
+  const query = c.req.query('q');
+  if (!query) return c.json({ error: 'Missing q' }, 400);
+  const items = await searchStockX(query);
+  c.header('X-Payment-Settled', 'true');
+  return c.json({ items, tx: payment.txHash });
+});
+
+// 3. BestBuy
+serviceRouter.get('/api/bestbuy', async (c) => {
+  const wallet = process.env.WALLET_ADDRESS || 'unknown';
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/api/bestbuy', 'BestBuy Products', ECOM_PRICE_USDC, wallet, { input: { query: 'string' } }), 402);
+  if (!(await verifyPayment(payment, wallet, ECOM_PRICE_USDC)).valid) return c.json({ error: 'Payment failed' }, 402);
+
+  const query = c.req.query('q');
+  if (!query) return c.json({ error: 'Missing q' }, 400);
+  const items = await searchBestBuy(query);
+  c.header('X-Payment-Settled', 'true');
+  return c.json({ items, tx: payment.txHash });
+});
+
+// 4. AliExpress
+serviceRouter.get('/api/aliexpress', async (c) => {
+  const wallet = process.env.WALLET_ADDRESS || 'unknown';
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/api/aliexpress', 'AliExpress Search', ECOM_PRICE_USDC, wallet, { input: { query: 'string' } }), 402);
+  if (!(await verifyPayment(payment, wallet, ECOM_PRICE_USDC)).valid) return c.json({ error: 'Payment failed' }, 402);
+
+  const query = c.req.query('q');
+  if (!query) return c.json({ error: 'Missing q' }, 400);
+  const items = await searchAliExpress(query);
+  c.header('X-Payment-Settled', 'true');
+  return c.json({ items, tx: payment.txHash });
 });
