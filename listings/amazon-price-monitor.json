@@ -1,0 +1,37 @@
+{
+    "id": "amazon-price-monitor",
+    "name": "E-commerce Price Monitor (Amazon)",
+    "description": "Real-time Amazon price monitoring with Playwright-Stealth v2 and persistent context to bypass bot detection.",
+    "longDescription": "A robust price monitoring service specifically tuned for Amazon. Uses Playwright-Stealth v2 with persistent developer profiles and mobile proxies to ensure high success rates and avoid CAPTCHAs. Extracts product name, price, and availability.",
+    "endpoint": "https://amazon-monitor.proxies.sx/api/price",
+    "pricing": {
+        "model": "per-request",
+        "amount": "0.01",
+        "minimum": "0.01",
+        "currency": "USDC",
+        "networks": [
+            {
+                "network": "base",
+                "chainId": "eip155:8453",
+                "recipient": "0x6ce6962fC47b3f8d5e1a064be2659964b0a4215d",
+                "asset": "USDC",
+                "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+            }
+        ]
+    },
+    "category": "scraper",
+    "tags": [
+        "amazon",
+        "price-monitor",
+        "ecommerce",
+        "playwright",
+        "stealth"
+    ],
+    "owner": {
+        "name": "1davidjacky",
+        "github": "1davidjacky-commits"
+    },
+    "status": "pending",
+    "featured": false,
+    "addedAt": "2026-05-06"
+}
