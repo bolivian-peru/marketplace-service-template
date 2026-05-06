@@ -34,6 +34,10 @@ import { fetchActiveMarkets, searchMarkets, getTrendingMarkets } from './scraper
 export const serviceRouter = new Hono();
 import { searchApps, type AppResult } from './scrapers/appStore';
 import { searchGoogle, type SerpResult } from './scrapers/googleSerp';
+import { searchBingNews, type BingNewsResult } from './scrapers/bingNews';
+import { searchWikipedia, type WikiResult } from './scrapers/wikipedia';
+import { searchStackOverflow, type SOQuestion } from './scrapers/stackoverflow';
+import { searchIMDB, type IMDBResult } from './scrapers/imdb';
 import { searchX, type TweetResult } from './scrapers/xTrends';
 import { searchAmazon, type AmazonProduct } from './scrapers/amazon';
 import { getGitHubTrending, type GitHubRepo } from './scrapers/githubTrends';
@@ -2053,4 +2057,63 @@ serviceRouter.get('/api/dictionary', async (c) => {
   } catch (err: any) {
     return c.json({ error: 'Dictionary fetch failed', message: err.message }, 502);
   }
+});
+
+// ─── SEARCH & KNOWLEDGE PACK (Bounty #200) ─────────
+const SEARCH_PRICE_USDC = 0.005;
+
+// 1. Bing News
+serviceRouter.get('/api/bing-news', async (c) => {
+  const wallet = process.env.WALLET_ADDRESS || 'unknown';
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/api/bing-news', 'Bing News Search', SEARCH_PRICE_USDC, wallet, { input: { query: 'string' } }), 402);
+  if (!(await verifyPayment(payment, wallet, SEARCH_PRICE_USDC)).valid) return c.json({ error: 'Payment failed' }, 402);
+
+  const query = c.req.query('q');
+  if (!query) return c.json({ error: 'Missing q' }, 400);
+  const results = await searchBingNews(query);
+  c.header('X-Payment-Settled', 'true');
+  return c.json({ news: results, tx: payment.txHash });
+});
+
+// 2. Wikipedia
+serviceRouter.get('/api/wiki', async (c) => {
+  const wallet = process.env.WALLET_ADDRESS || 'unknown';
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/api/wiki', 'Wikipedia Summary', SEARCH_PRICE_USDC, wallet, { input: { query: 'string' } }), 402);
+  if (!(await verifyPayment(payment, wallet, SEARCH_PRICE_USDC)).valid) return c.json({ error: 'Payment failed' }, 402);
+
+  const query = c.req.query('q');
+  if (!query) return c.json({ error: 'Missing q' }, 400);
+  const results = await searchWikipedia(query);
+  c.header('X-Payment-Settled', 'true');
+  return c.json({ wiki: results, tx: payment.txHash });
+});
+
+// 3. StackOverflow
+serviceRouter.get('/api/stackoverflow', async (c) => {
+  const wallet = process.env.WALLET_ADDRESS || 'unknown';
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/api/stackoverflow', 'StackOverflow Search', SEARCH_PRICE_USDC, wallet, { input: { query: 'string' } }), 402);
+  if (!(await verifyPayment(payment, wallet, SEARCH_PRICE_USDC)).valid) return c.json({ error: 'Payment failed' }, 402);
+
+  const query = c.req.query('q');
+  if (!query) return c.json({ error: 'Missing q' }, 400);
+  const results = await searchStackOverflow(query);
+  c.header('X-Payment-Settled', 'true');
+  return c.json({ so: results, tx: payment.txHash });
+});
+
+// 4. IMDb
+serviceRouter.get('/api/imdb', async (c) => {
+  const wallet = process.env.WALLET_ADDRESS || 'unknown';
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/api/imdb', 'IMDb Movie Search', SEARCH_PRICE_USDC, wallet, { input: { query: 'string' } }), 402);
+  if (!(await verifyPayment(payment, wallet, SEARCH_PRICE_USDC)).valid) return c.json({ error: 'Payment failed' }, 402);
+
+  const query = c.req.query('q');
+  if (!query) return c.json({ error: 'Missing q' }, 400);
+  const results = await searchIMDB(query);
+  c.header('X-Payment-Settled', 'true');
+  return c.json({ movies: results, tx: payment.txHash });
 });
