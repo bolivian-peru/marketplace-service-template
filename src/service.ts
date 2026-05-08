@@ -29,8 +29,12 @@ import {
 } from './scrapers/linkedin-enrichment';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
+import { gmailRouter } from './routes/gmail';
 
 export const serviceRouter = new Hono();
+
+// ─── GMAIL API ROUTES (Bounty) ──────────────────────────
+serviceRouter.route('/gmail', gmailRouter);
 
 // ─── TREND INTELLIGENCE ROUTES (Bounty #70) ─────────
 serviceRouter.route('/research', researchRouter);

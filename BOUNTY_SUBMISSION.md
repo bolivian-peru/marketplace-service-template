@@ -1,73 +1,141 @@
-# Bounty Submission: Job Market Intelligence (Bounty #16)
+# Gmail API Integration — Bounty Submission
 
-**PR:** https://github.com/bolivian-peru/marketplace-service-template/pull/48  
-**Live deployment:** https://bounty16-job-market-intelligence.onrender.com  
-**Branch:** `bounty-16-jobs`
+## Service Name
+Gmail API Integration Service
 
-## What I built
+## Bounty ID
+Gmail API bounty ($200)
 
-A production-ready **Job Market Intelligence API** that scrapes real job listings from **Indeed** (and optionally **LinkedIn**) using **Proxies.sx mobile proxies**, and is protected by an **x402 (USDC) payment gate**.
+## Summary
+Built a complete Gmail API integration service that enables email search via Gmail API with OAuth2 authentication, pagination support, and x402 micropayment integration.
 
-### Endpoint
-- `GET /api/jobs?query=<keywords>&location=<location>&platform=indeed|linkedin|both&limit=20`
+## What Was Built
 
-### Output fields (Indeed)
-- `title, company, location, salary, salary_parsed, date, link, remote`
+### Endpoints
+- `GET /api/gmail/search` — Search emails by query (from, to, subject, date range, labels)
+- `GET /api/gmail/message/:id` — Get email metadata by message ID
+- `GET /api/gmail/labels` — Get list of Gmail labels
+- `GET /api/gmail/health` — Check Gmail API connection status
 
-### Proxy metadata (required by reviewer)
-Each paid 200 response includes:
-- `meta.proxy.ip` (proxy exit IP, fetched through the proxy)
-- `meta.proxy.country, meta.proxy.host, meta.proxy.type="mobile"`
+### Features Implemented
+- ✅ Gmail API integration with OAuth2 (client credentials from env)
+- ✅ Email search by query (from, to, subject, date range, labels)
+- ✅ Returns email metadata (sender, subject, date, snippet)
+- ✅ Pagination support (page tokens)
+- ✅ Proxies.sx mobile proxy for all outbound requests
+- ✅ x402 pay-per-request micropayment (USDC on Solana + Base)
+- ✅ Rate limiting (20 Gmail requests/min per IP)
+- ✅ Error handling with specific error messages
+- ✅ OAuth2 token refresh handling
 
-## Reviewer requirements checklist (from PR comments)
+## Files Created/Modified
 
-1) **Live deployed instance** ✅
-- URL: https://bounty16-job-market-intelligence.onrender.com
+### New Files
+- `/src/routes/gmail.ts` — Gmail API router with all endpoints
+- `/src/scrapers/gmail-scraper.ts` — Gmail API integration with OAuth2
+- `/scripts/exchange-gmail-token.ts` — OAuth2 token exchange helper
+- `GMAIL_README.md` — Full API documentation
+- `BOUNTY_SUBMISSION.md` — This file
 
-2) **Real scraped output + mobile proxy IP in response metadata** ✅
-- Paid `200` responses include `meta.proxy.ip` + job listings.
+### Modified Files
+- `/src/service.ts` — Added Gmail router import and mounting
+- `/src/index.ts` — Added Gmail endpoints to health and discovery
+- `/.env.example` — Added Gmail API credentials documentation
 
-3) **Salary extraction proof (annual/hourly/range/competitive)** ✅
-- Salary text is captured from Indeed job cards when present (`salary`), and normalized into `salary_parsed`:
-  - `min/max` numeric values (when present)
-  - `period` (hour/year/month/week/day when detectable)
-  - `competitive` boolean (e.g. “Competitive”, “DOE”, “Not disclosed”)
+## API Documentation
 
-4) **Rate limiting resilience: 10+ consecutive successful scrapes** ✅
-- A proof script is included to run 10+ scrapes in a row and save JSON evidence:
+### Search Emails
+```
+GET /api/gmail/search?query=from:user@example.com&maxResults=10
+```
 
+**Query Parameters:**
+- `query` (required): Gmail search query
+- `maxResults`: Max results (default: 10, max: 50)
+- `pageToken`: Pagination token
+- `includeBody`: Include body preview
+
+**Response:**
+```json
+{
+  "emails": [{
+    "id": "message_id",
+    "threadId": "thread_id",
+    "subject": "Email Subject",
+    "from": "sender@email.com",
+    "to": "recipient@email.com",
+    "date": "2024-03-15T10:30:00.000Z",
+    "snippet": "Email preview...",
+    "labelIds": ["INBOX", "IMPORTANT"]
+  }],
+  "total": 10,
+  "nextPageToken": "token_for_next_page",
+  "resultSizeEstimate": 42
+}
+```
+
+### Supported Gmail Search Operators
+- `from:` — Search by sender
+- `to:` — Search by recipient
+- `subject:` — Search in subject
+- `after:` / `before:` — Date range (YYYY/MM/DD)
+- `has:attachment` — Has attachments
+- `filename:` — Attachment filename
+- `label:` — Email label
+- `is:unread` / `is:starred` — Status filters
+
+## Setup Instructions
+
+### 1. Google Cloud Console
+```bash
+1. Go to https://console.cloud.google.com/apis/credentials
+2. Enable Gmail API
+3. Create OAuth2 Client ID (Desktop app)
+4. Note CLIENT_ID and CLIENT_SECRET
+```
+
+### 2. Get Refresh Token
+```bash
+# Build auth URL (replace CLIENT_ID)
+https://accounts.google.com/o/oauth2/auth?client_id=YOUR_CLIENT_ID&redirect_uri=urn:ietf:wg:oauth:2.0:oob&scope=https://www.googleapis.com/auth/gmail.readonly&response_type=code&access_type=offline
+
+# Exchange code for tokens
+bun run scripts/exchange-gmail-token.ts <auth_code> <client_id> <client_secret>
+```
+
+### 3. Configure Environment
+```bash
+cp .env.example .env
+# Add WALLET_ADDRESS, PROXY_*, and GOOGLE_* variables
+```
+
+### 4. Deploy
 ```bash
 bun install
-# query location runs
-bun run proof:indeed -- "Software Engineer" "Remote" 10
-# writes: listings/indeed-proof-<timestamp>.json
+bun run dev  # Development
+# or
+bun run start  # Production
 ```
 
-5) **Resolve merge conflicts** ✅
-- Branch is rebased and mergeable.
+## Pricing
+- **$0.01 USDC** per request
+- Supported on Solana (~400ms) and Base (~2s)
 
-## How to test (curl)
-
-### 1) Health + discovery (no payment)
+## Test Commands
 ```bash
-curl -sS https://bounty16-job-market-intelligence.onrender.com/health
-curl -sS https://bounty16-job-market-intelligence.onrender.com/
+# Health check
+curl http://localhost:3000/api/gmail/health
+
+# Test payment flow (returns 402 with payment info)
+curl "http://localhost:3000/api/gmail/search?query=from:test@gmail.com"
+
+# Example query
+curl "http://localhost:3000/api/gmail/search?query=subject:invoice%20after:2024/01/01&maxResults=5"
 ```
 
-### 2) Expected x402 flow (HTTP 402)
-```bash
-curl -i "https://bounty16-job-market-intelligence.onrender.com/api/jobs?query=Java%20Developer&location=Remote"
-```
+## Repository
+Forked from: https://github.com/bolivian-peru/marketplace-service-template
+Working directory: `/home/admin/gmail-service`
 
-### 3) Paid 200 response (after payment)
-Call again with your payment tx hash:
-```bash
-curl -sS \
-  -H "Payment-Signature: <tx_hash>" \
-  -H "X-Payment-Network: solana" \
-  "https://bounty16-job-market-intelligence.onrender.com/api/jobs?query=Java%20Developer&location=Remote" | jq
-```
-
-## Notes
-- This PR is intentionally **scoped to Bounty #16 only** (job endpoint + job scraper).
-- Render must have `WALLET_ADDRESS` set for proper 402 responses.
+---
+Built: 2026-05-09
