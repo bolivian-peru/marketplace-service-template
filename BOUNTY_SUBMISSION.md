@@ -1,73 +1,136 @@
-# Bounty Submission: Job Market Intelligence (Bounty #16)
+# Social Intel Service - Bounty Submission
 
-**PR:** https://github.com/bolivian-peru/marketplace-service-template/pull/48  
-**Live deployment:** https://bounty16-job-market-intelligence.onrender.com  
-**Branch:** `bounty-16-jobs`
+**Bounty**: Social Media Intelligence Service ($100)
+**Service Name**: social-intel
+**Repository**: https://github.com/bolivian-peru/marketplace-service-template
+**Output Location**: `/home/admin/social-intel-service/`
 
-## What I built
+## What Was Built
 
-A production-ready **Job Market Intelligence API** that scrapes real job listings from **Indeed** (and optionally **LinkedIn**) using **Proxies.sx mobile proxies**, and is protected by an **x402 (USDC) payment gate**.
+A Social Intel service that aggregates social media data from Twitter/X and Reddit with:
 
-### Endpoint
-- `GET /api/jobs?query=<keywords>&location=<location>&platform=indeed|linkedin|both&limit=20`
+1. **Multi-Platform Data Aggregation**
+   - Twitter/X posts via SearXNG search engine aggregation
+   - Reddit posts via Reddit's public JSON API
+   - Parallel fetching for improved performance
 
-### Output fields (Indeed)
-- `title, company, location, salary, salary_parsed, date, link, remote`
+2. **Sentiment Analysis**
+   - Keyword-based sentiment scoring (positive/negative/neutral)
+   - Configurable word lists for crypto, trading, and general sentiment
+   - Normalized sentiment scores (-1 to 1)
 
-### Proxy metadata (required by reviewer)
-Each paid 200 response includes:
-- `meta.proxy.ip` (proxy exit IP, fetched through the proxy)
-- `meta.proxy.country, meta.proxy.host, meta.proxy.type="mobile"`
+3. **Engagement Metrics**
+   - Engagement score calculation based on platform-specific metrics
+   - Comment/reply counts for Reddit
+   - Rank-based scoring for Twitter search results
 
-## Reviewer requirements checklist (from PR comments)
+4. **Trending Topics Detection**
+   - Hashtag extraction and frequency analysis
+   - Topic trending from Reddit's hot posts
+   - Sentiment analysis per trending topic
 
-1) **Live deployed instance** ✅
-- URL: https://bounty16-job-market-intelligence.onrender.com
+5. **Profile Intelligence**
+   - Twitter user profile lookup and analysis
+   - Reddit user post history and engagement
+   - Sentiment breakdown per user
 
-2) **Real scraped output + mobile proxy IP in response metadata** ✅
-- Paid `200` responses include `meta.proxy.ip` + job listings.
+6. **x402 Micropayments**
+   - USDC payment via Solana network
+   - USDC payment via Base network
+   - Payment verification before data delivery
 
-3) **Salary extraction proof (annual/hourly/range/competitive)** ✅
-- Salary text is captured from Indeed job cards when present (`salary`), and normalized into `salary_parsed`:
-  - `min/max` numeric values (when present)
-  - `period` (hour/year/month/week/day when detectable)
-  - `competitive` boolean (e.g. “Competitive”, “DOE”, “Not disclosed”)
+7. **Mobile Proxy Integration**
+   - Uses Proxies.sx mobile proxy (gate.proxies.sx:10000)
+   - Real 4G/5G IP addresses for reliable social media access
+   - Proxy metadata in response (country, type)
 
-4) **Rate limiting resilience: 10+ consecutive successful scrapes** ✅
-- A proof script is included to run 10+ scrapes in a row and save JSON evidence:
+## API Endpoints
+
+| Endpoint | Method | Price | Description |
+|----------|--------|-------|-------------|
+| `/api/intel` | GET | 0.005 USDC | Aggregated social intel for a topic |
+| `/api/intel/twitter/:username` | GET | 0.005 USDC | Twitter profile intelligence |
+| `/api/intel/reddit/user/:username` | GET | 0.005 USDC | Reddit user analysis |
+| `/api/intel/trending` | GET | 0.01 USDC | Trending topics with sentiment |
+
+## Files Created
+
+```
+social-intel-service/
+├── README_SOCIAL.md                    # Service documentation
+├── BOUNTY_SUBMISSION.md                # This file
+├── .env                                # Environment configuration
+└── src/
+    ├── scrapers/
+    │   └── social-intel.ts             # Main scraper module
+    └── routes/
+        └── social-intel.ts             # API routes with payment handling
+```
+
+## Files Modified
+
+```
+social-intel-service/
+├── src/
+│   ├── service.ts                      # Added social intel routes
+│   └── index.ts                        # Updated health check & discovery
+└── .env                                # Configured proxy credentials
+```
+
+## Testing
 
 ```bash
+# Health check
+curl localhost:3000/health
+
+# Service discovery
+curl localhost:3000/
+
+# Test without payment (returns 402)
+curl "localhost:3000/api/intel?query=bitcoin"
+
+# With payment headers
+curl -H "Payment-Network: solana" \
+     -H "Payment-Tx: <tx_hash>" \
+     "localhost:3000/api/intel?query=crypto"
+```
+
+## Technical Implementation
+
+### Twitter/X Data
+- Uses SearXNG meta-search engine with Google, Bing, DuckDuckGo engines
+- Filters for x.com and twitter.com URLs
+- Extracts tweet IDs, author handles, hashtags, mentions
+- Engagement scoring based on search result rank
+
+### Reddit Data
+- Uses Reddit's public JSON API (no auth required)
+- Searches by keyword with time filters (day/week/month/year)
+- Extracts scores, comments, upvote ratios
+- Filters by recent posts (configurable days)
+
+### Sentiment Analysis
+- Positive keywords: bullish, gains, profit, love, amazing, etc.
+- Negative keywords: scam, rugpull, dump, crash, fail, etc.
+- Score normalized to -1 to 1 range
+- Applied to combined title + content text
+
+### Rate Limiting
+- In-memory rate limiting per IP
+- 20 requests/minute to protect proxy quota
+- Cleanup of expired rate limit entries every 5 minutes
+
+## Deployment
+
+```bash
+cd /home/admin/social-intel-service
 bun install
-# query location runs
-bun run proof:indeed -- "Software Engineer" "Remote" 10
-# writes: listings/indeed-proof-<timestamp>.json
-```
-
-5) **Resolve merge conflicts** ✅
-- Branch is rebased and mergeable.
-
-## How to test (curl)
-
-### 1) Health + discovery (no payment)
-```bash
-curl -sS https://bounty16-job-market-intelligence.onrender.com/health
-curl -sS https://bounty16-job-market-intelligence.onrender.com/
-```
-
-### 2) Expected x402 flow (HTTP 402)
-```bash
-curl -i "https://bounty16-job-market-intelligence.onrender.com/api/jobs?query=Java%20Developer&location=Remote"
-```
-
-### 3) Paid 200 response (after payment)
-Call again with your payment tx hash:
-```bash
-curl -sS \
-  -H "Payment-Signature: <tx_hash>" \
-  -H "X-Payment-Network: solana" \
-  "https://bounty16-job-market-intelligence.onrender.com/api/jobs?query=Java%20Developer&location=Remote" | jq
+bun run start
 ```
 
 ## Notes
-- This PR is intentionally **scoped to Bounty #16 only** (job endpoint + job scraper).
-- Render must have `WALLET_ADDRESS` set for proper 402 responses.
+
+- Proxy credentials: gate.proxies.sx:10000 with provided auth
+- Payment wallet: 6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv (Solana)
+- Payment wallet Base: 0xF8cD900794245fc36CBE65be9afc23CDF5103042
+- Server runs on port 3000 by default

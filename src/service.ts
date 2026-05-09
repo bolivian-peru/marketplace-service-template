@@ -29,8 +29,12 @@ import {
 } from './scrapers/linkedin-enrichment';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
+import { socialIntelRouter } from './routes/social-intel';
 
 export const serviceRouter = new Hono();
+
+// ─── SOCIAL INTEL ROUTES ───────────────────────────────
+serviceRouter.route('', socialIntelRouter);
 
 // ─── TREND INTELLIGENCE ROUTES (Bounty #70) ─────────
 serviceRouter.route('/research', researchRouter);
@@ -1471,7 +1475,7 @@ serviceRouter.get('/serp', async (c) => {
   try {
     const proxy = getProxy();
     const ip = await getProxyExitIp();
-    const results = await scrapeMobileSERP(query, { location, num });
+    const results = await scrapeMobileSERP(query, 'us', 'en', location);
 
     c.header('X-Payment-Settled', 'true');
     c.header('X-Payment-TxHash', payment.txHash);
