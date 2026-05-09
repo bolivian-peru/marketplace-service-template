@@ -10,12 +10,12 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install Bun
-        run: curl -fsSL https://bun.sh/install | bash
+        run: |
+          curl -fsSL https://bun.sh/install | bash
+          echo "$HOME/.bun/bin" >> $GITHUB_PATH
 
       - name: Install Dependencies
-        run: |
-          source ~/.bun/bun env
-          bun install --frozen-lockfile
+        run: bun install --frozen-lockfile
 
       - name: Install Cloudflare Tunnel
         run: |
@@ -35,19 +35,29 @@ jobs:
 
       - name: Start Tunnel & Service
         run: |
+          # Start cloudflare tunnel in background
           cloudflared tunnel --url http://localhost:3000 > /tmp/tunnel-url.txt 2>&1 &
-          source ~/.bun/bun/env
-          bun run dev &
-          sleep 8
-          TUNNEL_URL=$(grep -o 'https://[^ ]*trycloudflare.com' /tmp/tunnel-url.txt | head -1)
+          TUNNEL_PID=$!
+          
+          # Start the service in background
+          bun run dev > /tmp/service.log 2>&1 &
+          SERVICE_PID=$!
+          
+          # Wait for services to start
+          sleep 10
+          
+          # Extract tunnel URL
+          TUNNEL_URL=$(grep -o 'https://[a-z0-9-]*\.trycloudflare\.com' /tmp/tunnel-url.txt | head -1)
           echo "TUNNEL_URL=$TUNNEL_URL"
           echo "TUNNEL_URL=$TUNNEL_URL" >> $GITHUB_ENV
-          echo "TUNNEL_URL=$TUNNEL_URL" >> /tmp/result.txt
-
-      - name: Health Check
-        run: |
-          sleep 2
+          echo "$TUNNEL_URL" > /tmp/result.txt
+          
+          # Health check
           curl -s http://localhost:3000/health && echo " - Service OK"
+          
+          echo "Tunnel PID: $TUNNEL_PID, Service PID: $SERVICE_PID"
+          echo "Service log:"
+          tail -20 /tmp/service.log
 
       - name: Save Public URL
         uses: actions/upload-artifact@v4
