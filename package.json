@@ -1,34 +1,17 @@
 {
-  "name": "marketplace-service-template",
+  "name": "serp-tracker",
   "version": "1.0.0",
-  "description": "Fork → edit one file → deploy → earn USDC. Build x402-gated services on Proxies.sx mobile proxy infrastructure.",
+  "description": "Google SERP tracker API using axios + cheerio with Proxies.sx proxy",
+  "main": "src/index.js",
   "scripts": {
-    "dev": "bun run --hot src/index.ts",
-    "start": "bun run src/index.ts",
-    "test": "bun test",
-    "typecheck": "tsc --noEmit",
-    "proof:indeed": "bun run scripts/proof-indeed.ts"
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
   },
   "dependencies": {
-    "hono": "^4.6.0"
+    "axios": "^1.6.0",
+    "cheerio": "^1.0.0",
+    "express": "^4.18.2"
   },
-  "devDependencies": {
-    "@types/bun": "latest",
-    "typescript": "^5.0.0"
-  },
-  "keywords": [
-    "x402",
-    "proxy",
-    "marketplace",
-    "usdc",
-    "hono",
-    "bun",
-    "mobile-proxy",
-    "ai-agents"
-  ],
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/bolivian-peru/marketplace-service-template"
-  }
+  "keywords": ["serp", "google", "scraper", "proxy", "x402"],
+  "license": "MIT"
 }
