@@ -1,0 +1,22 @@
+{
+  "name": "social-intel",
+  "tagline": "Cross-platform social intelligence: Reddit, Twitter, Quora",
+  "description": "Aggregate social signals from Reddit, Twitter/X, and Quora. Returns engagement metrics, trending topics, sentiment signals, and influential posts. Ideal for market research, trend detection, and brand monitoring.",
+  "category": "social",
+  "price_usdc": 0.01,
+  "ratings": { "average": 0, "count": 0 },
+  "verified": false,
+  "testimonials": [],
+  "key_features": [
+    "Multi-platform: Reddit, Twitter/X, Quora",
+    "Engagement metrics: upvotes, comments, likes, retweets",
+    "Sentiment signals per post",
+    "Trending topic detection",
+    "Author influence scoring",
+    "x402 micropayments (Solana + Base USDC)"
+  ],
+  "use_cases": ["Market research", "Trend detection", "Brand monitoring", "Competitor analysis"],
+  "supported_platforms": ["reddit.com", "x.com", "twitter.com", "quora.com"],
+  "endpoint": "/api/social",
+  "method": "GET"
+}
