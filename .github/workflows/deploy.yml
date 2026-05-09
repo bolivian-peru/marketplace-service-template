@@ -1,0 +1,56 @@
+name: Deploy API Service
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Bun
+        run: curl -fsSL https://bun.sh/install | bash
+
+      - name: Install Dependencies
+        run: |
+          source ~/.bun/bun env
+          bun install --frozen-lockfile
+
+      - name: Install Cloudflare Tunnel
+        run: |
+          curl -L --output /tmp/cloudflared.deb https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
+          sudo dpkg -i /tmp/cloudflared.deb
+
+      - name: Setup Environment
+        run: |
+          cat > .env << 'EOF'
+          WALLET_ADDRESS=RTC6d1f27d28961279f1034d9561c2403697eb55602
+          PROXY_USERNAME=agent_caa9c77cbeb3f827
+          PROXY_PASSWORD=J6aG3GD3QLuf4nDpCX71W2wFYTieJ6T9RtsXAuDhPFTE
+          PROXY_HOST=proxy.proxies.sx
+          PROXY_PORT=80
+          NODE_ENV=production
+          EOF
+
+      - name: Start Tunnel & Service
+        run: |
+          cloudflared tunnel --url http://localhost:3000 > /tmp/tunnel-url.txt 2>&1 &
+          source ~/.bun/bun/env
+          bun run dev &
+          sleep 8
+          TUNNEL_URL=$(grep -o 'https://[^ ]*trycloudflare.com' /tmp/tunnel-url.txt | head -1)
+          echo "TUNNEL_URL=$TUNNEL_URL"
+          echo "TUNNEL_URL=$TUNNEL_URL" >> $GITHUB_ENV
+          echo "TUNNEL_URL=$TUNNEL_URL" >> /tmp/result.txt
+
+      - name: Health Check
+        run: |
+          sleep 2
+          curl -s http://localhost:3000/health && echo " - Service OK"
+
+      - name: Save Public URL
+        uses: actions/upload-artifact@v4
+        with:
+          name: deployment-url
+          path: /tmp/result.txt
