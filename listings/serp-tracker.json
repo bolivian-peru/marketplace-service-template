@@ -1,0 +1,23 @@
+{
+  "name": "serp-tracker",
+  "tagline": "Track Google search rankings for any keyword",
+  "description": "Track Google SERP positions for any keyword. Returns organic results with position, title, URL, snippet, rich result type. Ideal for SEO monitoring, competitive analysis, and AI agent knowledge retrieval.",
+  "category": "search",
+  "price_usdc": 0.001,
+  "ratings": { "average": 0, "count": 0 },
+  "verified": false,
+  "testimonials": [],
+  "key_features": [
+    "Google mobile SERP scraping",
+    "Position + title + URL + snippet for every result",
+    "Rich result type detection (video, news, article, local)",
+    "Locale and country targeting",
+    "Mobile proxy network for anti-detection",
+    "x402 micropayments (Solana + Base USDC)"
+  ],
+  "use_cases": ["SEO monitoring", "Competitive research", "AI knowledge retrieval", "Market intelligence"],
+  "supported_platforms": ["google.com"],
+  "endpoint": "/api/run",
+  "method": "GET",
+  "sample_query": "/api/run?keyword=best+ai+coding+assistant&country=us"
+}

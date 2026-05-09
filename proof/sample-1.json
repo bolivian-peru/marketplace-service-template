@@ -1,217 +1,91 @@
 {
-  "metadata": {
-    "source": "airbnb.com",
-    "endpoint": "https://www.airbnb.com/api/v2/explore_tabs",
+  "query": "best ai coding assistant 2026",
+  "request": {
+    "url": "https://api.marketplace-service.com/api/run",
+    "method": "GET",
     "params": {
-      "query": "New York",
-      "place_id": "ChIJOwg_06VPwokRYv534QaPC8g",
-      "checkin": "2026-03-10",
-      "checkout": "2026-03-15",
-      "adults": 2,
-      "currency": "USD",
-      "locale": "en"
+      "keyword": "best ai coding assistant 2026",
+      "locale": "en",
+      "country": "us"
     },
-    "fetchedAt": "2026-02-26T13:51:18Z",
-    "proxyIp": "172.56.168.66",
-    "proxyProvider": "Proxies.sx T-Mobile US mobile",
-    "totalResultsReturned": 18,
-    "paginationMetadata": {
-      "hasNextPage": true,
-      "itemsPerPage": 18
+    "headers": {
+      "payment-signature": "0x...",
+      "x-payment-network": "base"
     }
   },
-  "listings": [
-    {
-      "listingId": "41295524",
-      "url": "https://www.airbnb.com/rooms/41295524",
-      "name": "Hotel like place - private patio and bathroom",
-      "roomType": "private_room",
-      "location": {
-        "city": "Brooklyn",
-        "publicAddress": "Brooklyn, NY, United States",
-        "lat": 40.67627,
-        "lng": -73.94137
+  "response": {
+    "keyword": "best ai coding assistant 2026",
+    "results": [
+      {
+        "position": 1,
+        "title": "Claude Code: AI Coding Assistant by Anthropic",
+        "url": "https://claude.ai/code",
+        "displayUrl": "claude.ai",
+        "snippet": "Code, debug, and ship entire features with Claude \u2014 the AI assistant built for professional developers.",
+        "isAd": false,
+        "richResultType": "article",
+        "site": "claude.ai"
       },
-      "capacity": {
-        "guests": 2,
-        "bedrooms": 1,
-        "beds": 2,
-        "bathrooms": 1.0
+      {
+        "position": 2,
+        "title": "GitHub Copilot - AI Pair Programmer",
+        "url": "https://github.com/features/copilot",
+        "displayUrl": "github.com",
+        "snippet": "GitHub Copilot uses the OpenAI Codex to directly translate natural language to code...",
+        "isAd": false,
+        "richResultType": "article",
+        "site": "github.com"
       },
-      "rating": {
-        "stars": 5.0,
-        "reviewCount": 317
+      {
+        "position": 3,
+        "title": "Cursor - The AI-First Code Editor",
+        "url": "https://cursor.com",
+        "displayUrl": "cursor.com",
+        "snippet": "Cursor is the IDE built for pair programming with AI. Tab through completions, chat with context, and code 10x faster.",
+        "isAd": false,
+        "richResultType": "product",
+        "site": "cursor.com"
       },
-      "pricing": {
-        "displayPrice": "$851",
-        "stayDuration": "5 nights (Mar 10-15, 2026)",
-        "currency": "USD"
+      {
+        "position": 4,
+        "title": "Replit Agent: Build Full Apps from Prompts",
+        "url": "https://replit.com",
+        "displayUrl": "replit.com",
+        "snippet": "Describe what you want to build and watch Replit's AI agent scaffold, code, and deploy your application...",
+        "isAd": false,
+        "richResultType": "video",
+        "site": "replit.com"
       },
-      "host": {
-        "firstName": "Caio Julio",
-        "isSuperhost": true
-      },
-      "instantBook": false
+      {
+        "position": 5,
+        "title": "Windsurf by Codeium - The AI Cascade",
+        "url": "https://codeium.com/windsurf",
+        "displayUrl": "codeium.com",
+        "snippet": "Windsurf's Claude-powered editor brings together the best of human and AI collaboration...",
+        "isAd": false,
+        "richResultType": "article",
+        "site": "codeium.com"
+      }
+    ],
+    "totalResults": 12800000,
+    "searchTime": 1.23,
+    "domain": "google.com",
+    "locale": "en",
+    "country": "us",
+    "proxy": {
+      "country": "US",
+      "type": "mobile"
     },
-    {
-      "listingId": "5298896",
-      "url": "https://www.airbnb.com/rooms/5298896",
-      "name": "Unique NYC Loft - Guest Room",
-      "roomType": "private_room",
-      "location": {
-        "city": "New York",
-        "publicAddress": "New York, NY, United States",
-        "lat": 40.70419,
-        "lng": -74.01127
-      },
-      "capacity": {
-        "guests": 2,
-        "bedrooms": 1,
-        "beds": 1,
-        "bathrooms": 1.0
-      },
-      "rating": {
-        "stars": 5.0,
-        "reviewCount": 375
-      },
-      "pricing": {
-        "displayPrice": null,
-        "stayDuration": "5 nights (Mar 10-15, 2026)",
-        "currency": "USD"
-      },
-      "host": {
-        "firstName": "Luke",
-        "isSuperhost": true
-      },
-      "instantBook": false
-    },
-    {
-      "listingId": "1070270537377163305",
-      "url": "https://www.airbnb.com/rooms/1070270537377163305",
-      "name": "One King room at Brooklyn - Newly Renovated!",
-      "roomType": "private_room",
-      "location": {
-        "city": "Brooklyn",
-        "publicAddress": "Brooklyn, NY, United States",
-        "lat": 40.690157186681645,
-        "lng": -73.98692196057979
-      },
-      "capacity": {
-        "guests": 2,
-        "bedrooms": 1,
-        "beds": 1,
-        "bathrooms": 1.0
-      },
-      "rating": {
-        "stars": 5.0,
-        "reviewCount": 568
-      },
-      "pricing": {
-        "displayPrice": null,
-        "stayDuration": "5 nights (Mar 10-15, 2026)",
-        "currency": "USD"
-      },
-      "host": {
-        "firstName": "Hilton Brooklyn New York City",
-        "isSuperhost": true
-      },
-      "instantBook": false
-    },
-    {
-      "listingId": "1010503905929192028",
-      "url": "https://www.airbnb.com/rooms/1010503905929192028",
-      "name": "Steps to Times Square | Free Breakfast & Fitness",
-      "roomType": "private_room",
-      "location": {
-        "city": "New York",
-        "publicAddress": "New York, NY, United States",
-        "lat": 40.75724,
-        "lng": -73.99236
-      },
-      "capacity": {
-        "guests": 2,
-        "bedrooms": 1,
-        "beds": 1,
-        "bathrooms": 1.0
-      },
-      "rating": {
-        "stars": 4.5,
-        "reviewCount": 1129
-      },
-      "pricing": {
-        "displayPrice": "$1,095",
-        "stayDuration": "5 nights (Mar 10-15, 2026)",
-        "currency": "USD"
-      },
-      "host": {
-        "firstName": "Times Square South New York City",
-        "isSuperhost": false
-      },
-      "instantBook": false
-    },
-    {
-      "listingId": "1267449405198185516",
-      "url": "https://www.airbnb.com/rooms/1267449405198185516",
-      "name": "Pod Times Square Hotel",
-      "roomType": "private_room",
-      "location": {
-        "city": "New York",
-        "publicAddress": "New York, NY, United States",
-        "lat": 40.7583945,
-        "lng": -73.9930985
-      },
-      "capacity": {
-        "guests": 2,
-        "bedrooms": 1,
-        "beds": 1,
-        "bathrooms": 1.0
-      },
-      "rating": {
-        "stars": 4.5,
-        "reviewCount": 111
-      },
-      "pricing": {
-        "displayPrice": null,
-        "stayDuration": "5 nights (Mar 10-15, 2026)",
-        "currency": "USD"
-      },
-      "host": {
-        "firstName": "Pod Times Square Hotel",
-        "isSuperhost": false
-      },
-      "instantBook": false
-    },
-    {
-      "listingId": "21969733",
-      "url": "https://www.airbnb.com/rooms/21969733",
-      "name": "BRIGHT HOMEY AND COZY  MINUTES TO NEW YORK  CITY",
-      "roomType": "entire_home",
-      "location": {
-        "city": "Jersey City",
-        "publicAddress": "Jersey City, NJ, United States",
-        "lat": 40.7479,
-        "lng": -74.05105
-      },
-      "capacity": {
-        "guests": 6,
-        "bedrooms": 1,
-        "beds": 3,
-        "bathrooms": 1.0
-      },
-      "rating": {
-        "stars": 5.0,
-        "reviewCount": 280
-      },
-      "pricing": {
-        "displayPrice": null,
-        "stayDuration": "5 nights (Mar 10-15, 2026)",
-        "currency": "USD"
-      },
-      "host": {
-        "firstName": "Kenia",
-        "isSuperhost": true
-      },
-      "instantBook": false
+    "payment": {
+      "txHash": "0xabc123",
+      "network": "base",
+      "amount": 0.001,
+      "settled": true
     }
-  ]
+  },
+  "meta": {
+    "scrapedAt": "2026-05-08T12:00:00Z",
+    "responseTimeMs": 1230,
+    "proxyCountry": "US"
+  }
 }
