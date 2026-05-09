@@ -132,6 +132,57 @@ export interface TrendingResponse {
   };
 }
 
+// ─── PRICE MONITOR TYPES ────────────────────────────────
+
+export interface ProductInfo {
+  title: string;
+  currentPrice: number | null;
+  originalPrice: number | null;
+  discountPercent: number | null;
+  currency: string;
+  url: string;
+  asin?: string;
+  itemId?: string;
+  availability: string;
+  rating?: number | null;
+  reviewCount?: number | null;
+  image?: string | null;
+  site: 'amazon' | 'ebay' | 'walmart' | 'target' | 'bestbuy' | 'unknown';
+  error?: string;
+}
+
+export interface PriceAlert {
+  id: string;
+  targetPrice: number;
+  createdAt: string;
+  triggered: boolean;
+  triggeredAt: string | null;
+}
+
+export interface PriceData {
+  product: ProductInfo;
+  lastChecked: string;
+  priceHistory: {
+    timestamp: string;
+    currentPrice: number | null;
+    originalPrice: number | null;
+    discountPercent: number | null;
+    availability: string;
+  }[];
+  alerts: PriceAlert[];
+  triggeredAlerts?: PriceAlert[];
+  proxy: {
+    country: string;
+    type: string;
+  };
+  payment: {
+    txHash: string;
+    network: string;
+    amount: number;
+    settled: boolean;
+  };
+}
+
 // ─── GOOGLE MAPS TYPES ──────────────────────────────
 
 export interface BusinessData {

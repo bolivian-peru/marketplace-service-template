@@ -1,0 +1,89 @@
+{
+  "id": "price-monitor",
+  "name": "Price Monitor",
+  "description": "Track e-commerce product prices (Amazon, eBay, Walmart, Target, BestBuy) with price history and customizable alert thresholds. Get current price, original price, discount %, availability, and more.",
+  "version": "1.0.0",
+  "category": "e-commerce",
+  "price": 0.005,
+  "currency": "USDC",
+  "endpoints": [
+    {
+      "method": "GET",
+      "path": "/api/price",
+      "description": "Get current price and price history for a product",
+      "params": {
+        "url": "Product URL (e.g., https://www.amazon.com/dp/B09V3KXJPB)",
+        "asin": "Amazon ASIN (alternative to url)",
+        "check_price": "Optional price threshold for alerts"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/price/history",
+      "description": "Get price history for a tracked product"
+    },
+    {
+      "method": "POST",
+      "path": "/api/price/alert",
+      "description": "Set a price drop alert",
+      "body": {
+        "url": "Product URL",
+        "asin": "Product ASIN (alternative to url)",
+        "targetPrice": "Price threshold to trigger alert"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/price/alerts",
+      "description": "Get all alerts for a product"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/price/alert",
+      "description": "Remove a price alert"
+    }
+  ],
+  "features": [
+    "Real-time price scraping from major e-commerce sites",
+    "Price history tracking (up to 365 days)",
+    "Automatic discount calculation",
+    "Price drop alert thresholds",
+    "Multi-site support (Amazon, eBay, Walmart, Target, BestBuy)",
+    "Mobile proxy rotation for reliable scraping"
+  ],
+  "supported_sites": [
+    "Amazon",
+    "eBay", 
+    "Walmart",
+    "Target",
+    "BestBuy"
+  ],
+  "schema": {
+    "input": {
+      "url_or_asin": "string — Product URL or ASIN (required)",
+      "check_price": "number — Optional alert threshold"
+    },
+    "output": {
+      "product": {
+        "title": "string",
+        "currentPrice": "number | null",
+        "originalPrice": "number | null",
+        "discountPercent": "number | null",
+        "currency": "string",
+        "url": "string",
+        "asin": "string | null",
+        "availability": "string",
+        "rating": "number | null",
+        "reviewCount": "number | null",
+        "site": "string"
+      },
+      "lastChecked": "ISO timestamp",
+      "priceHistory": "array of price snapshots",
+      "alerts": "array of price alerts",
+      "triggeredAlerts": "array of newly triggered alerts"
+    }
+  },
+  "author": "Price Monitor Service",
+  "created": "2026-05-09",
+  "bounty": "$100"
+}

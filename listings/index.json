@@ -1,8 +1,35 @@
 {
   "version": "1.0.0",
-  "updatedAt": "2026-02-15",
-  "count": 6,
+  "updatedAt": "2026-05-09",
+  "count": 7,
   "services": [
+    {
+      "id": "price-monitor",
+      "name": "Price Monitor",
+      "description": "Track e-commerce product prices (Amazon, eBay, Walmart, Target, BestBuy) with price history and customizable alert thresholds.",
+      "endpoint": "https://api.proxies.sx/v1/x402/price",
+      "pricing": {
+        "model": "per-request",
+        "amount": "0.005",
+        "minimum": "0.005",
+        "currency": "USDC"
+      },
+      "category": "scraper",
+      "tags": [
+        "price-tracking",
+        "amazon",
+        "ebay",
+        "walmart",
+        "e-commerce",
+        "price-alerts"
+      ],
+      "owner": {
+        "name": "Price Monitor Service"
+      },
+      "status": "active",
+      "featured": false,
+      "detailsFile": "price-monitor.json"
+    },
     {
       "id": "proxies-sx-mobile",
       "name": "Proxies.sx Mobile Proxy",

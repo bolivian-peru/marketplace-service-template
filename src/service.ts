@@ -29,12 +29,16 @@ import {
 } from './scrapers/linkedin-enrichment';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
+import { priceMonitorRouter } from './routes/price-monitor';
 
 export const serviceRouter = new Hono();
 
 // ─── TREND INTELLIGENCE ROUTES (Bounty #70) ─────────
 serviceRouter.route('/research', researchRouter);
 serviceRouter.route('/trending', trendingRouter);
+
+// ─── PRICE MONITOR ROUTES (Bounty $100) ─────────────
+serviceRouter.route('/price', priceMonitorRouter);
 
 const SERVICE_NAME = 'job-market-intelligence';
 const PRICE_USDC = 0.005;

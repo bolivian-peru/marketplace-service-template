@@ -94,6 +94,10 @@ app.get('/health', (c) => c.json({
     '/api/airbnb/market-stats',
     '/api/research',
     '/api/trending',
+    '/api/price',
+    '/api/price/history',
+    '/api/price/alert',
+    '/api/price/alerts',
   ],
 }));
 
@@ -129,6 +133,11 @@ app.get('/', (c) => c.json({
     { method: 'GET', path: '/api/airbnb/market-stats', description: 'Airbnb market statistics', price: '0.05 USDC' },
     { method: 'GET', path: '/api/research', description: 'Multi-source research aggregation', price: '0.05 USDC' },
     { method: 'GET', path: '/api/trending', description: 'Trending topics intelligence', price: '0.01 USDC' },
+    { method: 'GET', path: '/api/price', description: 'E-commerce price tracker — current price, history, discounts', price: '0.005 USDC' },
+    { method: 'GET', path: '/api/price/history', description: 'Get price history for a product', price: '0.005 USDC' },
+    { method: 'POST', path: '/api/price/alert', description: 'Set price drop alert', price: '0.005 USDC' },
+    { method: 'GET', path: '/api/price/alerts', description: 'Get price alerts for a product', price: '0.005 USDC' },
+    { method: 'DELETE', path: '/api/price/alert', description: 'Delete a price alert', price: '0.005 USDC' },
   ],
   pricing: {
     amount: process.env.PRICE_USDC || '0.005',
@@ -162,7 +171,7 @@ app.get('/', (c) => c.json({
 
 app.route('/api', serviceRouter);
 
-app.notFound((c) => c.json({ error: 'Not found', endpoints: ['/', '/health', '/api/run', '/api/details', '/api/serp', '/api/jobs', '/api/reviews/search', '/api/reviews/:place_id', '/api/business/:place_id', '/api/reviews/summary/:place_id', '/api/linkedin/person', '/api/linkedin/company', '/api/linkedin/search/people', '/api/reddit/search', '/api/reddit/trending', '/api/reddit/subreddit/:name', '/api/reddit/thread/*', '/api/instagram/profile/:username', '/api/instagram/posts/:username', '/api/instagram/analyze/:username', '/api/instagram/audit/:username', '/api/airbnb/search', '/api/airbnb/listing/:id', '/api/airbnb/reviews/:listing_id', '/api/airbnb/market-stats', '/api/research', '/api/trending'] }, 404));
+app.notFound((c) => c.json({ error: 'Not found', endpoints: ['/', '/health', '/api/run', '/api/details', '/api/serp', '/api/jobs', '/api/reviews/search', '/api/reviews/:place_id', '/api/business/:place_id', '/api/reviews/summary/:place_id', '/api/linkedin/person', '/api/linkedin/company', '/api/linkedin/search/people', '/api/reddit/search', '/api/reddit/trending', '/api/reddit/subreddit/:name', '/api/reddit/thread/*', '/api/instagram/profile/:username', '/api/instagram/posts/:username', '/api/instagram/analyze/:username', '/api/instagram/audit/:username', '/api/airbnb/search', '/api/airbnb/listing/:id', '/api/airbnb/reviews/:listing_id', '/api/airbnb/market-stats', '/api/research', '/api/trending', '/api/price', '/api/price/history', '/api/price/alert', '/api/price/alerts'] }, 404));
 
 app.onError((err, c) => {
   console.error(`[ERROR] ${err.message}`);
