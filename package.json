@@ -10,7 +10,8 @@
     "proof:indeed": "bun run scripts/proof-indeed.ts"
   },
   "dependencies": {
-    "hono": "^4.6.0"
+    "hono": "^4.6.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/bun": "latest",

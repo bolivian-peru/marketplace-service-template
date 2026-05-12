@@ -1,0 +1,146 @@
+{
+  "id": "x-twitter-intelligence",
+  "name": "X/Twitter Real-Time Search Intelligence API",
+  "description": "Search X/Twitter tweets by keyword/hashtag, get trending topics by country, extract user profiles and engagement metrics, and monitor conversation threads — all without X's $42,000/year official API.",
+  "longDescription": "Real-time X/Twitter intelligence pipeline: search tweets, get trending topics, extract user profiles, fetch user tweets, and monitor conversation threads through mobile proxies. Provides the same data as X's Basic tier ($100/month) and Pro tier ($5,000/month) at x402 micropayment prices. Essential for social listening, brand monitoring, competitive intelligence, and market research.",
+  "endpoint": "/api/x",
+  "pricing": {
+    "model": "per-request",
+    "amount": "0.01",
+    "minimum": "0.005",
+    "currency": "USDC",
+    "perEndpoint": {
+      "/api/x/search": "0.01",
+      "/api/x/trending": "0.005",
+      "/api/x/user/:handle": "0.01",
+      "/api/x/user/:handle/tweets": "0.02",
+      "/api/x/thread/:tweet_id": "0.01"
+    },
+    "networks": [
+      {
+        "network": "solana",
+        "chainId": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "recipient": "66dG5r5TD37ahhrsAMKUroxML9Cqto5jRduifiMgQQ3G",
+        "asset": "USDC",
+        "assetAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+      },
+      {
+        "network": "base",
+        "chainId": "eip155:8453",
+        "recipient": "0xF8cD900794245fc36CBE65be9afc23CDF5103042",
+        "asset": "USDC",
+        "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+      }
+    ]
+  },
+  "category": "scraper",
+  "tags": ["twitter", "x", "social-media", "search", "trending", "influencer", "sentiment", "real-time", "scraper"],
+  "owner": {
+    "name": "hohoh",
+    "github": "HOTAgithub"
+  },
+  "status": "pending",
+  "featured": false,
+  "addedAt": "2026-05-13",
+  "x402": {
+    "discoveryUrl": "/api/x/search",
+    "wellKnown": "/.well-known/x402.json"
+  },
+  "lastVerified": "2026-05-13T00:00:00Z",
+  "healthEndpoint": "/health",
+  "whyMobileProxy": "X.com rolls out anti-scraping changes every 2-4 weeks. Guest tokens expire, rate limits shift constantly. Mobile carrier IPs are critical because X's mobile app generates the majority of traffic, so mobile IPs face significantly less scrutiny. X's detection system profiles request patterns by IP type — mobile IPs get the most generous rate limits (5-10x more than datacenter/residential).",
+  "outputSchema": {
+    "search": {
+      "query": "string",
+      "sort": "latest | top | relevance",
+      "results": "TweetResult[] — id, author{handle,name,followers,verified}, text, created_at, likes, retweets, replies, views, url",
+      "total": "number"
+    },
+    "trending": {
+      "country": "string (ISO 3166-1 alpha-2)",
+      "trending": "TrendingTopic[] — name, category, tweet_count, url",
+      "total": "number"
+    },
+    "user": {
+      "profile": "XUserProfile — handle, name, bio, location, followers, following, tweets_count, verified, avatar_url, banner_url, joined_date, url"
+    },
+    "userTweets": {
+      "handle": "string",
+      "tweets": "Tweet[] — id, text, created_at, likes, retweets, replies, views, url",
+      "total": "number"
+    },
+    "thread": {
+      "thread": "ThreadTweet[] — id, author{handle,name}, text, created_at, likes, retweets, replies, is_reply, parent_id, url",
+      "total": "number"
+    }
+  },
+  "competitive": {
+    "vs": [
+      { "name": "X/Twitter API Basic", "price": "$100/month", "limitation": "10k reads/month, no full-archive search, limited filtering" },
+      { "name": "X/Twitter API Pro", "price": "$5,000/month", "limitation": "1M reads/month, enterprise-only, complex OAuth" },
+      { "name": "X/Twitter API Enterprise", "price": "$42,000/year+", "limitation": "Custom pricing, lengthy approval process" },
+      { "name": "Apify Twitter Scraper", "price": "$49+/month", "limitation": "Rate limited, no trending/search, unreliable" }
+    ],
+    "ourAdvantage": "Pay-per-request at $0.005-0.02/call with no monthly commitment. Real-time search, trending, user profiles, and thread extraction via mobile proxies. Zod v4 validated inputs for AI agent compatibility."
+  },
+  "requiredEnvVars": {
+    "required": [
+      {
+        "name": "WALLET_ADDRESS",
+        "description": "Solana wallet address for x402 payment receipt",
+        "example": "66dG5r5TD37ahhrsAMKUroxML9Cqto5jRduifiMgQQ3G"
+      }
+    ],
+    "optional": [
+      {
+        "name": "PROXY_HOST",
+        "description": "Mobile proxy host for X profile scraping. Not required for search (uses SearXNG/OpenSERP).",
+        "example": "gate.smartproxy.com"
+      },
+      {
+        "name": "SEARXNG_BASE",
+        "description": "Self-hosted SearXNG instance URL for search aggregation. Defaults to built-in endpoint.",
+        "example": "http://localhost:8890"
+      }
+    ]
+  },
+  "limitations": [
+    "Search results depend on search engine indexing — not all tweets are indexed",
+    "Engagement metrics (likes, retweets, views) are best-effort from meta tags",
+    "User profile scraping via proxy may be blocked by X anti-scraping measures",
+    "Rate limited to 20 proxy requests/minute per client IP",
+    "Thread extraction relies on search engine results — long threads may be incomplete"
+  ],
+  "endpoints": {
+    "/api/x/search": {
+      "method": "GET",
+      "price": "$0.01",
+      "description": "Search X/Twitter tweets by keyword/hashtag with sort options",
+      "params": "query (required), sort (latest|top|relevance), limit (1-50)"
+    },
+    "/api/x/trending": {
+      "method": "GET",
+      "price": "$0.005",
+      "description": "Get trending topics on X/Twitter by country",
+      "params": "country (ISO 3166-1 alpha-2, default: US)"
+    },
+    "/api/x/user/:handle": {
+      "method": "GET",
+      "price": "$0.01",
+      "description": "Get X/Twitter user profile by handle",
+      "params": "handle (URL path, required)"
+    },
+    "/api/x/user/:handle/tweets": {
+      "method": "GET",
+      "price": "$0.02",
+      "description": "Get recent tweets from an X/Twitter user",
+      "params": "handle (URL path, required), limit (1-50, default: 20)"
+    },
+    "/api/x/thread/:tweet_id": {
+      "method": "GET",
+      "price": "$0.01",
+      "description": "Get an X/Twitter thread/conversation by tweet ID",
+      "params": "tweet_id (URL path, required, numeric)"
+    }
+  }
+}

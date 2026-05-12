@@ -10,6 +10,7 @@
  *   GET /api/reddit/*  (Reddit Intelligence)
  *   GET /api/instagram/* (Instagram Intelligence + AI Vision)
  *   GET /api/linkedin/* (LinkedIn Enrichment)
+ *   GET /api/x/*       (X/Twitter Intelligence — Bounty #73)
  */
 
 import { Hono } from 'hono';
@@ -20,6 +21,7 @@ import { fetchReviews, fetchBusinessDetails, fetchReviewSummary, searchBusinesse
 import { scrapeGoogleMaps, extractDetailedBusiness } from './scrapers/maps-scraper';
 import { researchRouter } from './routes/research';
 import { trendingRouter } from './routes/trending';
+import { xTwitterRouter } from './routes/x-twitter';
 import { searchAirbnb, getListingDetail, getListingReviews, getMarketStats } from './scrapers/airbnb-scraper';
 import { 
   scrapeLinkedInPerson, 
@@ -35,6 +37,9 @@ export const serviceRouter = new Hono();
 // ─── TREND INTELLIGENCE ROUTES (Bounty #70) ─────────
 serviceRouter.route('/research', researchRouter);
 serviceRouter.route('/trending', trendingRouter);
+
+// ─── X/TWITTER INTELLIGENCE ROUTES (Bounty #73) ─────
+serviceRouter.route('/x', xTwitterRouter);
 
 const SERVICE_NAME = 'job-market-intelligence';
 const PRICE_USDC = 0.005;

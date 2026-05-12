@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "updatedAt": "2026-02-15",
-  "count": 6,
+  "count": 7,
   "services": [
     {
       "id": "proxies-sx-mobile",
@@ -143,6 +143,37 @@
       "status": "active",
       "featured": false,
       "detailsFile": "prediction-market-aggregator.json"
+    },
+    {
+      "id": "x-twitter-intelligence",
+      "name": "X/Twitter Real-Time Search Intelligence API",
+      "description": "Search X/Twitter tweets, get trending topics, extract user profiles and engagement metrics, and monitor conversation threads — without X's $42K/year API. $0.005-0.02/call via x402.",
+      "endpoint": "/api/x",
+      "docsUrl": "https://github.com/bolivian-peru/marketplace-service-template/blob/master/listings/x-twitter-intelligence.json",
+      "pricing": {
+        "model": "per-request",
+        "amount": "0.01",
+        "minimum": "0.005",
+        "currency": "USDC"
+      },
+      "category": "scraper",
+      "tags": [
+        "twitter",
+        "x",
+        "social-media",
+        "search",
+        "trending",
+        "influencer",
+        "sentiment",
+        "real-time"
+      ],
+      "owner": {
+        "name": "hohoh",
+        "github": "HOTAgithub"
+      },
+      "status": "pending",
+      "featured": false,
+      "detailsFile": "x-twitter-intelligence.json"
     }
   ],
   "networks": {
