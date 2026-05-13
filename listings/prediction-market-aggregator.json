@@ -1,8 +1,8 @@
 {
   "id": "prediction-market-aggregator",
-  "name": "Prediction Market Aggregator",
-  "description": "Aggregated prediction market data from Polymarket, Kalshi, and more. Real-time odds, volume, and market signals. $0.05/query via x402.",
-  "longDescription": "Aggregate prediction market data from Polymarket, Kalshi, and other major platforms. Get real-time odds, trading volume, market signals, and historical trends. Query by topic, category, or specific market. Returns structured JSON with current probabilities, volume data, price history, and cross-platform comparisons. Ideal for trading agents, research, forecasting, and decision-making automation.",
+  "name": "Prediction Market Signal Aggregator",
+  "description": "Aggregated prediction market odds from Polymarket & Kalshi with social sentiment divergence signals. $0.05/query via x402.",
+  "longDescription": "Aggregate prediction market data from Polymarket and Kalshi. Get real-time odds, trading volume, cross-platform arbitrage detection, sentiment divergence signals, and trending markets. Query by topic, category, or specific market. Returns structured JSON with current probabilities, volume data, cross-platform comparisons, and bullish/bearish signal indicators. Includes optional Reddit + web sentiment analysis that detects divergence between social opinion and market odds. Ideal for trading agents, research, forecasting, and decision-making automation.",
   "endpoint": "https://marketplace-service-template.onrender.com",
   "docsUrl": "https://agents.proxies.sx/marketplace/skill.md",
   "pricing": {
@@ -14,7 +14,7 @@
       {
         "network": "solana",
         "chainId": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
-        "recipient": "6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv",
+        "recipient": "66dG5r5TD37ahhrsAMKUroxML9Cqto5jRduifiMgQQ3G",
         "asset": "USDC",
         "assetAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
       },
@@ -34,20 +34,48 @@
     "kalshi",
     "odds",
     "forecasting",
-    "market-signals"
+    "market-signals",
+    "sentiment",
+    "arbitrage"
+  ],
+  "entrypoints": [
+    {
+      "path": "/api/prediction-market/signal",
+      "method": "POST",
+      "description": "Get aggregated market signal with Polymarket/Kalshi odds and sentiment divergence",
+      "pricing": { "amount": "0.05", "currency": "USDC" }
+    },
+    {
+      "path": "/api/prediction-market/arbitrage",
+      "method": "POST",
+      "description": "Find cross-platform arbitrage opportunities between Polymarket and Kalshi",
+      "pricing": { "amount": "0.05", "currency": "USDC" }
+    },
+    {
+      "path": "/api/prediction-market/sentiment",
+      "method": "POST",
+      "description": "Analyze social sentiment for prediction markets with Reddit and web sources",
+      "pricing": { "amount": "0.05", "currency": "USDC" }
+    },
+    {
+      "path": "/api/prediction-market/trending",
+      "method": "GET",
+      "description": "List currently trending prediction markets with volume and odds data",
+      "pricing": { "amount": "0.02", "currency": "USDC" }
+    }
   ],
   "owner": {
-    "name": "rakesh0x",
-    "github": "rakesh0x"
+    "name": "hohoh",
+    "github": "HOTAgithub"
   },
   "status": "active",
   "featured": false,
   "addedAt": "2026-02-15",
-  "updatedAt": "2026-02-15",
+  "updatedAt": "2026-05-13",
   "x402": {
-    "discoveryUrl": "https://marketplace-service-template.onrender.com/api/run",
+    "discoveryUrl": "https://marketplace-service-template.onrender.com/api/prediction-market/signal",
     "wellKnown": "https://marketplace-service-template.onrender.com"
   },
-  "lastVerified": "2026-02-15T00:00:00Z",
+  "lastVerified": "2026-05-13T00:00:00Z",
   "healthEndpoint": "https://marketplace-service-template.onrender.com/health"
 }
