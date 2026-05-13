@@ -1,0 +1,61 @@
+{
+  "id": "ecommerce-price-stock-monitor",
+  "name": "E-Commerce Price & Stock Monitor",
+  "description": "Price, stock, seller, ratings, reviews, SKU/ASIN/GTIN, and price-drop signals from major retailer product pages.",
+  "longDescription": "A mobile-proxy-backed product intelligence API for AI agents and price-monitoring workflows. It checks Amazon, Walmart, Target, eBay, and generic product pages, normalizes JSON-LD/meta/store-specific signals, detects CAPTCHA/login walls, and returns structured product snapshots with confidence and price-threshold signals.",
+  "endpoint": "https://api.proxies.sx/v1/x402/ecommerce",
+  "docsUrl": "https://github.com/pantheraology/marketplace-service-template/tree/ecommerce-price-stock-monitor",
+  "pricing": {
+    "model": "per-request",
+    "amount": "0.002",
+    "minimum": "0.002",
+    "currency": "USDC",
+    "networks": [
+      {
+        "network": "base",
+        "chainId": "eip155:8453",
+        "recipient": "0x5f03897c6c77dD00F65222A2420a3Cff5507079D",
+        "asset": "USDC",
+        "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+      }
+    ]
+  },
+  "category": "scraper",
+  "tags": ["ecommerce", "price-monitoring", "stock-monitoring", "amazon", "walmart", "target", "ebay", "x402", "mobile-proxy"],
+  "owner": {
+    "name": "PANTHERA",
+    "github": "pantheraology",
+    "twitter": "",
+    "telegram": ""
+  },
+  "status": "pending",
+  "featured": false,
+  "addedAt": "2026-05-13",
+  "x402": {
+    "discoveryUrl": "https://api.proxies.sx/v1/x402/ecommerce/check",
+    "wellKnown": "https://api.proxies.sx/.well-known/x402.json"
+  },
+  "service": {
+    "routes": [
+      {
+        "method": "GET",
+        "path": "/api/ecommerce/check",
+        "query": {
+          "url": "Product page URL, required",
+          "expectedPrice": "Optional number for price-drop alerting",
+          "currency": "Optional currency override"
+        }
+      },
+      {
+        "method": "POST",
+        "path": "/api/ecommerce/batch",
+        "body": {
+          "items": [{ "url": "string", "expectedPrice": "number optional", "currency": "string optional" }],
+          "limit": "10 product URLs per request"
+        }
+      }
+    ],
+    "responseFields": ["title", "price", "currency", "inStock", "availability", "seller", "rating", "reviewCount", "sku", "asin", "gtin", "image", "canonicalUrl", "signals"],
+    "whyMobileProxy": "Amazon and large retailers aggressively degrade or block datacenter IPs. Real 4G/5G mobile IPs improve access to localized product pages, live stock status, mobile-only prices, and anti-bot-protected product metadata."
+  }
+}

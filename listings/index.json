@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "updatedAt": "2026-02-15",
+  "updatedAt": "2026-05-13",
   "count": 6,
   "services": [
     {
@@ -143,6 +143,36 @@
       "status": "active",
       "featured": false,
       "detailsFile": "prediction-market-aggregator.json"
+    },
+    {
+      "id": "ecommerce-price-stock-monitor",
+      "name": "E-Commerce Price & Stock Monitor",
+      "description": "Price, stock, seller, ratings, reviews, SKU/ASIN/GTIN, and price-drop signals from major retailer product pages. $0.002/check via x402.",
+      "endpoint": "https://api.proxies.sx/v1/x402/ecommerce",
+      "docsUrl": "https://github.com/pantheraology/marketplace-service-template/tree/ecommerce-price-stock-monitor",
+      "pricing": {
+        "model": "per-request",
+        "amount": "0.002",
+        "minimum": "0.002",
+        "currency": "USDC"
+      },
+      "category": "scraper",
+      "tags": [
+        "ecommerce",
+        "price-monitoring",
+        "stock-monitoring",
+        "amazon",
+        "walmart",
+        "target",
+        "ebay"
+      ],
+      "owner": {
+        "name": "PANTHERA",
+        "github": "pantheraology"
+      },
+      "status": "pending",
+      "featured": false,
+      "detailsFile": "ecommerce-price-stock-monitor.json"
     }
   ],
   "networks": {

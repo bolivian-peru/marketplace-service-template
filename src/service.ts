@@ -29,6 +29,7 @@ import {
 } from './scrapers/linkedin-enrichment';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
+import { checkProduct, checkProductsBatch } from './scrapers/ecommerce-monitor';
 
 export const serviceRouter = new Hono();
 
@@ -41,6 +42,37 @@ const PRICE_USDC = 0.005;
 const DESCRIPTION = 'Job Market Intelligence API (Indeed/LinkedIn): title, company, location, salary, date, link, remote + proxy exit metadata.';
 const MAPS_PRICE_USDC = 0.005;
 const MAPS_DESCRIPTION = 'Extract structured business data from Google Maps: name, address, phone, website, email, hours, ratings, reviews, categories, and geocoordinates. Search by category + location with full pagination.';
+const ECOMMERCE_PRICE_USDC = 0.002;
+const ECOMMERCE_DESCRIPTION = 'E-Commerce Price & Stock Monitor: price, availability, seller, rating, reviews, SKU/ASIN/GTIN, and price-drop signals from Amazon, Walmart, Target, eBay, and generic product pages.';
+
+const ECOMMERCE_OUTPUT_SCHEMA = {
+  input: {
+    url: 'string — Product page URL from Amazon/Walmart/Target/eBay/generic retailer (required)',
+    expectedPrice: 'number — Optional target price; response includes priceBelowExpected + priceDelta',
+    currency: 'string — Optional expected currency override',
+  },
+  output: {
+    url: 'string',
+    store: 'amazon | walmart | target | ebay | generic',
+    title: 'string | null',
+    price: 'number | null',
+    currency: 'string | null',
+    inStock: 'boolean | null',
+    availability: 'string | null',
+    seller: 'string | null',
+    rating: 'number | null',
+    reviewCount: 'number | null',
+    sku: 'string | null',
+    asin: 'string | null',
+    gtin: 'string | null',
+    image: 'string | null',
+    canonicalUrl: 'string | null',
+    observedAt: 'ISO timestamp',
+    proxy: '{ country: string, type: "mobile" }',
+    signals: '{ captchaDetected, loginWallDetected, parseConfidence, priceBelowExpected?, priceDelta? }',
+    payment: '{ txHash, network, amount, settled }',
+  },
+};
 
 const MAPS_OUTPUT_SCHEMA = {
   input: {
@@ -88,6 +120,129 @@ async function getProxyExitIp(): Promise<string | null> {
     return null;
   }
 }
+
+function ecommerce402(resource: string) {
+  const baseRecipient = process.env.WALLET_ADDRESS_BASE || '0x5f03897c6c77dD00F65222A2420a3Cff5507079D';
+  const solanaRecipient = process.env.WALLET_ADDRESS_SOLANA || process.env.WALLET_ADDRESS;
+  const networks: any[] = [
+    {
+      network: 'base',
+      chainId: 'eip155:8453',
+      recipient: baseRecipient,
+      asset: 'USDC',
+      assetAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+      settlementTime: '~2s',
+    },
+  ];
+
+  if (solanaRecipient && !solanaRecipient.startsWith('0x')) {
+    networks.push({
+      network: 'solana',
+      chainId: 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
+      recipient: solanaRecipient,
+      asset: 'USDC',
+      assetAddress: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+      settlementTime: '~400ms',
+    });
+  }
+
+  return {
+    status: 402,
+    message: 'Payment required',
+    resource,
+    description: ECOMMERCE_DESCRIPTION,
+    price: { amount: String(ECOMMERCE_PRICE_USDC), currency: 'USDC', minimumAmount: String(ECOMMERCE_PRICE_USDC) },
+    networks,
+    headers: {
+      required: ['Payment-Signature'],
+      optional: ['X-Payment-Network'],
+      format: 'Payment-Signature: <transaction_hash>',
+    },
+    outputSchema: ECOMMERCE_OUTPUT_SCHEMA,
+  };
+}
+
+function recipientForNetwork(network: 'base' | 'solana'): string {
+  if (network === 'base') return process.env.WALLET_ADDRESS_BASE || '0x5f03897c6c77dD00F65222A2420a3Cff5507079D';
+  const wallet = process.env.WALLET_ADDRESS_SOLANA || process.env.WALLET_ADDRESS;
+  if (!wallet || wallet.startsWith('0x')) throw new Error('Solana wallet not configured; use Base payment network for this service.');
+  return wallet;
+}
+
+serviceRouter.get('/ecommerce/check', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) return c.json(ecommerce402('/api/ecommerce/check'), 402);
+
+  let recipient: string;
+  try {
+    recipient = recipientForNetwork(payment.network);
+  } catch (err: any) {
+    return c.json({ error: 'Unsupported payment network', reason: err.message }, 402);
+  }
+
+  const verification = await verifyPayment(payment, recipient, ECOMMERCE_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const url = c.req.query('url');
+  const expectedPriceRaw = c.req.query('expectedPrice');
+  const currency = c.req.query('currency') || undefined;
+
+  if (!url) {
+    return c.json({
+      error: 'Missing required parameter: url',
+      example: '/api/ecommerce/check?url=https%3A%2F%2Fwww.amazon.com%2Fdp%2FB0D...&expectedPrice=99.99',
+    }, 400);
+  }
+
+  const expectedPrice = expectedPriceRaw === undefined ? undefined : Number(expectedPriceRaw);
+  if (expectedPriceRaw !== undefined && !Number.isFinite(expectedPrice)) {
+    return c.json({ error: 'Invalid expectedPrice: must be a number' }, 400);
+  }
+
+  try {
+    const snapshot = await checkProduct({ url, expectedPrice, currency });
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+    c.header('Cache-Control', 'private, max-age=60');
+    return c.json({
+      ...snapshot,
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    const status = err.status || (err.message === 'invalid_url' ? 400 : 502);
+    return c.json({
+      error: err.message || 'scrape_failed',
+      charged: true,
+      note: 'Payment was verified before scrape execution. Production deployment should add refund/credit accounting for target-side failures.',
+    }, status);
+  }
+});
+
+serviceRouter.post('/ecommerce/batch', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) return c.json(ecommerce402('/api/ecommerce/batch'), 402);
+
+  let recipient: string;
+  try {
+    recipient = recipientForNetwork(payment.network);
+  } catch (err: any) {
+    return c.json({ error: 'Unsupported payment network', reason: err.message }, 402);
+  }
+
+  const verification = await verifyPayment(payment, recipient, ECOMMERCE_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  let body: any;
+  try { body = await c.req.json(); } catch { return c.json({ error: 'Invalid JSON body' }, 400); }
+  const items = Array.isArray(body?.items) ? body.items : [];
+  if (!items.length) return c.json({ error: 'Body must include items: [{ url, expectedPrice?, currency? }]' }, 400);
+  if (items.length > 10) return c.json({ error: 'Batch limit is 10 product URLs' }, 400);
+
+  const result = await checkProductsBatch(items);
+  c.header('X-Payment-Settled', 'true');
+  c.header('X-Payment-TxHash', payment.txHash);
+  return c.json({ ...result, payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
+});
 
 serviceRouter.get('/run', async (c) => {
   const walletAddress = process.env.WALLET_ADDRESS;
@@ -1471,7 +1626,7 @@ serviceRouter.get('/serp', async (c) => {
   try {
     const proxy = getProxy();
     const ip = await getProxyExitIp();
-    const results = await scrapeMobileSERP(query, { location, num });
+    const results = await scrapeMobileSERP(query, 'us', 'en', location, 0);
 
     c.header('X-Payment-Settled', 'true');
     c.header('X-Payment-TxHash', payment.txHash);
