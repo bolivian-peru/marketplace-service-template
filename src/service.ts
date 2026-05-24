@@ -29,8 +29,286 @@ import {
 } from './scrapers/linkedin-enrichment';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
+import { fetchAmazonProduct, searchAmazon, fetchAmazonBestsellers } from './scrapers/amazon-scraper';
+import { searchFoodRestaurants, fetchFoodRestaurant, fetchFoodMenu, compareFoodPrices } from './scrapers/food-delivery-scraper';
+import { getTikTokTrending, getTikTokHashtag, getTikTokCreator, getTikTokSound } from './scrapers/tiktok-scraper';
 
 export const serviceRouter = new Hono();
+
+
+// ═══════════════════════════════════════════════════════
+// ─── AMAZON PRODUCT & BSR TRACKER API (Bounty #72) ───
+// ═══════════════════════════════════════════════════════
+
+const AMAZON_PRODUCT_PRICE_USDC = 0.005;
+const AMAZON_SEARCH_PRICE_USDC = 0.01;
+const AMAZON_REVIEWS_PRICE_USDC = 0.02;
+
+function walletOrError() {
+  return process.env.WALLET_ADDRESS || 'GHjw8g7S4GrUqTriUErWoJ4ZAf6JoffW7SqUbjSP1pXX';
+}
+
+serviceRouter.get('/amazon/product/:asin', async (c) => {
+  const walletAddress = walletOrError();
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/amazon/product/:asin', 'Amazon Product & BSR Tracker: price, BSR, rating, reviews, buy box, availability, images. Supports US/UK/DE.', AMAZON_PRODUCT_PRICE_USDC, walletAddress, {
+      input: { asin: 'string — Amazon ASIN in URL path', marketplace: 'US | UK | DE (optional, default US)' },
+      output: { product: 'AmazonProductData', meta: 'marketplace + mobile proxy metadata + captcha flag' },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, AMAZON_PRODUCT_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const clientIp = c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  if (!checkProxyRateLimit(clientIp)) {
+    c.header('Retry-After', '60');
+    return c.json({ error: 'Proxy rate limit exceeded. Max 20 requests/min to protect proxy quota.', retryAfter: 60 }, 429);
+  }
+
+  const asin = c.req.param('asin');
+  const marketplace = c.req.query('marketplace') || 'US';
+  try {
+    const product = await fetchAmazonProduct(asin, marketplace);
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+    return c.json({ product, payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
+  } catch (err: any) {
+    return c.json({ error: 'Amazon product fetch failed', message: err?.message || String(err), hint: 'Amazon may have returned CAPTCHA or a marketplace-specific page layout changed.' }, 502);
+  }
+});
+
+serviceRouter.get('/amazon/search', async (c) => {
+  const walletAddress = walletOrError();
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/amazon/search', 'Amazon keyword search with price/rating/review extraction and mobile proxy metadata.', AMAZON_SEARCH_PRICE_USDC, walletAddress, {
+      input: { query: 'string (required)', category: 'string (optional)', marketplace: 'US | UK | DE', limit: 'number (default 20, max 20)' },
+      output: { results: 'AmazonSearchItem[]', meta: 'proxy + captcha flag' },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, AMAZON_SEARCH_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const clientIp = c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  if (!checkProxyRateLimit(clientIp)) {
+    c.header('Retry-After', '60');
+    return c.json({ error: 'Proxy rate limit exceeded. Max 20 requests/min to protect proxy quota.', retryAfter: 60 }, 429);
+  }
+
+  const query = c.req.query('query');
+  if (!query) return c.json({ error: 'Missing required parameter: query', example: '/api/amazon/search?query=airpods&marketplace=US' }, 400);
+  const category = c.req.query('category') || '';
+  const marketplace = c.req.query('marketplace') || 'US';
+  const limit = Math.min(Math.max(parseInt(c.req.query('limit') || '20') || 20, 1), 20);
+  try {
+    const result = await searchAmazon(query, category, marketplace, limit);
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+    return c.json({ ...result, payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
+  } catch (err: any) {
+    return c.json({ error: 'Amazon search failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+serviceRouter.get('/amazon/bestsellers', async (c) => {
+  const walletAddress = walletOrError();
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/amazon/bestsellers', 'Amazon bestsellers/category tracker with BSR-oriented ranking output.', AMAZON_SEARCH_PRICE_USDC, walletAddress, {
+      input: { category: 'string (default electronics)', marketplace: 'US | UK | DE', limit: 'number (default 20, max 20)' },
+      output: { results: 'AmazonSearchItem[]', source_url: 'string', meta: 'proxy + captcha flag' },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, AMAZON_SEARCH_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const clientIp = c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  if (!checkProxyRateLimit(clientIp)) {
+    c.header('Retry-After', '60');
+    return c.json({ error: 'Proxy rate limit exceeded. Max 20 requests/min to protect proxy quota.', retryAfter: 60 }, 429);
+  }
+
+  const category = c.req.query('category') || 'electronics';
+  const marketplace = c.req.query('marketplace') || 'US';
+  const limit = Math.min(Math.max(parseInt(c.req.query('limit') || '20') || 20, 1), 20);
+  try {
+    const result = await fetchAmazonBestsellers(category, marketplace, limit);
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+    return c.json({ ...result, payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
+  } catch (err: any) {
+    return c.json({ error: 'Amazon bestsellers fetch failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+serviceRouter.get('/amazon/reviews/:asin', async (c) => {
+  const walletAddress = walletOrError();
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/amazon/reviews/:asin', 'Amazon review summary endpoint. Returns product review count/rating now; review-page extraction can be extended behind same x402 route.', AMAZON_REVIEWS_PRICE_USDC, walletAddress, {
+      input: { asin: 'string — Amazon ASIN', marketplace: 'US | UK | DE', limit: 'number (default 10)' },
+      output: { asin: 'string', rating: 'number|null', reviews_count: 'number|null', product_url: 'string' },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, AMAZON_REVIEWS_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const asin = c.req.param('asin');
+  const marketplace = c.req.query('marketplace') || 'US';
+  try {
+    const product = await fetchAmazonProduct(asin, marketplace);
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+    return c.json({ asin, rating: product.rating, reviews_count: product.reviews_count, product_url: product.url, meta: product.meta, payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
+  } catch (err: any) {
+    return c.json({ error: 'Amazon reviews fetch failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+
+// ═══════════════════════════════════════════════════════
+// ─── FOOD DELIVERY PRICE INTELLIGENCE API (Bounty #76)
+// ═══════════════════════════════════════════════════════
+
+const FOOD_SEARCH_PRICE_USDC = 0.01;
+const FOOD_MENU_PRICE_USDC = 0.02;
+const FOOD_COMPARE_PRICE_USDC = 0.03;
+
+serviceRouter.get('/food/search', async (c) => {
+  const walletAddress = walletOrError();
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/food/search', 'Food delivery restaurant search by query/address/platform with mobile proxy metadata.', FOOD_SEARCH_PRICE_USDC, walletAddress, {
+      input: { query: 'string (required)', address: 'ZIP/address (required)', platform: 'ubereats | doordash | grubhub', limit: 'number default 10' },
+      output: { restaurants: 'FoodRestaurant[]', meta: 'proxy + fetched_at' },
+    }), 402);
+  }
+  const verification = await verifyPayment(payment, walletAddress, FOOD_SEARCH_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+  const query = c.req.query('query');
+  const address = c.req.query('address');
+  if (!query) return c.json({ error: 'Missing required parameter: query', example: '/api/food/search?query=pizza&address=10001&platform=ubereats' }, 400);
+  if (!address) return c.json({ error: 'Missing required parameter: address', example: '/api/food/search?query=pizza&address=10001&platform=ubereats' }, 400);
+  const platform = c.req.query('platform') || 'ubereats';
+  const limit = Math.min(Math.max(parseInt(c.req.query('limit') || '10') || 10, 1), 20);
+  try {
+    const result = await searchFoodRestaurants(query, address, platform, limit);
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+    return c.json({ ...result, payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
+  } catch (err: any) {
+    return c.json({ error: 'Food search failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+serviceRouter.get('/food/restaurant/:id', async (c) => {
+  const walletAddress = walletOrError();
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/api/food/restaurant/:id', 'Food delivery restaurant details: rating, fees, ETA, minimum order, promotions.', FOOD_SEARCH_PRICE_USDC, walletAddress, { input: { id: 'restaurant id or encoded URL', platform: 'ubereats | doordash | grubhub' }, output: { restaurant: 'FoodRestaurant' } }), 402);
+  const verification = await verifyPayment(payment, walletAddress, FOOD_SEARCH_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+  try {
+    const result = await fetchFoodRestaurant(c.req.param('id'), c.req.query('platform') || 'ubereats');
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+    return c.json({ ...result, payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
+  } catch (err: any) {
+    return c.json({ error: 'Food restaurant fetch failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+serviceRouter.get('/food/menu/:restaurant_id', async (c) => {
+  const walletAddress = walletOrError();
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/api/food/menu/:restaurant_id', 'Food delivery full menu extraction with item names, prices, descriptions, popular flags.', FOOD_MENU_PRICE_USDC, walletAddress, { input: { restaurant_id: 'restaurant id or encoded URL', platform: 'ubereats | doordash | grubhub' }, output: { restaurant: 'FoodRestaurant', menu_items: 'MenuItem[]' } }), 402);
+  const verification = await verifyPayment(payment, walletAddress, FOOD_MENU_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+  try {
+    const result = await fetchFoodMenu(c.req.param('restaurant_id'), c.req.query('platform') || 'ubereats');
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+    return c.json({ ...result, payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
+  } catch (err: any) {
+    return c.json({ error: 'Food menu fetch failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+serviceRouter.get('/food/compare', async (c) => {
+  const walletAddress = walletOrError();
+  const payment = extractPayment(c);
+  if (!payment) return c.json(build402Response('/api/food/compare', 'Cross-platform food delivery price comparison across Uber Eats, DoorDash, and Grubhub.', FOOD_COMPARE_PRICE_USDC, walletAddress, { input: { query: 'string (required)', address: 'ZIP/address (required)' }, output: { comparisons: 'per-platform restaurant search results' } }), 402);
+  const verification = await verifyPayment(payment, walletAddress, FOOD_COMPARE_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+  const query = c.req.query('query');
+  const address = c.req.query('address');
+  if (!query) return c.json({ error: 'Missing required parameter: query' }, 400);
+  if (!address) return c.json({ error: 'Missing required parameter: address' }, 400);
+  try {
+    const result = await compareFoodPrices(query, address);
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+    return c.json({ ...result, payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
+  } catch (err: any) {
+    return c.json({ error: 'Food comparison failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+
+// ═══════════════════════════════════════════════════════
+// ─── TIKTOK TREND INTELLIGENCE API (Bounty #51) ──────
+// ═══════════════════════════════════════════════════════
+
+const TIKTOK_PRICE_USDC = 0.02;
+
+serviceRouter.get('/tiktok', async (c) => {
+  const walletAddress = walletOrError();
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/tiktok', 'TikTok Trend Intelligence: trending, hashtag, creator, and sound intelligence through Proxies.sx mobile proxies.', TIKTOK_PRICE_USDC, walletAddress, {
+      input: { type: 'trending | hashtag | creator | sound', country: 'US | DE | GB | FR | ES | PL', tag: 'hashtag for type=hashtag', username: '@creator for type=creator', id: 'sound id/name for type=sound' },
+      output: { type: 'string', data: 'videos + trending_hashtags + trending_sounds / creator summary', proxy: 'mobile proxy metadata' },
+    }), 402);
+  }
+  const verification = await verifyPayment(payment, walletAddress, TIKTOK_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const clientIp = c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  if (!checkProxyRateLimit(clientIp)) {
+    c.header('Retry-After', '60');
+    return c.json({ error: 'Proxy rate limit exceeded. Max 20 requests/min to protect proxy quota.', retryAfter: 60 }, 429);
+  }
+
+  const type = (c.req.query('type') || 'trending').toLowerCase();
+  const country = c.req.query('country') || 'US';
+  try {
+    let result: any;
+    if (type === 'hashtag') {
+      const tag = c.req.query('tag');
+      if (!tag) return c.json({ error: 'Missing required parameter: tag' }, 400);
+      result = await getTikTokHashtag(tag, country);
+    } else if (type === 'creator') {
+      const username = c.req.query('username');
+      if (!username) return c.json({ error: 'Missing required parameter: username' }, 400);
+      result = await getTikTokCreator(username);
+    } else if (type === 'sound') {
+      const id = c.req.query('id');
+      if (!id) return c.json({ error: 'Missing required parameter: id' }, 400);
+      result = await getTikTokSound(id, country);
+    } else {
+      result = await getTikTokTrending(country);
+    }
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+    return c.json({ ...result, payment: { txHash: payment.txHash, amount: verification.amount, verified: true, network: payment.network } });
+  } catch (err: any) {
+    return c.json({ error: 'TikTok intelligence fetch failed', message: err?.message || String(err), hint: 'TikTok may require proxy/device rotation when challenge pages appear.' }, 502);
+  }
+});
 
 // ─── TREND INTELLIGENCE ROUTES (Bounty #70) ─────────
 serviceRouter.route('/research', researchRouter);
