@@ -1,73 +1,72 @@
-import { Hono } from 'hono';
-import { proxyFetch } from '../utils/proxyFetch';
-import { verifyPayment } from '../utils/payment';
-import { extractPersonProfile, extractCompanyProfile, searchPeople, getCompanyEmployees } from '../scrapers/linkedinScraper';
-const SERVICE_NAME = 'linkedin-enrichment';
-const PRICE_USDC = 0.03;
-const DESCRIPTION = 'Enriches LinkedIn profiles with current job title, company, industry, location, and skills. Also extracts company data: employee count, growth rate, job openings, and technology stack signals.';
-const serviceRouter = new Hono();
-
-serviceRouter.get('/api/linkedin/person', async (c) => {
-  const { url } = c.req.query();
-  if (!url) {
-    return c.json({ error: 'URL parameter is required' }, 400);
+/**
+ * Service Router — Marketplace API
+ *
+ * Exposes:
+ *   GET /api/run       (Google Maps Lead Generator)
+ *   GET /api/details   (Google Maps Place details)
+ *   GET /api/jobs      (Job Market Intelligence)
+ *   GET /api/reviews/* (Google Reviews & Business Data)
+ *   GET /api/airbnb/*  (Airbnb Market Intelligence)
+ *   GET /api/reddit/*  (Reddit Intelligence)
+ *   GET /api/instagram/* (Instagram Intelligence + AI Vision)
+ *   GET /api/linkedin/* (LinkedIn Enrichment)
  */
 
-  if (!paymentVerified) {
-    return c.json({ error: 'Payment verification failed' }, 402);
-  }
-  const result = await extractPersonProfile(url);
-  return c.json(result);
-});
-
+import { Hono } from 'hono';
+import { proxyFetch, getProxy } from './proxy';
+import { extractPayment, verifyPayment, build402Response } from './payment';
+import { scrapeIndeed, scrapeLinkedIn, type JobListing } from './scrapers/job-scraper';
+import { fetchReviews, fetchBusinessDetails, fetchReviewSummary, searchBusinesses } from './scrapers/reviews';
+import { scrapeGoogleMaps, extractDetailedBusiness } from './scrapers/maps-scraper';
+import { researchRouter } from './routes/research';
 import { trendingRouter } from './routes/trending';
-  const { url } = c.req.query();
-  if (!url) {
-    return c.json({ error: 'URL parameter is required' }, 400);
-  }
-  const paymentVerified = await verifyPayment(c, PRICE_USDC);
-  if (!paymentVerified) {
-    return c.json({ error: 'Payment verification failed' }, 402);
+import { searchAirbnb, getListingDetail, getListingReviews, getMarketStats } from './scrapers/airbnb-scraper';
+import { 
+  scrapeLinkedInPerson, 
+  scrapeLinkedInCompany, 
+  searchLinkedInPeople, 
+  findCompanyEmployees 
+} from './scrapers/linkedin-enrichment';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
-  if (!paymentVerified) {
-    return c.json({ error: 'Payment verification failed' }, 402);
-  }
-  const result = await extractCompanyProfile(url);
-  return c.json(result);
-});
+import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
 
+export const serviceRouter = new Hono();
 
-  const { title, location, industry } = c.req.query();
-  if (!title || !location || !industry) {
-    return c.json({ error: 'Title, location, and industry parameters are required' }, 400);
-  }
-  const paymentVerified = await verifyPayment(c, 0.10);
-  if (!paymentVerified) {
-    return c.json({ error: 'Payment verification failed' }, 402);
+// ─── TREND INTELLIGENCE ROUTES (Bounty #70) ─────────
+serviceRouter.route('/research', researchRouter);
+serviceRouter.route('/trending', trendingRouter);
+
+const SERVICE_NAME = 'job-market-intelligence';
+const PRICE_USDC = 0.005;
+const DESCRIPTION = 'Job Market Intelligence API (Indeed/LinkedIn): title, company, location, salary, date, link, remote + proxy exit metadata.';
+const MAPS_PRICE_USDC = 0.005;
+const MAPS_DESCRIPTION = 'Extract structured business data from Google Maps: name, address, phone, website, email, hours, ratings, reviews, categories, and geocoordinates. Search by category + location with full pagination.';
+
+const MAPS_OUTPUT_SCHEMA = {
   input: {
-  if (!paymentVerified) {
-    return c.json({ error: 'Payment verification failed' }, 402);
-  }
-  const result = await searchPeople(title, location, industry);
-  return c.json(result);
-});
-
+    query: 'string — Search query/category (required)',
+    location: 'string — Location to search (required)',
+    limit: 'number — Max results to return (default: 20, max: 100)',
+    pageToken: 'string — Pagination token for next page (optional)',
+  },
+  output: {
+    businesses: [{
       name: 'string',
-  const { id, title } = c.req.query();
-  if (!id || !title) {
-    return c.json({ error: 'ID and title parameters are required' }, 400);
-  }
-  const paymentVerified = await verifyPayment(c, PRICE_USDC);
-  if (!paymentVerified) {
-    return c.json({ error: 'Payment verification failed' }, 402);
+      address: 'string | null',
+      phone: 'string | null',
+      website: 'string | null',
+      email: 'string | null',
+      hours: 'object | null',
+      rating: 'number | null',
+      reviewCount: 'number | null',
       categories: 'string[]',
-  if (!paymentVerified) {
-    return c.json({ error: 'Payment verification failed' }, 402);
-  }
-  const result = await getCompanyEmployees(id, title);
-  return c.json(result);
-});
-
+      coordinates: '{ latitude, longitude } | null',
+      placeId: 'string | null',
+      priceLevel: 'string | null',
+      permanentlyClosed: 'boolean',
+    }],
+    totalFound: 'number',
+    nextPageToken: 'string | null',
     searchQuery: 'string',
     location: 'string',
     proxy: '{ country: string, type: "mobile" }',
