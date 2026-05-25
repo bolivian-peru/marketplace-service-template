@@ -1,0 +1,27 @@
+{
+  "id": "food-delivery-price-intelligence",
+  "name": "Food Delivery Price Intelligence API",
+  "description": "Restaurant search, menu extraction, delivery fees, promos, ratings, and ETA data from food delivery platforms. $0.01/request.",
+  "longDescription": "x402-gated food delivery intelligence API for restaurant discovery, menu pricing, promotions, and delivery estimates. Designed for mobile proxy access and structured JSON output.",
+  "endpoint": "https://marketplace-service-template.onrender.com/api/food/search",
+  "docsUrl": "https://github.com/bolivian-peru/marketplace-service-template",
+  "pricing": {
+    "model": "per-request",
+    "amount": "0.01",
+    "minimum": "0.01",
+    "currency": "USDC"
+  },
+  "category": "scraper",
+  "tags": ["food-delivery", "ubereats", "doordash", "grubhub", "pricing", "menus"],
+  "owner": {
+    "name": "aliraza556",
+    "github": "aliraza556"
+  },
+  "status": "active",
+  "featured": false,
+  "addedAt": "2026-05-25",
+  "x402": {
+    "discoveryUrl": "https://marketplace-service-template.onrender.com/api/food/search",
+    "wellKnown": "https://marketplace-service-template.onrender.com/.well-known/x402.json"
+  }
+}
