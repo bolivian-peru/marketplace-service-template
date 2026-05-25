@@ -41,7 +41,7 @@ Your margin depends on what you're scraping:
 
 ```bash
 # Fork this repo, then:
-git clone https://github.com/YOUR_USERNAME/marketplace-service-template
+git clone https://github.com/AtlasNexusTech/marketplace-service-template
 cd marketplace-service-template
 
 cp .env.example .env
@@ -208,7 +208,7 @@ MIT — fork it, ship it, profit.
 **Ready to start earning?**
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/marketplace-service-template
+git clone https://github.com/AtlasNexusTech/marketplace-service-template
 cd marketplace-service-template
 cp .env.example .env
 # Add your wallet + proxy credentials
