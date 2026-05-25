@@ -1,6 +1,157 @@
-Looking at the issue, I need to implement a LinkedIn API service that handles the x401 payment flow. I'll create the LinkedIn enrichment API service in the main service file.
-
 ```diff
 --- a/src/service.ts
 +++ b/src/service.ts
-@@ -1,10 +R"1" "2" "3" "4" "5" "6" "7" "8" "9" "10" "11" "12" "13" "14" "10" "15" "16" "17" "18" "19" "20" "21" "22" "23" "24" "25" "26" "27" "28" "29" "30" "31" "32" "33" "34" "35" "36" "37" "38" "39" "40" "41" "42" "43" "44" "45" "46" "47" "48" "49" "50" "51" "52" "53" "54" "55" "56" "57" "58" "59" "60" "61" "62" "63" "64" "65" "66" "67" "68" "69" "70" "71" "72" "73" "74" "75" "76" "77" "78" "79" "80" "81" "82" "83" "84" "85" "86" "87" "88" "89" "90" "91" "92" "93" "94" "95" "96" "97" "98" "99" "100" "101" "102" "103" "104" "105" "106" "107" "108" "109" "110" "111" "112" "113" "114" "115" "116" "117" "118" "119" "120" "121" "121" "122" "123" "124" "125" "126" "127" "128" "129" "130" "131" "132" "133" "134" "135" "136" "137" "138" "139" "140" "141" "142" "143" "144" "145" "146" "147" "148" "149" "150" "151" "152" "153" "154" "155" "156" "157" "158" "159" "160" "161" "162" "163" "164" "165" "166" "167" "168" "169" "170" "171" "172" "173" "174" "175" "176" "177" "178" "179" "180" "181" "182" "183" "184" "185" "186" "187" "188" "189" "190" "191" "192" "193" "194" "195" "196" "197" "198" "199" "200" "201" "202" "203" "204" "205" "206" "207" "208" "209" "210" "211" "212" "213" "214" "215" "216" "217" "218" "219" "220" "221" "222" "223" "224" "225" "226" "227" "228" "229" "230" "231" "232" "233" "234" "235" "236" "237" "238" "239" "240" "241" "242" "243" "244" "245" "245" "246" "247" "248" "249" "250" "251" "252" "253" "254" "255" "256" "257" "258" "259" "260" "261" "262" "263" "264" "265" "266" "273" "274" "275" "276" "277" "278" "279" "280" "281" "282" "283" "284" "285" "286" "287" "288" "289" "290" "291" "292" "293" "294" "295" "296" "297" "298" "299" "300" "301" "302" "303" "304" "305" "306" "307" "308" "309" "310" "311" "312" "313
+@@ -1,10 +1,12 @@
+ import { Hono } from 'hono';
+ import { cors } from 'hono/cors';
+ import { serve } from 'bun';
++import * as cheerio from 'cheerio';
+ import {
+   createPaymentMiddleware,
+   verifyPayment,
+   type PaymentConfig,
++  type PaymentMiddleware,
+ } from './x402/payment';
+ import { proxyFetch } from './proxy';
+ 
+@@ -13,9 +15,9 @@ import { proxyFetch } from './proxy';
+ // ============================
+ 
+ const SERVICE_NAME = 'linkedin-enrichment';
+-const PRICE_USDC = 0.03; // $0.03 per person profile (cheapest endpoint)
++const BASE_PRICE_USDC = 0.03;
+ const DESCRIPTION =
+-  'LinkedIn People & Company Enrichment API. Enrich business contacts with current job title, company, industry, location, and skills from LinkedIn public profiles. Also extracts company data: employee count, growth rate, job openings, and technology stack signals.';
++  'LinkedIn People & Company Enrichment API. Enrich business contacts with current job title, company, industry, location, and skills from LinkedIn public profiles. Extracts company data: employee count, industry, headquarters, jobs.';
+ 
+ // ============================
+ // Payment Configuration
+@@ -23,7 +25,7 @@ const DESCRIPTION =
+ 
+ const paymentConfig: PaymentConfig = {
+   serviceName: SERVICE_NAME,
+-  price: PRICE_USDC,
++  price: BASE_PRICE_USDC,
+   description: DESCRIPTION,
+   walletAddress: process.env.WALLET_ADDRESS || '',
+ };
+@@ -33,6 +35,7 @@ const paymentConfig: PaymentConfig = {
+ // ============================
+ 
+ const app = new Hono();
++const serviceRouter = new Hono();
+ 
+ app.use(
+   cors({
+@@ -42,6 +45,12 @@ app.use(
+   })
+ );
+ 
++// Health check (no payment)
++app.get('/health', (c) => {
++  return c.json({ status: 'healthy', service: SERVICE_NAME });
++});
++
++// Service discovery (no payment)
+ app.get('/', (c) => {
+   return c.json({
+     name: SERVICE_NAME,
+@@ -49,7 +58,7 @@ app.get('/', (c) => {
+     endpoints: [
+       {
+         path: '/api/linkedin/person',
+-        price: 0.03,
++        price: BASE_PRICE_USDC,
+         description: 'Enrich a person profile from LinkedIn URL',
+         parameters: {
+           url: 'LinkedIn profile URL (e.g., https://linkedin.com/in/username)',
+@@ -57,7 +66,7 @@ app.get('/', (c) => {
+       },
+       {
+         path: '/api/linkedin/company',
+-        price: 0.05,
++        price: BASE_PRICE_USDC + 0.02,
+         description: 'Enrich a company profile from LinkedIn URL',
+         parameters: {
+           url: 'LinkedIn company URL (e.g., https://linkedin.com/company/name)',
+@@ -65,7 +74,7 @@ app.get('/', (c) => {
+       },
+       {
+         path: '/api/linkedin/search/people',
+-        price: 0.1,
++        price: BASE_PRICE_USDC + 0.07,
+         description: 'Search people by title, location, and industry',
+         parameters: {
+           title: 'Job title (e.g., CTO)',
+@@ -75,7 +84,7 @@ app.get('/', (c) => {
+       },
+       {
+         path: '/api/linkedin/company/:id/employees',
+-        price: 0.1,
++        price: BASE_PRICE_USDC + 0.07,
+         description: 'Get employees of a company with optional title filter',
+         parameters: {
+           id: 'Company ID or vanity name',
+@@ -86,6 +95,7 @@ app.get('/', (c) => {
+     pricing: {
+       currency: 'USDC',
+       network: 'Solana',
++      basePrice: BASE_PRICE_USDC,
+     },
+   });
+ });
+@@ -94,6 +104,7 @@ app.get('/', (c) => {
+ // LinkedIn Profile Scraping Helpers
+ // ============================
+ 
++const LINKEDIN_BASE = 'https://www.linkedin.com';
+ const USER_AGENTS = [
+   'Mozilla/5.0 (Linux; Android 14; SM-S918B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36',
+   'Mozilla/5.0 (iPhone; CPU iPhone OS 17_1_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Mobile/15E148 Safari/604.1',
+@@ -105,6 +116,7 @@ const USER_AGENTS = [
+ function getRandomUserAgent(): string {
+   return USER_AGENTS[Math.floor(Math.random() * USER_AGENTS.length)];
+ }
++
+ function getRandomDelay(min = 2000, max = 5000): number {
+   return Math.floor(Math.random() * (max - min + 1)) + min;
+ }
+@@ -114,7 +126,7 @@ async function fetchWithRetry(
+   retries = 3
+ ): Promise<Response> {
+   for (let i = 0; i < retries; i++) {
+-    const response = await proxyFetch(url, {
++    const response = await proxyFetch(url.toString(), {
+       headers: {
+         'User-Agent': getRandomUserAgent(),
+         Accept:
+@@ -126,7 +138,7 @@ async function fetchWithRetry(
+     });
+ 
+     if (response.status === 429 || response.status === 403) {
+-      console.log(`Rate limited, attempt ${i + 1}/${retries}`);
++      console.log(`Rate limited (${response.status}), attempt ${i + 1}/${retries}`);
+       await new Promise((resolve) => setTimeout(resolve, getRandomDelay()));
+       continue;
+     }
+@@ -137,6 +149,7 @@ async function fetchWithRetry(
+   throw new Error('Max retries exceeded');
+ }
+ 
++// Extract person profile data from LinkedIn HTML
+ async function scrapePersonProfile(url: string): Promise<Record<string, any>> {
+   const response = await fetchWithRetry(url);
+   const html = await response.text();
+@@ -144,7 +157,7 @@ async function scrapePersonProfile(url: string): Promise<Record<string, any>> {
+ 
+   // Extract JSON data from the page
+   const scriptData = $('script[type="application/ld+json"]').html();
+-  let personData: any = {};
++  let personData: Record<string, any> = {};
+ 
+   if (scriptData) {
+     try {
+@@ -155,7 +168,7 @@ async function scrapePersonProfile(url: string): Promise<Record<string, any>> {
+   }
+ 
+   // Fallback to meta tags
