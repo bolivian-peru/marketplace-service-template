@@ -1438,3 +1438,51 @@ serviceRouter.get('/airbnb/market-stats', async (c) => {
     return c.json({ error: 'Airbnb market stats failed', message: err?.message || String(err) }, 502);
   }
 });
+
+// ─── MOBILE SERP TRACKER ────────────────────────────────
+
+import { scrapeMobileSERP } from './scrapers/serp-tracker';
+
+const SERP_PRICE_USDC = parseFloat(process.env.SERP_PRICE_USDC || '0.003');
+const SERP_DESCRIPTION = 'Mobile SERP Tracker — Google search results with organic, ads, PAA, AI overview, map pack, knowledge panel. Real mobile IP fingerprint.';
+const SERP_OUTPUT_SCHEMA = {
+  input: { query: 'string (required) — search query', location: 'string (optional) — geo location', num: 'number (optional) — results count, default 10' },
+  output: { organic: '[{ position, title, url, snippet, sitelinks? }]', ads: '[{ position, title, url, description }]', peopleAlsoAsk: '[{ question, snippet }]', aiOverview: '{ text, sources }', mapPack: '[{ name, rating, reviews, address }]', knowledgePanel: '{ title, description, attributes }' },
+};
+
+serviceRouter.get('/serp', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Wallet not configured' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/serp', SERP_DESCRIPTION, SERP_PRICE_USDC, walletAddress, SERP_OUTPUT_SCHEMA), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, SERP_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const query = c.req.query('query') || c.req.query('q');
+  if (!query) return c.json({ error: 'Missing required parameter: query' }, 400);
+
+  const location = c.req.query('location') || c.req.query('loc') || undefined;
+  const num = parseInt(c.req.query('num') || '10');
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const results = await scrapeMobileSERP(query, { location, num });
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      query,
+      results,
+      meta: { location, num, proxy: { ip, country: proxy.country, type: 'mobile' } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'SERP scrape failed', message: err?.message || String(err) }, 502);
+  }
+});
