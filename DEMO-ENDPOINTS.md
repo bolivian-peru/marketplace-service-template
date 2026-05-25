@@ -155,4 +155,8 @@ GET /health
 | `GET /api/reviews/summary/:place_id` | $0.005 USDC |
 
 **Payment Networks:** Solana, Base  
+# Demo Endpoints
+
+## LinkedIn Person Profile
+
 **Infrastructure:** Proxies.sx mobile proxies (real 4G/5G carrier IPs)

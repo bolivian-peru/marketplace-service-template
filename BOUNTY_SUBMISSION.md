@@ -70,4 +70,23 @@ curl -sS \
 
 ## Notes
 - This PR is intentionally **scoped to Bounty #16 only** (job endpoint + job scraper).
+# Bounty Submission for LinkedIn People & Company Enrichment API
+
+## Live Deployment URL
+https://your-deployment-url.com
+
+## Real Profile Data
+Provide real profile data for 10+ LinkedIn profiles.
+
+## Company Data
+Provide company data for 3+ companies.
+
+## Search Working with Filters
+Demonstrate the search functionality with filters.
+
+## x402 Payment Flow
+Show the integration with x402 payment flow.
+
+## Solana USDC Wallet Address
+Your Solana USDC wallet address.
 - Render must have `WALLET_ADDRESS` set for proper 402 responses.
