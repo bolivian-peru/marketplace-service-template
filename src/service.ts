@@ -1485,4 +1485,153 @@ serviceRouter.get('/serp', async (c) => {
   } catch (err: any) {
     return c.json({ error: 'SERP scrape failed', message: err?.message || String(err) }, 502);
   }
+import { Hono } from 'hono';
+import { proxyFetch } from '../src/utils/proxy';
+import { createClient } from '../src/utils/sse';
+import { SolanaPaywall } from '../src/utils/paywall';
+
+const app = new Hono();
+
+// Placeholder for LinkedIn scraping implementation
+// This would need to be replaced with actual LinkedIn scraping logic
+
+export { proxyFetch };
+
+// Placeholder for the actual implementation
+export const serviceRouter = new H0;
+
+serviceRouter.get('/api/health', (c) => {
+  return c.json({ status: 'healthy', service: 'linkedin-enrichment' });
+});
+
+serviceRouter.get('/api/', (c) => {
+  return c.json({
+    name: 'linkedin-enrichment',
+    description: 'LinkedIn People & Company Enrichment API',
+    pricing: {
+      instructions: 'To use this service, make requests to:',
+      endpoints: [
+        'GET /api/linkedin/person?url={linkedin_url}',
+      ]
+    },
+    subscriptions: {
+      required_headers: ['Authorization']
+    }
+  });
+});
+
+// Placeholder for actual scraping implementation
+// Would integrate with Proxies.sx mobile proxies
+// Would handle session management and rate limiting
+
+serviceRouter.get('/api/linkedin/person', async (c) => {
+  const url = c.req.query('url') || '';
+  // In a real implementation, this would:
+  // 1. Route through Proxies.sx mobile proxies
+  // 2. Scrape LinkedIn profile data
+  // 3. Extract name, headline, company, etc.
+  // 4. Handle session management
+  // 5. Return structured data
+  return c.json({ 
+    name: 'Sample Person',
+    headline: 'CTO at TechCorp',
+    location: 'San Francisco, CA',
+    current_company: {
+      name: 'TechCorp',
+      title: 'Chief Technology Officer',
+      started: '2024-03'
+    },
+    // ... other fields would follow the API spec
+  });
+});
+
+serviceRouter.get('/api/linkedin/company', async (c) => {
+  const url = c.req.query('url') || '';
+  // Would extract company data
+  return c.json({ 
+    description: 'Company data from LinkedIn',
+    // ... company data fields
+  });
+});
+
+serviceRouter.get('/api/linkedin/search/people', async (c) => {
+  const { title, location, industry } = c.req.query() as { title: string; location: string; industry: string; };
+  // Would return up to 10 results
+  return c.json({ results: [] });
+});
+
+serviceRouter.get('/api/linkedin/company/:id/employees', async (c) => {
+  const id = c.req.param('id');
+  const title = c.req.query('title') || '';
+  // Would fetch employees with that title from the company
+  return c.json({ employees: [] });
+});
+
+// Placeholder for x402 payment integration
+serviceRouter.get('/api/run', async (c) => {
+  // This would check x402 payment
+  const charge = new SolanaPaywall({
+    recipient: 'your-wallet-address',
+    amount: 0.03, // $0.03 per person profile
+    symbol: 'USDC',
+    decimals: 6,
+  });
+  
+  // This would check if user has paid the micropayment
+  const hasPaid = await charge.verifyPayment(c);
+  if (!hasPaid) {
+    return charge.present402(c); // Return 402 payment instructions
+  }
+  
+  // If paid, return the data
+  return c.json({ 
+    message: 'Payment received, data will be enriched',
+    data: {}
+  });
+});
+
+serviceRouter.get('/api/linkedin/person', async (c) => {
+  const linkedinUrl = c.req.query('url') || '';
+  
+  if (!linkedinUrl) {
+    return c.json({ error: 'LinkedIn URL required' }, 400);
+  }
+  
+  // Check if user has paid
+  const charge = new SolanaPaywall({
+    recipient: 'your-wallet-address',
+    amount: 0.03, // $0.03 per person profile
+    symbol: 'USDC',
+    decimals: 6,
+  });
+  
+  const hasPaid = await charge.verifyPayment(c);
+  if (!hasPaid) {
+    return charge.present402(c);
+  }
+  
+  // Would actually call the LinkedIn scraping logic here
+  // For now, return sample data
+  return c.json({
+    name: 'Sample Person',
+    headline: 'CTO at SampleCorp',
+    location: 'San Francisco, CA',
+    current_company: {
+      name: 'SampleCorp',
+      title: 'Chief Technology Officer',
+      started: '2024-03'
+    },
+    previous_companies: [],
+    education: [],
+    skills: ['Leadership', 'Management'],
+    connections: '500+',
+    profile_url: linkedinUrl,
+    meta: {
+      proxy: { ip: '192.168.1.1', country: 'US', carrier: 'AT&T' }
+    }
+  });
+});
+
+// Additional endpoints would be implemented similarly with proper LinkedIn scraping
+// This is a simplified version - full implementation would require actual LinkedIn scraping logic
 });
