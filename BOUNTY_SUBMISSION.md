@@ -70,49 +70,54 @@ curl -sS \
 
 ## Notes
 - This PR is intentionally **scoped to Bounty #16 only** (job endpoint + job scraper).
-# Bounty Claim Submission
+## Bounty Claim
 
-## Claimed Bounties
+**Which bounty are you claiming?**
 
-### Wave 2 - $50 bounties
+### Wave 1 — $200 bounties
+- [ ] Google SERP + AI Search Scraper ($200)
+- [ ] Gmail Account Creator + Warmer ($200)
+- [ ] Instagram Account Creator + Warmer ($200)
+
+### Wave 2 — $50 bounties
 - [x] Mobile SERP Tracker ($50)
 - [x] Google Maps Lead Generator ($50)
 - [x] Google Reviews & Business Data API ($50)
+- [ ] E-Commerce Price & Stock Monitor ($50)
+- [ ] Social Profile Intelligence API ($50)
+- [ ] Ad Spy & Creative Intelligence ($50)
+- [ ] Travel Price Tracker API ($50)
+- [ ] Ad Verification & Brand Safety ($50)
+- [ ] Review & Reputation Monitor ($50)
+- [ ] Real Estate Listing Aggregator ($50)
+- [ ] Job Market Intelligence API ($50)
 
-## Service Endpoints
+## Your Service
 
-### Mobile SERP Tracker
-- **Endpoint**: https://agents.proxies.sx/marketplace/serp-tracker/
+**Endpoint URL:** https://agents.proxies.sx/marketport/serp-tracker/
+**Endpoint URL:** https://agents.proxies.sx/marketplace/google-maps-lead-generator/
+**Endpoint URL:** https://marketplace-service-template-production.up.railway.app/
 
-### Google Maps Lead Generator  
-- **Endpoint**: https://agents.proxies.sx/marketplace/google-maps-lead-generator/
+## Merged PRs Link:
 
-### Google Reviews & Business Data API
-- **Endpoint**: https://marketplace-service-template-production.up.railway.app/
+- [x] Mobile SERP Tracker ($50) : https://github.com/bolivian-peru/marketplace-service-template/pull/33
+- [x] Google Maps Lead Generator ($50): https://github.com/bolivian-peru/marketplace-service-template/pull/17
+- [x] Google Reviews & Business Data API ($50): https://github.com/bolivian-peru/marketplace-service-template/pull/87
 
-## Merged PRs
+## Checklist
 
-## Mobile SERP Tracker ($50)
-- PR Link: https://github.com/bolivian-peru/marketplace-service-template/pull/33
+- [x] Uses Proxies.sx mobile proxies (`/v1/x402/proxy` or existing port)
+- [x] Gated with x402 USDC payments (returns 402 without payment)
+- [x] Working and deployed at a reachable endpoint
+- [x] Returns structured data (JSON)
 
-## Google Maps Lead Generator ($50)
-- PR Link: https://github.com/bolivian-peru/marketplace-service-template/pull/17
+## Payout
 
-## Google Reviews & Business Data API ($50)
-- PR Link: https://github.com/bolivian-peru/marketplace-service-template/pull/87
+**Solana USDC Wallet Address:**  `FGwFKvS9MNFdEJDWBB4VAqFakdV1BAjHudyDYmBWNJRJ`
 
-## Deployment Status
+<img width="638" height="836" alt="Image" src="https://github.com/user-attachments/assets/a5285f9a-9867-4909-ae80-21a6a504595b" />
 
-- [x] All services are working and deployed at reachable endpoints
-- [x] All services use Proxies.sx mobile proxies
-- [x] All services are gated with x402 USDC payments
-- [x] All services return structured data (JSON)
+Maya will review your submission and respond within 48 hours. $SX tokens sent to your wallet upon approval.
 
-## Payout Information
 
-**Solana USDC Wallet Address:** `FGwFKvS9MNFdEJDWBB4VAqFakdV1BAjHudyDYmBWNJRJ`
-
----
-
-*Maya will review your submission and respond within 48 hours. $SX tokens sent to your wallet upon approval.*
 - Render must have `WALLET_ADDRESS` set for proper 402 responses.
