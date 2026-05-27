@@ -70,4 +70,49 @@ curl -sS \
 
 ## Notes
 - This PR is intentionally **scoped to Bounty #16 only** (job endpoint + job scraper).
+# Bounty Claim Submission
+
+## Claimed Bounties
+
+### Wave 2 - $50 bounties
+- [x] Mobile SERP Tracker ($50)
+- [x] Google Maps Lead Generator ($50)
+- [x] Google Reviews & Business Data API ($50)
+
+## Service Endpoints
+
+### Mobile SERP Tracker
+- **Endpoint**: https://agents.proxies.sx/marketplace/serp-tracker/
+
+### Google Maps Lead Generator  
+- **Endpoint**: https://agents.proxies.sx/marketplace/google-maps-lead-generator/
+
+### Google Reviews & Business Data API
+- **Endpoint**: https://marketplace-service-template-production.up.railway.app/
+
+## Merged PRs
+
+## Mobile SERP Tracker ($50)
+- PR Link: https://github.com/bolivian-peru/marketplace-service-template/pull/33
+
+## Google Maps Lead Generator ($50)
+- PR Link: https://github.com/bolivian-peru/marketplace-service-template/pull/17
+
+## Google Reviews & Business Data API ($50)
+- PR Link: https://github.com/bolivian-peru/marketplace-service-template/pull/87
+
+## Deployment Status
+
+- [x] All services are working and deployed at reachable endpoints
+- [x] All services use Proxies.sx mobile proxies
+- [x] All services are gated with x402 USDC payments
+- [x] All services return structured data (JSON)
+
+## Payout Information
+
+**Solana USDC Wallet Address:** `FGwFKvS9MNFdEJDWBB4VAqFakdV1BAjHudyDYmBWNJRJ`
+
+---
+
+*Maya will review your submission and respond within 48 hours. $SX tokens sent to your wallet upon approval.*
 - Render must have `WALLET_ADDRESS` set for proper 402 responses.
