@@ -1,0 +1,17 @@
+{
+  "type": "app_detail",
+  "source": "apple_itunes_lookup",
+  "app": {
+    "name": "Spotify: Music and Podcasts",
+    "developer": "Spotify",
+    "id": 324684580,
+    "version": "9.1.48",
+    "rating": 4.78214,
+    "ratingCount": 40091520,
+    "price": "Free",
+    "category": "Music",
+    "size": "258 MB",
+    "lastUpdated": "2026-05-15",
+    "description": "With the Spotify app, you can explore an extensive library of music and podcasts for free. Curate the best playlists and stream millions of free songs, albums, and original podcasts on your phone or tablet. Subscribe to Spotify Premium to download and listen offline wherever you are, and unlock our catalog of audiobooks.\n\nWhy choose Spotify as your go-to music and podcast app? Here, you can:\n\u2022 Listen to over 100 million songs and 6 million podcast titles\n\u2022 Explore our selection of specially-craf"
+  }
+}

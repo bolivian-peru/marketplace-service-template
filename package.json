@@ -1,7 +1,7 @@
 {
-  "name": "marketplace-service-template",
+  "name": "app-store-intelligence-api",
   "version": "1.0.0",
-  "description": "Fork → edit one file → deploy → earn USDC. Build x402-gated services on Proxies.sx mobile proxy infrastructure.",
+  "description": "App Store Intelligence API: scrape real-time rankings, reviews, and metadata from Apple App Store & Google Play Store via mobile proxy.",
   "scripts": {
     "dev": "bun run --hot src/index.ts",
     "start": "bun run src/index.ts",

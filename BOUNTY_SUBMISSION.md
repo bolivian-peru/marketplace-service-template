@@ -1,73 +1,116 @@
-# Bounty Submission: Job Market Intelligence (Bounty #16)
+# Bounty Submission: App Store Intelligence API (Bounty #54)
 
-**PR:** https://github.com/bolivian-peru/marketplace-service-template/pull/48  
-**Live deployment:** https://bounty16-job-market-intelligence.onrender.com  
-**Branch:** `bounty-16-jobs`
+**Reward:** $50 paid in $SX token  
+**Branch:** `bounty-54-app-store`  
+**Fork:** https://github.com/jing11223344/app-store-intelligence-api
 
-## What I built
+## What I Built
 
-A production-ready **Job Market Intelligence API** that scrapes real job listings from **Indeed** (and optionally **LinkedIn**) using **Proxies.sx mobile proxies**, and is protected by an **x402 (USDC) payment gate**.
+A production-ready **App Store Intelligence API** that scrapes real-time app rankings, app details, search results, and trending apps from **Apple App Store** and **Google Play Store** using **Proxies.sx mobile proxy infrastructure** (`proxyFetch()`), protected by an **x402 (USDC) payment gate**.
 
-### Endpoint
-- `GET /api/jobs?query=<keywords>&location=<location>&platform=indeed|linkedin|both&limit=20`
+### Endpoints
 
-### Output fields (Indeed)
-- `title, company, location, salary, salary_parsed, date, link, remote`
+| Endpoint | Description | Example |
+|----------|-------------|---------|
+| `GET /api/run?type=rankings` | Top app rankings by category + country | `/api/run?type=rankings&store=apple&category=games&country=US&limit=50` |
+| `GET /api/run?type=app` | App details + recent reviews | `/api/run?type=app&store=google&appId=com.spotify.music&country=DE` |
+| `GET /api/run?type=search` | Search apps by keyword | `/api/run?type=search&store=apple&query=vpn&country=GB` |
+| `GET /api/run?type=trending` | Top grossing/trending apps | `/api/run?type=trending&store=google&country=US` |
+| `GET /health` | Health check | `/health` |
+| `GET /` | Service discovery JSON | `/` |
 
-### Proxy metadata (required by reviewer)
+### Supported Countries
+US, DE, FR, ES, GB, PL — matching Proxies.sx's 6-country mobile proxy infrastructure.
+
+### Output Fields
+For each app: `rank`, `appName`, `developer`, `appId`, `rating`, `ratingCount`, `price`, `inAppPurchases`, `category`, `lastUpdated`, `size`, `icon`, `url`, and store-specific fields (`description`, `version`, `languages`, `recentReviews`).
+
+### Proxy Metadata (required by reviewer)
 Each paid 200 response includes:
-- `meta.proxy.ip` (proxy exit IP, fetched through the proxy)
-- `meta.proxy.country, meta.proxy.host, meta.proxy.type="mobile"`
+- `proxy.country` — proxy exit country
+- `proxy.type: "mobile"` — real 4G/5G carrier IP
 
-## Reviewer requirements checklist (from PR comments)
+## Reviewer Requirements Checklist
 
-1) **Live deployed instance** ✅
-- URL: https://bounty16-job-market-intelligence.onrender.com
+### 1) Live deployed instance ❌
+- Needs deployment (Render/Railway/Docker)
+- Requires `WALLET_ADDRESS` + `PROXY_*` env vars
 
-2) **Real scraped output + mobile proxy IP in response metadata** ✅
-- Paid `200` responses include `meta.proxy.ip` + job listings.
+### 2) Real scraped output + mobile proxy IP ❌
+- Proof samples generated (see `proof/` directory)
+- Will be regenerated from actual deployment
 
-3) **Salary extraction proof (annual/hourly/range/competitive)** ✅
-- Salary text is captured from Indeed job cards when present (`salary`), and normalized into `salary_parsed`:
-  - `min/max` numeric values (when present)
-  - `period` (hour/year/month/week/day when detectable)
-  - `competitive` boolean (e.g. “Competitive”, “DOE”, “Not disclosed”)
+### 3) Output Schema Documentation ✅
+- Documented in `src/payment.ts` (402 schema)
+- Documented in service discovery (`GET /`)
+- Documented in this submission
 
-4) **Rate limiting resilience: 10+ consecutive successful scrapes** ✅
-- A proof script is included to run 10+ scrapes in a row and save JSON evidence:
+### 4) Rate limiting resilience ✅
+- 20 req/min per IP limit configured
+- Proxy retry with backoff (2 retries, 30s timeout)
+
+### 5) Quality Standards ✅
+- Error handling for all failure modes (CAPTCHA, 429, auth wall, proxy error, empty results)
+- Structured JSON output with typed fields
+- Listing JSON with competitive context (vs Sensor Tower/data.ai at $30K-$100K/yr)
+
+## How to Deploy
 
 ```bash
+# Clone
+git clone https://github.com/jing11223344/app-store-intelligence-api
+cd app-store-intelligence-api
+
+# Install deps
 bun install
-# query location runs
-bun run proof:indeed -- "Software Engineer" "Remote" 10
-# writes: listings/indeed-proof-<timestamp>.json
+
+# Configure
+cp .env.example .env
+# Edit .env: set WALLET_ADDRESS + PROXY_HOST/PORT/USER/PASS
+
+# Run
+bun run dev    # Development
+bun run start  # Production
+
+# Docker
+docker build -t app-store-intelligence .
+docker run -p 3000:3000 --env-file .env app-store-intelligence
 ```
 
-5) **Resolve merge conflicts** ✅
-- Branch is rebased and mergeable.
+## How to Test (curl)
 
-## How to test (curl)
-
-### 1) Health + discovery (no payment)
+### 1) Health + Discovery (no payment)
 ```bash
-curl -sS https://bounty16-job-market-intelligence.onrender.com/health
-curl -sS https://bounty16-job-market-intelligence.onrender.com/
+curl -sS http://localhost:3000/health
+curl -sS http://localhost:3000/
 ```
 
 ### 2) Expected x402 flow (HTTP 402)
 ```bash
-curl -i "https://bounty16-job-market-intelligence.onrender.com/api/jobs?query=Java%20Developer&location=Remote"
+curl -i "http://localhost:3000/api/run?type=rankings&store=apple&category=games&country=US&limit=10"
 ```
 
 ### 3) Paid 200 response (after payment)
-Call again with your payment tx hash:
 ```bash
 curl -sS \
   -H "Payment-Signature: <tx_hash>" \
   -H "X-Payment-Network: solana" \
-  "https://bounty16-job-market-intelligence.onrender.com/api/jobs?query=Java%20Developer&location=Remote" | jq
+  "http://localhost:3000/api/run?type=rankings&store=apple&category=games&country=US&limit=10" | jq
 ```
 
-## Notes
-- This PR is intentionally **scoped to Bounty #16 only** (job endpoint + job scraper).
-- Render must have `WALLET_ADDRESS` set for proper 402 responses.
+## Market Context
+
+| Feature | App Store Intelligence API | Sensor Tower / data.ai |
+|---------|--------------------------|----------------------|
+| Pricing | $0.01/query | $30K-$100K+/year |
+| Mobile IPs | ✅ Real 4G/5G mobile | ❌ Datacenter IPs |
+| x402 USDC | ✅ Pay-per-request | ❌ Annual contract |
+| Countries | 6 (matching SX infra) | Global |
+| Deployment | Self-hosted | SaaS only |
+
+## Files Changed
+- `src/service.ts` — Complete rewrite for App Store Intelligence
+- `src/scrapers/app-store-scraper.ts` — New: Apple + Google Play scrapers
+- `listings/app-store-intelligence.json` — Marketplace listing
+- `BOUNTY_SUBMISSION.md` — This file
+- `proof/` — Sample outputs

@@ -1,0 +1,59 @@
+{
+  "type": "search",
+  "source": "apple_itunes_search",
+  "query": "vpn",
+  "country": "US",
+  "count": 5,
+  "results": [
+    {
+      "name": "VPN - Super Unlimited Proxy",
+      "developer": "Mobile Jump Pte Ltd",
+      "id": 1370293473,
+      "rating": 4.62837,
+      "ratingCount": 2050202,
+      "price": "Free",
+      "category": "Productivity",
+      "icon": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/ec/04/c1/ec04c1b1-2351-869d-317a-6572af216338/AppIcon-0-0-1x_U007epad-0-1-0-sRGB-85-220.png/512x512bb.jpg"
+    },
+    {
+      "name": "X-VPN: VPN Fast & Secure",
+      "developer": "LIGHTNINGLINK NETWORKS PTE. LTD.",
+      "id": 1250312807,
+      "rating": 4.66506,
+      "ratingCount": 584576,
+      "price": "Free",
+      "category": "Productivity",
+      "icon": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/16/b7/59/16b759ce-a967-2287-240a-f7baf9c3ef83/AppIcon-0-0-1x_U007epad-0-10-0-0-85-220.png/512x512bb.jpg"
+    },
+    {
+      "name": "VPN - Fast VPN Super \u2122",
+      "developer": "TOPAPPS TECH PTE LTD",
+      "id": 1528940523,
+      "rating": 4.68381,
+      "ratingCount": 386114,
+      "price": "Free",
+      "category": "Productivity",
+      "icon": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/07/77/37/0777375e-2633-eb34-0a6f-8668de503b94/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/512x512bb.jpg"
+    },
+    {
+      "name": "VPN Hotspot Shield: Secure VPN",
+      "developer": "AnchorFree Inc.",
+      "id": 443369807,
+      "rating": 4.57455,
+      "ratingCount": 353323,
+      "price": "Free",
+      "category": "Productivity",
+      "icon": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/96/35/d1/9635d1ce-b1f6-d19c-3cd7-f4a97086dac1/AppIcon-v2-0-0-1x_U007epad-0-1-0-85-220.png/512x512bb.jpg"
+    },
+    {
+      "name": "Free VPN by Free VPN .org\u2122",
+      "developer": "Free VPN LLC",
+      "id": 1050171910,
+      "rating": 4.52423,
+      "ratingCount": 450728,
+      "price": "Free",
+      "category": "Utilities",
+      "icon": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/84/40/d5/8440d508-2f7b-23b4-f042-8f7a94857d71/IFV-0-0-1x_U007epad-0-1-0-sRGB-85-220.png/512x512bb.jpg"
+    }
+  ]
+}
