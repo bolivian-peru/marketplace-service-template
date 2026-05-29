@@ -216,3 +216,5 @@ bun install && bun run dev
 ```
 
 Questions? [@proxyforai](https://t.me/proxyforai) · [@sxproxies](https://x.com/sxproxies)
+
+<!-- fix #71: [BOUNTY] Instagram Intelligence + AI Vision Analysis API — $ -->
