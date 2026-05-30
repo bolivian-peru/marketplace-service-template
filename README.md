@@ -216,3 +216,5 @@ bun install && bun run dev
 ```
 
 Questions? [@proxyforai](https://t.me/proxyforai) · [@sxproxies](https://x.com/sxproxies)
+
+<!-- fix #51: [BOUNTY] TikTok Trend Intelligence API — $75 paid in $SX tok -->
