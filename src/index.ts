@@ -8,7 +8,6 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { serviceRouter } from './service';
-
 const app = new Hono();
 
 // ─── MIDDLEWARE ──────────────────────────────────────
@@ -109,6 +108,7 @@ app.get('/', (c) => c.json({
     { method: 'GET', path: '/api/reviews/search', description: 'Search businesses by query + location', price: '0.01 USDC' },
     { method: 'GET', path: '/api/reviews/:place_id', description: 'Fetch Google reviews by Place ID', price: '0.02 USDC' },
     { method: 'GET', path: '/api/business/:place_id', description: 'Get business details + review summary', price: '0.01 USDC' },
+    { me
     { method: 'GET', path: '/api/reviews/summary/:place_id', description: 'Get review summary stats', price: '0.005 USDC' },
     { method: 'GET', path: '/api/linkedin/person', description: 'LinkedIn person profile enrichment', price: '0.01 USDC' },
     { method: 'GET', path: '/api/linkedin/company', description: 'LinkedIn company profile enrichment', price: '0.01 USDC' },
