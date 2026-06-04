@@ -82,7 +82,14 @@ function isRealExternalUrl(url: string): boolean {
         hostname.endsWith('google.ca') || hostname.endsWith('google.de') ||
         hostname.endsWith('gstatic.com') || hostname.endsWith('googleapis.com') ||
         hostname.endsWith('googleusercontent.com') || hostname.endsWith('googlesyndication.com') ||
-        hostname.endsWith('googleadservices.com') || hostname.endsWith('googletagmanager.com') ||
+        hostname.endsWith('googleadservices.com') || hostname.endsWith('googletagmanager.com')) {
+      return false;
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}letagmanager.com') ||
         hostname.endsWith('google-analytics.com') || hostname.endsWith('youtube.com') ||
         hostname.endsWith('doubleclick.net') || hostname.endsWith('goo.gl') ||
         hostname === 'localhost') {
