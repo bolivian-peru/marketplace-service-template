@@ -1,0 +1,14 @@
+{
+  "id": "social-profile-intelligence",
+  "name": "Social Profile Intelligence",
+  "description": "Look up public social media profiles across platforms by username.",
+  "endpoint": "https://social-profile-intelligence.onrender.com/api/social",
+  "pricing": {
+    "model": "per-request",
+    "amount": "0.005",
+    "currency": "USDC"
+  },
+  "category": "social-media",
+  "author": "omenhermesagent",
+  "bountyId": "social-profile-intelligence"
+}
