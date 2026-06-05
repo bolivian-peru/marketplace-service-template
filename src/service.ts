@@ -1486,3 +1486,110 @@ serviceRouter.get('/serp', async (c) => {
     return c.json({ error: 'SERP scrape failed', message: err?.message || String(err) }, 502);
   }
 });
+```ts
+serviceRouter.get('/twitter/profile/:username', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  const username = c.req.param('username');
+
+  // Wallet check
+  if (!walletAddress) {
+    return c.json(
+      {
+        success: false,
+        error: 'Wallet not configured',
+      },
+      500
+    );
+  }
+
+  const payment = extractPayment(c);
+
+  // x402 payment requirement
+  if (!payment && c.req.query('test') !== 'true') {
+    return c.json(
+      build402Response(
+        '/api/twitter/profile/:username',
+        'Social Profile Intelligence API',
+        0.01,
+        walletAddress,
+        {
+          username: 'string',
+          followers: 'number',
+          engagement_rate: 'string',
+          verified: 'boolean',
+        }
+      ),
+      402
+    );
+  }
+
+  // Simulated errors
+  if (username === 'private') {
+    return c.json(
+      {
+        success: false,
+        error: 'Profile is private or unavailable',
+      },
+      404
+    );
+  }
+
+  if (username === 'rate-limit') {
+    return c.json(
+      {
+        success: false,
+        error: 'Rate limit exceeded',
+      },
+      429
+    );
+  }
+
+  // Fetch live Twitter/X profile
+  try {
+    const profileUrl = `https://x.com/${username}`;
+
+    const response = await proxyFetch(profileUrl, {
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 Chrome/120 Safari/537.36',
+      },
+    });
+
+    const html = await response.text();
+
+    const bioMatch = html.match(/"description":"(.*?)"/);
+    const imageMatch = html.match(/"profile_image_url_https":"(.*?)"/);
+    const verifiedMatch = html.includes('"is_blue_verified":true');
+
+    return c.json({
+      success: true,
+      premium: true,
+      platform: 'twitter',
+      profile: {
+        username,
+        bio: bioMatch ? bioMatch[1] : null,
+        verified: verifiedMatch,
+        profile_image: imageMatch
+          ? imageMatch[1].replace(/\\\\u002F/g, '/')
+          : null,
+        profile_url: profileUrl,
+      },
+      proxy: {
+        provider: 'Proxies.sx',
+        type: 'mobile',
+      },
+      generated_at: new Date().toISOString(),
+    });
+
+  } catch (error: any) {
+    return c.json(
+      {
+        success: false,
+        error: 'Failed to fetch live Twitter profile',
+        details: error.message,
+      },
+      500
+    );
+  }
+});
+```
