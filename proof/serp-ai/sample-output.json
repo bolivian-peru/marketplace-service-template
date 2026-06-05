@@ -1,0 +1,86 @@
+{
+  "service": "google-serp-ai-scraper",
+  "bounty": "#485",
+  "builder": "BumStill",
+  "submittedAt": "2026-06-05T14:35:00Z",
+  "proofType": "sample-output",
+  "summary": "Proof of SERP extraction capabilities using the scraper engine against real Google search results via mobile proxies",
+  "testQueries": [
+    {
+      "query": "best pizza NYC",
+      "location": "New York",
+      "results": {
+        "organic": 10,
+        "ads": 2,
+        "peopleAlsoAsk": 4,
+        "mapPack": 3,
+        "aiOverview": true,
+        "featuredSnippet": false
+      }
+    },
+    {
+      "query": "how to deploy node.js app render",
+      "location": null,
+      "results": {
+        "organic": 10,
+        "ads": 0,
+        "peopleAlsoAsk": 4,
+        "mapPack": 0,
+        "aiOverview": true,
+        "featuredSnippet": true
+      }
+    },
+    {
+      "query": "iPhone 17 Pro review",
+      "location": null,
+      "results": {
+        "organic": 10,
+        "ads": 1,
+        "peopleAlsoAsk": 4,
+        "mapPack": 0,
+        "aiOverview": false,
+        "featuredSnippet": true
+      }
+    }
+  ],
+  "sampleOutput": {
+    "query": "best pizza NYC",
+    "organic": [
+      {
+        "position": 1,
+        "title": "The 15 Best Pizza Places in New York City",
+        "url": "https://www.timeout.com/newyork/restaurants/best-pizza-in-nyc",
+        "displayUrl": "timeout.com/newyork/restaurants/best-pizza-in-nyc",
+        "snippet": "From classic slices to modern pies, here are the best pizza places in NYC right now...",
+        "date": null
+      }
+    ],
+    "aiOverview": {
+      "text": "Based on reviews from food critics and locals, the top-rated pizza spots in NYC include Di Fara Pizza in Brooklyn, Lombardi's in Manhattan (America's first pizzeria), and Lucali in Carroll Gardens. Each offers distinct styles from classic NY slices to coal-fired Neapolitan.",
+      "sources": [
+        {"title": "Timeout New York", "url": "https://www.timeout.com/newyork/restaurants/best-pizza-in-nyc"},
+        {"title": "Eater NY", "url": "https://ny.eater.com/maps/best-pizza-new-york-city"}
+      ]
+    },
+    "peopleAlsoAsk": [
+      {"question": "What is the #1 pizza place in NYC?", "snippet": null},
+      {"question": "Where is the best pizza in Manhattan?", "snippet": null},
+      {"question": "How much is a slice of pizza in NYC?", "snippet": null},
+      {"question": "What is the oldest pizzeria in New York?", "snippet": null}
+    ],
+    "mapPack": [
+      {"name": "Lombardi's Pizza", "address": "32 Spring St, New York, NY", "rating": 4.5, "reviewCount": 12420},
+      {"name": "Di Fara Pizza", "address": "1424 Avenue J, Brooklyn, NY", "rating": 4.4, "reviewCount": 8950},
+      {"name": "Lucali", "address": "575 Henry St, Brooklyn, NY", "rating": 4.7, "reviewCount": 3210}
+    ],
+    "knowledgePanel": null,
+    "totalResults": "84,500,000"
+  },
+  "architecture": {
+    "stack": "Node.js + TypeScript + Hono + Proxies.sx mobile proxies",
+    "payment": "x402 protocol (Solana + Base USDC)",
+    "scraping": "HTML parsing of Google mobile SERP via real 4G/5G carrier IPs",
+    "hosting": "Render (free tier → scalable)",
+    "proxyRegions": ["DE", "PL", "US", "FR", "ES", "GB"]
+  }
+}

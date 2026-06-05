@@ -1,0 +1,54 @@
+{
+  "id": "google-serp-ai-scraper",
+  "name": "Google SERP + AI Search Scraper",
+  "description": "Structured Google search results with AI-enhanced extraction: AI Overviews, organic results, featured snippets, People Also Ask, map packs, knowledge panels. Mobile proxy IPs bypass blocks.",
+  "longDescription": "Enterprise-grade Google SERP scraper powered by Proxies.sx mobile proxies. Extracts the complete search experience: AI Overviews with source attribution, organic results with sitelinks and dates, featured snippets (paragraph/list/table), People Also Ask questions, map pack results with ratings, knowledge panels with attributes, and ad placements. Optimized for AI agent consumption — returns clean structured JSON with proxy metadata. At $0.005/query, undercuts SerpApi ($0.01-0.025) with authentic mobile carrier data that datacenter scrapers can't replicate.",
+  "endpoint": "https://google-serp-ai-scraper.onrender.com",
+  "docsUrl": "https://github.com/BumStill/marketplace-service-template/blob/master/listings/google-serp-ai-scraper.json",
+  "pricing": {
+    "model": "per-request",
+    "amount": "0.005",
+    "minimum": "0.005",
+    "currency": "USDC",
+    "networks": [
+      {
+        "network": "solana",
+        "chainId": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "recipient": "6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv",
+        "asset": "USDC",
+        "assetAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+      },
+      {
+        "network": "base",
+        "chainId": "eip155:8453",
+        "recipient": "0xF8cD900794245fc36CBE65be9afc23CDF5103042",
+        "asset": "USDC",
+        "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+      }
+    ]
+  },
+  "category": "scraper",
+  "tags": [
+    "serp",
+    "google-search",
+    "ai-overview",
+    "featured-snippets",
+    "people-also-ask",
+    "map-pack",
+    "knowledge-panel",
+    "seo",
+    "mobile-serp",
+    "ai-search"
+  ],
+  "owner": {
+    "name": "BumStill",
+    "github": "BumStill"
+  },
+  "status": "pending",
+  "featured": false,
+  "addedAt": "2026-06-05",
+  "x402": {
+    "discoveryUrl": "https://google-serp-ai-scraper.onrender.com/api/run",
+    "wellKnown": "https://google-serp-ai-scraper.onrender.com/.well-known/x402.json"
+  }
+}
