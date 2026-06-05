@@ -10,6 +10,8 @@
  *   GET /api/reddit/*  (Reddit Intelligence)
  *   GET /api/instagram/* (Instagram Intelligence + AI Vision)
  *   GET /api/linkedin/* (LinkedIn Enrichment)
+ *   GET /api/serp      (Google SERP Tracker)
+ *   GET /api/price     (E-Commerce Price & Stock Monitor)
  */
 
 import { Hono } from 'hono';
@@ -29,6 +31,14 @@ import {
 } from './scrapers/linkedin-enrichment';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
+import { scrapeProductPrice, monitorPrices } from './scrapers/price-monitor';
+import { trackTravelPrices } from './scrapers/travel-price-tracker';
+import { aggregateRealEstate } from './scrapers/realestate-scraper';
+import { getSocialProfiles } from './scrapers/social-scraper';
+import { spyOnAds } from './scrapers/adspy-scraper';
+import { verifyAdPlacements } from './scrapers/adverify-scraper';
+import { monitorReputation } from './scrapers/review-monitor';
+import { aiSearch } from './scrapers/ai-search';
 
 export const serviceRouter = new Hono();
 
@@ -1485,4 +1495,328 @@ serviceRouter.get('/serp', async (c) => {
   } catch (err: any) {
     return c.json({ error: 'SERP scrape failed', message: err?.message || String(err) }, 502);
   }
+});
+
+// ─── E-COMMERCE PRICE & STOCK MONITOR ─────────────────
+
+const PRICE_PRICE_USDC = parseFloat(process.env.PRICE_PRICE_USDC || '0.005');
+const PRICE_DESCRIPTION = 'E-Commerce Price & Stock Monitor — scrape any product page for price, availability, brand, rating. Supports Amazon, eBay, Walmart, Etsy, Target, AliExpress + schema.org/Product JSON-LD.';
+const PRICE_OUTPUT_SCHEMA = {
+  input: {
+    url: 'string (required) — Product page URL to scrape',
+    urls: 'string (optional) — Comma-separated list of URLs for batch monitoring',
+  },
+  output: {
+    results: '[{ name, price, currency, originalPrice, stockStatus, image, url, store, brand, rating, reviewCount, checkedAt, onSale }]',
+    totalFound: 'number',
+  },
+};
+
+serviceRouter.get('/price', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Wallet not configured' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/price', PRICE_DESCRIPTION, PRICE_PRICE_USDC, walletAddress, PRICE_OUTPUT_SCHEMA), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, PRICE_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const urlParam = c.req.query('url');
+  const urlsParam = c.req.query('urls');
+
+  if (!urlParam && !urlsParam) {
+    return c.json({
+      error: 'Missing required parameter',
+      hint: 'Provide ?url=https://example.com/product or ?urls=https://a.com/p1,https://b.com/p2',
+      example: '/api/price?url=https://www.amazon.com/dp/B0EXAMPLE',
+    }, 400);
+  }
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+
+    let result: any;
+
+    if (urlsParam) {
+      const urls = urlsParam.split(',').map(u => u.trim()).filter(Boolean);
+      if (urls.length === 0) {
+        return c.json({ error: 'urls parameter is empty', hint: 'Provide comma-separated URLs' }, 400);
+      }
+      if (urls.length > 10) {
+        return c.json({ error: 'Maximum 10 URLs per batch request', limit: 10 }, 400);
+      }
+      result = await monitorPrices(urls);
+    } else {
+      const product = await scrapeProductPrice(urlParam!);
+      result = { results: [product], totalFound: 1 };
+    }
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      meta: { proxy: { ip, country: proxy.country, type: 'mobile' } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Price scrape failed', message: err?.message || String(err), hint: 'The product page may be blocking requests or require JavaScript rendering.' }, 502);
+  }
+});
+
+// ─── TRAVEL PRICE TRACKER ────────────────────────────
+
+const TRAVEL_PRICE_USDC = parseFloat(process.env.TRAVEL_PRICE_USDC || '0.005');
+const TRAVEL_DESCRIPTION = 'Travel Price Tracker API — compare flight, hotel, and package prices across Google Flights, Kayak, Skyscanner, Booking.com. Multi-provider aggregation with price range and cheapest-first sorting.';
+const TRAVEL_OUTPUT_SCHEMA = {
+  input: {
+    type: '"flight" | "hotel" | "package" (required)',
+    origin: 'string (flights) — departure city or airport code',
+    destination: 'string (required) — destination city, airport, or hotel name',
+    departDate: 'string (optional) — YYYY-MM-DD',
+    returnDate: 'string (optional) — YYYY-MM-DD',
+    travelers: 'number (optional) — default 1',
+    limit: 'number (optional) — max results, default 20',
+  },
+  output: {
+    results: '[{ provider, price, currency, origin, destination, departDate, returnDate, details, url, type, checkedAt }]',
+    cheapest: 'TravelPrice | null',
+    priceRange: '{ min, max }',
+    totalFound: 'number',
+  },
+};
+
+serviceRouter.get('/travel', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Wallet not configured' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/travel', TRAVEL_DESCRIPTION, TRAVEL_PRICE_USDC, walletAddress, TRAVEL_OUTPUT_SCHEMA), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, TRAVEL_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const type = (c.req.query('type') || 'flight') as 'flight' | 'hotel' | 'package';
+  const origin = c.req.query('origin') || undefined;
+  const destination = c.req.query('destination');
+  const departDate = c.req.query('departDate') || c.req.query('depart') || undefined;
+  const returnDate = c.req.query('returnDate') || c.req.query('return') || undefined;
+  const travelers = parseInt(c.req.query('travelers') || '1');
+  const limit = Math.min(Math.max(parseInt(c.req.query('limit') || '20') || 20, 1), 50);
+
+  if (!destination) {
+    return c.json({
+      error: 'Missing required parameter: destination',
+      hint: 'Provide ?type=flight&origin=NYC&destination=LAX&departDate=2026-06-15',
+      example: '/api/travel?type=flight&origin=JFK&destination=LAX&departDate=2026-06-15&returnDate=2026-06-22',
+    }, 400);
+  }
+
+  if (type === 'flight' && !origin) {
+    return c.json({ error: 'Flight searches require origin parameter' }, 400);
+  }
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+
+    const result = await trackTravelPrices({
+      type,
+      origin,
+      destination,
+      departDate,
+      returnDate,
+      travelers,
+      limit,
+    });
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      meta: { proxy: { ip, country: proxy.country, type: 'mobile' } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Travel price search failed', message: err?.message || String(err), hint: 'Travel sites may have blocked the request. Try again with a different query.' }, 502);
+  }
+});
+
+// ─── REAL ESTATE LISTING AGGREGATOR ───────────────────
+
+const REALESTATE_PRICE_USDC = parseFloat(process.env.REALESTATE_PRICE_USDC || '0.005');
+const REALESTATE_DESCRIPTION = 'Real Estate Listing Aggregator — search Zillow, Realtor.com, Redfin for property listings with price, beds/baths, sqft, and status. Price range analysis included.';
+
+serviceRouter.get('/realestate', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Wallet not configured' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/realestate', REALESTATE_DESCRIPTION, REALESTATE_PRICE_USDC, walletAddress, {
+      input: { location: 'string (required)', type: '"sale" | "rent" (default: sale)', limit: 'number (default: 20)' },
+      output: { results: 'RealEstateListing[]', priceRange: '{ min, max, avg }' },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, REALESTATE_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const location = c.req.query('location');
+  if (!location) return c.json({ error: 'Missing required parameter: location' }, 400);
+
+  const type = (c.req.query('type') || 'sale') as 'sale' | 'rent';
+  const limit = Math.min(Math.max(parseInt(c.req.query('limit') || '20') || 20, 1), 50);
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const result = await aggregateRealEstate(location, type, limit);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+    return c.json({ ...result, meta: { proxy: { ip, country: proxy.country, type: 'mobile' } }, payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
+  } catch (err: any) {
+    return c.json({ error: 'Real estate search failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── SOCIAL PROFILE INTELLIGENCE ──────────────────────
+
+const SOCIAL_PRICE_USDC = parseFloat(process.env.SOCIAL_PRICE_USDC || '0.005');
+const SOCIAL_DESCRIPTION = 'Social Profile Intelligence — aggregate public profiles from Twitter, Instagram, GitHub. Extract bio, followers, posts, verification status. Multi-platform lookup from a single username.';
+
+serviceRouter.get('/social', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Wallet not configured' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/social', SOCIAL_DESCRIPTION, SOCIAL_PRICE_USDC, walletAddress, {
+      input: { username: 'string (required)', platforms: 'string (optional) — twitter,instagram,github (default: all)' },
+      output: { profiles: 'SocialProfile[]', totalPlatforms: 'number' },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, SOCIAL_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const username = c.req.query('username');
+  if (!username) return c.json({ error: 'Missing required parameter: username' }, 400);
+
+  const platformsStr = c.req.query('platforms');
+  const platforms = platformsStr ? platformsStr.split(',').map(s => s.trim()) : undefined;
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const result = await getSocialProfiles(username, platforms);
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+    return c.json({ ...result, meta: { proxy: { ip, country: proxy.country, type: 'mobile' } }, payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
+  } catch (err: any) {
+    return c.json({ error: 'Social lookup failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── AD SPY & CREATIVE INTELLIGENCE ───────────────────
+
+const ADSPY_PRICE_USDC = parseFloat(process.env.ADSPY_PRICE_USDC || '0.005');
+const ADSPY_DESCRIPTION = 'Ad Spy & Creative Intelligence — monitor competitor ads across Facebook Ad Library, Google Ads Transparency, TikTok Creative Center. Extract headlines, creatives, landing pages, ad formats.';
+
+serviceRouter.get('/adspy', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Wallet not configured' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/adspy', ADSPY_DESCRIPTION, ADSPY_PRICE_USDC, walletAddress, {
+      input: { keyword: 'string (optional)', advertiser: 'string (optional)', platform: '"facebook" | "google" | "tiktok" (optional)' },
+      output: { results: 'AdCreative[]', platforms: 'string[]' },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, ADSPY_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const keyword = c.req.query('keyword') || c.req.query('query') || undefined;
+  const advertiser = c.req.query('advertiser') || undefined;
+  const platform = c.req.query('platform') || undefined;
+
+  if (!keyword && !advertiser) {
+    return c.json({ error: 'Missing required parameter: keyword or advertiser', example: '/api/adspy?keyword=shoes&platform=facebook' }, 400);
+  }
+
+  try {
+    const proxy = getProxy();
+    const ip = await getProxyExitIp();
+    const result = await spyOnAds({ keyword, advertiser, platform });
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+    return c.json({ ...result, meta: { proxy: { ip, country: proxy.country, type: 'mobile' } }, payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
+  } catch (err: any) {
+    return c.json({ error: 'Ad spy failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── AD VERIFICATION & BRAND SAFETY ──────────────────
+
+const ADVERIFY_PRICE_USDC = 0.005;
+serviceRouter.get('/adverify', async (c) => {
+  const wallet = process.env.WALLET_ADDRESS; if(!wallet) return c.json({error:'Wallet not configured'},500);
+  const p = extractPayment(c); if(!p) return c.json(build402Response('/api/adverify','Ad Verification & Brand Safety — check URLs for adult content, gambling, hate speech, malware, and competitor ads.',ADVERIFY_PRICE_USDC,wallet,{input:{urls:'string — comma-separated URLs',brand:'string (optional)',competitors:'string (optional)'}}),402);
+  const v = await verifyPayment(p,wallet,ADVERIFY_PRICE_USDC); if(!v.valid) return c.json({error:'Payment verification failed',reason:v.error},402);
+  const urls = (c.req.query('urls')||c.req.query('url')||'').split(',').map(u=>u.trim()).filter(Boolean);
+  if(!urls.length) return c.json({error:'Missing urls parameter'},400);
+  const competitors = (c.req.query('competitors')||'').split(',').map(u=>u.trim()).filter(Boolean);
+  try{
+    const proxy = getProxy(); const ip = await getProxyExitIp();
+    const result = await verifyAdPlacements(urls,undefined,competitors.length?competitors:undefined);
+    c.header('X-Payment-Settled','true'); c.header('X-Payment-TxHash',p.txHash);
+    return c.json({...result,meta:{proxy:{ip,country:proxy.country,type:'mobile'}},payment:{txHash:p.txHash,network:p.network,amount:v.amount,settled:true}});
+  }catch(err:any){return c.json({error:'Verification failed',message:err?.message||String(err)},502);}
+});
+
+// ─── REVIEW & REPUTATION MONITOR ─────────────────────
+
+const REVIEWMON_PRICE_USDC = 0.005;
+serviceRouter.get('/reputation', async (c) => {
+  const wallet = process.env.WALLET_ADDRESS; if(!wallet) return c.json({error:'Wallet not configured'},500);
+  const p = extractPayment(c); if(!p) return c.json(build402Response('/api/reputation','Review & Reputation Monitor — aggregate reviews from Trustpilot and Google. Sentiment analysis and rating distribution included.',REVIEWMON_PRICE_USDC,wallet,{input:{business:'string (required)',platforms:'trustpilot,google (optional)'}}),402);
+  const v = await verifyPayment(p,wallet,REVIEWMON_PRICE_USDC); if(!v.valid) return c.json({error:'Payment verification failed',reason:v.error},402);
+  const business = c.req.query('business'); if(!business) return c.json({error:'Missing business parameter'},400);
+  const plats = (c.req.query('platforms')||'').split(',').map(s=>s.trim()).filter(Boolean);
+  try{
+    const proxy = getProxy(); const ip = await getProxyExitIp();
+    const result = await monitorReputation(business,plats.length?plats:undefined);
+    c.header('X-Payment-Settled','true'); c.header('X-Payment-TxHash',p.txHash);
+    return c.json({...result,meta:{proxy:{ip,country:proxy.country,type:'mobile'}},payment:{txHash:p.txHash,network:p.network,amount:v.amount,settled:true}});
+  }catch(err:any){return c.json({error:'Monitor failed',message:err?.message||String(err)},502);}
+});
+
+// ─── AI-POWERED SEARCH ($200 Wave 1) ──────────────────
+
+const AISEARCH_PRICE_USDC = 0.02;
+serviceRouter.get('/aisearch', async (c) => {
+  const wallet = process.env.WALLET_ADDRESS; if(!wallet) return c.json({error:'Wallet not configured'},500);
+  const p = extractPayment(c); if(!p) return c.json(build402Response('/api/aisearch','AI-Powered Search Summarizer — Google SERP + qwen3.7-max LLM analysis. Returns structured answers with cited sources.',AISEARCH_PRICE_USDC,wallet,{input:{q:'string (required)',deep:'boolean (optional)'},output:{answer:'string',sources:'[{title,url,snippet}]',followUpQuestions:'string[]',confidence:'high|medium|low',tokensUsed:'number'}}),402);
+  const v = await verifyPayment(p,wallet,AISEARCH_PRICE_USDC); if(!v.valid) return c.json({error:'Payment verification failed',reason:v.error},402);
+  const q = c.req.query('q') || c.req.query('query');
+  if(!q) return c.json({error:'Missing query parameter',example:'/api/aisearch?q=iPhone+16+vs+Samsung+S25+camera'},400);
+  const deep = c.req.query('deep') === 'true';
+  try{
+    const proxy = getProxy(); const ip = await getProxyExitIp();
+    const result = await aiSearch(q, deep, process.env.AI_SEARCH_API_KEY || c.req.query('apikey') || undefined);
+    c.header('X-Payment-Settled','true'); c.header('X-Payment-TxHash',p.txHash);
+    return c.json({...result,meta:{proxy:{ip,country:proxy.country,type:'mobile'}},payment:{txHash:p.txHash,network:p.network,amount:v.amount,settled:true}});
+  }catch(err:any){return c.json({error:'AI search failed',message:err?.message||String(err)},502);}
 });
