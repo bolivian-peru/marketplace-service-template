@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "updatedAt": "2026-02-15",
-  "count": 6,
+  "count": 7,
   "services": [
     {
       "id": "proxies-sx-mobile",
@@ -143,6 +143,35 @@
       "status": "active",
       "featured": false,
       "detailsFile": "prediction-market-aggregator.json"
+    },
+    {
+      "id": "food-delivery-price-intelligence",
+      "name": "Food Delivery Price Intelligence",
+      "description": "Restaurant search, menu extraction, delivery fees, promos, ratings, and ETA data from food delivery platforms. $0.01/request.",
+      "endpoint": "https://marketplace-service-template.onrender.com/api/food/search",
+      "docsUrl": "https://github.com/bolivian-peru/marketplace-service-template",
+      "pricing": {
+        "model": "per-request",
+        "amount": "0.01",
+        "minimum": "0.01",
+        "currency": "USDC"
+      },
+      "category": "scraper",
+      "tags": [
+        "food-delivery",
+        "ubereats",
+        "doordash",
+        "grubhub",
+        "pricing",
+        "menus"
+      ],
+      "owner": {
+        "name": "aliraza556",
+        "github": "aliraza556"
+      },
+      "status": "active",
+      "featured": false,
+      "detailsFile": "food-delivery-price-intelligence.json"
     }
   ],
   "networks": {

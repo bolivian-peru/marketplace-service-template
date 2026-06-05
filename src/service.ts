@@ -29,6 +29,7 @@ import {
 } from './scrapers/linkedin-enrichment';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
+import { compareFood, getMenu, getRestaurant, searchFood } from './scrapers/food-scraper';
 
 export const serviceRouter = new Hono();
 
@@ -73,6 +74,9 @@ const MAPS_OUTPUT_SCHEMA = {
     payment: '{ txHash, network, amount, settled }',
   },
 };
+
+const FOOD_PRICE_USDC = 0.01;
+const FOOD_DESCRIPTION = 'Food Delivery Price Intelligence: restaurant search, menu extraction, delivery fee, promos, ETA.';
 
 async function getProxyExitIp(): Promise<string | null> {
   try {
@@ -243,6 +247,149 @@ serviceRouter.get('/details', async (c) => {
       message: err.message,
       hint: 'Invalid place ID or Google blocked the request.',
     }, 502);
+  }
+});
+
+serviceRouter.get('/food/search', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/food/search', FOOD_DESCRIPTION, FOOD_PRICE_USDC, walletAddress, {
+      input: {
+        query: 'string (required) — restaurant or cuisine',
+        address: 'string (required) — delivery ZIP, city, or street',
+        platform: '"ubereats" | "doordash" | "grubhub" (optional, default: "ubereats")',
+      },
+      output: {
+        restaurant: 'Restaurant',
+        menu_items: 'MenuItem[]',
+        platform: 'FoodPlatform',
+        meta: '{ address, query, source }',
+      },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, FOOD_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const query = c.req.query('query');
+  const address = c.req.query('address');
+  const platform = c.req.query('platform') || 'ubereats';
+  if (!query) return c.json({ error: 'Missing required parameter: query', example: '/api/food/search?query=pizza&address=10001' }, 400);
+  if (!address) return c.json({ error: 'Missing required parameter: address', example: '/api/food/search?query=pizza&address=10001' }, 400);
+
+  try {
+    const proxy = getProxy();
+    const result = await searchFood(query, address, platform);
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+    return c.json({
+      ...result,
+      meta: {
+        ...result.meta,
+        proxy: { country: proxy.country, type: 'mobile' },
+      },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Food search failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+serviceRouter.get('/food/restaurant/:id', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/food/restaurant/:id', 'Get restaurant details by platform id', FOOD_PRICE_USDC, walletAddress, {
+      input: { id: 'string (required) — platform restaurant id/path', platform: 'string (optional)' },
+      output: { restaurant: 'Restaurant' },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, FOOD_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  try {
+    const proxy = getProxy();
+    const restaurant = await getRestaurant(c.req.param('id'), c.req.query('platform') || 'ubereats');
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+    return c.json({
+      restaurant,
+      meta: { proxy: { country: proxy.country, type: 'mobile' } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Restaurant fetch failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+serviceRouter.get('/food/menu/:restaurant_id', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/food/menu/:restaurant_id', 'Get restaurant menu by platform id', FOOD_PRICE_USDC, walletAddress, {
+      input: { restaurant_id: 'string (required)', platform: 'string (optional)' },
+      output: { menu_items: 'MenuItem[]' },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, FOOD_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  try {
+    const proxy = getProxy();
+    const menu_items = await getMenu(c.req.param('restaurant_id'), c.req.query('platform') || 'ubereats');
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+    return c.json({
+      menu_items,
+      meta: { proxy: { country: proxy.country, type: 'mobile' } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Menu fetch failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+serviceRouter.get('/food/compare', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response('/api/food/compare', 'Cross-platform delivery price comparison', FOOD_PRICE_USDC * 3, walletAddress, {
+      input: { query: 'string (required)', address: 'string (required)' },
+      output: { comparisons: 'FoodSearchResponse[]' },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, FOOD_PRICE_USDC * 3);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+
+  const query = c.req.query('query');
+  const address = c.req.query('address');
+  if (!query) return c.json({ error: 'Missing required parameter: query' }, 400);
+  if (!address) return c.json({ error: 'Missing required parameter: address' }, 400);
+
+  try {
+    const proxy = getProxy();
+    const comparisons = await compareFood(query, address);
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+    return c.json({
+      comparisons,
+      meta: { query, address, proxy: { country: proxy.country, type: 'mobile' } },
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Comparison failed', message: err?.message || String(err) }, 502);
   }
 });
 
@@ -1471,7 +1618,7 @@ serviceRouter.get('/serp', async (c) => {
   try {
     const proxy = getProxy();
     const ip = await getProxyExitIp();
-    const results = await scrapeMobileSERP(query, { location, num });
+    const results = await scrapeMobileSERP(query, 'us', 'en', location);
 
     c.header('X-Payment-Settled', 'true');
     c.header('X-Payment-TxHash', payment.txHash);
