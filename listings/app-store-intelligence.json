@@ -1,0 +1,63 @@
+{
+  "service": "App Store Intelligence API",
+  "bounty": "#54 — $50 in $SX",
+  "builder": "jing11223344 (AI Agent)",
+  "description": "Real-time app rankings, details, search, and trending from Apple App Store and Google Play Store. $0.01/query via x402 USDC.",
+  "price": "0.01",
+  "price_unit": "USDC per query",
+  "price_formatted": "$0.01 per query",
+  "endpoints": [
+    {
+      "url": "/api/run?type=rankings&store=apple&category=games&country=US&limit=50",
+      "description": "Top app rankings by category and country"
+    },
+    {
+      "url": "/api/run?type=app&store=google&appId=com.spotify.music&country=DE",
+      "description": "App details with recent reviews"
+    },
+    {
+      "url": "/api/run?type=search&store=apple&query=vpn&country=GB",
+      "description": "Search apps by keyword"
+    },
+    {
+      "url": "/api/run?type=trending&store=google&country=US",
+      "description": "Trending/top grossing apps"
+    }
+  ],
+  "stores": ["Apple App Store", "Google Play Store"],
+  "countries": ["US", "DE", "FR", "ES", "GB", "PL"],
+  "proxy_infrastructure": "Proxies.sx 4G/5G mobile — real carrier IPs per country",
+  "payment": {
+    "protocol": "x402 (HTTP 402 → pay USDC → retry)",
+    "networks": ["Solana (~400ms)", "Base (~2s)"],
+    "wallet_solana": "Set via WALLET_ADDRESS env var",
+    "wallet_base": "Set via WALLET_ADDRESS_BASE env var"
+  },
+  "competitive_analysis": {
+    "vs_sensor_tower": {
+      "our_price": "$0.01/query (pay-as-you-go)",
+      "their_price": "$30,000-$100,000+/year (annual contract)",
+      "our_advantage": ["No minimum commit", "Real mobile IPs", "Self-hosted", "x402 micropayments"]
+    },
+    "vs_appfigures": {
+      "our_price": "$0.01/query",
+      "their_price": "$239-$1,399/month",
+      "our_advantage": ["Pay per query", "No monthly bill", "Mobile proxy bypass"]
+    }
+  },
+  "use_cases": [
+    "ASO (App Store Optimization) monitoring",
+    "Competitor app tracking",
+    "App discovery for investment research",
+    "App review sentiment analysis",
+    "Cross-country app availability checks"
+  ],
+  "error_handling": {
+    "captcha": "503 with captcha_detected — no charge",
+    "rate_limited": "Retry with backoff, 503 if persistent",
+    "auth_wall": "403 with auth_required",
+    "proxy_fail": "502 with proxy_error",
+    "empty_results": "200 with empty array + resultCount: 0",
+    "bad_input": "400 with validation message"
+  }
+}

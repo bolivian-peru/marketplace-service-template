@@ -1,0 +1,99 @@
+{
+  "type": "rankings",
+  "feed": "topfreeapplications",
+  "source": "apple_app_store_rss",
+  "country": "US",
+  "count": 10,
+  "apps": [
+    {
+      "rank": 1,
+      "name": "ChatGPT",
+      "developer": "OpenAI OpCo, LLC",
+      "id": "6448311069",
+      "price": "Get",
+      "category": "Productivity",
+      "icon": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/2d/89/fc/2d89fc34-6544-663b-03d0-7309376ee5d9/AppIcon-0-0-1x_U007epad-0-0-0-1-0-P3-85-220.png/100x100bb.png"
+    },
+    {
+      "rank": 2,
+      "name": "Claude by Anthropic",
+      "developer": "Anthropic PBC",
+      "id": "6473753684",
+      "price": "Get",
+      "category": "Productivity",
+      "icon": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/28/5b/6b/285b6b93-44b6-eaf3-9e62-01529fb238c9/AppIcon-0-0-1x_U007epad-0-1-85-220.png/100x100bb.png"
+    },
+    {
+      "rank": 3,
+      "name": "Google Gemini",
+      "developer": "Google",
+      "id": "6477489729",
+      "price": "Get",
+      "category": "Productivity",
+      "icon": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/9a/49/66/9a49664f-7502-c355-86e6-462b42d313a2/AppIcon-0-0-1x_U007epad-0-0-0-1-0-0-sRGB-0-0-85-220.png/100x100bb.png"
+    },
+    {
+      "rank": 4,
+      "name": "Trump Accounts: Official App",
+      "developer": "U.S. Department of the Treasury",
+      "id": "6767364919",
+      "price": "Get",
+      "category": "Finance",
+      "icon": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/ad/a5/34/ada53439-10e9-01ec-5084-5bffd29cc370/AppIcon-0-0-1x_U007ephone-0-1-0-sRGB-85-220.png/100x100bb.png"
+    },
+    {
+      "rank": 5,
+      "name": "Threads",
+      "developer": "Instagram, Inc.",
+      "id": "6446901002",
+      "price": "Get",
+      "category": "Social Networking",
+      "icon": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/85/6a/17/856a17a2-3552-0b6b-5f30-ad8a897bad3f/Prod-0-0-1x_U007ephone-0-0-0-1-0-0-P3-85-220.png/100x100bb.png"
+    },
+    {
+      "rank": 6,
+      "name": "CapCut: Photo & Video Editor",
+      "developer": "Bytedance Pte. Ltd",
+      "id": "1500855883",
+      "price": "Get",
+      "category": "Photo & Video",
+      "icon": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/8f/57/d1/8f57d154-46da-28ca-1cb7-f045b0450b08/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/100x100bb.png"
+    },
+    {
+      "rank": 7,
+      "name": "Google",
+      "developer": "Google",
+      "id": "284815942",
+      "price": "Get",
+      "category": "Utilities",
+      "icon": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/8b/a0/81/8ba08177-07a6-1715-ca97-dedb5ebe7de4/SuperG_ios26-0-0-1x_U007epad-0-0-0-1-0-0-sRGB-0-0-0-85-220.png/100x100bb.png"
+    },
+    {
+      "rank": 8,
+      "name": "WhatsApp Messenger",
+      "developer": "WhatsApp Inc.",
+      "id": "310633997",
+      "price": "Get",
+      "category": "Social Networking",
+      "icon": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/1c/d8/ff/1cd8ff3f-8452-34a2-b5c1-c65d9e927286/AppIcon-0-0-1x_U007epad-0-0-0-1-0-0-sRGB-0-85-220.png/100x100bb.png"
+    },
+    {
+      "rank": 9,
+      "name": "Amazon Fire TV",
+      "developer": "AMZN Mobile LLC",
+      "id": "947984433",
+      "price": "Get",
+      "category": "Entertainment",
+      "icon": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/84/04/77/84047716-8366-ee7f-3808-b1f3c64574e4/AppIcon-1x_U007epad-0-1-85-220-0.png/100x100bb.png"
+    },
+    {
+      "rank": 10,
+      "name": "Google Maps",
+      "developer": "Google",
+      "id": "585027354",
+      "price": "Get",
+      "category": "Navigation",
+      "icon": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/e5/dd/93/e5dd9368-7b52-e9f1-1dd3-a514c350f722/maps_2025-0-0-1x_U007epad-0-0-0-1-0-0-sRGB-0-0-85-220.png/100x100bb.png"
+    }
+  ]
+}

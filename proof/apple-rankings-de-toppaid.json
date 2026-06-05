@@ -1,0 +1,99 @@
+{
+  "type": "rankings",
+  "feed": "toppaidapplications",
+  "source": "apple_app_store_rss",
+  "country": "DE",
+  "count": 10,
+  "apps": [
+    {
+      "rank": 1,
+      "name": "Blitzer.de PRO",
+      "developer": "Eifrig Media",
+      "id": "498732510",
+      "price": "0,49\u00a0\u20ac",
+      "category": "Navigation",
+      "icon": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/7c/4d/f9/7c4df991-c46a-0f1d-48f4-4afe7567fffb/AppIcon-0-0-1x_U007epad-0-1-85-220.png/100x100bb.png"
+    },
+    {
+      "rank": 2,
+      "name": "Threema. Der sichere Messenger",
+      "developer": "Threema GmbH",
+      "id": "578665578",
+      "price": "7,99\u00a0\u20ac",
+      "category": "Soziale Netze",
+      "icon": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/af/08/de/af08def2-1dfc-5b20-2174-0ffb581f0cd0/AppIcon-0-0-1x_U007epad-0-0-0-1-0-0-85-220.png/100x100bb.png"
+    },
+    {
+      "rank": 3,
+      "name": "Minecraft",
+      "developer": "Mojang",
+      "id": "479516143",
+      "price": "7,99\u00a0\u20ac",
+      "category": "Spiele",
+      "icon": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/c9/81/16/c981164e-410c-7a07-d76b-3a8e4238793b/AppIcon-0-0-1x_U007emarketing-0-10-0-85-220.png/100x100bb.png"
+    },
+    {
+      "rank": 4,
+      "name": "Ludwig x Kusama",
+      "developer": "soundgarden audioguidance GmbH",
+      "id": "6759321221",
+      "price": "2,99\u00a0\u20ac",
+      "category": "Reisen",
+      "icon": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/d0/20/3a/d0203ae3-72f7-7199-0157-64c0d10323f8/AppIcon-0-0-1x_U007epad-0-1-85-220.png/100x100bb.png"
+    },
+    {
+      "rank": 5,
+      "name": "Plague Inc.",
+      "developer": "Ndemic Creations",
+      "id": "525818839",
+      "price": "0,99\u00a0\u20ac",
+      "category": "Spiele",
+      "icon": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/4c/2e/05/4c2e05a3-8809-22db-0d9b-ded70f5b3cd1/AppIcon-0-0-1x_U007emarketing-0-8-0-0-sRGB-85-220.png/100x100bb.png"
+    },
+    {
+      "rank": 6,
+      "name": "Geometry Dash",
+      "developer": "RobTop Games AB",
+      "id": "625334537",
+      "price": "3,99\u00a0\u20ac",
+      "category": "Spiele",
+      "icon": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/5a/d5/97/5ad5971d-b8ea-d82f-415f-f69be6bde65c/AppIcon-1x_U007emarketing-0-11-0-85-220-0.png/100x100bb.png"
+    },
+    {
+      "rank": 7,
+      "name": "AnkiMobile Flashcards",
+      "developer": "Anki Software, LLC",
+      "id": "373493387",
+      "price": "29,99\u00a0\u20ac",
+      "category": "Bildung",
+      "icon": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/30/6b/da/306bdac5-3088-c97f-c682-e4626bfc6b43/AppIcon-0-0-1x_U007emarketing-0-5-0-85-220.png/100x100bb.png"
+    },
+    {
+      "rank": 8,
+      "name": "F\u00fchrerschein 2026 GOLD",
+      "developer": "theorie24 GmbH",
+      "id": "1423115391",
+      "price": "9,99\u00a0\u20ac",
+      "category": "Bildung",
+      "icon": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/d0/bf/a8/d0bfa8c7-191f-3287-702e-111ca15a7866/AppIcon-0-0-1x_U007emarketing-0-11-0-0-85-220.png/100x100bb.png"
+    },
+    {
+      "rank": 9,
+      "name": "PeakFinder",
+      "developer": "PeakFinder GmbH",
+      "id": "357421934",
+      "price": "5,99\u00a0\u20ac",
+      "category": "Reisen",
+      "icon": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/41/90/37/4190373d-2a6f-9346-6d53-9118d5ae6cce/AppIcon-0-0-1x_U007epad-0-1-0-P3-85-220.png/100x100bb.png"
+    },
+    {
+      "rank": 10,
+      "name": "Pou",
+      "developer": "Zakeh Limited",
+      "id": "575154654",
+      "price": "1,99\u00a0\u20ac",
+      "category": "Spiele",
+      "icon": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/f6/4b/c9/f64bc9c9-2f33-2479-6e21-1bbf8faead0c/AppIcon-0-0-1x_U007emarketing-0-5-0-85-220.png/100x100bb.png"
+    }
+  ]
+}
