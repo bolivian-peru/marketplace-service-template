@@ -33,10 +33,68 @@ import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers
 export const serviceRouter = new Hono();
 
 // ─── TREND INTELLIGENCE ROUTES (Bounty #70) ─────────
-serviceRouter.route('/research', researchRouter);
-serviceRouter.route('/trending', trendingRouter);
+  return c.json(formattedData);
+});
 
-const SERVICE_NAME = 'job-market-intelligence';
+serviceRouter.get('/api/airbnb/listing/:id', async (c) => {
+  const listingId = c.req.param('id');
+
+  if (!listingId) {
+    return c.json({ error: 'Missing listing ID' }, 400);
+  }
+
+  const url = `https://api.airbnb.com/v2/listings/${listingId}`;
+  const result = await proxyFetch(url);
+  const data = await result.json();
+
+  // Process and format the data as needed
+  const formattedData = {
+    ...data
+  };
+
+  return c.json(formattedData);
+});
+
+serviceRouter.get('/api/airbnb/market-stats', async (c) => {
+  const location = c.req.query('location');
+
+  if (!location) {
+    return c.json({ error: 'Missing required parameters' }, 400);
+  }
+
+  const url = `https://api.airbnb.com/v2/market_stats?location=${location}`;
+  const result = await proxyFetch(url);
+  const data = await result.json();
+
+  // Process and format the data as needed
+  const formattedData = {
+    ...data
+  };
+
+  return c.json(formattedData);
+});
+
+serviceRouter.get('/api/airbnb/reviews/:listing_id', async (c) => {
+  const listingId = c.req.param('listing_id');
+  const limit = c.req.query('limit') || 10;
+
+  if (!listingId) {
+    return c.json({ error: 'Missing listing ID' }, 400);
+  }
+
+  const url = `https://api.airbnb.com/v2/reviews/${listingId}?limit=${limit}`;
+  const result = await proxyFetch(url);
+  const data = await result.json();
+
+  // Process and format the data as needed
+  const formattedData = {
+    ...data
+  };
+
+  return c.json(formattedData);
+});
+
+export default serviceRouter;
 const PRICE_USDC = 0.005;
 const DESCRIPTION = 'Job Market Intelligence API (Indeed/LinkedIn): title, company, location, salary, date, link, remote + proxy exit metadata.';
 const MAPS_PRICE_USDC = 0.005;
