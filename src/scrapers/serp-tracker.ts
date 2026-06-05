@@ -768,11 +768,18 @@ export function extractTotalResults(html: string): string | null {
  */
 export async function scrapeMobileSERP(
   query: string,
-  country: string = 'us',
+  countryOrOptions: string | { country?: string; language?: string; location?: string; num?: number; start?: number } = 'us',
   language: string = 'en',
   location?: string,
   start: number = 0,
 ): Promise<SerpResponse> {
+  let country: string = typeof countryOrOptions === 'string' ? countryOrOptions : 'us';
+  if (typeof countryOrOptions === 'object') {
+    country = countryOrOptions.country || 'us';
+    language = countryOrOptions.language || 'en';
+    location = countryOrOptions.location;
+    start = countryOrOptions.start || 0;
+  }
   const url = buildGoogleSearchUrl(query, country, language, location, start);
   const userAgent = getRandomUserAgent();
 
