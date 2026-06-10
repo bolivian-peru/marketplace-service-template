@@ -128,7 +128,7 @@ export function build402Response(
       {
         network: 'base',
         chainId: 'eip155:8453',
-        recipient: process.env.WALLET_ADDRESS_BASE || '0xF8cD900794245fc36CBE65be9afc23CDF5103042',
+        recipient: process.env.WALLET_ADDRESS_BASE || process.env.WALLET_ADDRESS || 'CONFIGURE_WALLET_ADDRESS',
         asset: 'USDC',
         assetAddress: USDC_BASE,
       },

@@ -247,7 +247,10 @@ serviceRouter.get('/details', async (c) => {
 });
 
 serviceRouter.get('/jobs', async (c) => {
-  const walletAddress = '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) {
+    return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+  }
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -807,7 +810,7 @@ const REDDIT_COMMENTS_PRICE = 0.01;  // $0.01 per comment thread
 // ─── GET /api/reddit/search ─────────────────────────
 
 serviceRouter.get('/reddit/search', async (c) => {
-  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = process.env.WALLET_ADDRESS || '';
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -861,7 +864,7 @@ serviceRouter.get('/reddit/search', async (c) => {
 // ─── GET /api/reddit/trending ───────────────────────
 
 serviceRouter.get('/reddit/trending', async (c) => {
-  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = process.env.WALLET_ADDRESS || '';
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -903,7 +906,7 @@ serviceRouter.get('/reddit/trending', async (c) => {
 // ─── GET /api/reddit/subreddit/:name ────────────────
 
 serviceRouter.get('/reddit/subreddit/:name', async (c) => {
-  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = process.env.WALLET_ADDRESS || '';
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -957,7 +960,7 @@ serviceRouter.get('/reddit/subreddit/:name', async (c) => {
 // ─── GET /api/reddit/thread/:id ─────────────────────
 
 serviceRouter.get('/reddit/thread/*', async (c) => {
-  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = process.env.WALLET_ADDRESS || '';
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -1263,7 +1266,7 @@ const AIRBNB_MARKET_STATS_PRICE = 0.05;
 // ─── GET /api/airbnb/search ─────────────────────────
 
 serviceRouter.get('/airbnb/search', async (c) => {
-  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = process.env.WALLET_ADDRESS || '';
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -1313,7 +1316,7 @@ serviceRouter.get('/airbnb/search', async (c) => {
 // ─── GET /api/airbnb/listing/:id ────────────────────
 
 serviceRouter.get('/airbnb/listing/:id', async (c) => {
-  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = process.env.WALLET_ADDRESS || '';
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -1352,7 +1355,7 @@ serviceRouter.get('/airbnb/listing/:id', async (c) => {
 // ─── GET /api/airbnb/reviews/:listing_id ────────────
 
 serviceRouter.get('/airbnb/reviews/:listing_id', async (c) => {
-  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = process.env.WALLET_ADDRESS || '';
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -1396,7 +1399,7 @@ serviceRouter.get('/airbnb/reviews/:listing_id', async (c) => {
 // ─── GET /api/airbnb/market-stats ───────────────────
 
 serviceRouter.get('/airbnb/market-stats', async (c) => {
-  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = process.env.WALLET_ADDRESS || '';
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -1471,7 +1474,7 @@ serviceRouter.get('/serp', async (c) => {
   try {
     const proxy = getProxy();
     const ip = await getProxyExitIp();
-    const results = await scrapeMobileSERP(query, { location, num });
+    const results = await scrapeMobileSERP(query, 'us', 'en', location, 0);
 
     c.header('X-Payment-Settled', 'true');
     c.header('X-Payment-TxHash', payment.txHash);
@@ -1484,5 +1487,91 @@ serviceRouter.get('/serp', async (c) => {
     });
   } catch (err: any) {
     return c.json({ error: 'SERP scrape failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ═══════════════════════════════════════════════════════
+// ─── WEB CONTENT EXTRACTOR → MARKDOWN (no proxy) ────
+// ═══════════════════════════════════════════════════════
+
+import { extractMarkdown } from './scrapers/markdown';
+
+const EXTRACT_PRICE_USDC = parseFloat(process.env.EXTRACT_PRICE_USDC || '0.005');
+const EXTRACT_DESCRIPTION = 'Web Content Extractor — convert any public URL to clean Markdown. Returns title, meta description, body text, and HTTP metadata. Direct HTTP fetch (no proxy required).';
+const EXTRACT_OUTPUT_SCHEMA = {
+  input: {
+    url: 'string (required) — full URL with protocol (https://example.com)',
+    maxChars: 'number (optional, default 50000) — truncate markdown to N characters (max 200000)',
+    includeLinks: 'boolean (optional, default true) — include hyperlinks in output',
+    includeImages: 'boolean (optional, default true) — include image markdown',
+  },
+  output: {
+    url: 'string — original URL',
+    finalUrl: 'string — URL after redirects',
+    statusCode: 'number — HTTP status code',
+    title: 'string — page <title>',
+    description: 'string — meta description',
+    contentType: 'string — Content-Type header',
+    contentLength: 'number — raw HTML bytes',
+    markdown: 'string — cleaned Markdown content',
+    markdownLength: 'number — markdown character count',
+    truncated: 'boolean — whether output was truncated to maxChars',
+    fetchDurationMs: 'number — time spent fetching',
+    fetchedAt: 'string — ISO 8601 timestamp',
+    payment: '{ txHash, network, amount, settled }',
+  },
+};
+
+serviceRouter.get('/extract', async (c) => {
+  const walletAddress = process.env.WALLET_ADDRESS;
+  if (!walletAddress) {
+    return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+  }
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(
+      build402Response('/api/extract', EXTRACT_DESCRIPTION, EXTRACT_PRICE_USDC, walletAddress, EXTRACT_OUTPUT_SCHEMA),
+      402,
+    );
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, EXTRACT_PRICE_USDC);
+  if (!verification.valid) {
+    return c.json({ error: 'Payment verification failed', reason: verification.error }, 402);
+  }
+
+  const url = c.req.query('url');
+  if (!url) {
+    return c.json({
+      error: 'Missing required parameter: url',
+      example: '/api/extract?url=https://example.com',
+      hint: 'Provide a full URL with protocol',
+    }, 400);
+  }
+
+  const maxChars = parseInt(c.req.query('maxChars') || '50000');
+  if (isNaN(maxChars) || maxChars < 1000) {
+    return c.json({ error: 'Invalid maxChars — must be >= 1000' }, 400);
+  }
+  const includeLinks = c.req.query('includeLinks') !== 'false';
+  const includeImages = c.req.query('includeImages') !== 'false';
+
+  try {
+    const result = await extractMarkdown(url, { maxChars, includeLinks, includeImages });
+
+    c.header('X-Payment-Settled', 'true');
+    c.header('X-Payment-TxHash', payment.txHash);
+
+    return c.json({
+      ...result,
+      payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
+    });
+  } catch (err: any) {
+    return c.json({
+      error: 'Extraction failed',
+      message: err?.message || String(err),
+      hint: 'URL may be unreachable, blocking direct requests, or returning non-HTML content. Some sites require mobile proxy access (Proxies.sx).',
+    }, 502);
   }
 });

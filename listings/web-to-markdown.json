@@ -1,0 +1,44 @@
+{
+  "id": "web-to-markdown",
+  "name": "Web to Markdown Extractor",
+  "description": "Convert any public URL to clean Markdown. Returns title, meta description, body text, and HTTP metadata in one call.",
+  "longDescription": "Direct HTTP fetch with desktop UA → Turndown HTML→Markdown conversion. Strips scripts/styles/iframes/forms. Returns structured JSON with title, description, contentLength, markdown body, fetch duration, and final URL after redirects. No proxy required for most public sites. Useful for: AI agent content extraction, RAG ingestion, article archival, RSS replacement, link preview generation. Per-request x402 USDC payment on Solana or Base.",
+  "endpoint": "https://CONFIGURED_AT_DEPLOY/api/extract",
+  "docsUrl": "https://CONFIGURED_AT_DEPLOY/",
+  "pricing": {
+    "model": "per-request",
+    "amount": "0.005",
+    "minimum": "0.005",
+    "currency": "USDC",
+    "networks": [
+      {
+        "network": "solana",
+        "chainId": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "recipient": "CONFIGURE_WALLET_ADDRESS",
+        "asset": "USDC",
+        "assetAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+      },
+      {
+        "network": "base",
+        "chainId": "eip155:8453",
+        "recipient": "CONFIGURE_WALLET_ADDRESS",
+        "asset": "USDC",
+        "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+      }
+    ]
+  },
+  "category": "scraper",
+  "tags": ["markdown", "web-extraction", "html-to-markdown", "url-to-text", "ai-agent", "rag", "content"],
+  "owner": {
+    "name": "wanshouge",
+    "github": "cjjgh",
+    "telegram": "wanshouge"
+  },
+  "status": "pending",
+  "featured": false,
+  "addedAt": "2026-06-10",
+  "x402": {
+    "discoveryUrl": "https://CONFIGURED_AT_DEPLOY/api/extract",
+    "wellKnown": "https://CONFIGURED_AT_DEPLOY/.well-known/x402.json"
+  }
+}

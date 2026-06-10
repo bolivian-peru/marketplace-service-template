@@ -70,6 +70,7 @@ app.get('/health', (c) => c.json({
     '/api/run',
     '/api/details',
     '/api/serp',
+    '/api/extract',
     '/api/jobs',
     '/api/reviews/search',
     '/api/reviews/:place_id',
@@ -105,6 +106,7 @@ app.get('/', (c) => c.json({
     { method: 'GET', path: '/api/run', description: 'Google Maps Lead Generator — search businesses by category + location', price: '0.005 USDC' },
     { method: 'GET', path: '/api/details', description: 'Google Maps Place Details — detailed business info by Place ID', price: '0.005 USDC' },
     { method: 'GET', path: '/api/serp', description: 'Mobile SERP Tracker — Google search results with organic, ads, PAA, AI overview', price: '0.003 USDC' },
+    { method: 'GET', path: '/api/extract', description: 'Web Content Extractor — convert any URL to clean Markdown (no proxy required)', price: '0.005 USDC' },
     { method: 'GET', path: '/api/jobs', description: 'Get job listings (Indeed/LinkedIn) with salary + date + proxy metadata' },
     { method: 'GET', path: '/api/reviews/search', description: 'Search businesses by query + location', price: '0.01 USDC' },
     { method: 'GET', path: '/api/reviews/:place_id', description: 'Fetch Google reviews by Place ID', price: '0.02 USDC' },
@@ -137,7 +139,7 @@ app.get('/', (c) => c.json({
       {
         network: 'solana',
         chainId: 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
-        recipient: '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv',
+        recipient: process.env.WALLET_ADDRESS || 'CONFIGURE_WALLET_ADDRESS',
         asset: 'USDC',
         assetAddress: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
         settlementTime: '~400ms',
@@ -145,7 +147,7 @@ app.get('/', (c) => c.json({
       {
         network: 'base',
         chainId: 'eip155:8453',
-        recipient: '0xF8cD900794245fc36CBE65be9afc23CDF5103042',
+        recipient: process.env.WALLET_ADDRESS_BASE || process.env.WALLET_ADDRESS || 'CONFIGURE_WALLET_ADDRESS',
         asset: 'USDC',
         assetAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
         settlementTime: '~2s',
@@ -162,7 +164,7 @@ app.get('/', (c) => c.json({
 
 app.route('/api', serviceRouter);
 
-app.notFound((c) => c.json({ error: 'Not found', endpoints: ['/', '/health', '/api/run', '/api/details', '/api/serp', '/api/jobs', '/api/reviews/search', '/api/reviews/:place_id', '/api/business/:place_id', '/api/reviews/summary/:place_id', '/api/linkedin/person', '/api/linkedin/company', '/api/linkedin/search/people', '/api/reddit/search', '/api/reddit/trending', '/api/reddit/subreddit/:name', '/api/reddit/thread/*', '/api/instagram/profile/:username', '/api/instagram/posts/:username', '/api/instagram/analyze/:username', '/api/instagram/audit/:username', '/api/airbnb/search', '/api/airbnb/listing/:id', '/api/airbnb/reviews/:listing_id', '/api/airbnb/market-stats', '/api/research', '/api/trending'] }, 404));
+app.notFound((c) => c.json({ error: 'Not found', endpoints: ['/', '/health', '/api/run', '/api/details', '/api/serp', '/api/extract', '/api/jobs', '/api/reviews/search', '/api/reviews/:place_id', '/api/business/:place_id', '/api/reviews/summary/:place_id', '/api/linkedin/person', '/api/linkedin/company', '/api/linkedin/search/people', '/api/reddit/search', '/api/reddit/trending', '/api/reddit/subreddit/:name', '/api/reddit/thread/*', '/api/instagram/profile/:username', '/api/instagram/posts/:username', '/api/instagram/analyze/:username', '/api/instagram/audit/:username', '/api/airbnb/search', '/api/airbnb/listing/:id', '/api/airbnb/reviews/:listing_id', '/api/airbnb/market-stats', '/api/research', '/api/trending'] }, 404));
 
 app.onError((err, c) => {
   console.error(`[ERROR] ${err.message}`);

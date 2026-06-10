@@ -10,10 +10,12 @@
     "proof:indeed": "bun run scripts/proof-indeed.ts"
   },
   "dependencies": {
-    "hono": "^4.6.0"
+    "hono": "^4.6.0",
+    "turndown": "^7.2.4"
   },
   "devDependencies": {
     "@types/bun": "latest",
+    "@types/turndown": "^5.0.6",
     "typescript": "^5.0.0"
   },
   "keywords": [
