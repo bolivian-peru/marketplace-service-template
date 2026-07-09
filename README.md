@@ -1,28 +1,22 @@
-# Marketplace Service Template - Enhanced with Mobile SERP Tracker, Google Maps Lead Generator, and Google Reviews & Business Data API
-**Turn AI agent traffic into passive USDC income.**
+# Marketplace Service Template
 
 
 Fork this repo → edit one file → deploy → start earning.
 
-You provide the idea. We provide 155+ mobile devices across 6 countries, x402 payment rails, and the marketplace to find customers.
+You provide the idea. We provide 148 mobile devices across 6 countries (DE, PL, US, FR, ES, GB), x402 payment rails (Solana + Base), and the marketplace to find customers. **Now includes: Mobile SERP Tracker, Google Maps Lead Generator, and Google Reviews & Business Data API.**
 
 > **Reference implementation included:** This repo ships with a working **Google Maps Lead Generator** (`src/service.ts` + `src/scrapers/`) built by [@aliraza556](https://github.com/aliraza556). Use it as-is or replace with your own service logic.
+
 
 ## The Economics
 
 You're arbitraging infrastructure. Buy proxy bandwidth wholesale, sell API calls retail.
 
-> **Reference implementation included:** This repo ships with a working **Google Maps Lead Generator** (`src/service.ts` + `src/scrapers/`) built by [@aliraza556](https://github.com/aliraza556). Use it as-is or replace with your own service logic.
+**Proxy cost:** flat **$4/GB** — one simple rate, all 6 countries, mobile + residential ([live pricing](https://api.proxies.sx/v1/x402/pricing)). Duration is free; you only pay for the GB you actually use.
 
-> **Additional Services:**
-> - **Mobile SERP Tracker** (`src/service.ts` + `src/scrapers/`)
-> - **Google Maps Lead Generator** (`src/service.ts` + `src/scrapers/`)
-> - **Google Reviews & Business Data API** (`src/service.ts` + `src/scrapers/`)
+Your margin depends on what you're scraping:
 
-
-## The Economics
-
-You're arbitraging infrastructure. Buy proxy bandwidth wholesale, sell API calls retail.
+| Use Case | Avg Size | Reqs/GB | Cost/Req | You Charge | Margin |
 |----------|----------|---------|----------|------------|--------|
 | JSON APIs | ~10 KB | 100k | $0.00004 | $0.001 | **97%** |
 | Text extraction | ~50 KB | 20k | $0.0002 | $0.005 | **96%** |
@@ -50,8 +44,8 @@ You're arbitraging infrastructure. Buy proxy bandwidth wholesale, sell API calls
 git clone https://github.com/YOUR_USERNAME/marketplace-service-template
 cd marketplace-service-template
 
-cp .env.example .env
-# Edit .env: set WALLET_ADDRESS + PROXY_* credentials
+
+Test it:
 
 bun install
 bun run dev
@@ -107,20 +101,12 @@ AI Agent                         Your Service                    Blockchain
 ```
 
 Supports **Solana** (~400ms, ~$0.0001 gas) and **Base** (~2s, ~$0.01 gas).
-  // ... payment check + verification (already wired) ...
 
-  // YOUR LOGIC HERE:
-  if (c.req.url.pathname === '/api/serp-tracker') {
-    const result = await proxyFetch('https://serp-tracker-api.com');
-    return c.json({ data: await result.text() });
-  }
-  if (c.req.url.pathname === '/api/google-maps-lead-generator') {
-    const result = await proxyFetch('https://google-maps-lead-generator-api.com');
-    return c.json({ data: await result.text() });
-  }
-  if (c.req.url.pathname === '/api/google-reviews') {
-    const result = await proxyFetch('https://google-reviews-api.com');
-    return c.json({ data: await result.text() });
+## What's Included
+
+| File | Purpose | Edit? |
+|------|---------|-------|
+| `src/service.ts` | Your service logic, pricing, description | **Yes** |
 | `src/scrapers/maps-scraper.ts` | Google Maps scraping logic (reference impl) | Replace with yours |
 | `src/types/index.ts` | TypeScript interfaces | Replace with yours |
 | `src/utils/helpers.ts` | Extraction helper functions | Replace with yours |
@@ -144,48 +130,37 @@ See [SECURITY.md](SECURITY.md) for production hardening.
 
 ## Live Services
 
-These services are live on the marketplace right now:
+**9 services / 23 endpoints** verified live in production (last audit 2026-04-28).
+Browse the full catalog: [agents.proxies.sx/marketplace](https://agents.proxies.sx/marketplace/) or [skill.md](https://agents.proxies.sx/marketplace/skill.md).
 
-| Service | Price | Builder | Status |
-|---------|-------|---------|--------|
-| [Mobile Proxy](https://agents.proxies.sx/marketplace/proxy/) | $4/GB shared, $8/GB private | Proxies.sx | Live |
-| [Antidetect Browser](https://agents.proxies.sx/marketplace/browser/) | $0.005/min | Proxies.sx | Live |
-| [Google Maps Lead Generator](https://agents.proxies.sx/marketplace/google-maps-lead-generator/) | $0.005/record | [@aliraza556](https://github.com/aliraza556) | Live |
-| [Mobile SERP Tracker](https://agents.proxies.sx/marketplace/serp-tracker/) | $0.003/query | [@aliraza556](https://github.com/aliraza556) | Live |
-| [Job Market Intelligence](https://bounty16-job-market-intelligence.onrender.com) | $0.005/query | [@Lutra23](https://github.com/Lutra23) | Live |
-| [Prediction Market Aggregator](https://marketplace-service-template.onrender.com) | $0.05/query | [@rakesh0x](https://github.com/rakesh0x) | Live |
+| Service | Endpoints | Price | Builder |
+|---------|-----------|-------|---------|
+| [Mobile Proxy](https://agents.proxies.sx/marketplace/proxy/) | `/v1/x402/proxy` | flat $4/GB | Proxies.sx |
+| [Google Maps Lead Generator](https://agents.proxies.sx/marketplace/google-maps-lead-generator/) | `/maps/run`, `/maps/details` | $0.005/record | [@aliraza556](https://github.com/aliraza556) |
+| [Mobile SERP Tracker](https://agents.proxies.sx/marketplace/serp-tracker/) | `/serp/run` | $0.003/query | [@aliraza556](https://github.com/aliraza556) |
+| Reviews & Business Data | `/reviews/*`, `/business/:id` | $0.005–$0.02 | [@aliraza556](https://github.com/aliraza556) |
+| Job Market Intelligence | `/jobs` | $0.005/query | [@Lutra23](https://github.com/Lutra23) |
+| Reddit Intelligence | `/reddit/*` (4 endpoints) | $0.005–$0.01 | [@TheAuroraAI](https://github.com/TheAuroraAI) |
+| Instagram Intelligence + AI Vision | `/instagram/*` (5 endpoints) | $0.01–$0.15 | [@TheAuroraAI](https://github.com/TheAuroraAI) |
+| LinkedIn Enrichment | `/linkedin/*` (4 endpoints) | $0.01/query | [@TheAuroraAI](https://github.com/TheAuroraAI) |
+| Airbnb Market Intelligence | `/airbnb/*` (4 endpoints) | $0.01–$0.05 | [@TheAuroraAI](https://github.com/TheAuroraAI) |
 
-## Open Bounties — $1,200+ in $SX Tokens
+All endpoints under `https://api.proxies.sx/v1/x402/`. Each returns HTTP 402 → pay USDC → retry with `Payment-Signature` header → get JSON.
 
-Build a service, earn $SX tokens. Full specs in each issue.
+## Open Source, Public Good (fixed $SX bounties discontinued)
 
-| Bounty | Amount | Difficulty | Issue |
-|--------|--------|------------|-------|
-| Instagram Intelligence + AI Vision | $200 | Hard | [#71](https://github.com/bolivian-peru/marketplace-service-template/issues/71) |
-| X/Twitter Real-Time Search | $100 | Hard | [#73](https://github.com/bolivian-peru/marketplace-service-template/issues/73) |
-| LinkedIn People Enrichment | $100 | Hard | [#77](https://github.com/bolivian-peru/marketplace-service-template/issues/77) |
-| Trend Intelligence (Cross-Platform) | $100 | Hard | [#70](https://github.com/bolivian-peru/marketplace-service-template/issues/70) |
-| Prediction Market Aggregator | $100 | Hard | [#55](https://github.com/bolivian-peru/marketplace-service-template/issues/55) |
-| Amazon Product & BSR Tracker | $75 | Medium | [#72](https://github.com/bolivian-peru/marketplace-service-template/issues/72) |
-| Facebook Marketplace Monitor | $75 | Medium-Hard | [#75](https://github.com/bolivian-peru/marketplace-service-template/issues/75) |
-| Airbnb Market Intelligence | $75 | Medium-Hard | [#78](https://github.com/bolivian-peru/marketplace-service-template/issues/78) |
-| Real Estate Intelligence (Zillow) | $75 | Medium-Hard | [#79](https://github.com/bolivian-peru/marketplace-service-template/issues/79) |
-| TikTok Trend Intelligence | $75 | Hard | [#51](https://github.com/bolivian-peru/marketplace-service-template/issues/51) |
-| Google Discover Feed Intel | $75 | Hard | [#52](https://github.com/bolivian-peru/marketplace-service-template/issues/52) |
-| Reddit Intelligence | $50 | Easy-Medium | [#68](https://github.com/bolivian-peru/marketplace-service-template/issues/68) |
-| Google Reviews Extractor | $50 | Medium | [#74](https://github.com/bolivian-peru/marketplace-service-template/issues/74) |
-| Food Delivery Price Intel | $50 | Medium | [#76](https://github.com/bolivian-peru/marketplace-service-template/issues/76) |
-| App Store Intelligence | $50 | Medium | [#54](https://github.com/bolivian-peru/marketplace-service-template/issues/54) |
-| Ad Verification & Creative Intel | $50 | Medium | [#53](https://github.com/bolivian-peru/marketplace-service-template/issues/53) |
+**This is an open-source, community-maintained project (MIT).** Build and run useful public scrapers on shared mobile-proxy infrastructure — for the public good and for your own benefit.
 
-**Rules:**
-1. Must use Proxies.sx mobile proxies
-2. Must gate with x402 USDC payments
-3. Must deploy a live, working service
-4. Submit a PR with deployment URL + proof data
-5. $SX tokens paid after merge and verification
+**Your income comes from your customers, not from us.** When AI agents call your service, they pay *you* USDC directly via x402 — you keep 100% of that (see "The Economics" above). That is the real, honest upside, and it's uncapped: a good service earns while you sleep.
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for full submission guide.
+**Fixed $SX bounties are discontinued.** We no longer post guaranteed-amount bounties. Instead:
+
+- **Discretionary $SX rewards.** We may grant $SX to maintainers whose contributions we find genuinely valuable — at our discretion, when warranted. It is a thank-you for outstanding work, **not** a promised or guaranteed payout. Don't build expecting a fixed reward; build because the service earns you USDC and is useful.
+- **Existing submissions made under the previous bounty terms** will be reviewed and handled in good faith — see the pinned transition notice in Issues.
+
+**AI agents welcome.** Fork it, build a clean public scraper, deploy it, and maintain it. Open a PR or a "New Service" issue. The bar is real, useful, well-documented services — quality over quantity.
+
+Questions: [agents@proxies.sx](mailto:agents@proxies.sx) · [@proxyforai](https://t.me/proxyforai)
 
 ## Get Proxy Credentials
 
@@ -197,7 +172,7 @@ curl https://api.proxies.sx/v1/x402/proxy?country=US&traffic=1
 # Returns 402 → pay USDC → get credentials
 ```
 
-**Option C:** MCP Server (59 tools):
+**Option C:** MCP Server (55 tools — works in Claude Desktop, Cursor, Windsurf):
 ```bash
 npx -y @proxies-sx/mcp-server
 ```
