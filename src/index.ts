@@ -1,14 +1,14 @@
 /**
  * Marketplace Service — Server Entry Point
- * ──────────────────────────────────────────
+ * ─────────────────────────────────────────
  * Mounts: /api/*
  */
-
-import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { serviceRouter } from './service';
-import { serpRouter } from './serp-tracker';
+import { serpRouter } from './serp';
+
+const app = new Hono();
 
 const app = new Hono();
 
@@ -66,45 +66,24 @@ app.get('/health', (c) => c.json({
   status: 'healthy',
   service: process.env.SERVICE_NAME || 'marketplace-service',
   version: '2.0.0',
-  ],
-}));
-
-// Mount SERP tracker router
-app.route('/api', serpRouter);
-
-app.get('/', (c) => c.json({
-  name: process.env.SERVICE_NAME || 'marketplace-service-hub',
-  description: process.env.SERVICE_DESCRIPTION || 'AI agent intelligence services powered by real 4G/5G mobile proxies.',
+  timestamp: new Date().toISOString(),
+  endpoints: [
+    '/api/run',
+    '/api/details',
+    '/api/serp',
+    '/api/jobs',
     '/api/reviews/search',
     '/api/reviews/:place_id',
     '/api/reviews/summary/:place_id',
     '/api/business/:place_id',
     '/api/linkedin/person',
     '/api/linkedin/company',
-    { method: 'GET', path: '/api/reviews/search', description: 'Search businesses by query + location', price: '0.01 USDC' },
-    { method: 'GET', path: '/api/reviews/:place_id', description: 'Fetch Google reviews by Place ID', price: '0.02 USDC' },
-    { method: 'GET', path: '/api/business/:place_id', description: 'Get business details + review summary', price: '0.01 USDC' },
-    { method: 'GET', path: '/api/linkedin/person', description: 'LinkedIn person profile lookup', price: '0.01 USDC' },
-    { method: 'GET', path: '/api/linkedin/company', description: 'LinkedIn company profile lookup', price: '0.01 USDC' },
-    { method: 'GET', path: '/api/linkedin/search/people', description: 'LinkedIn people search', price: '0.01 USDC' },
-    { method: 'GET', path: '/api/linkedin/company/:id/employees', description: 'LinkedIn company employees', price: '0.01 USDC' },
-    { method: 'GET', path: '/api/reddit/search', description: 'Reddit search', price: '0.005 USDC' },
-    { method: 'GET', path: '/api/reddit/trending', description: 'Reddit trending posts', price: '0.005 USDC' },
-    { method: 'GET', path: '/api/reddit/subreddit/:name', description: 'Reddit subreddit info', price: '0.005 USDC' },
-    { method: 'GET', path: '/api/reddit/thread/*', description: 'Reddit thread details', price: '0.005 USDC' },
-    { method: 'GET', path: '/api/instagram/profile/:username', description: 'Instagram profile lookup', price: '0.01 USDC' },
-    { method: 'GET', path: '/api/instagram/posts/:username', description: 'Instagram posts', price: '0.01 USDC' },
-    { method: 'GET', path: '/api/instagram/analyze/:username', description: 'Instagram profile analysis', price: '0.02 USDC' },
-    { method: 'GET', path: '/api/instagram/analyze/:username/images', description: 'Instagram image analysis', price: '0.02 USDC' },
-    { method: 'GET', path: '/api/instagram/audit/:username', description: 'Instagram audit report', price: '0.02 USDC' },
-    { method: 'GET', path: '/api/airbnb/search', description: 'Airbnb property search', price: '0.01 USDC' },
-    { method: 'GET', path: '/api/airbnb/listing/:id', description: 'Airbnb listing details', price: '0.01 USDC' },
-    { method: 'GET', path: '/api/airbnb/reviews/:listing_id', description: 'Airbnb reviews', price: '0.01 USDC' },
-    { method: 'GET', path: '/api/airbnb/market-stats', description: 'Airbnb market statistics', price: '0.01 USDC' },
-    { method: 'GET', path: '/api/research', description: 'Deep research endpoint', price: '0.05 USDC' },
-    { method: 'GET', path: '/api/trending', description: 'Trending topics', price: '0.003 USDC' },
-  ],
-}));
+    '/api/linkedin/search/people',
+    '/api/linkedin/company/:id/employees',
+    '/api/reddit/search',
+    '/api/reddit/trending',
+    '/api/reddit/subreddit/:name',
+    '/api/reddit/thread/*',
     '/api/instagram/profile/:username',
     '/api/instagram/posts/:username',
     '/api/instagram/analyze/:username',
@@ -112,12 +91,15 @@ app.get('/', (c) => c.json({
     '/api/instagram/audit/:username',
     '/api/airbnb/search',
     '/api/airbnb/listing/:id',
-    '/api/airbnb/reviews/:listing_id',
-    '/api/airbnb/market-stats',
-    '/api/research',
-    '/api/trending',
   ],
 }));
+
+// ─── MOUNT SERP ROUTER ──────────────────────────────
+app.route('/api/serp', serpRouter);
+
+app.get('/', (c) => c.json({
+  name: process.env.SERVICE_NAME || 'marketplace-service-hub',
+  description: process.env.SERVICE_DESCRIPTION || 'AI agent intelligence services powered by real 4G/5G mobile proxies.',
 
 app.get('/', (c) => c.json({
   name: process.env.SERVICE_NAME || 'marketplace-service-hub',
