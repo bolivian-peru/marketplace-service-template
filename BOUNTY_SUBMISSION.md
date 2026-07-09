@@ -1,6 +1,57 @@
-# Bounty Submission: Job Market Intelligence (Bounty #16)
+# Bounty Submissions
 
-**PR:** https://github.com/bolivian-peru/marketplace-service-template/pull/48  
+## Claimed Bounties
+
+### Wave 2 — $50 Bounties
+
+#### Mobile SERP Tracker ($50) — CLAIMED
+- **PR:** [#33](https://github.com/bolivian-peru/marketplace-service-template/pull/33)
+- **Endpoint:** https://agents.proxies.sx/marketplace/serp-tracker/
+- **Status:** Merged, Deployed
+- **Payout Wallet:** `FGwFKvS9MNFdEJDWBB4VAqFakdV1BAjHudyDYmBWNJRJ`
+
+#### Google Maps Lead Generator ($50) — CLAIMED
+- **PR:** [#17](https://github.com/bolivian-peru/marketplace-service-template/pull/17)
+- **Endpoint:** https://agents.proxies.sx/marketplace/google-maps-lead-generator/
+- **Status:** Merged, Deployed
+- **Payout Wallet:** `FGwFKvS9MNFdEJDWBB4VAqFakdV1BAjHudyDYmBWNJRJ`
+
+#### Google Reviews & Business Data API ($50) — CLAIMED
+- **PR:** [#87](https://github.com/bolivian-peru/marketplace-service-template/pull/87)
+- **Endpoint:** https://marketplace-service-template-production.up.railway.app/
+- **Status:** Merged, Deployed
+- **Payout Wallet:** `FGwFKvS9MNFdEJDWBB4VAqFakdV1BAjHudyDYmBWNJRJ`
+
+## Checklist Verification
+
+- [x] Uses Proxies.sx mobile proxies (`/v1/x402/proxy` or existing port)
+- [x] Gated with x402 USDC payments (returns 402 without payment)
+- [x] Working and deployed at a reachable endpoint
+- [x] Returns structured data (JSON)
+
+## Payout Information
+
+- **Solana USDC Wallet:** `FGwFKvS9MNFdEJDWBB4VAqFakdV1BAjHudyDYmBWNJRJ`
+- **Amount:** $150 total (3 × $50 Wave 2 bounties)
+
+---
+
+### Unclaimed Bounties
+
+#### Wave 1 — $200 Bounties
+- [ ] Google SERP + AI Search Scraper ($200)
+- [ ] Gmail Account Creator + Warmer ($200)
+- [ ] Instagram Account Creator + Warmer ($200)
+
+#### Wave 2 — $50 Bounties (Remaining)
+- [ ] E-Commerce Price & Stock Monitor ($50)
+- [ ] Social Profile Intelligence API ($50)
+- [ ] Ad Spy & Creative Intelligence ($50)
+- [ ] Travel Price Tracker API ($50)
+- [ ] Ad Verification & Brand Safety ($50)
+- [ ] Review & Reputation Monitor ($50)
+- [ ] Real Estate Listing Aggregator ($50)
+- [ ] Job Market Intelligence API ($50)
 **Live deployment:** https://bounty16-job-market-intelligence.onrender.com  
 **Branch:** `bounty-16-jobs`
 

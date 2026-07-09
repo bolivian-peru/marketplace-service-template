@@ -7,13 +7,36 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
-import { serviceRouter } from './service';
-
-const app = new Hono();
-
-// ─── MIDDLEWARE ──────────────────────────────────────
-
-app.use('*', logger());
+app.get('/', (c) => {
+  return c.json({
+    name: 'marketplace-service-template',
+    version: '1.1.0',
+    services: [
+      {
+        name: 'google-maps-lead-generator',
+        endpoint: '/google-maps/api/run',
+        description: 'Generate leads from Google Maps searches',
+        price_usdc: 0.005,
+        parameters: ['query', 'location']
+      },
+      {
+        name: 'mobile-serp-tracker',
+        endpoint: '/serp-tracker/api/run',
+        description: 'Track search engine results pages via mobile proxies',
+        price_usdc: 0.005,
+        parameters: ['keyword', 'location', 'device']
+      },
+      {
+        name: 'google-reviews-api',
+        endpoint: '/google-reviews/api/run',
+        description: 'Fetch Google reviews and business data',
+        price_usdc: 0.005,
+        parameters: ['place_id', 'business_name']
+      }
+    ],
+    endpoints: {
+      health: '/health',
+      service: '/api/run'
 
 app.use('*', cors({
   origin: '*',

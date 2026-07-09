@@ -2,13 +2,13 @@
 
 **Turn AI agent traffic into passive USDC income.**
 
-Fork this repo → edit one file → deploy → start earning.
 
 You provide the idea. We provide 148 mobile devices across 6 countries (DE, PL, US, FR, ES, GB), x402 payment rails (Solana + Base), and the marketplace to find customers.
 
-> **Reference implementation included:** This repo ships with a working **Google Maps Lead Generator** (`src/service.ts` + `src/scrapers/`) built by [@aliraza556](https://github.com/aliraza556). Use it as-is or replace with your own service logic.
+> **Reference implementations included:** This repo ships with three working services: **Mobile SERP Tracker**, **Google Maps Lead Generator**, and **Google Reviews & Business Data API** (`src/service.ts` + `src/scrapers/`). Use them as-is or replace with your own service logic.
 
 ## The Economics
+
 
 You're arbitraging infrastructure. Buy proxy bandwidth wholesale, sell API calls retail.
 
@@ -45,11 +45,14 @@ git clone https://github.com/YOUR_USERNAME/marketplace-service-template
 cd marketplace-service-template
 
 cp .env.example .env
-# Edit .env: set WALLET_ADDRESS + PROXY_* credentials
+curl http://localhost:3000/health
+# → {"status":"healthy","service":"my-service",...}
 
-bun install
-bun run dev
-```
+curl http://localhost:3000/
+# → Service discovery JSON (AI agents read this)
+
+curl "http://localhost:3000/api/run?query=plumbers&location=Austin+TX"
+# → 402 with payment instructions (this is correct!)
 
 Test it:
 ```bash

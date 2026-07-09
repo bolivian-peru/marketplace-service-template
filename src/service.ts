@@ -1,43 +1,88 @@
-/**
- * Service Router — Marketplace API
- *
- * Exposes:
- *   GET /api/run       (Google Maps Lead Generator)
+import { Hono } from 'hono';
+import { proxyFetch } from './proxy';
+import { mobileSerpTracker } from './scrapers/mobile-serp-tracker';
+import { googleMapsLeadGenerator } from './scrapers/google-maps-lead-generator';
+import { googleReviewsBusinessData } from './scrapers/google-reviews-business-data';
+
+const SERVICE_NAME = 'marketplace-service';
+const PRICE_USDC = 0.005;
  *   GET /api/details   (Google Maps Place details)
- *   GET /api/jobs      (Job Market Intelligence)
- *   GET /api/reviews/* (Google Reviews & Business Data)
- *   GET /api/airbnb/*  (Airbnb Market Intelligence)
- *   GET /api/reddit/*  (Reddit Intelligence)
- *   GET /api/instagram/* (Instagram Intelligence + AI Vision)
- *   GET /api/linkedin/* (LinkedIn Enrichment)
- */
+
+const app = new Hono();
+
+// Health check endpoint
+app.get('/health', (c) => {
+  return c.json({
+    status: 'healthy',
 
 import { Hono } from 'hono';
-import { proxyFetch, getProxy } from './proxy';
-import { extractPayment, verifyPayment, build402Response } from './payment';
-import { scrapeIndeed, scrapeLinkedIn, type JobListing } from './scrapers/job-scraper';
-import { fetchReviews, fetchBusinessDetails, fetchReviewSummary, searchBusinesses } from './scrapers/reviews';
-import { scrapeGoogleMaps, extractDetailedBusiness } from './scrapers/maps-scraper';
-import { researchRouter } from './routes/research';
-import { trendingRouter } from './routes/trending';
+  });
+});
+
+// Service discovery endpoint (AI agents read this)
+app.get('/', (c) => {
+  return c.json({
+    name: SERVICE_NAME,
 import { searchAirbnb, getListingDetail, getListingReviews, getMarketStats } from './scrapers/airbnb-scraper';
-import { 
-  scrapeLinkedInPerson, 
-  scrapeLinkedInCompany, 
-  searchLinkedInPeople, 
-  findCompanyEmployees 
-} from './scrapers/linkedin-enrichment';
-import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
-import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
+    price_usdc: PRICE_USDC,
+    endpoints: {
+      health: '/health',
+      'mobile-serp-tracker': '/api/mobile-serp-tracker',
+      'google-maps-lead-generator': '/api/google-maps-lead-generator',
+      'google-reviews-business-data': '/api/google-reviews-business-data'
+    }
+  });
+});
 
-export const serviceRouter = new Hono();
+// Mobile SERP Tracker endpoint
+app.get('/api/mobile-serp-tracker', async (c) => {
+  const query = c.req.query('query');
+  const location = c.req.query('location');
+  const device = c.req.query('device') || 'mobile';
+  
+  if (!query) {
+    return c.json({ error: 'query parameter is required' }, 400);
+  }
+  
+  try {
+    const result = await mobileSerpTracker({ query, location, device });
+    return c.json({ success: true, data: result });
+  } catch (error) {
+    return c.json({ error: error.message }, 500);
+  }
+});
 
-// ─── TREND INTELLIGENCE ROUTES (Bounty #70) ─────────
-serviceRouter.route('/research', researchRouter);
-serviceRouter.route('/trending', trendingRouter);
+// Google Maps Lead Generator endpoint
+app.get('/api/google-maps-lead-generator', async (c) => {
+  const query = c.req.query('query');
+  const location = c.req.query('location');
+  
+  if (!query || !location) {
+    return c.json({ error: 'query and location parameters are required' }, 400);
+  }
+  
+  try {
+    const result = await googleMapsLeadGenerator({ query, location });
+    return c.json({ success: true, data: result });
+  } catch (error) {
+    return c.json({ error: error.message }, 500);
+  }
+});
 
-const SERVICE_NAME = 'job-market-intelligence';
-const PRICE_USDC = 0.005;
+// Google Reviews & Business Data API endpoint
+app.get('/api/google-reviews-business-data', async (c) => {
+  const placeId = c.req.query('place_id');
+  const businessName = c.req.query('business_name');
+  
+  if (!placeId && !businessName) {
+    return c.json({ error: 'place_id or business_name parameter is required' }, 400);
+  }
+  
+  try {
+    const result = await googleReviewsBusinessData({ placeId, businessName });
+    return c.json({ success: true, data: result });
+  } catch (error) {
+    return c.json({ error: error.message }, 500);
 const DESCRIPTION = 'Job Market Intelligence API (Indeed/LinkedIn): title, company, location, salary, date, link, remote + proxy exit metadata.';
 const MAPS_PRICE_USDC = 0.005;
 const MAPS_DESCRIPTION = 'Extract structured business data from Google Maps: name, address, phone, website, email, hours, ratings, reviews, categories, and geocoordinates. Search by category + location with full pagination.';
