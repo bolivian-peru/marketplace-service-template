@@ -1,18 +1,12 @@
 # Marketplace Service Template
 
-**Turn AI agent traffic into passive USDC income.** — Now with Mobile SERP Tracker, Google Maps Lead Generator, and Google Reviews & Business Data API.
 
 Fork this repo → edit one file → deploy → start earning.
 
-You provide the idea. We provide 148 mobile devices across 6 countries (DE, PL, US, FR, ES, GB), x402 payment rails (Solana + Base), and the marketplace to find customers.
+You provide the idea. We provide 148 mobile devices across 6 countries (DE, PL, US, FR, ES, GB), x402 payment rails (Solana + Base), and the marketplace to find customers. This template now includes three production-ready services: **Mobile SERP Tracker**, **Google Maps Lead Generator**, and **Google Reviews & Business Data API**.
 
 > **Reference implementation included:** This repo ships with a working **Google Maps Lead Generator** (`src/service.ts` + `src/scrapers/`) built by [@aliraza556](https://github.com/aliraza556). Use it as-is or replace with your own service logic.
 
-> **Additional services available:**
-> - **Mobile SERP Tracker** — Track search engine rankings from real mobile devices across 6 countries. Endpoint: `https://agents.proxies.sx/marketplace/serp-tracker/`
-> - **Google Maps Lead Generator** — Extract business leads from Google Maps with mobile proxies. Endpoint: `https://agents.proxies.sx/marketplace/google-maps-lead-generator/`
-> - **Google Reviews & Business Data API** — Fetch reviews and business details from Google. Endpoint: `https://marketplace-service-template-production.up.railway.app/`
-> - All services use Proxies.sx mobile proxies, x402 USDC payments, and return structured JSON.
 
 ## The Economics
 
@@ -48,9 +42,9 @@ Your margin depends on what you're scraping:
 ```bash
 # Fork this repo, then:
 git clone https://github.com/YOUR_USERNAME/marketplace-service-template
-cd marketplace-service-template
 
-cp .env.example .env
+Test it:
+
 # Edit .env: set WALLET_ADDRESS + PROXY_* credentials
 
 bun install
