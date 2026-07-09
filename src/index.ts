@@ -1,32 +1,46 @@
-import { Hono } from 'hono'
-import { cors } from 'hono/cors'
-import { logger } from 'hono/logger'
-import { serviceRouter as googleMapsRouter } from './service'
-import { serpTrackerRouter } from './serp-tracker'
-import { googleReviewsRouter } from './google-reviews'
+/**
+ * Marketplace Service — Server Entry Point
+ * ─────────────────────────────────────────
+ * Mounts: /api/*
+ */
 
-const app = new Hono()
+import { Hono } from 'hono';
+import { cors } from 'hono/cors';
+import { logger } from 'hono/logger';
+app.get('/', (c) => {
+  return c.json({
+    name: 'marketplace-service-template',
+    version: '1.1.0',
+    services: [
+      {
+        name: 'google-maps-lead-generator',
+        endpoint: '/google-maps/api/run',
+        description: 'Generate leads from Google Maps searches',
+        price_usdc: 0.005,
+        parameters: ['query', 'location']
+      },
+      {
+        name: 'mobile-serp-tracker',
+        endpoint: '/serp-tracker/api/run',
+        description: 'Track search engine results pages via mobile proxies',
+        price_usdc: 0.005,
+        parameters: ['keyword', 'location', 'device']
+      },
+      {
+        name: 'google-reviews-api',
+        endpoint: '/google-reviews/api/run',
+        description: 'Fetch Google reviews and business data',
+        price_usdc: 0.005,
+        parameters: ['place_id', 'business_name']
+      }
+    ],
+    endpoints: {
+      health: '/health',
+      service: '/api/run'
 
-app.use('*', cors())
-app.use('*', logger())
-import { serviceRouter } from './service';
-
-const app = new Hono();
-
-// ─── MIDDLEWARE ──────────────────────────────────────
-  })
-})
-
-// Google Maps Lead Generator (reference implementation)
-app.route('/google-maps', googleMapsRouter)
-
-// Mobile SERP Tracker
-app.route('/serp-tracker', serpTrackerRouter)
-
-// Google Reviews & Business Data API
-app.route('/google-reviews', googleReviewsRouter)
-
-export default app
+app.use('*', cors({
+  origin: '*',
+  allowHeaders: ['Content-Type', 'Payment-Signature', 'X-Payment-Signature', 'X-Payment-Network'],
   exposeHeaders: ['X-Payment-Settled', 'X-Payment-TxHash', 'Retry-After'],
 }));
 
