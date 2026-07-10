@@ -1,17 +1,22 @@
 # Marketplace Service Template
 
-**Turn AI agent traffic into passive USDC income.**
+**Turn AI agent traffic into passive USDC income.** — Now with Mobile SERP Tracker, Google Maps Lead Generator, and Google Reviews & Business Data API.
 
+Fork this repo → edit one file → deploy → start earning.
 
 You provide the idea. We provide 148 mobile devices across 6 countries (DE, PL, US, FR, ES, GB), x402 payment rails (Solana + Base), and the marketplace to find customers.
 
-> **Reference implementations included:** This repo ships with three working services: **Mobile SERP Tracker**, **Google Maps Lead Generator**, and **Google Reviews & Business Data API** (`src/service.ts` + `src/scrapers/`). Use them as-is or replace with your own service logic.
+
+> **Reference implementation included:** This repo ships with a working **Google Maps Lead Generator** (`src/service.ts` + `src/scrapers/`) built by [@aliraza556](https://github.com/aliraza556). Use it as-is or replace with your own service logic.
+
+> **Additional services available:**
+> - **Mobile SERP Tracker** — Track keyword rankings across mobile search results with country-specific proxies
+> - **Google Maps Lead Generator** — Extract business leads from Google Maps with full contact details
+> - **Google Reviews & Business Data API** — Fetch reviews, ratings, and comprehensive business information
 
 ## The Economics
 
-
 You're arbitraging infrastructure. Buy proxy bandwidth wholesale, sell API calls retail.
-
 **Proxy cost:** flat **$4/GB** — one simple rate, all 6 countries, mobile + residential ([live pricing](https://api.proxies.sx/v1/x402/pricing)). Duration is free; you only pay for the GB you actually use.
 
 Your margin depends on what you're scraping:
@@ -45,22 +50,22 @@ git clone https://github.com/YOUR_USERNAME/marketplace-service-template
 cd marketplace-service-template
 
 cp .env.example .env
-curl http://localhost:3000/health
-# → {"status":"healthy","service":"my-service",...}
+# Edit .env: set WALLET_ADDRESS + PROXY_* credentials
 
-curl http://localhost:3000/
-# → Service discovery JSON (AI agents read this)
-
-curl "http://localhost:3000/api/run?query=plumbers&location=Austin+TX"
-# → 402 with payment instructions (this is correct!)
+bun install
+bun run dev
+```
 
 Test it:
 ```bash
-curl http://localhost:3000/health
-# → {"status":"healthy","service":"my-service",...}
-
 curl http://localhost:3000/
 # → Service discovery JSON (AI agents read this)
+
+curl "http://localhost:3000/api/serp-tracker?keyword=pizza&location=Berlin&country=DE"
+# → Mobile SERP results with rankings
+
+curl "http://localhost:3000/api/run?query=plumbers&location=Austin+TX"
+# → 402 with payment instructions (this is correct!)
 
 curl "http://localhost:3000/api/run?query=plumbers&location=Austin+TX"
 # → 402 with payment instructions (this is correct!)
