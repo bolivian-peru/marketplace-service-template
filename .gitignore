@@ -36,3 +36,4 @@ coverage/
 # Proof data (local testing, may contain IPs)
 proof_*.json
 *-proof-*.json
+.aider*
