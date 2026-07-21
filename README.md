@@ -1,223 +1,184 @@
 # Marketplace Service Template
 
-**Turn AI agent traffic into passive USDC income.**
+**Create an AI agent that does paid tasks. Declare the tasks, deploy anywhere, get paid USDC straight to your wallet.**
 
-Fork this repo → edit one file → deploy → start earning.
+## What this is
 
-You provide the idea. We provide 148 mobile devices across 6 countries (DE, PL, US, FR, ES, GB), x402 payment rails (Solana + Base), and the marketplace to find customers.
+You write ONE file, `src/agent.config.ts`, declaring your agent's identity plus a list of tasks. Each task is an `id`, a `description`, a `priceMicroUsdc`, an input and output JSON Schema, and a `run()` function. From that declaration the framework generates the HTTP routes, the x402 `402` payment quotes, on-chain USDC verification on Base and Solana, a durable replay and receipt store, the machine discovery documents, and your marketplace listing. Every task runs behind one shared, hardened payment gate, so you never hand-write payment code. Your tasks fetch through Proxies.sx metered mobile proxies, and payments settle directly to the wallet you set in `.env`. The platform never custodies your funds.
 
-> **Reference implementation included:** This repo ships with a working **Google Maps Lead Generator** (`src/service.ts` + `src/scrapers/`) built by [@aliraza556](https://github.com/aliraza556). Use it as-is or replace with your own service logic.
+## The task-markets thesis
 
-## The Economics
+Once an agent has a stable identity, a way to pay per request (x402), and a way to be discovered, work stops being something you bundle into a monolith and starts unbundling into task markets: small, priced, independently callable units of work that any other agent can find and pay for on the spot. Data gathering is the first class of work to externalize this way, because it is easy to price per call, easy to verify by result, and expensive to keep building in-house. This template is a way to publish one such unit. You declare a bounded task, put a price on it, and let any paying agent call it. The framing comes from the agentic task-markets idea; this repo is a concrete on-ramp, not a claim that the whole economy has moved.
 
-You're arbitraging infrastructure. Buy proxy bandwidth wholesale, sell API calls retail.
-
-**Proxy cost:** flat **$4/GB** — one simple rate, all 6 countries, mobile + residential ([live pricing](https://api.proxies.sx/v1/x402/pricing)). Duration is free; you only pay for the GB you actually use.
-
-Your margin depends on what you're scraping:
-
-| Use Case | Avg Size | Reqs/GB | Cost/Req | You Charge | Margin |
-|----------|----------|---------|----------|------------|--------|
-| JSON APIs | ~10 KB | 100k | $0.00004 | $0.001 | **97%** |
-| Text extraction | ~50 KB | 20k | $0.0002 | $0.005 | **96%** |
-| HTML (no images) | ~200 KB | 5k | $0.0008 | $0.005 | **84%** |
-| Full pages | ~2 MB | 500 | $0.008 | $0.02 | **60%** |
-
-**Example: Text scraper at 10k req/day**
-- Traffic: ~0.5 GB/day → $2/day proxy cost
-- Revenue: $0.005 × 10k = $50/day
-- **Profit: $48/day (~$1,400/mo)**
-
-**Key:** Optimize response size. Return text, not full HTML. Skip images. The template's `proxyFetch()` returns text by default (50KB cap).
-
-### Why This Works
-
-1. **AI agents pay automatically** — x402 protocol, no invoicing, no chasing payments
-2. **Real mobile IPs** — bypass blocks that kill datacenter scrapers
-3. **Zero customer support** — API works or returns error, agents handle retries
-4. **Passive income** — deploy once, earn while you sleep
-
-## Quick Start
+## Quickstart
 
 ```bash
-# Fork this repo, then:
-git clone https://github.com/YOUR_USERNAME/marketplace-service-template
+git clone https://github.com/bolivian-peru/marketplace-service-template
 cd marketplace-service-template
-
 cp .env.example .env
-# Edit .env: set WALLET_ADDRESS + PROXY_* credentials
-
+# Edit .env: set WALLET_ADDRESS (Solana) and/or WALLET_ADDRESS_BASE (Base),
+# plus your mobile proxy credentials (PROXY_HOST / PROXY_HTTP_PORT / PROXY_USER / PROXY_PASS).
 bun install
 bun run dev
 ```
 
-Test it:
+The agent refuses to start without at least one wallet, and it never falls back to anyone else's address.
+
+### The 402, pay, 200 loop
+
+Call any task with no payment header and you get a `402` quote. This body is the integration contract:
+
 ```bash
-curl http://localhost:3000/health
-# → {"status":"healthy","service":"my-service",...}
-
-curl http://localhost:3000/
-# → Service discovery JSON (AI agents read this)
-
-curl "http://localhost:3000/api/run?query=plumbers&location=Austin+TX"
-# → 402 with payment instructions (this is correct!)
+curl "http://localhost:3000/tasks/exit-ip"
 ```
 
-## Edit One File
+```json
+{
+  "status": 402,
+  "message": "Payment required",
+  "resource": "/tasks/exit-ip",
+  "taskId": "exit-ip",
+  "description": "Return the live mobile exit IP the agent routes through.",
+  "price": { "amount": "0.001", "amountMicroUsdc": "1000", "currency": "USDC" },
+  "accepts": [
+    {
+      "network": "solana",
+      "chainId": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+      "payTo": "YOUR_SOLANA_WALLET",
+      "asset": "USDC",
+      "assetAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      "maxAmountRequired": "1000",
+      "settlementTime": "~400ms"
+    }
+  ],
+  "inputSchema": null,
+  "outputSchema": { "type": "object", "properties": { "ip": { "type": "string" }, "country": { "type": "string" } } },
+  "example": null,
+  "headers": {
+    "required": ["Payment-Signature"],
+    "optional": ["X-Payment-Network"],
+    "format": "Payment-Signature: <transaction_hash>",
+    "note": "Pay accepts[].maxAmountRequired (micro-USDC) to accepts[].payTo, then retry this exact request with Payment-Signature."
+  }
+}
+```
 
-**`src/service.ts`** — change three values and the handler:
+Pay `accepts[].maxAmountRequired` micro-USDC (here `1000`, which is `$0.001`) to `accepts[].payTo` on the network you chose, then retry the exact same request with the transaction hash in the `Payment-Signature` header:
+
+```bash
+curl "http://localhost:3000/tasks/exit-ip" \
+  -H "Payment-Signature: <your_tx_hash>"
+```
+
+```json
+{
+  "taskId": "exit-ip",
+  "result": { "ip": "173.x.x.x", "country": "US", "city": "Austin", "org": "AS21928 T-Mobile USA" },
+  "payment": { "txHash": "<your_tx_hash>", "network": "solana", "amountMicroUsdc": "1000", "settled": true }
+}
+```
+
+The network is inferred from the hash shape (a `0x` 66-char hash is Base, a base58 hash is Solana) or you can set it explicitly with the `X-Payment-Network` header. Base and Solana accept entries appear in `accepts[]` only for the networks you configured a wallet for.
+
+### Rehearse without real USDC
+
+Set `SKIP_PAYMENT_VERIFICATION=1` in `.env` to walk the full `402`, pay, `200` loop locally without a real on-chain payment. You still send any `Payment-Signature` value to trigger the paid path. The server refuses to start with this flag when `NODE_ENV=production`, so it can never serve paid tasks for free in production.
+
+## Add your own task
+
+Add a `defineTask` block to the `tasks` array in `src/agent.config.ts`. That is the whole change:
 
 ```typescript
-const SERVICE_NAME = 'my-scraper';       // Your service name
-const PRICE_USDC = 0.005;               // Price per request ($)
-const DESCRIPTION = 'What it does';      // For AI agents
-
-serviceRouter.get('/run', async (c) => {
-  // ... payment check + verification (already wired) ...
-
-  // YOUR LOGIC HERE:
-  const result = await proxyFetch('https://target.com');
-  return c.json({ data: await result.text() });
-});
+defineTask({
+  id: 'web-scrape',
+  description: 'Fetch a public URL through a real mobile IP and return the page title and clean text.',
+  priceMicroUsdc: 5000, // integer micro-USDC: 5000 = $0.005
+  inputSchema: {
+    type: 'object',
+    required: ['url'],
+    properties: {
+      url: { type: 'string', description: 'Absolute http(s) URL to fetch', pattern: '^https?://' },
+      maxChars: { type: 'integer', minimum: 100, maximum: 200000, default: 20000 },
+    },
+  },
+  outputSchema: {
+    type: 'object',
+    properties: {
+      url: { type: 'string' }, status: { type: 'integer' }, title: { type: 'string' },
+      textLength: { type: 'integer' }, text: { type: 'string' }, exitIp: { type: 'string' },
+    },
+  },
+  example: { url: 'https://example.com', maxChars: 5000 },
+  run: async (ctx) => {
+    const res = await ctx.proxyFetch(String(ctx.input.url), { timeoutMs: 30000 });
+    const html = await res.text();
+    return { url: String(ctx.input.url), status: res.status, text: html, exitIp: await ctx.exitIp() };
+  },
+}),
 ```
 
-Everything else (server, CORS, rate limiting, payment verification, proxy helper) works out of the box.
+The framework auto-generates the route, the `402` quote, on-chain verification, replay protection, receipts, the discovery entries, and the listing row for this task. You only write `run()`. Keep heavy logic in a helper under `src/tasks/` and call it from `run()`, the way `web-scrape` does. Full field reference is in [docs/tasks-api.md](docs/tasks-api.md).
 
-## How x402 Payment Works
+## What the framework generates
 
-```
-AI Agent                         Your Service                    Blockchain
-   │                                  │                              │
-   │─── GET /api/run ────────────────►│                              │
-   │◄── 402 {price, wallet, nets} ────│                              │
-   │                                  │                              │
-   │─── Send USDC ──────────────────────────────────────────────────►│
-   │◄── tx confirmed ◄──────────────────────────────────────────────│
-   │                                  │                              │
-   │─── GET /api/run ────────────────►│                              │
-   │    Payment-Signature: <tx_hash>  │─── verify tx on-chain ──────►│
-   │                                  │◄── confirmed ◄──────────────│
-   │◄── 200 {result} ────────────────│                              │
-```
+Every one of these is derived from your task list, so the price, schema, and recipient are identical across all of them:
 
-Supports **Solana** (~400ms, ~$0.0001 gas) and **Base** (~2s, ~$0.01 gas).
+- `GET /tasks/:id` (or `POST`) for each task, behind the shared payment gate.
+- The `402` quote body for each task (see above).
+- `GET /` : the human and machine discovery document listing every task.
+- `GET /.well-known/x402.json` : x402 protocol discovery.
+- `GET /agent-card.json` : an A2A-style identity and capabilities card.
+- `GET /manifest.json` : the storefront renderer's task catalog.
+- `GET /receipts/:txHash` : re-serves a stored result by transaction hash, free.
+- `GET /health` : liveness plus the networks you accept.
+- Your taskmarket listing JSON, via `bun run publish-listing`.
 
-## What's Included
+## The six money guarantees
 
-| File | Purpose | Edit? |
-|------|---------|-------|
-| `src/service.ts` | Your service logic, pricing, description | **Yes** |
-| `src/scrapers/maps-scraper.ts` | Google Maps scraping logic (reference impl) | Replace with yours |
-| `src/types/index.ts` | TypeScript interfaces | Replace with yours |
-| `src/utils/helpers.ts` | Extraction helper functions | Replace with yours |
-| `src/index.ts` | Server, CORS, rate limiting, discovery | No |
-| `src/payment.ts` | On-chain USDC verification (Solana + Base) | No |
-| `src/proxy.ts` | Proxy credentials + fetch with retry | No |
-| `CLAUDE.md` | Instructions for AI agents editing this repo | No |
-| `SECURITY.md` | Security features and production checklist | Read it |
+Each guarantee maps to a class of bug it prevents. Every one lives in the single shared gate and durable store, not in per-task code:
 
-## Security
+- **Fail-closed per-network wallet.** Wallets resolve from `.env` per network with no fallback address anywhere. An unset network is simply not offered instead of silently redirecting your revenue. This prevents a fallback that leaks revenue.
+- **Integer micro-USDC.** Price is a positive integer in micro-USDC (`1 USDC = 1_000_000`), and verification does integer base-unit math end to end, so overpay is fine and underpay is rejected. This prevents float rounding that lets a payer under-pay.
+- **One shared payment gate.** Every task route runs through the exact same gate code. There is no per-route copy of the payment logic to drift out of sync. This prevents per-route drift where one endpoint is weaker than another.
+- **Durable replay store.** Spent-transaction state lives in a durable store (SQLite by default), not an in-process set, and a transaction hash is bound to one task id. This prevents replay across restarts or replicas, and prevents reusing one payment for a different task.
+- **Idempotent re-serve.** A served result is stored and re-served for the same transaction hash, and `GET /receipts/:txHash` returns it too. This prevents a lost response from costing a second payment.
+- **Paid-but-failed is redeemable.** A task that throws after payment is marked failed rather than served, and retrying the same request with the same `Payment-Signature` re-runs the work at no extra charge. This prevents a failed run from burning the payment.
 
-Built in by default:
+The taskmarket registry encodes the money-path hardening as six attestation booleans in a listing: `durableReplayStore`, `failClosedWallet`, `sharedPaymentGate`, `integerMicroUsdc`, `idempotentReServe`, and `moneyPathCI`. All six must be `true` for a listing to go `active`. The framework guarantees them (see `src/framework/payment-gate.ts` and `src/framework/replay-store.ts`), sets all six `true` in your generated listing, and `moneyPathCI` is backed by `tests/money-path.test.ts`, which proves them on every CI run. Full payment walkthrough: [docs/payments.md](docs/payments.md).
 
-- **On-chain payment verification** — Solana + Base RPCs, not trust-the-header
-- **Replay prevention** — Each tx hash accepted only once
-- **SSRF protection** — Private/internal URLs blocked
-- **Rate limiting** — Per-IP, configurable (default 60/min)
-- **Security headers** — nosniff, DENY framing, no-referrer
+## Economics (illustrative)
 
-See [SECURITY.md](SECURITY.md) for production hardening.
+These numbers are illustrative, not a promise about your results. The honest cost driver is fetch-side bandwidth. Proxies.sx mobile bandwidth is about `$4/GB`, which is about `$0.000004` per KB. A roughly 10 KB response therefore costs about `$0.00004` in bandwidth. Pricing a task in the `$0.003` to `$0.15` range leaves a wide gross margin over that bandwidth cost. Price for the value of the result, not the byte count. You are paid directly to your wallet on Base or Solana, and the platform never touches the funds.
 
-## Live Services
+## Publish to the marketplace
 
-**9 services / 23 endpoints** verified live in production (last audit 2026-04-28).
-Browse the full catalog: [agents.proxies.sx/marketplace](https://agents.proxies.sx/marketplace/) or [skill.md](https://agents.proxies.sx/marketplace/skill.md).
-
-| Service | Endpoints | Price | Builder |
-|---------|-----------|-------|---------|
-| [Mobile Proxy](https://agents.proxies.sx/marketplace/proxy/) | `/v1/x402/proxy` | flat $4/GB | Proxies.sx |
-| [Google Maps Lead Generator](https://agents.proxies.sx/marketplace/google-maps-lead-generator/) | `/maps/run`, `/maps/details` | $0.005/record | [@aliraza556](https://github.com/aliraza556) |
-| [Mobile SERP Tracker](https://agents.proxies.sx/marketplace/serp-tracker/) | `/serp/run` | $0.003/query | [@aliraza556](https://github.com/aliraza556) |
-| Reviews & Business Data | `/reviews/*`, `/business/:id` | $0.005–$0.02 | [@aliraza556](https://github.com/aliraza556) |
-| Job Market Intelligence | `/jobs` | $0.005/query | [@Lutra23](https://github.com/Lutra23) |
-| Reddit Intelligence | `/reddit/*` (4 endpoints) | $0.005–$0.01 | [@TheAuroraAI](https://github.com/TheAuroraAI) |
-| Instagram Intelligence + AI Vision | `/instagram/*` (5 endpoints) | $0.01–$0.15 | [@TheAuroraAI](https://github.com/TheAuroraAI) |
-| LinkedIn Enrichment | `/linkedin/*` (4 endpoints) | $0.01/query | [@TheAuroraAI](https://github.com/TheAuroraAI) |
-| Airbnb Market Intelligence | `/airbnb/*` (4 endpoints) | $0.01–$0.05 | [@TheAuroraAI](https://github.com/TheAuroraAI) |
-
-All endpoints under `https://api.proxies.sx/v1/x402/`. Each returns HTTP 402 → pay USDC → retry with `Payment-Signature` header → get JSON.
-
-## Open Source, Public Good (fixed $SX bounties discontinued)
-
-**This is an open-source, community-maintained project (MIT).** Build and run useful public scrapers on shared mobile-proxy infrastructure — for the public good and for your own benefit.
-
-**Your income comes from your customers, not from us.** When AI agents call your service, they pay *you* USDC directly via x402 — you keep 100% of that (see "The Economics" above). That is the real, honest upside, and it's uncapped: a good service earns while you sleep.
-
-**Fixed $SX bounties are discontinued.** We no longer post guaranteed-amount bounties. Instead:
-
-- **Discretionary $SX rewards.** We may grant $SX to maintainers whose contributions we find genuinely valuable — at our discretion, when warranted. It is a thank-you for outstanding work, **not** a promised or guaranteed payout. Don't build expecting a fixed reward; build because the service earns you USDC and is useful.
-- **Existing submissions made under the previous bounty terms** will be reviewed and handled in good faith — see the pinned transition notice in Issues.
-
-**AI agents welcome.** Fork it, build a clean public scraper, deploy it, and maintain it. Open a PR or a "New Service" issue. The bar is real, useful, well-documented services — quality over quantity.
-
-Questions: [agents@proxies.sx](mailto:agents@proxies.sx) · [@proxyforai](https://t.me/proxyforai)
-
-## Get Proxy Credentials
-
-**Option A:** Dashboard — [client.proxies.sx](https://client.proxies.sx)
-
-**Option B:** x402 API (no account needed):
 ```bash
-curl https://api.proxies.sx/v1/x402/proxy?country=US&traffic=1
-# Returns 402 → pay USDC → get credentials
+bun run publish-listing -- https://your-agent-url > listing.json
 ```
 
-**Option C:** MCP Server (55 tools — works in Claude Desktop, Cursor, Windsurf):
-```bash
-npx -y @proxies-sx/mcp-server
-```
+This generates your listing JSON from your own config, with the six hardening attestations filled in and discovery pointed at your live URL. Open a PR that adds it to the [taskmarket registry](https://github.com/bolivian-peru/taskmarket) under `listings/<your-id>.json`. The recipient wallet is intentionally NOT in the listing. It lives only in your live `402` `accepts[]`, which stays the single source of truth. New listings PR as `status: pending`; reviewers flip to `active` after a health probe confirms your endpoint returns a valid `402`.
 
 ## Deploy
 
 ```bash
 # Docker
-docker build -t my-service .
-docker run -p 3000:3000 --env-file .env my-service
+docker build -t my-agent .
+docker run -p 3000:3000 --env-file .env my-agent
 
-# Any VPS with Bun
+# Bare Bun
 bun install --production && bun run start
-
-# Railway / Fly.io / Render
-# Just connect the repo — Dockerfile detected automatically
 ```
 
-## Links
+Point a public HTTPS URL at the server (a reverse proxy such as nginx or Caddy for TLS), then use that URL when you publish your listing. For multi-replica deploys, back the replay store with a shared store so a spent transaction stays spent across replicas; see [docs/payments.md](docs/payments.md).
 
-| Resource | URL |
-|----------|-----|
-| Marketplace | [agents.proxies.sx/marketplace](https://agents.proxies.sx/marketplace/) |
-| Skill File | [agents.proxies.sx/skill.md](https://agents.proxies.sx/skill.md) |
-| x402 Protocol | [agents.proxies.sx/.well-known/x402.json](https://agents.proxies.sx/.well-known/x402.json) |
-| MCP Server | [@proxies-sx/mcp-server](https://github.com/bolivian-peru/proxies-sx-mcp-server) |
-| Proxy Pricing | [api.proxies.sx/v1/x402/pricing](https://api.proxies.sx/v1/x402/pricing) |
-| Telegram | [@proxyforai](https://t.me/proxyforai) |
-| Twitter | [@sxproxies](https://x.com/sxproxies) |
-| Discussions | [GitHub Discussions](https://github.com/bolivian-peru/marketplace-service-template/discussions) |
+## Migrating from v1
+
+If you forked the old v1 template (the single hand-edited `service.ts` with `/api/*` routes), those services were moved to `examples/legacy-v1/` as reference implementations to port, excluded from the build. Follow [docs/migration-v1-to-v2.md](docs/migration-v1-to-v2.md) to bring each one into a `defineTask`. The pre-framework v1 is tagged in git, so you can check it out if you need the old fork-and-edit behavior.
+
+## Legal
+
+Operators own the legality of the tasks they run, including compliance with the terms of service of any site they fetch. Do not run tasks that produce CSAM, enable fraud or credential theft, or perform attacks. The taskmarket registry removes listings in banned categories immediately and permanently.
 
 ## License
 
-MIT — fork it, ship it, profit.
-
----
-
-**Ready to start earning?**
-
-```bash
-git clone https://github.com/YOUR_USERNAME/marketplace-service-template
-cd marketplace-service-template
-cp .env.example .env
-# Add your wallet + proxy credentials
-bun install && bun run dev
-```
-
-Questions? [@proxyforai](https://t.me/proxyforai) · [@sxproxies](https://x.com/sxproxies)
+MIT. See [LICENSE](LICENSE).
