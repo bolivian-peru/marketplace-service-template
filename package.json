@@ -1,13 +1,13 @@
 {
   "name": "marketplace-service-template",
-  "version": "1.0.0",
-  "description": "Fork → edit one file → deploy → earn USDC. Build x402-gated services on Proxies.sx mobile proxy infrastructure.",
+  "version": "2.0.0",
+  "description": "Create an AI agent that does paid tasks. Declare tasks in one file; the framework generates x402 routes, on-chain verification, receipts, and your marketplace listing. Runs on Proxies.sx mobile proxies.",
   "scripts": {
     "dev": "bun run --hot src/index.ts",
     "start": "bun run src/index.ts",
     "test": "bun test",
     "typecheck": "tsc --noEmit",
-    "proof:indeed": "bun run scripts/proof-indeed.ts"
+    "publish-listing": "bun run scripts/publish-listing.ts"
   },
   "dependencies": {
     "hono": "^4.6.0"

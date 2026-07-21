@@ -15,6 +15,11 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY package.json ./
 COPY src ./src
 
+# Writable dir for the durable replay/receipt store (SQLite). Owned by the
+# non-root app user. Mount a volume here in production so it survives restarts.
+RUN mkdir -p /app/data && chown -R app:app /app/data
+VOLUME ["/app/data"]
+
 USER app
 
 EXPOSE 3000
