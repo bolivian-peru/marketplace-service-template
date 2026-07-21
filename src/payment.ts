@@ -83,9 +83,21 @@ export async function verifyPayment(
   }
 
   try {
+    // Resolve the recipient PER NETWORK so the address we verify against is the
+    // same one the 402 advertised. Base and Solana wallets are different formats
+    // and different accounts — verifying a Base payment against the Solana wallet
+    // can never match, and (pre-fix) let honest agents pay one address while the
+    // gate checked another. Fail closed if the network's wallet is unset.
+    const networkRecipient = payment.network === 'base'
+      ? process.env.WALLET_ADDRESS_BASE
+      : expectedRecipient;
+    if (!networkRecipient) {
+      return { valid: false, error: `Service misconfigured: no recipient wallet set for ${payment.network}` };
+    }
+
     const result = payment.network === 'solana'
-      ? await verifySolana(payment.txHash, expectedRecipient, expectedAmountUSDC, tolerancePercent)
-      : await verifyBase(payment.txHash, expectedRecipient, expectedAmountUSDC, tolerancePercent);
+      ? await verifySolana(payment.txHash, networkRecipient, expectedAmountUSDC, tolerancePercent)
+      : await verifyBase(payment.txHash, networkRecipient, expectedAmountUSDC, tolerancePercent);
 
     if (result.valid) {
       verifiedTxHashes.add(payment.txHash);
@@ -117,6 +129,10 @@ export function build402Response(
       currency: 'USDC',
       minimumAmount: String(priceUSDC),
     },
+    // Advertise ONLY the networks this operator can actually receive on, using
+    // the exact recipient the verifier will check. Base appears only when
+    // WALLET_ADDRESS_BASE is set — never a template-author fallback, which used
+    // to silently route forkers' Base revenue to us.
     networks: [
       {
         network: 'solana',
@@ -125,13 +141,15 @@ export function build402Response(
         asset: 'USDC',
         assetAddress: USDC_SOLANA,
       },
-      {
-        network: 'base',
-        chainId: 'eip155:8453',
-        recipient: process.env.WALLET_ADDRESS_BASE || '0xF8cD900794245fc36CBE65be9afc23CDF5103042',
-        asset: 'USDC',
-        assetAddress: USDC_BASE,
-      },
+      ...(process.env.WALLET_ADDRESS_BASE
+        ? [{
+            network: 'base',
+            chainId: 'eip155:8453',
+            recipient: process.env.WALLET_ADDRESS_BASE,
+            asset: 'USDC',
+            assetAddress: USDC_BASE,
+          }]
+        : []),
     ],
     headers: {
       required: ['Payment-Signature'],

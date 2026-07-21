@@ -133,23 +133,28 @@ app.get('/', (c) => c.json({
   pricing: {
     amount: process.env.PRICE_USDC || '0.005',
     currency: 'USDC',
+    // Recipients come from the operator's own env — never a hardcoded wallet.
+    // Base is listed only when WALLET_ADDRESS_BASE is configured. This must match
+    // what build402Response advertises and what payment.ts verifies.
     networks: [
       {
         network: 'solana',
         chainId: 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
-        recipient: '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv',
+        recipient: process.env.WALLET_ADDRESS || '<WALLET_ADDRESS not set>',
         asset: 'USDC',
         assetAddress: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
         settlementTime: '~400ms',
       },
-      {
-        network: 'base',
-        chainId: 'eip155:8453',
-        recipient: '0xF8cD900794245fc36CBE65be9afc23CDF5103042',
-        asset: 'USDC',
-        assetAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
-        settlementTime: '~2s',
-      },
+      ...(process.env.WALLET_ADDRESS_BASE
+        ? [{
+            network: 'base',
+            chainId: 'eip155:8453',
+            recipient: process.env.WALLET_ADDRESS_BASE,
+            asset: 'USDC',
+            assetAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+            settlementTime: '~2s',
+          }]
+        : []),
     ],
   },
   infrastructure: 'Proxies.sx mobile proxies (real 4G/5G IPs)',
