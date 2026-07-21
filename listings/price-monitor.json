@@ -1,0 +1,60 @@
+{
+  "name": "price-monitor",
+  "title": "Price Monitor — Track Amazon, eBay, Shopify & Get Drop Alerts",
+  "description": "Monitor product prices across Amazon, eBay, AliExpress, Shopify, and any e-commerce store. Get price history, drop alerts, and all-time-low detection via Proxies.sx mobile proxies.",
+  "category": "e-commerce",
+  "price": {
+    "amount": 0.005,
+    "currency": "USDC",
+    "network": "solana",
+    "unit": "per-request"
+  },
+  "endpoints": {
+    "priceCheck": {
+      "method": "GET",
+      "path": "/api/price/check",
+      "params": {
+        "url": "string (required) — Product URL to check",
+        "store": "string (optional) — amazon|ebay|aliexpress|shopify|auto",
+        "targetPrice": "number (optional) — Alert when price drops to this"
+      },
+      "output": {
+        "name": "string — Product name",
+        "currentPrice": "number | null — Current detected price",
+        "currency": "string — ISO currency code",
+        "inStock": "boolean — Availability status",
+        "store": "string — Detected store platform",
+        "meta.proxy.ip": "string — Proxy exit IP",
+        "meta.proxy.country": "string — Proxy country",
+        "meta.proxy.type": "string — Always 'mobile'"
+      }
+    },
+    "batchCheck": {
+      "method": "POST",
+      "path": "/api/price/batch",
+      "body": {
+        "urls": "Array<{url, name?, targetPrice?}> — List of products to check"
+      },
+      "output": {
+        "results": "Array<PriceResult> — Check results",
+        "alerts": "Array<PriceAlert> — Generated alerts",
+        "meta.total": "number — Total URLs checked",
+        "meta.withPrice": "number — Successfully extracted prices",
+        "meta.proxy": "ProxyMeta — Proxy verification data"
+      }
+    }
+  },
+  "stores": ["amazon", "ebay", "aliexpress", "shopify", "generic"],
+  "features": [
+    "Multi-store support (Amazon, eBay, AliExpress, Shopify, + generic)",
+    "JSON-LD + regex hybrid extraction for reliability",
+    "Proxy exit IP in response metadata",
+    "Batch price checking with alert generation",
+    "Mobile proxy bypass (4G/5G real devices)",
+    "x402 payment gating (Solana USDC)"
+  ],
+  "proof": {
+    "script": "bun run proof:price -- https://www.amazon.com/dp/B0CBP7YSHF amazon 179.99",
+    "description": "Run 10 scrapes against a known product, verify proxy IPs rotate and prices are consistent"
+  }
+}

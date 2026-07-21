@@ -1,0 +1,65 @@
+{
+  "id": "travel-prices",
+  "name": "Travel Prices — Flight & Hotel Scraper",
+  "title": "Travel Prices — Scrape Flight & Hotel Prices from Booking.com",
+  "description": "Scrape real-time flight and hotel prices from Booking.com. Get airline, price, stops, duration for flights. Name, price/night, rating, stars, amenities for hotels. All via Proxies.sx 4G/5G mobile proxies.",
+  "category": "travel",
+  "endpoint": "https://api.proxies.sx/v1/x402/travel",
+  "price": {
+    "amount": 0.005,
+    "currency": "USDC",
+    "network": "solana",
+    "unit": "per-request"
+  },
+  "endpoints": {
+    "flights": {
+      "method": "GET",
+      "path": "/api/travel/flights",
+      "params": {
+        "origin": "string — Departure city (default: NYC)",
+        "destination": "string — Arrival city (default: LAX)",
+        "date": "string — Flight date YYYY-MM-DD"
+      },
+      "output": {
+        "airline": "string — Airline name",
+        "flightNumber": "string",
+        "price": "number — Price in specified currency",
+        "currency": "string — ISO currency code",
+        "stops": "number — Number of stops",
+        "duration": "string — Flight duration"
+      }
+    },
+    "hotels": {
+      "method": "GET",
+      "path": "/api/travel/hotels",
+      "params": {
+        "destination": "string — City name (default: Paris)",
+        "checkIn": "string — Check-in date YYYY-MM-DD",
+        "checkOut": "string — Check-out date YYYY-MM-DD"
+      },
+      "output": {
+        "name": "string — Hotel name",
+        "pricePerNight": "number — Price per night",
+        "currency": "string",
+        "rating": "number | null",
+        "stars": "number | null",
+        "amenities": "string[]"
+      }
+    }
+  },
+  "features": [
+    "Flight price scraping from Booking.com",
+    "Hotel price scraping from Booking.com",
+    "JSON-LD + regex hybrid extraction",
+    "4G/5G mobile proxy IPs (bypass geo-restrictions)",
+    "x402 payment gating (Solana USDC)"
+  ],
+  "tags": [
+    "travel",
+    "flights",
+    "hotels",
+    "prices",
+    "booking",
+    "scraper"
+  ]
+}
