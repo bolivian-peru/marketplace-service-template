@@ -28,6 +28,8 @@ import {
   findCompanyEmployees 
 } from './scrapers/linkedin-enrichment';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
+import { scrapeProductPrice, batchCheckProducts, PRICE_USDC as PM_PRICE, DESCRIPTION as PM_DESC, SERVICE_NAME as PM_SERVICE } from './scrapers/price-monitor';
+import { scrapeFlights, scrapeHotels, FLIGHTS_PRICE_USDC, HOTELS_PRICE_USDC, FLIGHTS_DESC, HOTELS_DESC } from './scrapers/travel-prices';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
 
 export const serviceRouter = new Hono();
@@ -1484,5 +1486,98 @@ serviceRouter.get('/serp', async (c) => {
     });
   } catch (err: any) {
     return c.json({ error: 'SERP scrape failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── PRICE MONITOR ROUTES ─────────────────────────
+serviceRouter.get('/price/check', async (c) => {
+  const url = c.req.query('url');
+  const store = c.req.query('store') || 'auto';
+  const targetPrice = parseFloat(c.req.query('targetPrice') || '0') || undefined;
+
+  if (!url) {
+    return c.json({ error: 'url parameter is required' }, 400);
+  }
+
+  // Check payment
+  const payment = extractPayment(c);
+  if (!payment) {
+    return build402Response(c, PM_SERVICE, PM_PRICE, PM_DESC);
+  }
+
+  try {
+    const result = await scrapeProductPrice(url, store, targetPrice);
+    return c.json({
+      ...result,
+      meta: {
+        proxy: { ip: 'proxies.sx-mobile', country: 'any', host: 'proxies.sx', type: 'mobile' }
+      }
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Price check failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+serviceRouter.post('/price/batch', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) {
+    return build402Response(c, PM_SERVICE, PM_PRICE, PM_DESC);
+  }
+
+  try {
+    const body = await c.req.json();
+    const batchResult = await batchCheckProducts(body);
+    return c.json(batchResult);
+  } catch (err: any) {
+    return c.json({ error: 'Batch price check failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── TRAVEL PRICES ROUTES ─────────────────────────
+serviceRouter.get('/travel/flights', async (c) => {
+  const origin = c.req.query('origin') || 'NYC';
+  const destination = c.req.query('destination') || 'LAX';
+  const date = c.req.query('date') || '2026-08-01';
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response(c, '/api/travel/flights', FLIGHTS_DESC, FLIGHTS_PRICE_USDC, walletAddress, {
+      input: { origin: 'string — Departure city (default: NYC)', destination: 'string — Arrival city (default: LAX)', date: 'string — Flight date YYYY-MM-DD' },
+      output: { airline: 'string', price: 'number', currency: 'string', stops: 'number', duration: 'string' },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, FLIGHTS_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed' }, 402);
+
+  try {
+    const results = await scrapeFlights({ origin, destination, date });
+    return c.json({ results, meta: { proxy: { ip: 'proxies.sx-mobile', country: 'any', type: 'mobile' } } });
+  } catch (err: any) {
+    return c.json({ error: 'Flight search failed', message: err?.message }, 502);
+  }
+});
+
+serviceRouter.get('/travel/hotels', async (c) => {
+  const destination = c.req.query('destination') || 'Paris';
+  const checkIn = c.req.query('checkIn') || '2026-08-01';
+  const checkOut = c.req.query('checkOut') || '2026-08-03';
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return c.json(build402Response(c, '/api/travel/hotels', HOTELS_DESC, HOTELS_PRICE_USDC, walletAddress, {
+      input: { destination: 'string — City (default: Paris)', checkIn: 'string — Check-in YYYY-MM-DD', checkOut: 'string — Check-out YYYY-MM-DD' },
+      output: { name: 'string', pricePerNight: 'number', currency: 'string', rating: 'number|null', stars: 'number|null', amenities: 'string[]' },
+    }), 402);
+  }
+
+  const verification = await verifyPayment(payment, walletAddress, HOTELS_PRICE_USDC);
+  if (!verification.valid) return c.json({ error: 'Payment verification failed' }, 402);
+
+  try {
+    const results = await scrapeHotels({ destination, checkIn, checkOut });
+    return c.json({ results, meta: { proxy: { ip: 'proxies.sx-mobile', country: 'any', type: 'mobile' } } });
+  } catch (err: any) {
+    return c.json({ error: 'Hotel search failed', message: err?.message }, 502);
   }
 });
