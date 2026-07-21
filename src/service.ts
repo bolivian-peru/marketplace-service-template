@@ -28,6 +28,10 @@ import {
   findCompanyEmployees 
 } from './scrapers/linkedin-enrichment';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
+import { scrapeProductPrice, batchCheckProducts, PRICE_USDC as PM_PRICE, DESCRIPTION as PM_DESC, SERVICE_NAME as PM_SERVICE } from './scrapers/price-monitor';
+import { scrapeFlights, scrapeHotels, FLIGHTS_PRICE_USDC, HOTELS_PRICE_USDC, FLIGHTS_DESC, HOTELS_DESC } from './scrapers/travel-prices';
+import { searchAds, spyOnCompetitor, PRICE_USDC as ADSPY_PRICE, DESC as ADSPY_DESC, SERVICE_NAME as ADSPY_SERVICE } from './scrapers/ad-spy';
+import { monitorReviews, getLatestReviews, PRICE_USDC as REVMON_PRICE, DESC as REVMON_DESC, SERVICE_NAME as REVMON_SERVICE } from './scrapers/review-monitor';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
 
 export const serviceRouter = new Hono();
@@ -1484,5 +1488,157 @@ serviceRouter.get('/serp', async (c) => {
     });
   } catch (err: any) {
     return c.json({ error: 'SERP scrape failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── PRICE MONITOR ROUTES ─────────────────────────
+serviceRouter.get('/price/check', async (c) => {
+  const url = c.req.query('url');
+  const store = c.req.query('store') || 'auto';
+  const targetPrice = parseFloat(c.req.query('targetPrice') || '0') || undefined;
+
+  if (!url) {
+    return c.json({ error: 'url parameter is required' }, 400);
+  }
+
+  // Check payment
+  const payment = extractPayment(c);
+  if (!payment) {
+    return build402Response(c, PM_SERVICE, PM_PRICE, PM_DESC);
+  }
+
+  try {
+    const result = await scrapeProductPrice(url, store, targetPrice);
+    return c.json({
+      ...result,
+      meta: {
+        proxy: { ip: 'proxies.sx-mobile', country: 'any', host: 'proxies.sx', type: 'mobile' }
+      }
+    });
+  } catch (err: any) {
+    return c.json({ error: 'Price check failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+serviceRouter.post('/price/batch', async (c) => {
+  const payment = extractPayment(c);
+  if (!payment) {
+    return build402Response(c, PM_SERVICE, PM_PRICE, PM_DESC);
+  }
+
+  try {
+    const body = await c.req.json();
+    const batchResult = await batchCheckProducts(body);
+    return c.json(batchResult);
+  } catch (err: any) {
+    return c.json({ error: 'Batch price check failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── TRAVEL PRICES ROUTES ─────────────────────────
+serviceRouter.get('/travel/flights', async (c) => {
+  const origin = c.req.query('origin') || 'NYC';
+  const destination = c.req.query('destination') || 'LAX';
+  const date = c.req.query('date') || '2026-08-01';
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return build402Response(c, '/api/travel/flights', FLIGHTS_DESC, FLIGHTS_PRICE_USDC);
+  }
+
+  try {
+    const results = await scrapeFlights({ origin, destination, date });
+    return c.json({ results, meta: { proxy: { ip: 'proxies.sx-mobile', country: 'any', host: 'proxies.sx', type: 'mobile' } } });
+  } catch (err: any) {
+    return c.json({ error: 'Flight search failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+serviceRouter.get('/travel/hotels', async (c) => {
+  const destination = c.req.query('destination') || 'Paris';
+  const checkIn = c.req.query('checkIn') || '2026-08-01';
+  const checkOut = c.req.query('checkOut') || '2026-08-03';
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return build402Response(c, '/api/travel/hotels', HOTELS_DESC, HOTELS_PRICE_USDC);
+  }
+
+  try {
+    const results = await scrapeHotels({ destination, checkIn, checkOut });
+    return c.json({ results, meta: { proxy: { ip: 'proxies.sx-mobile', country: 'any', host: 'proxies.sx', type: 'mobile' } } });
+  } catch (err: any) {
+    return c.json({ error: 'Hotel search failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── AD SPY ROUTES ─────────────────────────────────
+serviceRouter.get('/adspy/search', async (c) => {
+  const keyword = c.req.query('keyword') || 'laptops';
+  const country = c.req.query('country') || 'US';
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return build402Response(c, '/api/adspy/search', ADSPY_DESC, ADSPY_PRICE);
+  }
+
+  try {
+    const results = await searchAds(keyword, country);
+    return c.json(results);
+  } catch (err: any) {
+    return c.json({ error: 'Ad spy search failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+serviceRouter.get('/adspy/competitor', async (c) => {
+  const domain = c.req.query('domain') || 'nike.com';
+  const country = c.req.query('country') || 'US';
+
+  const payment = extractPayment(c);
+  if (!payment) {
+    return build402Response(c, '/api/adspy/competitor', ADSPY_DESC, ADSPY_PRICE);
+  }
+
+  try {
+    const results = await spyOnCompetitor(domain, country);
+    return c.json(results);
+  } catch (err: any) {
+    return c.json({ error: 'Competitor spy failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+// ─── REVIEW MONITOR ROUTES ──────────────────────────
+serviceRouter.get('/reviews/monitor', async (c) => {
+  const placeId = c.req.query('place') || '';
+  const platform = c.req.query('platform') || 'google';
+
+  if (!placeId) return c.json({ error: 'place parameter required' }, 400);
+
+  const payment = extractPayment(c);
+  if (!payment) return build402Response(c, '/api/reviews/monitor', REVMON_DESC, REVMON_PRICE);
+
+  try {
+    const result = await monitorReviews(placeId, platform);
+    return c.json(result);
+  } catch (err: any) {
+    return c.json({ error: 'Review monitor failed', message: err?.message || String(err) }, 502);
+  }
+});
+
+serviceRouter.get('/reviews/latest', async (c) => {
+  const placeId = c.req.query('place') || '';
+  const platform = c.req.query('platform') || 'google';
+  const limit = parseInt(c.req.query('limit') || '10');
+
+  if (!placeId) return c.json({ error: 'place parameter required' }, 400);
+
+  const payment = extractPayment(c);
+  if (!payment) return build402Response(c, '/api/reviews/latest', REVMON_DESC, REVMON_PRICE);
+
+  try {
+    const reviews = await getLatestReviews(placeId, platform, limit);
+    return c.json({ reviews, meta: { proxy: { ip: 'proxies.sx-mobile', country: 'US', type: 'mobile' } } });
+  } catch (err: any) {
+    return c.json({ error: 'Failed', message: err?.message || String(err) }, 502);
   }
 });
