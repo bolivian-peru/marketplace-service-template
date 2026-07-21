@@ -80,6 +80,11 @@ function installFetchMock(recipientAddress: string): string[] {
 
 beforeEach(() => {
   process.env.WALLET_ADDRESS = TEST_WALLET;
+  // The paid-path tests pay on Base, so the Base recipient must be configured.
+  // (Base payments verify against WALLET_ADDRESS_BASE, never the Solana wallet —
+  // this is the corrected per-network resolution; without it, Base is not
+  // offered and paid Base requests are correctly rejected.)
+  process.env.WALLET_ADDRESS_BASE = TEST_WALLET;
   process.env.PROXY_HOST = 'proxy.test.local';
   process.env.PROXY_HTTP_PORT = '8080';
   process.env.PROXY_USER = 'tester';

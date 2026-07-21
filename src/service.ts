@@ -247,7 +247,11 @@ serviceRouter.get('/details', async (c) => {
 });
 
 serviceRouter.get('/jobs', async (c) => {
-  const walletAddress = '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = process.env.WALLET_ADDRESS;
+
+  if (!walletAddress) {
+    return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+  }
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -807,7 +811,11 @@ const REDDIT_COMMENTS_PRICE = 0.01;  // $0.01 per comment thread
 // ─── GET /api/reddit/search ─────────────────────────
 
 serviceRouter.get('/reddit/search', async (c) => {
-  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = process.env.WALLET_ADDRESS;
+
+  if (!walletAddress) {
+    return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+  }
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -861,7 +869,11 @@ serviceRouter.get('/reddit/search', async (c) => {
 // ─── GET /api/reddit/trending ───────────────────────
 
 serviceRouter.get('/reddit/trending', async (c) => {
-  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = process.env.WALLET_ADDRESS;
+
+  if (!walletAddress) {
+    return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+  }
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -903,7 +915,11 @@ serviceRouter.get('/reddit/trending', async (c) => {
 // ─── GET /api/reddit/subreddit/:name ────────────────
 
 serviceRouter.get('/reddit/subreddit/:name', async (c) => {
-  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = process.env.WALLET_ADDRESS;
+
+  if (!walletAddress) {
+    return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+  }
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -957,7 +973,11 @@ serviceRouter.get('/reddit/subreddit/:name', async (c) => {
 // ─── GET /api/reddit/thread/:id ─────────────────────
 
 serviceRouter.get('/reddit/thread/*', async (c) => {
-  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = process.env.WALLET_ADDRESS;
+
+  if (!walletAddress) {
+    return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+  }
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -1263,7 +1283,11 @@ const AIRBNB_MARKET_STATS_PRICE = 0.05;
 // ─── GET /api/airbnb/search ─────────────────────────
 
 serviceRouter.get('/airbnb/search', async (c) => {
-  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = process.env.WALLET_ADDRESS;
+
+  if (!walletAddress) {
+    return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+  }
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -1313,7 +1337,11 @@ serviceRouter.get('/airbnb/search', async (c) => {
 // ─── GET /api/airbnb/listing/:id ────────────────────
 
 serviceRouter.get('/airbnb/listing/:id', async (c) => {
-  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = process.env.WALLET_ADDRESS;
+
+  if (!walletAddress) {
+    return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+  }
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -1352,7 +1380,11 @@ serviceRouter.get('/airbnb/listing/:id', async (c) => {
 // ─── GET /api/airbnb/reviews/:listing_id ────────────
 
 serviceRouter.get('/airbnb/reviews/:listing_id', async (c) => {
-  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = process.env.WALLET_ADDRESS;
+
+  if (!walletAddress) {
+    return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+  }
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -1396,7 +1428,11 @@ serviceRouter.get('/airbnb/reviews/:listing_id', async (c) => {
 // ─── GET /api/airbnb/market-stats ───────────────────
 
 serviceRouter.get('/airbnb/market-stats', async (c) => {
-  const walletAddress = process.env.SOLANA_WALLET_ADDRESS || '6eUdVwsPArTxwVqEARYGCh4S2qwW2zCs7jSEDRpxydnv';
+  const walletAddress = process.env.WALLET_ADDRESS;
+
+  if (!walletAddress) {
+    return c.json({ error: 'Service misconfigured: WALLET_ADDRESS not set' }, 500);
+  }
 
   const payment = extractPayment(c);
   if (!payment) {
@@ -1466,12 +1502,14 @@ serviceRouter.get('/serp', async (c) => {
   if (!query) return c.json({ error: 'Missing required parameter: query' }, 400);
 
   const location = c.req.query('location') || c.req.query('loc') || undefined;
-  const num = parseInt(c.req.query('num') || '10');
+  const country = c.req.query('country') || 'us';
+  const language = c.req.query('language') || c.req.query('hl') || 'en';
 
   try {
     const proxy = getProxy();
     const ip = await getProxyExitIp();
-    const results = await scrapeMobileSERP(query, { location, num });
+    // scrapeMobileSERP is positional: (query, country, language, location, start).
+    const results = await scrapeMobileSERP(query, country, language, location);
 
     c.header('X-Payment-Settled', 'true');
     c.header('X-Payment-TxHash', payment.txHash);
@@ -1479,7 +1517,7 @@ serviceRouter.get('/serp', async (c) => {
     return c.json({
       query,
       results,
-      meta: { location, num, proxy: { ip, country: proxy.country, type: 'mobile' } },
+      meta: { location, country, language, proxy: { ip, country: proxy.country, type: 'mobile' } },
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
   } catch (err: any) {

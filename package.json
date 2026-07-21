@@ -1,13 +1,12 @@
 {
   "name": "marketplace-service-template",
   "version": "1.0.0",
-  "description": "Fork → edit one file → deploy → earn USDC. Build x402-gated services on Proxies.sx mobile proxy infrastructure.",
+  "description": "Fork \u2192 edit one file \u2192 deploy \u2192 earn USDC. Build x402-gated services on Proxies.sx mobile proxy infrastructure.",
   "scripts": {
     "dev": "bun run --hot src/index.ts",
     "start": "bun run src/index.ts",
     "test": "bun test",
-    "typecheck": "tsc --noEmit",
-    "proof:indeed": "bun run scripts/proof-indeed.ts"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "hono": "^4.6.0"
