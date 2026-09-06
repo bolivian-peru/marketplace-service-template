@@ -1,0 +1,59 @@
+{
+  "id": "wallet-intel",
+  "name": "Wallet Intel — On-chain Wallet Intelligence",
+  "description": "Structured wallet intelligence for any EVM or Solana address: native balance, token holdings, recent transactions, estimated PnL and AI analysis (is it a bot? a whale? what strategy?). $0.005–$0.02/query via x402.",
+  "longDescription": "Given a wallet address (EVM 0x… or Solana base58), returns structured JSON with the native balance (ETH/SOL), token holdings valued in USD (Etherscan + Solana RPC, priced via CoinGecko), recent transactions with direction and estimated USD value, a rough PnL estimate, and — when the operator configures a DeepSeek key — an AI analysis classifying the wallet (bot / whale / trader / accumulator / retail) and describing its strategy. Works for wallets on Ethereum and Solana. No KYC, no subscription: agents pay USDC per request on Solana.",
+  "endpoint": "https://wallet-intel.fly.dev/api",
+  "docsUrl": "https://github.com/catalnet/proxies-wallet-intel",
+  "pricing": {
+    "model": "per-request",
+    "amount": "0.02",
+    "minimum": "0.005",
+    "currency": "USDC",
+    "endpoints": [
+      { "path": "/api/wallet", "price": "0.02", "unit": "per request" },
+      { "path": "/api/wallet/balance", "price": "0.005", "unit": "per request" },
+      { "path": "/api/wallet/activity", "price": "0.01", "unit": "per request" },
+      { "path": "/api/wallet/pnl", "price": "0.01", "unit": "per request" }
+    ],
+    "networks": [
+      {
+        "network": "solana",
+        "chainId": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "recipient": "AJUkDCXnPeeUHMSZzcyfZmmaGnf5wEzG2yA1TL1uW2QV",
+        "asset": "USDC",
+        "assetAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+      }
+    ]
+  },
+  "category": "data",
+  "tags": [
+    "wallet",
+    "address",
+    "evm",
+    "solana",
+    "balance",
+    "holdings",
+    "transactions",
+    "pnl",
+    "whale",
+    "bot",
+    "defi",
+    "on-chain",
+    "etherscan",
+    "coingecko",
+    "deepseek"
+  ],
+  "owner": {
+    "name": "Iban",
+    "github": "catalnet"
+  },
+  "status": "pending",
+  "featured": false,
+  "addedAt": "2026-09-06",
+  "x402": {
+    "discoveryUrl": "https://wallet-intel.fly.dev/api/wallet?address=0x0000000000000000000000000000000000000000",
+    "wellKnown": "https://wallet-intel.fly.dev/.well-known/x402.json"
+  },
+  "healthEndpoint": "https://wallet-intel.fly.dev/health"
+}
