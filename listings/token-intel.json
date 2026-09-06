@@ -1,0 +1,56 @@
+{
+  "id": "token-intel",
+  "name": "Token Intel — Crypto Intelligence",
+  "description": "Structured crypto token intelligence: price, market cap, volume, liquidity, DEX pairs, sentiment and AI summary for any ticker or contract address. $0.005–$0.02/query via x402.",
+  "longDescription": "Given a ticker (ETH, BTC, SOL) or a token contract address, returns structured JSON with price, market cap, 24h volume, supply, ATH (CoinGecko), DEX pairs + liquidity (DexScreener), a deterministic momentum/attention sentiment score, and — when the operator configures a DeepSeek key — an AI summary and interest signal (is it gaining volume/attention?). Works for majors and brand-new degen tokens not yet on CoinGecko. No KYC, no subscription: agents pay USDC per request on Solana.",
+  "endpoint": "https://token-intel.fly.dev/api",
+  "docsUrl": "https://github.com/catalnet/proxies-token-intel",
+  "pricing": {
+    "model": "per-request",
+    "amount": "0.02",
+    "minimum": "0.005",
+    "currency": "USDC",
+    "endpoints": [
+      { "path": "/api/token", "price": "0.02", "unit": "per request" },
+      { "path": "/api/token/price", "price": "0.005", "unit": "per request" },
+      { "path": "/api/token/pairs", "price": "0.01", "unit": "per request" },
+      { "path": "/api/trending", "price": "0.01", "unit": "per request" }
+    ],
+    "networks": [
+      {
+        "network": "solana",
+        "chainId": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "recipient": "AJUkDCXnPeeUHMSZzcyfZmmaGnf5wEzG2yA1TL1uW2QV",
+        "asset": "USDC",
+        "assetAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+      }
+    ]
+  },
+  "category": "data",
+  "tags": [
+    "crypto",
+    "token",
+    "price",
+    "market-cap",
+    "liquidity",
+    "dex",
+    "dexscreener",
+    "coingecko",
+    "sentiment",
+    "ai",
+    "deepseek",
+    "defi"
+  ],
+  "owner": {
+    "name": "Iban",
+    "github": "catalnet"
+  },
+  "status": "pending",
+  "featured": false,
+  "addedAt": "2026-09-06",
+  "x402": {
+    "discoveryUrl": "https://token-intel.fly.dev/api/token?q=ETH",
+    "wellKnown": "https://token-intel.fly.dev/.well-known/x402.json"
+  },
+  "healthEndpoint": "https://token-intel.fly.dev/health"
+}
