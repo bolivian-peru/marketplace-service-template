@@ -1,0 +1,26 @@
+{
+  "id": "agent-embassy",
+  "name": "Agent Embassy",
+  "description": "Agent Embassy is a paid x402 service where agents pay for work and get signed, third-party-verifiable receipts proving what happened.",
+  "endpoint": "https://agent-embassy.fly.dev",
+  "docsUrl": "https://agent-embassy.fly.dev/skill.md",
+  "pricing": {
+    "model": "per-request",
+    "amount": "0.15",
+    "minimum": "0.15",
+    "currency": "USDC"
+  },
+  "category": "other",
+  "tags": ["x402", "receipts", "verification", "compute-prices", "agents"],
+  "owner": {
+    "name": "noot XLM",
+    "github": "tacticalnoot"
+  },
+  "status": "pending",
+  "featured": false,
+  "addedAt": "2026-09-21",
+  "x402": {
+    "discoveryUrl": "https://agent-embassy.fly.dev/v1/markets/compute/spot",
+    "wellKnown": "https://agent-embassy.fly.dev/.well-known/x402.json"
+  }
+}
