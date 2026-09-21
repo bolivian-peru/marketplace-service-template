@@ -2,6 +2,7 @@
   "id": "agent-embassy",
   "name": "Agent Embassy",
   "description": "Agent Embassy is a paid x402 service where agents pay for work and get signed, third-party-verifiable receipts proving what happened.",
+  "longDescription": "Paid x402 v2 service (USDC on Base and Arbitrum One). Per-call pricing: verified_check $0.15, register_recovery $1.00, compute spot/history/alerts $0.25. Docs: https://agent-embassy.fly.dev/skill.md",
   "endpoint": "https://agent-embassy.fly.dev",
   "docsUrl": "https://agent-embassy.fly.dev/skill.md",
   "pricing": {
