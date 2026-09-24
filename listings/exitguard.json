@@ -1,0 +1,45 @@
+{
+  "id": "exitguard",
+  "name": "ExitGuard \u2014 Pre-Trade Safety Oracles",
+  "description": "Executable exit-liquidity, rug-in-progress detection & escape curve for Solana/EVM tokens. Pre-trade safety for AI trading agents. x402/USDC.",
+  "longDescription": "8 keyless pay-per-call oracles that answer what a trading agent must know BEFORE it buys: can I get back out, and is the exit drying up right now? escape-curve measures the max USD size a token stays sellable (executable round-trip at rising sizes); liquidity-decay detects a rug in progress via the time-derivative of executable exit. Plus solana-gate GO/NO-GO, exit-check, on-chain rug check, survival-score (forward-measured AUC 0.718), Hyperliquid funding-carry, and pre-sign drainer/hook audit. Measures the executable exit, not the quoted price \u2014 97% of fresh tokens can't be sold at size.",
+  "endpoint": "https://exitguard-oracle.onrender.com/escape-curve",
+  "docsUrl": "https://github.com/HinojosaMaker/exitguard-x402",
+  "pricing": {
+    "model": "per-request",
+    "amount": "0.03",
+    "minimum": "0.01",
+    "currency": "USDC",
+    "networks": [
+      {
+        "network": "base",
+        "chainId": "eip155:8453",
+        "recipient": "0xb7584544F07c5f172718E029Afd3F1C9a50A513C",
+        "asset": "USDC",
+        "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+      }
+    ]
+  },
+  "category": "crypto",
+  "tags": [
+    "solana",
+    "defi",
+    "rug-check",
+    "exit-liquidity",
+    "trading-agent",
+    "safety",
+    "escape-curve",
+    "x402"
+  ],
+  "owner": {
+    "name": "HinojosaMaker",
+    "github": "HinojosaMaker"
+  },
+  "status": "pending",
+  "featured": false,
+  "addedAt": "2026-09-24",
+  "x402": {
+    "discoveryUrl": "https://exitguard-oracle.onrender.com/escape-curve",
+    "wellKnown": "https://exitguard-oracle.onrender.com/.well-known/x402.json"
+  }
+}
