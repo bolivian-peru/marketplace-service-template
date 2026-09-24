@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "updatedAt": "2026-02-15",
+  "updatedAt": "2026-09-24",
   "count": 6,
   "services": [
     {
@@ -143,6 +143,37 @@
       "status": "active",
       "featured": false,
       "detailsFile": "prediction-market-aggregator.json"
+    },
+    {
+      "id": "exitguard",
+      "name": "ExitGuard \u2014 Pre-Trade Safety Oracles",
+      "description": "Executable exit-liquidity, rug-in-progress detection & escape curve for Solana/EVM tokens. Pre-trade safety for AI trading agents. x402/USDC.",
+      "endpoint": "https://exitguard-oracle.onrender.com/escape-curve",
+      "docsUrl": "https://github.com/HinojosaMaker/exitguard-x402",
+      "pricing": {
+        "model": "per-request",
+        "amount": "0.03",
+        "minimum": "0.01",
+        "currency": "USDC"
+      },
+      "category": "crypto",
+      "tags": [
+        "solana",
+        "defi",
+        "rug-check",
+        "exit-liquidity",
+        "trading-agent",
+        "safety",
+        "escape-curve",
+        "x402"
+      ],
+      "owner": {
+        "name": "HinojosaMaker",
+        "github": "HinojosaMaker"
+      },
+      "status": "pending",
+      "featured": false,
+      "detailsFile": "exitguard.json"
     }
   ],
   "networks": {
