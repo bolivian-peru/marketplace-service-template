@@ -29,6 +29,7 @@ import {
 } from './scrapers/linkedin-enrichment';
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
+import { scrapeMobileSERP } from './scrapers/serp-tracker';
 
 export const serviceRouter = new Hono();
 
@@ -1441,14 +1442,19 @@ serviceRouter.get('/airbnb/market-stats', async (c) => {
 
 // ─── MOBILE SERP TRACKER ────────────────────────────────
 
-import { scrapeMobileSERP } from './scrapers/serp-tracker';
-
 const SERP_PRICE_USDC = parseFloat(process.env.SERP_PRICE_USDC || '0.003');
 const SERP_DESCRIPTION = 'Mobile SERP Tracker — Google search results with organic, ads, PAA, AI overview, map pack, knowledge panel. Real mobile IP fingerprint.';
 const SERP_OUTPUT_SCHEMA = {
-  input: { query: 'string (required) — search query', location: 'string (optional) — geo location', num: 'number (optional) — results count, default 10' },
+  input: { query: 'string (required) — search query', country: 'string (optional, default us)', language: 'string (optional, default en)', location: 'string (optional) — geo location', start: 'number (optional, default 0)', num: 'number (optional) — organic result count, default 10, max 10' },
   output: { organic: '[{ position, title, url, snippet, sitelinks? }]', ads: '[{ position, title, url, description }]', peopleAlsoAsk: '[{ question, snippet }]', aiOverview: '{ text, sources }', mapPack: '[{ name, rating, reviews, address }]', knowledgePanel: '{ title, description, attributes }' },
 };
+
+function parseBoundedInteger(value: string | undefined, fallback: number, min: number, max: number): number | null {
+  if (!value) return fallback;
+  const parsed = Number.parseInt(value, 10);
+  if (!Number.isInteger(parsed) || parsed < min || parsed > max) return null;
+  return parsed;
+}
 
 serviceRouter.get('/serp', async (c) => {
   const walletAddress = process.env.WALLET_ADDRESS;
@@ -1465,21 +1471,29 @@ serviceRouter.get('/serp', async (c) => {
   const query = c.req.query('query') || c.req.query('q');
   if (!query) return c.json({ error: 'Missing required parameter: query' }, 400);
 
+  const country = (c.req.query('country') || c.req.query('gl') || 'us').toLowerCase();
+  const language = (c.req.query('language') || c.req.query('hl') || 'en').toLowerCase();
   const location = c.req.query('location') || c.req.query('loc') || undefined;
-  const num = parseInt(c.req.query('num') || '10');
+  const num = parseBoundedInteger(c.req.query('num'), 10, 1, 10);
+  const start = parseBoundedInteger(c.req.query('start'), 0, 0, 90);
+
+  if (!/^[a-z]{2}$/.test(country)) return c.json({ error: 'Invalid country parameter: use a two-letter country code like us or gb' }, 400);
+  if (!/^[a-z]{2}(?:-[a-z]{2})?$/.test(language)) return c.json({ error: 'Invalid language parameter: use a language code like en or en-us' }, 400);
+  if (num === null) return c.json({ error: 'Invalid num parameter: must be an integer from 1 to 10' }, 400);
+  if (start === null) return c.json({ error: 'Invalid start parameter: must be an integer from 0 to 90' }, 400);
 
   try {
     const proxy = getProxy();
     const ip = await getProxyExitIp();
-    const results = await scrapeMobileSERP(query, { location, num });
+    const results = await scrapeMobileSERP(query, country, language, location, start);
+    results.organic = results.organic.slice(0, num);
 
     c.header('X-Payment-Settled', 'true');
     c.header('X-Payment-TxHash', payment.txHash);
 
     return c.json({
-      query,
       results,
-      meta: { location, num, proxy: { ip, country: proxy.country, type: 'mobile' } },
+      meta: { query, country, language, location: location || null, start, num, proxy: { ip, country: proxy.country, type: 'mobile' } },
       payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true },
     });
   } catch (err: any) {
