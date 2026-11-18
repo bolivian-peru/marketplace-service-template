@@ -6,7 +6,7 @@ This template is designed for production use. Here's what's built in and what yo
 
 ### Payment Verification (payment.ts)
 - **On-chain verification** — Payments are verified against Solana and Base public RPCs. No trust-the-header.
-- **Replay prevention** — Each transaction hash can only be used once (in-memory set, resets on restart).
+- **Replay prevention** — The process checks an in-memory set before verification and adds a hash after verification. Use an atomic, durable transaction claim across requests and instances before serving real paid traffic.
 - **Amount tolerance** — 2% tolerance on payment amounts to account for rounding.
 - **Network detection** — Automatically detects Solana signatures vs Ethereum tx hashes.
 
@@ -26,9 +26,7 @@ This template is designed for production use. Here's what's built in and what yo
 ## What You Should Add for Production
 
 ### Persistent Replay Prevention
-The in-memory replay set resets when the service restarts. For production:
-- Store verified tx hashes in Redis or a database.
-- Set a TTL matching your service's billing period.
+Before fulfilling a verified payment, atomically claim its network and transaction ID in storage shared by all instances. Return the recorded outcome on a retry. Retain the claim for as long as an old payment could pass verification.
 
 ### Custom RPC Endpoints
 Public RPCs have rate limits. For high-volume services:

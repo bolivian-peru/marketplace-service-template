@@ -4,7 +4,7 @@
 
 Fork this repo → edit one file → deploy → start earning.
 
-You provide the idea. We provide 148 mobile devices across 6 countries (DE, PL, US, FR, ES, GB), x402 payment rails (Solana + Base), and the marketplace to find customers.
+Proxies.sx provides proxy connectivity and x402 payment support for USDC on Solana and Base. Check [dedicated-port availability](https://api.proxies.sx/v1/x402/countries) or [shared Pool Gateway stock](https://api.proxies.sx/v1/gateway/pool/stock) for the product you plan to use.
 
 > **Reference implementation included:** This repo ships with a working **Google Maps Lead Generator** (`src/service.ts` + `src/scrapers/`) built by [@aliraza556](https://github.com/aliraza556). Use it as-is or replace with your own service logic.
 
@@ -12,7 +12,7 @@ You provide the idea. We provide 148 mobile devices across 6 countries (DE, PL, 
 
 You're arbitraging infrastructure. Buy proxy bandwidth wholesale, sell API calls retail.
 
-**Proxy cost:** flat **$4/GB** — one simple rate, all 6 countries, mobile + residential ([live pricing](https://api.proxies.sx/v1/x402/pricing)). Duration is free; you only pay for the GB you actually use.
+The example below uses the dedicated-port traffic price of $4/GB. Check the [dedicated-port rate](https://api.proxies.sx/v1/x402/pricing) and the unsigned quote before funding a purchase. The [shared Pool Gateway](https://agents.proxies.sx/pool/skill.md) has separate rates and country availability.
 
 Your margin depends on what you're scraping:
 
@@ -81,7 +81,7 @@ serviceRouter.get('/run', async (c) => {
 });
 ```
 
-Everything else (server, CORS, rate limiting, payment verification, proxy helper) works out of the box.
+The template includes the HTTP server, CORS, rate limiting, payment verifier and proxy helper. Review the [production payment requirements](./SECURITY.md#persistent-replay-prevention) before charging customers.
 
 ## How x402 Payment Works
 
@@ -121,31 +121,16 @@ Supports **Solana** (~400ms, ~$0.0001 gas) and **Base** (~2s, ~$0.01 gas).
 Built in by default:
 
 - **On-chain payment verification** — Solana + Base RPCs, not trust-the-header
-- **Replay prevention** — Each tx hash accepted only once
+- **Replay tracking** — A single process remembers verified transaction hashes until it restarts. Before accepting real payments, reserve each transaction atomically in durable storage shared by every instance.
 - **SSRF protection** — Private/internal URLs blocked
 - **Rate limiting** — Per-IP, configurable (default 60/min)
 - **Security headers** — nosniff, DENY framing, no-referrer
 
 See [SECURITY.md](SECURITY.md) for production hardening.
 
-## Live Services
+## Service availability
 
-**9 services / 23 endpoints** verified live in production (last audit 2026-04-28).
-Browse the full catalog: [agents.proxies.sx/marketplace](https://agents.proxies.sx/marketplace/) or [skill.md](https://agents.proxies.sx/marketplace/skill.md).
-
-| Service | Endpoints | Price | Builder |
-|---------|-----------|-------|---------|
-| [Mobile Proxy](https://agents.proxies.sx/marketplace/proxy/) | `/v1/x402/proxy` | flat $4/GB | Proxies.sx |
-| [Google Maps Lead Generator](https://agents.proxies.sx/marketplace/google-maps-lead-generator/) | `/maps/run`, `/maps/details` | $0.005/record | [@aliraza556](https://github.com/aliraza556) |
-| [Mobile SERP Tracker](https://agents.proxies.sx/marketplace/serp-tracker/) | `/serp/run` | $0.003/query | [@aliraza556](https://github.com/aliraza556) |
-| Reviews & Business Data | `/reviews/*`, `/business/:id` | $0.005–$0.02 | [@aliraza556](https://github.com/aliraza556) |
-| Job Market Intelligence | `/jobs` | $0.005/query | [@Lutra23](https://github.com/Lutra23) |
-| Reddit Intelligence | `/reddit/*` (4 endpoints) | $0.005–$0.01 | [@TheAuroraAI](https://github.com/TheAuroraAI) |
-| Instagram Intelligence + AI Vision | `/instagram/*` (5 endpoints) | $0.01–$0.15 | [@TheAuroraAI](https://github.com/TheAuroraAI) |
-| LinkedIn Enrichment | `/linkedin/*` (4 endpoints) | $0.01/query | [@TheAuroraAI](https://github.com/TheAuroraAI) |
-| Airbnb Market Intelligence | `/airbnb/*` (4 endpoints) | $0.01–$0.05 | [@TheAuroraAI](https://github.com/TheAuroraAI) |
-
-All endpoints under `https://api.proxies.sx/v1/x402/`. Each returns HTTP 402 → pay USDC → retry with `Payment-Signature` header → get JSON.
+The public [marketplace guide](https://agents.proxies.sx/marketplace/skill.md) documents Proxies.sx dedicated ports. Consult the [product index](https://agents.proxies.sx/llms.txt) for Pool Gateway access, private modems, and other products. [Community submissions](./listings/) describe services maintained by their authors. Confirm an individual service’s availability, quote and operator before paying.
 
 ## Open Source, Public Good (fixed $SX bounties discontinued)
 
@@ -168,11 +153,11 @@ Questions: [agents@proxies.sx](mailto:agents@proxies.sx) · [@proxyforai](https:
 
 **Option B:** x402 API (no account needed):
 ```bash
-curl https://api.proxies.sx/v1/x402/proxy?country=US&traffic=1
+curl "https://api.proxies.sx/v1/x402/proxy?country=US&traffic=1"
 # Returns 402 → pay USDC → get credentials
 ```
 
-**Option C:** MCP Server (55 tools — works in Claude Desktop, Cursor, Windsurf):
+**Option C:** Install the [Proxies.sx MCP server](https://github.com/bolivian-peru/proxies-sx-mcp-server) in a client that supports local stdio. Its tool list depends on the selected profile and credentials.
 ```bash
 npx -y @proxies-sx/mcp-server
 ```
